@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BN291MYX4T"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-BN291MYX4T');
+  </script>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+  <meta name="theme-color" content="#0047AB" />
+  <meta name="description"
+    content="ExpectException - Free online developer tools and services. High-performance YouTube downloader, PDF to Word converter, AI image detector, Image compressor, and OCR. Fast, secure, and no registration required." />
+
+  <!-- PWA & Mobile Optimization -->
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="ExpectException" />
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+  <!-- SEO & Social Sharing (Open Graph) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://expectexception.com/" />
+  <meta property="og:title" content="ExpectException - Free Developer Tools & Services" />
+  <meta property="og:description"
+    content="All-in-one developer toolkit. YouTube Downloader, AI Detector, PDF Converter, and more. Free, fast, and secure." />
+  <meta property="og:image" content="%PUBLIC_URL%/logo512.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://expectexception.com/" />
+  <meta name="twitter:title" content="ExpectException - Free Developer Tools & Services" />
+  <meta name="twitter:description"
+    content="All-in-one developer toolkit. YouTube Downloader, AI Detector, PDF Converter, and more. Free, fast, and secure." />
+  <meta name="twitter:image" content="%PUBLIC_URL%/logo512.png" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <link rel="canonical" href="https://expectexception.com/" />
+  <title>ExpectException - Free Developer Tools & Services | YouTube Downloader, PDF Converter, AI Detector, </title>
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root"></div>
+
+  <!-- Beautiful Loading Screen -->
+  <div id="app-loading" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0047AB 0%, #0056D6 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    transition: opacity 0.5s ease-out;
+  ">
+    <div style="text-align: center;">
+      <!-- Logo -->
+      <img src="%PUBLIC_URL%/logo192.png" alt="ExpectException" style="
+          width: 120px;
+          height: 120px;
+          border-radius: 24px;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+          animation: pulse 2s ease-in-out infinite;
+          margin-bottom: 32px;
+        " />
+
+      <!-- App Name -->
+      <h1 style="
+        color: white;
+        font-family: 'Outfit', sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0 0 8px;
+        animation: fadeIn 1s ease-out;
+      ">
+        ExpExc
+      </h1>
+
+      <!-- Tagline -->
+      <p style="
+        color: rgba(255, 255, 255, 0.9);
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        font-weight: 400;
+        margin: 0 0 40px;
+        animation: fadeIn 1.5s ease-out;
+      ">
+        Free Developer Services & Blogs
+      </p>
+
+      <!-- Loading Spinner -->
+      <div style="
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      "></div>
+    </div>
+  </div>
+
+  <!-- CSS Animations -->
+  <style>
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Hide loading screen when app loads */
+    #root:not(:empty)~#app-loading {
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+
+  <script>
+    // Remove loading screen after React mounts
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        var loader = document.getElementById('app-loading');
+        if (loader) {
+          loader.style.opacity = '0';
+          setTimeout(function () {
+            loader.style.display = 'none';
+          }, 500);
+        }
+      }, 500);
+    });
+  </script>
+  <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+</body>
+
+</html>

@@ -1,0 +1,108 @@
+{
+  "short_name": "ExpectException",
+  "name": "ExpectException - Free Developer Tools",
+  "description": "Explosive collection of high-performance developer tools: YouTube Downloader, AI Detector, PDF Tools, and more.",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0047AB",
+  "background_color": "#ffffff",
+  "categories": [
+    "productivity",
+    "developer tools",
+    "utilities",
+    "developer",
+    "video",
+    "photo",
+    "pdf",
+    "audio",
+    "reference"
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-desktop.png",
+      "sizes": "1114x931",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "ExpectException Desktop Dashboard"
+    },
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "625x869",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "ExpectException Mobile Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "URL Downloader",
+      "url": "/services/url-downloader",
+      "description": "Download files from any URL"
+    },
+    {
+      "name": "AI Detector",
+      "url": "/services/ai-detector",
+      "description": "Detect AI-generated content"
+    },
+    {
+      "name": "YT Video Downloader",
+      "url": "/services/yt-downloader",
+      "description": "Download YouTube videos"
+    },
+    {
+      "name": "Background Remover",
+      "url": "/services/background-remover",
+      "description": "Remove image backgrounds with AI"
+    },
+    {
+      "name": "JSON Formatter",
+      "url": "/services/json-formatter",
+      "description": "Format and validate JSON"
+    },
+    {
+      "name": "PDF to DOC",
+      "url": "/services/pdf-to-doc",
+      "description": "Convert PDF to Word"
+    },
+    {
+      "name": "DOC to PDF",
+      "url": "/services/doc-to-pdf",
+      "description": "Convert Word to PDF"
+    },
+    {
+      "name": "QR Generator",
+      "url": "/services/qr-generator",
+      "description": "Generate custom QR codes"
+    },
+    {
+      "name": "Image Compressor",
+      "url": "/services/image-compressor",
+      "description": "Compress images efficiently"
+    },
+    {
+      "name": "Image Resizer",
+      "url": "/services/image-resizer",
+      "description": "Resize images to custom dimensions"
+    }
+  ]
+}

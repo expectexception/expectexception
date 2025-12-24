@@ -1,0 +1,241 @@
+export const staticServices = [
+    {
+        id: 1,
+        title: 'URL Downloader',
+        description: 'Download files from any URL with support for multiple formats and batch processing.',
+        path: '/services/url-downloader',
+        icon: 'Download',
+        color: 'primary',
+        popularity: 95,
+        category: 'download',
+        tags: ['file', 'download', 'batch']
+    },
+    {
+        id: 2,
+        title: 'YT Video Downloader',
+        description: 'Download YouTube videos in various resolutions (HD, 4K) and multiple formats.',
+        path: '/services/yt-downloader',
+        icon: 'Movie',
+        color: 'secondary',
+        popularity: 92,
+        category: 'download',
+        tags: ['video', 'youtube', 'media']
+    },
+    {
+        id: 3,
+        title: 'URL to QR Converter',
+        description: 'Generate QR codes from URLs with custom colors, sizes, and logo integration.',
+        path: '/services/qr-generator',
+        icon: 'QrCode',
+        color: 'success',
+        popularity: 88,
+        category: 'converter',
+        tags: ['qr', 'generator', 'share']
+    },
+    {
+        id: 4,
+        title: 'JSON Formatter',
+        description: 'Format, validate, minify, and beautify JSON data with syntax highlighting.',
+        path: '/services/json-formatter',
+        icon: 'Code',
+        color: 'warning',
+        popularity: 90,
+        category: 'developer',
+        tags: ['json', 'developer', 'format']
+    },
+    {
+        id: 5,
+        title: 'Text to Speech',
+        description: 'Convert text to speech with multiple voice options and languages.',
+        path: '/services/text-to-speech',
+        icon: 'VolumeUp',
+        color: 'info',
+        popularity: 85,
+        category: 'converter',
+        tags: ['audio', 'text', 'speech']
+    },
+    {
+        id: 6,
+        title: 'Image Compressor',
+        description: 'Compress images while maintaining quality with batch processing support.',
+        path: '/services/image-compressor',
+        icon: 'Compress',
+        color: 'error',
+        popularity: 88,
+        category: 'media',
+        tags: ['image', 'compress', 'optimize']
+    },
+    {
+        id: 7,
+        title: 'PDF to DOC Converter',
+        description: 'Convert PDF documents to editable Word (DOC/DOCX) format with formatting preserved.',
+        path: '/services/pdf-to-doc',
+        icon: 'Description',
+        color: 'primary',
+        popularity: 90,
+        category: 'document',
+        tags: ['pdf', 'doc', 'convert']
+    },
+    {
+        id: 8,
+        title: 'DOC to PDF Converter',
+        description: 'Convert Word documents (DOC/DOCX) to PDF format with high fidelity.',
+        path: '/services/doc-to-pdf',
+        icon: 'PictureAsPdf',
+        color: 'secondary',
+        popularity: 89,
+        category: 'document',
+        tags: ['doc', 'pdf', 'convert']
+    },
+    {
+        id: 9,
+        title: 'PDF Merger',
+        description: 'Merge multiple PDF files into a single document with custom page ordering.',
+        path: '/services/pdf-merger',
+        icon: 'MergeType',
+        color: 'success',
+        popularity: 87,
+        category: 'document',
+        tags: ['pdf', 'merge', 'combine']
+    },
+    {
+        id: 10,
+        title: 'PDF Splitter',
+        description: 'Split PDF documents into multiple files by page ranges or individual pages.',
+        path: '/services/pdf-splitter',
+        icon: 'CallSplit',
+        color: 'warning',
+        popularity: 86,
+        category: 'document',
+        tags: ['pdf', 'split', 'extract']
+    },
+    {
+        id: 11,
+        title: 'Image to PDF',
+        description: 'Convert images (JPG, PNG, etc.) to PDF documents with multiple images per file.',
+        path: '/services/image-to-pdf',
+        icon: 'Image',
+        color: 'info',
+        popularity: 85,
+        category: 'document',
+        tags: ['image', 'pdf', 'convert']
+    },
+    {
+        id: 12,
+        title: 'Image Resizer',
+        description: 'Resize images to custom dimensions while maintaining aspect ratio and quality.',
+        path: '/services/image-resizer',
+        icon: 'PhotoSizeSelectLarge',
+        color: 'error',
+        popularity: 88,
+        category: 'media',
+        tags: ['image', 'resize', 'scale']
+    },
+    {
+        id: 13,
+        title: 'Background Remover',
+        description: 'Remove backgrounds from images automatically using AI-powered technology.',
+        path: '/services/background-remover',
+        icon: 'AutoFixHigh',
+        color: 'primary',
+        popularity: 92,
+        category: 'media',
+        tags: ['image', 'background', 'ai']
+    },
+    {
+        id: 14,
+        title: 'Image to Text (OCR)',
+        description: 'Extract text from images using Optical Character Recognition technology.',
+        path: '/services/image-to-text',
+        icon: 'TextFields',
+        color: 'secondary',
+        popularity: 87,
+        category: 'converter',
+        tags: ['ocr', 'text', 'extract']
+    },
+    {
+        id: 15,
+        title: 'Image Converter',
+        description: 'Convert images between formats (JPG, PNG, WebP, GIF, BMP, TIFF).',
+        path: '/services/image-converter',
+        icon: 'SwapHoriz',
+        color: 'success',
+        popularity: 84,
+        category: 'media',
+        tags: ['image', 'convert', 'format']
+    },
+    {
+        id: 16,
+        title: 'Base64 Encoder/Decoder',
+        description: 'Encode text or files to Base64, or decode Base64 strings back to original format.',
+        path: '/services/base64',
+        icon: 'Code',
+        color: 'warning',
+        popularity: 85,
+        category: 'developer',
+        tags: ['base64', 'encode', 'decode']
+    },
+    {
+        id: 17,
+        title: 'Hash Generator',
+        description: 'Generate cryptographic hashes (MD5, SHA-1, SHA-256, SHA-512) from text or files.',
+        path: '/services/hash-generator',
+        icon: 'Fingerprint',
+        color: 'info',
+        popularity: 83,
+        category: 'developer',
+        tags: ['hash', 'crypto', 'security']
+    },
+    {
+        id: 18,
+        title: 'UUID Generator',
+        description: 'Generate unique identifiers (UUID v1, v4) for database records and APIs.',
+        path: '/services/uuid-generator',
+        icon: 'Key',
+        color: 'error',
+        popularity: 82,
+        category: 'developer',
+        tags: ['uuid', 'generate', 'unique']
+    },
+    {
+        id: 19,
+        title: 'Color Converter',
+        description: 'Convert colors between HEX, RGB, HSL, and CMYK formats with live preview.',
+        path: '/services/color-converter',
+        icon: 'Palette',
+        color: 'primary',
+        popularity: 81,
+        category: 'developer',
+        tags: ['color', 'convert', 'design']
+    },
+    {
+        id: 20,
+        title: 'AI Detector',
+        description: 'Detect AI-generated content in text using advanced analysis algorithms.',
+        path: '/services/ai-detector',
+        icon: 'SmartToy',
+        color: 'secondary',
+        popularity: 94,
+        category: 'developer',
+        tags: ['ai', 'detect', 'analysis']
+    },
+    {
+        id: 21,
+        title: 'Markdown Preview',
+        description: 'Convert Markdown text to HTML with real-time preview.',
+        path: '/services/markdown-preview',
+        icon: 'Code',
+        color: 'info',
+        popularity: 10,
+        category: 'developer',
+        tags: ['developer', 'markdown', 'html', 'preview']
+    }
+];
+
+export const staticStats = {
+    total_tools: '20+',
+    active_users: '10k+',
+    success_rate: '99.9%',
+    uptime: '100%',
+    total_downloads: '50k+'
+};
