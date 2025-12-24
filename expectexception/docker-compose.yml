@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - '8000:8000'
+    volumes:
+      - .:/app
+    command: gunicorn expectexception.wsgi:application -b 0.0.0.0:8000
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: celery -A expectexception worker --loglevel=info --concurrency=1
+    depends_on:
+      - redis
+    volumes:
+      - .:/app

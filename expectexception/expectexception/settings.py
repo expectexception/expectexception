@@ -1,0 +1,332 @@
+import os
+from pathlib import Path
+from datetime import timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret')
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost').split(',') + ['djangobackend']
+CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',')
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Session and CSRF cookies - Cloudflare handles HTTPS
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
+    'rest_framework',
+    'corsheaders',
+    'django_filters',
+    'drf_spectacular',
+
+    'apps.users',
+    'apps.blog',
+    'apps.videos',
+    'apps.services',
+
+    'apps.profiles',
+    'apps.notifications',
+    'apps.ai_detector',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
+]
+
+SITE_ID = 1
+
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.services.middleware.RequestLoggingMiddleware',
+    'apps.services.middleware.PerformanceMonitoringMiddleware',
+]
+
+ROOT_URLCONF = 'expectexception.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {'context_processors': ['django.template.context_processors.debug',
+                                           'django.template.context_processors.request',
+                                           'django.contrib.auth.context_processors.auth',
+                                           'django.contrib.messages.context_processors.messages']},
+    }
+]
+
+WSGI_APPLICATION = 'expectexception.wsgi.application'
+
+# Database: use sqlite by default for dev
+DATABASES = {
+    'default': {
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.getenv('DB_NAME', 'expectexception'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+    }
+}
+
+AUTH_USER_MODEL = 'users.User'
+
+AUTH_PASSWORD_VALIDATORS = []
+
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ),
+    'PAGE_SIZE': 10,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+# Simple email backend for development (writes to console)
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@localhost')
+
+# Celery settings
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', CELERY_BROKER_URL)
+
+# S3 / storage settings
+USE_S3 = os.getenv('USE_S3', 'False').lower() in ('1', 'true', 'yes')
+if USE_S3:
+    INSTALLED_APPS += ['storages']
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', None)
+    AWS_S3_SIGNATURE_VERSION = os.getenv('AWS_S3_SIGNATURE_VERSION', 's3v4')
+else:
+    MEDIA_ROOT = BASE_DIR / 'media'
+
+# Logging Configuration
+LOG_DIR = BASE_DIR / 'logs'
+LOG_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {name} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '[{levelname}] {asctime} {message}',
+            'style': '{',
+        },
+        'json_like': {
+            'format': '{asctime} | {levelname} | {name} | {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file_all': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR / 'app.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'file_errors': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR / 'errors.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'file_downloads': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR / 'downloads.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'json_like',
+        },
+        'file_requests': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR / 'requests.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file_all'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['file_errors', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'apps': {
+            'handlers': ['console', 'file_all'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'apps.services.downloads': {
+            'handlers': ['file_downloads', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'apps.services.requests': {
+            'handlers': ['file_requests'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file_all'],
+        'level': 'INFO',
+    },
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ExpectException API',
+    'DESCRIPTION': 'Django REST API for the ExpectException site',
+    'VERSION': '2.0.0',
+}
+
+# =============================================================================
+# AI Image Detector Settings
+# =============================================================================
+
+# Detection models configuration (ensemble mode)
+# Each model contributes to the final prediction with its weight
+AI_DETECTOR_MODELS = [
+    {
+        'name': 'umm-maybe/AI-image-detector',
+        'weight': 1.0,
+        'priority': 1,
+        'enabled': True,
+        'max_image_size': 512,
+    },
+    {
+        'name': 'Organika/sdxl-detector',
+        'weight': 0.8,
+        'priority': 2,
+        'enabled': True,
+        'max_image_size': 384,
+    },
+]
+
+# Cache TTL for detection results (in seconds)
+# Default: 24 hours
+AI_DETECTOR_CACHE_TTL = 60 * 60 * 24
+
+# Celery task routing for AI detection
+CELERY_TASK_ROUTES = {
+    'ai_detector.*': {'queue': 'ai_detection'},
+}
+
+# Celery task settings for AI detection
+CELERY_TASK_ANNOTATIONS = {
+    'ai_detector.analyze_image': {
+        'rate_limit': '10/m',  # Max 10 tasks per minute per worker
+    },
+}
+
+# Django cache configuration for AI detector
+# Using Redis (same as Celery broker)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/1'),
+        'KEY_PREFIX': 'expexc',
+        'TIMEOUT': 60 * 60 * 24,  # 24 hours default
+    }
+}
+
+# =============================================================================
+# File Upload Settings
+# =============================================================================
+
+# Maximum size of request body (500MB for large images)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
+
+# Maximum size for multipart uploads (500MB)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
+
+# Use temporary files for uploads larger than 10MB (saves memory)
+FILE_UPLOAD_TEMP_DIR = '/tmp/django_uploads'
+
+# =============================================================================
+# Push Notifications Settings (Web Push)
+# =============================================================================
+
+# VAPID keys for web push notifications
+# Generate with: python generate_vapid.py
+VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', 'BGcxbIdFOOx06gl9Nt_D0IMsNM1pfe4_nCx2_bB9rSi-fTabOnGvNY1To4WzL6laMTqYcl7ALDQRrbnDoeCBrZk')
+VAPID_PRIVATE_KEY_PEM = os.getenv('VAPID_PRIVATE_KEY_PEM', '''-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgzMlUEwcRRAhPj6UO
+zlziQq7uXAKEeLyinMl8p1RHPPWhRANCAARnMWyHRTjsdOoJfTbfw9CDLDTNaX3u
+P5wsdv2wfa0ovn02mzpxrzWNU6OFsy+pWjE6mHJewCw0Ea25w6Hgga2Z
+-----END PRIVATE KEY-----''')
+VAPID_EMAIL = os.getenv('VAPID_EMAIL', 'admin@expectexception.com')
+

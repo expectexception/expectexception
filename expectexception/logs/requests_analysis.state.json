@@ -1,0 +1,1632 @@
+{
+    "offset": 1454144,
+    "total_lines": 6801,
+    "parsed_lines": 6415,
+    "ips": {
+        "127.0.0.1": 1570,
+        "35.94.85.75": 1,
+        "74.7.244.58": 1,
+        "192.178.6.97": 2,
+        "192.178.6.98": 3,
+        "192.178.6.99": 1,
+        "49.36.179.52": 33,
+        "51.222.95.96": 1,
+        "54.219.39.36": 2,
+        "57.128.243.0": 1,
+        "106.210.96.54": 19,
+        "119.28.101.45": 1,
+        "152.59.93.207": 5,
+        "157.49.38.215": 2,
+        "192.178.6.102": 14,
+        "192.178.6.103": 6,
+        "192.178.6.104": 6,
+        "43.163.23.225": 1,
+        "43.173.173.11": 1,
+        "43.173.173.14": 1,
+        "43.173.173.93": 1,
+        "43.173.175.45": 1,
+        "43.173.177.17": 1,
+        "43.173.178.55": 1,
+        "43.173.180.25": 1,
+        "43.173.180.33": 1,
+        "43.173.180.47": 1,
+        "43.173.182.63": 1,
+        "45.148.10.143": 6,
+        "47.99.243.221": 3,
+        "49.249.236.82": 1545,
+        "51.161.37.182": 1,
+        "54.39.210.206": 1,
+        "157.49.129.173": 2,
+        "157.49.129.210": 33,
+        "157.49.158.121": 6,
+        "158.94.209.159": 1,
+        "164.92.244.132": 5,
+        "198.244.226.53": 1,
+        "43.173.173.182": 1,
+        "43.173.173.235": 1,
+        "43.173.173.243": 1,
+        "43.173.174.120": 1,
+        "43.173.174.152": 1,
+        "43.173.174.196": 1,
+        "43.173.174.214": 1,
+        "43.173.175.196": 1,
+        "43.173.175.227": 1,
+        "43.173.175.247": 1,
+        "43.173.176.214": 1,
+        "43.173.177.252": 1,
+        "43.173.178.135": 1,
+        "43.173.179.172": 1,
+        "43.173.179.199": 1,
+        "43.173.180.250": 1,
+        "43.173.181.226": 1,
+        "43.173.182.233": 1,
+        "92.222.104.198": 1,
+        "92.222.108.122": 1,
+        "104.210.140.129": 1,
+        "104.210.140.139": 1,
+        "146.190.242.161": 5,
+        "198.244.183.106": 1,
+        "2401:4900:5951:7ed1::c25:893b": 14,
+        "2409:40d6:da:f44c:f4dc:779e:eb:3db": 52,
+        "2409:40d6:da:f44c:45f:7100:9d0a:dafc": 403,
+        "2401:4900:be84:4d74:6e4c:7e:da0f:704f": 12,
+        "2405:201:4008:d87b:752f:77c2:260:1ef5": 103,
+        "2409:40d0:13:d359:88a6:e0ff:fee7:f669": 10,
+        "2409:40d0:3f:9693:883c:16ff:fed1:cabc": 46,
+        "2409:40d0:3f:9693:9408:80ff:fe4c:9ab7": 163,
+        "2409:40d6:1d:5d1a:6091:4cff:fe99:449f": 13,
+        "2409:40d6:da:f44c:b12c:7132:349b:a843": 82,
+        "2409:40d6:da:f44c:ca5b:76ff:fed3:83fd": 10,
+        "2409:40d6:da:f44c:edd3:521c:7172:8204": 1547,
+        "2401:4900:1c74:23a8:29f5:ea76:3e86:3f94": 3,
+        "2401:4900:1c74:23a8:b490:bc64:8db2:3242": 17,
+        "2401:4900:be8d:cedf:46da:8f0f:d4f7:3d98": 10,
+        "2409:40d0:1009:65dc:bc19:5eff:feb9:d60a": 116,
+        "2409:40d0:1330:1387:109d:1fff:fe77:d18d": 24,
+        "2409:40d0:202d:a9bd:a0d1:33ff:feca:1576": 14,
+        "2409:40d6:1009:71aa:3c47:82ff:febf:54e5": 161,
+        "2409:40d6:1099:12a5:d161:675b:d641:6d67": 12,
+        "2409:40d6:119f:b255:d044:3dff:fefc:93c0": 283,
+        "43.173.177.136": 1,
+        "43.173.169.232": 1,
+        "43.163.22.66": 1,
+        "198.244.242.128": 1,
+        "2409:40d6:1099:12a5:931:4ddf:ce9:45a2": 3,
+        "2409:40d0:20:eea9:3407:37ff:fe9c:284b": 2
+    },
+    "paths": {
+        "/": 1,
+        "/api": 3,
+        "/api/": 1,
+        "/admin": 24,
+        "//admin": 1,
+        "/api/gql": 2,
+        "/api/.env": 1,
+        "/api/blogs/": 1,
+        "/api/stats/": 1,
+        "/robots.txt": 27,
+        "/api/graphql": 2,
+        "/favicon.ico": 3,
+        "/sitemap.xml": 9,
+        "/api/services/": 2,
+        "/api/config.env": 1,
+        "/api/auth/login/": 16,
+        "/api/auth/token/": 1,
+        "/api/blog/media/": 1,
+        "/api/blog/posts/": 380,
+        "/api/shared/.env": 1,
+        "/api/blog/series/": 1,
+        "/api/swagger.json": 2,
+        "/api/auth/profile/": 171,
+        "/api/blog/posts/1/": 33,
+        "/api/services/tts/": 15,
+        "/api/auth/register/": 3,
+        "/api/blog/comments/": 5,
+        "/api/notifications/": 403,
+        "/api/api/blog/posts/": 2,
+        "/api/services/tools/": 686,
+        "/api/services/base64/": 13,
+        "/api/services/search/": 5,
+        "/api-docs/swagger.json": 2,
+        "/api/shared/config.env": 1,
+        "/api/blog/posts/1/like/": 1,
+        "/api/blog/upload-image/": 1,
+        "/api/shared/config/.env": 1,
+        "/api/ai-detector/health/": 1,
+        "/api/api/services/tools/": 3,
+        "/api/auth/token/refresh/": 24,
+        "/api/services/downloads/": 68,
+        "/api/services/pdf-merge/": 1,
+        "/api/services/pdf-split/": 1,
+        "/api/videos/downloads/1/": 6,
+        "/api/videos/downloads/2/": 138,
+        "/api/videos/downloads/3/": 75,
+        "/api/videos/downloads/4/": 88,
+        "/api/videos/downloads/5/": 80,
+        "/api/videos/downloads/6/": 7,
+        "/api/videos/downloads/7/": 12,
+        "/api/videos/downloads/8/": 15,
+        "/api/videos/downloads/9/": 3,
+        "/api/ai-detector/analyze/": 80,
+        "/api/ai-detector/history/": 8,
+        "/api/services/pdf-to-doc/": 14,
+        "/api/videos/downloads/10/": 487,
+        "/api/videos/downloads/11/": 2,
+        "/api/videos/downloads/12/": 4,
+        "/api/videos/downloads/13/": 2,
+        "/api/videos/downloads/14/": 2,
+        "/api/videos/downloads/15/": 5,
+        "/api/videos/downloads/16/": 7,
+        "/api/blog/posts/1/bookmark/": 1,
+        "/api/services/image-resize/": 4,
+        "/api/services/image-to-pdf/": 1,
+        "/api/services/log-analysis/": 1,
+        "/api/services/image-convert/": 2,
+        "/api/services/image-to-text/": 2,
+        "/api/services/server-health/": 2,
+        "/api/services/yt-downloader/": 60,
+        "/api/api/ai-detector/analyze/": 2,
+        "/api/services/compress-image/": 2,
+        "/api/services/hash-generator/": 1,
+        "/api/services/url-downloader/": 14,
+        "/api/services/uuid-generator/": 1,
+        "/api/shared/config/config.env": 1,
+        "/api/videos/downloads/3/file/": 1,
+        "/api/videos/downloads/4/file/": 1,
+        "/api/videos/downloads/6/file/": 1,
+        "/api/videos/downloads/7/file/": 1,
+        "/api/videos/downloads/8/file/": 1,
+        "/api/videos/downloads/9/file/": 1,
+        "/api/services/color-converter/": 4,
+        "/api/services/downloads/stats/": 621,
+        "/api/videos/downloads/10/file/": 2,
+        "/api/videos/downloads/11/file/": 1,
+        "/api/videos/downloads/12/file/": 1,
+        "/api/videos/downloads/13/file/": 1,
+        "/api/videos/downloads/16/file/": 1,
+        "/api/services/markdown-preview/": 5,
+        "/api/services/background-remove/": 18,
+        "/api/services/dashboard/activity/": 30,
+        "/api/api/services/downloads/stats/": 3,
+        "/api/services/analytics-dashboard/": 2,
+        "/api/services/dashboard/favorites/": 26,
+        "//media/wp-includes/wlwmanifest.xml": 1,
+        "/api/services/downloads/2/download/": 1,
+        "/api/services/downloads/3/download/": 2,
+        "/api/services/downloads/5/download/": 1,
+        "/api/auth/profiles/Rajatrathee@gmail.com/": 30,
+        "/api/auth/profiles/admin@expectexception.com/": 13,
+        "/api/ai-detector/status/00209b16-ed27-42d7-821b-7c51c5db5bdc/": 324,
+        "/api/ai-detector/status/016acf36-d327-4d40-8eec-ac378d30fd96/": 3,
+        "/api/ai-detector/status/06e50b1e-edc0-4848-9d5e-62fd9c59202b/": 1,
+        "/api/ai-detector/status/0b5e37ec-9301-4be1-b6b1-be7d57041ebc/": 79,
+        "/api/ai-detector/status/169bb86c-4b1e-47d7-ab9b-d03e5d9c2bd4/": 15,
+        "/api/ai-detector/status/1b3802a7-2dab-4f81-86cc-29a5110baa31/": 150,
+        "/api/ai-detector/status/1b6d6411-6884-4ff9-bddb-bbb93e8bbc9a/": 3,
+        "/api/ai-detector/status/24cd3c50-641a-4c00-94e8-69d51537b93e/": 10,
+        "/api/ai-detector/status/2eaa7bb5-4879-4f35-b7a6-7c2e4d00487e/": 1,
+        "/api/ai-detector/status/2f63b490-3edf-41c4-b388-c2f7c66c0b20/": 10,
+        "/api/ai-detector/status/33b51a9e-7e4d-4300-87a2-7de5d7e856e2/": 44,
+        "/api/ai-detector/status/3757f645-a7ba-4b42-b301-0e5bf630b4d1/": 13,
+        "/api/ai-detector/status/3f732397-201e-4f49-be04-52c1edbc4c9e/": 42,
+        "/api/ai-detector/status/48110a01-22b7-40af-83bd-c4246257f08b/": 908,
+        "/api/ai-detector/status/4b981c6b-4f94-486b-952d-4d8f673425f2/": 1,
+        "/api/ai-detector/status/4e43e544-1cf7-458f-a8c0-3365e1a63d81/": 1,
+        "/api/ai-detector/status/543607b1-06db-47db-bc9b-fd594e477c2b/": 59,
+        "/api/ai-detector/status/58ed6c7e-5259-4d6e-80c0-2aec15683b94/": 21,
+        "/api/ai-detector/status/5a251f33-c8e7-4d63-b1dc-e41632dd85eb/": 17,
+        "/api/ai-detector/status/5e6b2e12-bc43-4374-ac99-460c65fb92b1/": 10,
+        "/api/ai-detector/status/5e849eeb-56ef-45df-9547-18f177231952/": 3,
+        "/api/ai-detector/status/632f58c7-8c7c-40c0-b1bb-c3e39b919b3d/": 1,
+        "/api/ai-detector/status/6a1d0d0e-cc4d-4072-835e-5aae282be8ed/": 1,
+        "/api/ai-detector/status/71355e12-6f27-4db5-80e8-0bd4d4146124/": 5,
+        "/api/ai-detector/status/744362e6-b614-424b-ad23-2e945fc00bc1/": 2,
+        "/api/ai-detector/status/7617009b-b519-4293-a43a-4038416b2382/": 34,
+        "/api/ai-detector/status/77890ea3-9729-4f1f-b85d-62e1391936b5/": 45,
+        "/api/ai-detector/status/7d4a0651-eccb-4bda-98d6-ef3cc6ae3883/": 10,
+        "/api/ai-detector/status/7ef947ef-dc5d-4c94-a567-790e71428fc7/": 270,
+        "/api/ai-detector/status/976eee96-f338-405a-8df6-ae16dcc4a540/": 3,
+        "/api/ai-detector/status/9bed095d-9e89-4e59-8279-63d8cb6c6db0/": 10,
+        "/api/ai-detector/status/9f7051b5-5579-4747-977a-054a55d6ace8/": 4,
+        "/api/ai-detector/status/ad3ed359-29f8-475d-8898-ce29d19249c2/": 11,
+        "/api/ai-detector/status/ae3328ac-5a4b-4824-b826-d96f8e98590f/": 5,
+        "/api/ai-detector/status/b05de154-8c7d-4bf3-8a46-13f9357713c3/": 1,
+        "/api/ai-detector/status/b3548a42-7d02-43b4-ac74-5de218f7ccdf/": 1,
+        "/api/ai-detector/status/b6394707-6f0e-476b-bf34-cf1485a85bef/": 1,
+        "/api/ai-detector/status/bec6cf4d-c082-4c06-b5ed-1f74a7200e74/": 10,
+        "/api/ai-detector/status/c05f993b-3844-40db-b1ad-12df1d30c667/": 1,
+        "/api/ai-detector/status/dd79226e-a6b8-4da1-9ef4-38390838eac8/": 42,
+        "/api/ai-detector/status/e89ce0f1-1042-4298-96a0-01243424d9ba/": 44,
+        "/api/ai-detector/status/e8e06b41-7585-41c7-aede-3b4cf36cebb3/": 1,
+        "/api/ai-detector/status/e9732aab-73f2-4629-9c6d-b0eb2233d76b/": 224,
+        "/api/ai-detector/status/ead85e5b-98c3-41cf-8238-cd2fd08cef69/": 2,
+        "/api/ai-detector/status/f203c74c-73de-412c-8847-3952a410dabe/": 153
+    },
+    "status_codes": {
+        "200": 6092,
+        "201": 28,
+        "202": 46,
+        "400": 22,
+        "401": 44,
+        "403": 2,
+        "404": 90,
+        "415": 8,
+        "500": 75,
+        "503": 8
+    },
+    "users": {
+        "Anonymous": 4802,
+        "rajat1@gmail.com": 49,
+        "Rajatrathee@gmail.com": 960,
+        "admin@expectexception.com": 604
+    },
+    "durations_agg": {
+        "/": {
+            "sum": 0.004,
+            "count": 1
+        },
+        "/api": {
+            "sum": 0.015000000000000001,
+            "count": 3
+        },
+        "/api/": {
+            "sum": 0.011,
+            "count": 1
+        },
+        "/admin": {
+            "sum": 82.22200000000001,
+            "count": 24
+        },
+        "//admin": {
+            "sum": 0.018,
+            "count": 1
+        },
+        "/api/gql": {
+            "sum": 0.015,
+            "count": 2
+        },
+        "/api/.env": {
+            "sum": 0.009,
+            "count": 1
+        },
+        "/api/blogs/": {
+            "sum": 0.007,
+            "count": 1
+        },
+        "/api/stats/": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/robots.txt": {
+            "sum": 0.009000000000000001,
+            "count": 27
+        },
+        "/api/graphql": {
+            "sum": 0.022,
+            "count": 2
+        },
+        "/favicon.ico": {
+            "sum": 0.023,
+            "count": 3
+        },
+        "/sitemap.xml": {
+            "sum": 6.06,
+            "count": 9
+        },
+        "/api/services/": {
+            "sum": 4.642,
+            "count": 2
+        },
+        "/api/config.env": {
+            "sum": 0.006,
+            "count": 1
+        },
+        "/api/auth/login/": {
+            "sum": 9.75,
+            "count": 16
+        },
+        "/api/auth/token/": {
+            "sum": 0.006,
+            "count": 1
+        },
+        "/api/blog/media/": {
+            "sum": 0.003,
+            "count": 1
+        },
+        "/api/blog/posts/": {
+            "sum": 53.270999999999944,
+            "count": 380
+        },
+        "/api/shared/.env": {
+            "sum": 0.006,
+            "count": 1
+        },
+        "/api/blog/series/": {
+            "sum": 0.016,
+            "count": 1
+        },
+        "/api/swagger.json": {
+            "sum": 0.022000000000000002,
+            "count": 2
+        },
+        "/api/auth/profile/": {
+            "sum": 26.386999999999993,
+            "count": 171
+        },
+        "/api/blog/posts/1/": {
+            "sum": 0.9980000000000002,
+            "count": 33
+        },
+        "/api/services/tts/": {
+            "sum": 124.21499999999999,
+            "count": 15
+        },
+        "/api/auth/register/": {
+            "sum": 0.681,
+            "count": 3
+        },
+        "/api/blog/comments/": {
+            "sum": 0.202,
+            "count": 5
+        },
+        "/api/notifications/": {
+            "sum": 57.586000000000034,
+            "count": 403
+        },
+        "/api/api/blog/posts/": {
+            "sum": 0.053000000000000005,
+            "count": 2
+        },
+        "/api/services/tools/": {
+            "sum": 351.1919999999999,
+            "count": 686
+        },
+        "/api/services/base64/": {
+            "sum": 0.019000000000000003,
+            "count": 13
+        },
+        "/api/services/search/": {
+            "sum": 0.388,
+            "count": 5
+        },
+        "/api-docs/swagger.json": {
+            "sum": 0.033,
+            "count": 2
+        },
+        "/api/shared/config.env": {
+            "sum": 0.006,
+            "count": 1
+        },
+        "/api/blog/posts/1/like/": {
+            "sum": 0.009,
+            "count": 1
+        },
+        "/api/blog/upload-image/": {
+            "sum": 0.004,
+            "count": 1
+        },
+        "/api/shared/config/.env": {
+            "sum": 0.006,
+            "count": 1
+        },
+        "/api/ai-detector/health/": {
+            "sum": 0.026,
+            "count": 1
+        },
+        "/api/api/services/tools/": {
+            "sum": 0.056999999999999995,
+            "count": 3
+        },
+        "/api/auth/token/refresh/": {
+            "sum": 0.6750000000000002,
+            "count": 24
+        },
+        "/api/services/downloads/": {
+            "sum": 1.0920000000000003,
+            "count": 68
+        },
+        "/api/services/pdf-merge/": {
+            "sum": 0.234,
+            "count": 1
+        },
+        "/api/services/pdf-split/": {
+            "sum": 0.942,
+            "count": 1
+        },
+        "/api/videos/downloads/1/": {
+            "sum": 0.192,
+            "count": 6
+        },
+        "/api/videos/downloads/2/": {
+            "sum": 2.5689999999999995,
+            "count": 138
+        },
+        "/api/videos/downloads/3/": {
+            "sum": 3.89,
+            "count": 75
+        },
+        "/api/videos/downloads/4/": {
+            "sum": 0.35200000000000015,
+            "count": 88
+        },
+        "/api/videos/downloads/5/": {
+            "sum": 0.8760000000000003,
+            "count": 80
+        },
+        "/api/videos/downloads/6/": {
+            "sum": 0.22999999999999998,
+            "count": 7
+        },
+        "/api/videos/downloads/7/": {
+            "sum": 0.372,
+            "count": 12
+        },
+        "/api/videos/downloads/8/": {
+            "sum": 0.594,
+            "count": 15
+        },
+        "/api/videos/downloads/9/": {
+            "sum": 0.07200000000000001,
+            "count": 3
+        },
+        "/api/ai-detector/analyze/": {
+            "sum": 507.5179999999999,
+            "count": 80
+        },
+        "/api/ai-detector/history/": {
+            "sum": 1.834,
+            "count": 8
+        },
+        "/api/services/pdf-to-doc/": {
+            "sum": 41.223000000000006,
+            "count": 14
+        },
+        "/api/videos/downloads/10/": {
+            "sum": 21.565999999999985,
+            "count": 487
+        },
+        "/api/videos/downloads/11/": {
+            "sum": 0.057999999999999996,
+            "count": 2
+        },
+        "/api/videos/downloads/12/": {
+            "sum": 0.115,
+            "count": 4
+        },
+        "/api/videos/downloads/13/": {
+            "sum": 0.081,
+            "count": 2
+        },
+        "/api/videos/downloads/14/": {
+            "sum": 0.051,
+            "count": 2
+        },
+        "/api/videos/downloads/15/": {
+            "sum": 0.16899999999999998,
+            "count": 5
+        },
+        "/api/videos/downloads/16/": {
+            "sum": 0.265,
+            "count": 7
+        },
+        "/api/blog/posts/1/bookmark/": {
+            "sum": 0.012,
+            "count": 1
+        },
+        "/api/services/image-resize/": {
+            "sum": 4.749,
+            "count": 4
+        },
+        "/api/services/image-to-pdf/": {
+            "sum": 0.376,
+            "count": 1
+        },
+        "/api/services/log-analysis/": {
+            "sum": 0.023,
+            "count": 1
+        },
+        "/api/services/image-convert/": {
+            "sum": 0.841,
+            "count": 2
+        },
+        "/api/services/image-to-text/": {
+            "sum": 0.607,
+            "count": 2
+        },
+        "/api/services/server-health/": {
+            "sum": 1.079,
+            "count": 2
+        },
+        "/api/services/yt-downloader/": {
+            "sum": 297.72299999999996,
+            "count": 60
+        },
+        "/api/api/ai-detector/analyze/": {
+            "sum": 0.028,
+            "count": 2
+        },
+        "/api/services/compress-image/": {
+            "sum": 102.299,
+            "count": 2
+        },
+        "/api/services/hash-generator/": {
+            "sum": 4.584,
+            "count": 1
+        },
+        "/api/services/url-downloader/": {
+            "sum": 40.734,
+            "count": 14
+        },
+        "/api/services/uuid-generator/": {
+            "sum": 0.004,
+            "count": 1
+        },
+        "/api/shared/config/config.env": {
+            "sum": 0.007,
+            "count": 1
+        },
+        "/api/videos/downloads/3/file/": {
+            "sum": 0.049,
+            "count": 1
+        },
+        "/api/videos/downloads/4/file/": {
+            "sum": 0.075,
+            "count": 1
+        },
+        "/api/videos/downloads/6/file/": {
+            "sum": 0.012,
+            "count": 1
+        },
+        "/api/videos/downloads/7/file/": {
+            "sum": 0.024,
+            "count": 1
+        },
+        "/api/videos/downloads/8/file/": {
+            "sum": 0.094,
+            "count": 1
+        },
+        "/api/videos/downloads/9/file/": {
+            "sum": 0.045,
+            "count": 1
+        },
+        "/api/services/color-converter/": {
+            "sum": 0.007,
+            "count": 4
+        },
+        "/api/services/downloads/stats/": {
+            "sum": 376.02299999999906,
+            "count": 621
+        },
+        "/api/videos/downloads/10/file/": {
+            "sum": 0.028,
+            "count": 2
+        },
+        "/api/videos/downloads/11/file/": {
+            "sum": 0.061,
+            "count": 1
+        },
+        "/api/videos/downloads/12/file/": {
+            "sum": 0.31,
+            "count": 1
+        },
+        "/api/videos/downloads/13/file/": {
+            "sum": 0.03,
+            "count": 1
+        },
+        "/api/videos/downloads/16/file/": {
+            "sum": 0.181,
+            "count": 1
+        },
+        "/api/services/markdown-preview/": {
+            "sum": 0.467,
+            "count": 5
+        },
+        "/api/services/background-remove/": {
+            "sum": 114.43700000000001,
+            "count": 18
+        },
+        "/api/services/dashboard/activity/": {
+            "sum": 0.56,
+            "count": 30
+        },
+        "/api/api/services/downloads/stats/": {
+            "sum": 0.061,
+            "count": 3
+        },
+        "/api/services/analytics-dashboard/": {
+            "sum": 0.007,
+            "count": 2
+        },
+        "/api/services/dashboard/favorites/": {
+            "sum": 0.2980000000000001,
+            "count": 26
+        },
+        "//media/wp-includes/wlwmanifest.xml": {
+            "sum": 0.006,
+            "count": 1
+        },
+        "/api/services/downloads/2/download/": {
+            "sum": 0.015,
+            "count": 1
+        },
+        "/api/services/downloads/3/download/": {
+            "sum": 0.015,
+            "count": 2
+        },
+        "/api/services/downloads/5/download/": {
+            "sum": 0.006,
+            "count": 1
+        },
+        "/api/auth/profiles/Rajatrathee@gmail.com/": {
+            "sum": 0.33400000000000013,
+            "count": 30
+        },
+        "/api/auth/profiles/admin@expectexception.com/": {
+            "sum": 0.661,
+            "count": 13
+        },
+        "/api/ai-detector/status/00209b16-ed27-42d7-821b-7c51c5db5bdc/": {
+            "sum": 80.276,
+            "count": 324
+        },
+        "/api/ai-detector/status/016acf36-d327-4d40-8eec-ac378d30fd96/": {
+            "sum": 0.6759999999999999,
+            "count": 3
+        },
+        "/api/ai-detector/status/06e50b1e-edc0-4848-9d5e-62fd9c59202b/": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/api/ai-detector/status/0b5e37ec-9301-4be1-b6b1-be7d57041ebc/": {
+            "sum": 14.275999999999998,
+            "count": 79
+        },
+        "/api/ai-detector/status/169bb86c-4b1e-47d7-ab9b-d03e5d9c2bd4/": {
+            "sum": 1.836,
+            "count": 15
+        },
+        "/api/ai-detector/status/1b3802a7-2dab-4f81-86cc-29a5110baa31/": {
+            "sum": 19.884000000000007,
+            "count": 150
+        },
+        "/api/ai-detector/status/1b6d6411-6884-4ff9-bddb-bbb93e8bbc9a/": {
+            "sum": 0.162,
+            "count": 3
+        },
+        "/api/ai-detector/status/24cd3c50-641a-4c00-94e8-69d51537b93e/": {
+            "sum": 0.017,
+            "count": 10
+        },
+        "/api/ai-detector/status/2eaa7bb5-4879-4f35-b7a6-7c2e4d00487e/": {
+            "sum": 0.027,
+            "count": 1
+        },
+        "/api/ai-detector/status/2f63b490-3edf-41c4-b388-c2f7c66c0b20/": {
+            "sum": 0.9829999999999999,
+            "count": 10
+        },
+        "/api/ai-detector/status/33b51a9e-7e4d-4300-87a2-7de5d7e856e2/": {
+            "sum": 10.282999999999998,
+            "count": 44
+        },
+        "/api/ai-detector/status/3757f645-a7ba-4b42-b301-0e5bf630b4d1/": {
+            "sum": 0.37100000000000005,
+            "count": 13
+        },
+        "/api/ai-detector/status/3f732397-201e-4f49-be04-52c1edbc4c9e/": {
+            "sum": 14.576999999999998,
+            "count": 42
+        },
+        "/api/ai-detector/status/48110a01-22b7-40af-83bd-c4246257f08b/": {
+            "sum": 14.8040000000001,
+            "count": 908
+        },
+        "/api/ai-detector/status/4b981c6b-4f94-486b-952d-4d8f673425f2/": {
+            "sum": 0.009,
+            "count": 1
+        },
+        "/api/ai-detector/status/4e43e544-1cf7-458f-a8c0-3365e1a63d81/": {
+            "sum": 0.019,
+            "count": 1
+        },
+        "/api/ai-detector/status/543607b1-06db-47db-bc9b-fd594e477c2b/": {
+            "sum": 13.164000000000007,
+            "count": 59
+        },
+        "/api/ai-detector/status/58ed6c7e-5259-4d6e-80c0-2aec15683b94/": {
+            "sum": 0.26600000000000007,
+            "count": 21
+        },
+        "/api/ai-detector/status/5a251f33-c8e7-4d63-b1dc-e41632dd85eb/": {
+            "sum": 6.027,
+            "count": 17
+        },
+        "/api/ai-detector/status/5e6b2e12-bc43-4374-ac99-460c65fb92b1/": {
+            "sum": 0.29200000000000004,
+            "count": 10
+        },
+        "/api/ai-detector/status/5e849eeb-56ef-45df-9547-18f177231952/": {
+            "sum": 0.019000000000000003,
+            "count": 3
+        },
+        "/api/ai-detector/status/632f58c7-8c7c-40c0-b1bb-c3e39b919b3d/": {
+            "sum": 0.017,
+            "count": 1
+        },
+        "/api/ai-detector/status/6a1d0d0e-cc4d-4072-835e-5aae282be8ed/": {
+            "sum": 0.011,
+            "count": 1
+        },
+        "/api/ai-detector/status/71355e12-6f27-4db5-80e8-0bd4d4146124/": {
+            "sum": 0.308,
+            "count": 5
+        },
+        "/api/ai-detector/status/744362e6-b614-424b-ad23-2e945fc00bc1/": {
+            "sum": 0.098,
+            "count": 2
+        },
+        "/api/ai-detector/status/7617009b-b519-4293-a43a-4038416b2382/": {
+            "sum": 1.8250000000000004,
+            "count": 34
+        },
+        "/api/ai-detector/status/77890ea3-9729-4f1f-b85d-62e1391936b5/": {
+            "sum": 14.538999999999996,
+            "count": 45
+        },
+        "/api/ai-detector/status/7d4a0651-eccb-4bda-98d6-ef3cc6ae3883/": {
+            "sum": 1.375,
+            "count": 10
+        },
+        "/api/ai-detector/status/7ef947ef-dc5d-4c94-a567-790e71428fc7/": {
+            "sum": 91.777,
+            "count": 270
+        },
+        "/api/ai-detector/status/976eee96-f338-405a-8df6-ae16dcc4a540/": {
+            "sum": 0.128,
+            "count": 3
+        },
+        "/api/ai-detector/status/9bed095d-9e89-4e59-8279-63d8cb6c6db0/": {
+            "sum": 0.966,
+            "count": 10
+        },
+        "/api/ai-detector/status/9f7051b5-5579-4747-977a-054a55d6ace8/": {
+            "sum": 0.899,
+            "count": 4
+        },
+        "/api/ai-detector/status/ad3ed359-29f8-475d-8898-ce29d19249c2/": {
+            "sum": 1.044,
+            "count": 11
+        },
+        "/api/ai-detector/status/ae3328ac-5a4b-4824-b826-d96f8e98590f/": {
+            "sum": 0.537,
+            "count": 5
+        },
+        "/api/ai-detector/status/b05de154-8c7d-4bf3-8a46-13f9357713c3/": {
+            "sum": 0.041,
+            "count": 1
+        },
+        "/api/ai-detector/status/b3548a42-7d02-43b4-ac74-5de218f7ccdf/": {
+            "sum": 0.084,
+            "count": 1
+        },
+        "/api/ai-detector/status/b6394707-6f0e-476b-bf34-cf1485a85bef/": {
+            "sum": 0.008,
+            "count": 1
+        },
+        "/api/ai-detector/status/bec6cf4d-c082-4c06-b5ed-1f74a7200e74/": {
+            "sum": 0.02,
+            "count": 10
+        },
+        "/api/ai-detector/status/c05f993b-3844-40db-b1ad-12df1d30c667/": {
+            "sum": 0.012,
+            "count": 1
+        },
+        "/api/ai-detector/status/dd79226e-a6b8-4da1-9ef4-38390838eac8/": {
+            "sum": 0.09900000000000006,
+            "count": 42
+        },
+        "/api/ai-detector/status/e89ce0f1-1042-4298-96a0-01243424d9ba/": {
+            "sum": 8.606000000000002,
+            "count": 44
+        },
+        "/api/ai-detector/status/e8e06b41-7585-41c7-aede-3b4cf36cebb3/": {
+            "sum": 0.006,
+            "count": 1
+        },
+        "/api/ai-detector/status/e9732aab-73f2-4629-9c6d-b0eb2233d76b/": {
+            "sum": 96.796,
+            "count": 224
+        },
+        "/api/ai-detector/status/ead85e5b-98c3-41cf-8238-cd2fd08cef69/": {
+            "sum": 0.099,
+            "count": 2
+        },
+        "/api/ai-detector/status/f203c74c-73de-412c-8847-3952a410dabe/": {
+            "sum": 71.54800000000004,
+            "count": 153
+        }
+    },
+    "hourly_hits": {
+        "2025-12-21 12": 64,
+        "2025-12-21 13": 257,
+        "2025-12-21 14": 27,
+        "2025-12-21 15": 575,
+        "2025-12-21 16": 282,
+        "2025-12-21 18": 87,
+        "2025-12-21 19": 297,
+        "2025-12-21 20": 183,
+        "2025-12-21 21": 104,
+        "2025-12-22 02": 17,
+        "2025-12-22 03": 48,
+        "2025-12-22 05": 10,
+        "2025-12-22 06": 34,
+        "2025-12-22 07": 12,
+        "2025-12-22 08": 20,
+        "2025-12-22 10": 8,
+        "2025-12-22 11": 509,
+        "2025-12-22 12": 6,
+        "2025-12-22 13": 54,
+        "2025-12-22 14": 56,
+        "2025-12-22 15": 46,
+        "2025-12-22 16": 1,
+        "2025-12-22 17": 21,
+        "2025-12-22 18": 1022,
+        "2025-12-22 19": 87,
+        "2025-12-22 20": 83,
+        "2025-12-22 21": 545,
+        "2025-12-22 22": 98,
+        "2025-12-22 23": 1,
+        "2025-12-23 01": 1,
+        "2025-12-23 02": 10,
+        "2025-12-23 03": 21,
+        "2025-12-23 04": 66,
+        "2025-12-23 05": 10,
+        "2025-12-23 06": 93,
+        "2025-12-23 07": 16,
+        "2025-12-23 09": 11,
+        "2025-12-23 10": 1,
+        "2025-12-23 12": 1,
+        "2025-12-23 13": 20,
+        "2025-12-23 14": 145,
+        "2025-12-23 15": 25,
+        "2025-12-23 16": 37,
+        "2025-12-23 17": 115,
+        "2025-12-23 18": 28,
+        "2025-12-23 19": 43,
+        "2025-12-23 20": 81,
+        "2025-12-23 21": 210,
+        "2025-12-23 22": 3,
+        "2025-12-24 01": 1,
+        "2025-12-24 02": 5,
+        "2025-12-24 03": 1,
+        "2025-12-24 04": 16,
+        "2025-12-24 05": 1,
+        "2025-12-24 06": 841,
+        "2025-12-24 07": 21,
+        "2025-12-24 09": 24,
+        "2025-12-24 10": 5,
+        "2025-12-24 11": 1,
+        "2025-12-24 13": 6,
+        "2025-12-24 14": 2
+    },
+    "path_errors": {
+        "/": {
+            "404": 1
+        },
+        "/api": {
+            "404": 3
+        },
+        "/api/": {
+            "404": 1
+        },
+        "/admin": {
+            "404": 24
+        },
+        "//admin": {
+            "404": 1
+        },
+        "/api/gql": {
+            "404": 2
+        },
+        "/api/.env": {
+            "404": 1
+        },
+        "/api/blogs/": {
+            "404": 1
+        },
+        "/api/stats/": {
+            "404": 1
+        },
+        "/api/graphql": {
+            "404": 2
+        },
+        "/favicon.ico": {
+            "404": 3
+        },
+        "/sitemap.xml": {
+            "500": 1
+        },
+        "/api/config.env": {
+            "404": 1
+        },
+        "/api/auth/login/": {
+            "400": 2,
+            "401": 4
+        },
+        "/api/auth/token/": {
+            "404": 1
+        },
+        "/api/blog/media/": {
+            "401": 1
+        },
+        "/api/blog/posts/": {
+            "400": 3,
+            "401": 5,
+            "500": 9
+        },
+        "/api/shared/.env": {
+            "404": 1
+        },
+        "/api/swagger.json": {
+            "404": 2
+        },
+        "/api/auth/profile/": {
+            "401": 6,
+            "500": 4
+        },
+        "/api/auth/register/": {
+            "400": 1
+        },
+        "/api/notifications/": {
+            "401": 8,
+            "500": 12
+        },
+        "/api/api/blog/posts/": {
+            "404": 2
+        },
+        "/api/services/tools/": {
+            "401": 6,
+            "500": 17
+        },
+        "/api-docs/swagger.json": {
+            "404": 2
+        },
+        "/api/shared/config.env": {
+            "404": 1
+        },
+        "/api/shared/config/.env": {
+            "404": 1
+        },
+        "/api/ai-detector/health/": {
+            "503": 1
+        },
+        "/api/api/services/tools/": {
+            "404": 3
+        },
+        "/api/auth/token/refresh/": {
+            "404": 24
+        },
+        "/api/ai-detector/analyze/": {
+            "400": 7,
+            "401": 6,
+            "500": 2
+        },
+        "/api/services/pdf-to-doc/": {
+            "400": 3,
+            "500": 5,
+            "503": 3
+        },
+        "/api/services/image-resize/": {
+            "415": 3
+        },
+        "/api/services/log-analysis/": {
+            "404": 1
+        },
+        "/api/services/image-to-text/": {
+            "500": 2
+        },
+        "/api/services/server-health/": {
+            "403": 1
+        },
+        "/api/api/ai-detector/analyze/": {
+            "404": 2
+        },
+        "/api/services/url-downloader/": {
+            "400": 1
+        },
+        "/api/shared/config/config.env": {
+            "404": 1
+        },
+        "/api/services/downloads/stats/": {
+            "401": 4,
+            "500": 23
+        },
+        "/api/services/background-remove/": {
+            "415": 5,
+            "503": 4
+        },
+        "/api/services/dashboard/activity/": {
+            "401": 4
+        },
+        "/api/api/services/downloads/stats/": {
+            "404": 3
+        },
+        "/api/services/analytics-dashboard/": {
+            "403": 1,
+            "404": 1
+        },
+        "//media/wp-includes/wlwmanifest.xml": {
+            "404": 1
+        },
+        "/api/services/downloads/2/download/": {
+            "404": 1
+        },
+        "/api/services/downloads/3/download/": {
+            "404": 2
+        },
+        "/api/auth/profiles/admin@expectexception.com/": {
+            "400": 2
+        },
+        "/api/services/base64/": {
+            "400": 3
+        }
+    },
+    "geo_cache": {
+        "35.94.85.75": {
+            "isp": "Amazon.com, Inc.",
+            "city": "Portland",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "74.7.244.58": {
+            "isp": "Fusion Communications",
+            "city": "Atlanta",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "192.178.6.97": {
+            "isp": "Google LLC",
+            "city": "Mountain View",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "192.178.6.98": {
+            "isp": "Google LLC",
+            "city": "Mountain View",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "192.178.6.99": {
+            "isp": "Google LLC",
+            "city": "Mountain View",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "49.36.179.52": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "51.222.95.96": {
+            "isp": "OVH Hosting",
+            "city": "Beauharnois",
+            "country": "Canada",
+            "countryCode": "CA"
+        },
+        "54.219.39.36": {
+            "isp": "Amazon.com, Inc.",
+            "city": "San Jose",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "57.128.243.0": {
+            "isp": "OVH SAS",
+            "city": "Warsaw",
+            "country": "Poland",
+            "countryCode": "PL"
+        },
+        "106.210.96.54": {
+            "isp": "Bharti Airtel",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "119.28.101.45": {
+            "isp": "ComsenzNet",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "152.59.93.207": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "157.49.38.215": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "192.178.6.102": {
+            "isp": "Google LLC",
+            "city": "Mountain View",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "192.178.6.103": {
+            "isp": "Google LLC",
+            "city": "Mountain View",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "192.178.6.104": {
+            "isp": "Google LLC",
+            "city": "Mountain View",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "43.163.23.225": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.173.11": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.173.14": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.173.93": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.175.45": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.177.17": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.178.55": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.180.25": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.180.33": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.180.47": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.182.63": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "45.148.10.143": {
+            "isp": "Techoff SRV Limited",
+            "city": "Amsterdam",
+            "country": "The Netherlands",
+            "countryCode": "NL"
+        },
+        "47.99.243.221": {
+            "isp": "Aliyun Computing Co",
+            "city": "Hangzhou",
+            "country": "China",
+            "countryCode": "CN"
+        },
+        "49.249.236.82": {
+            "isp": "TTSL Delhi -ILL",
+            "city": "Gurugram",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "51.161.37.182": {
+            "isp": "OVH Hosting",
+            "city": "Beauharnois",
+            "country": "Canada",
+            "countryCode": "CA"
+        },
+        "54.39.210.206": {
+            "isp": "OVH Hosting",
+            "city": "Beauharnois",
+            "country": "Canada",
+            "countryCode": "CA"
+        },
+        "157.49.129.173": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Rohtak",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "157.49.129.210": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Rohtak",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "157.49.158.121": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Son\u012bpat",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "158.94.209.159": {
+            "isp": "Railnet LLC",
+            "city": "Amsterdam",
+            "country": "The Netherlands",
+            "countryCode": "NL"
+        },
+        "164.92.244.132": {
+            "isp": "DigitalOcean, LLC",
+            "city": "Frankfurt am Main",
+            "country": "Germany",
+            "countryCode": "DE"
+        },
+        "198.244.226.53": {
+            "isp": "OVH SAS",
+            "city": "London",
+            "country": "United Kingdom",
+            "countryCode": "GB"
+        },
+        "43.173.173.182": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.173.235": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.173.243": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.174.120": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.174.152": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.174.196": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.174.214": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.175.196": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.175.227": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.175.247": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.176.214": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.177.252": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.178.135": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.179.172": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.179.199": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.180.250": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.181.226": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.182.233": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "92.222.104.198": {
+            "isp": "OVH SAS",
+            "city": "Paris",
+            "country": "France",
+            "countryCode": "FR"
+        },
+        "92.222.108.122": {
+            "isp": "OVH SAS",
+            "city": "Paris",
+            "country": "France",
+            "countryCode": "FR"
+        },
+        "104.210.140.129": {
+            "isp": "Microsoft Corporation",
+            "city": "San Antonio",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "104.210.140.139": {
+            "isp": "Microsoft Corporation",
+            "city": "San Antonio",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "146.190.242.161": {
+            "isp": "DigitalOcean, LLC",
+            "city": "Toronto",
+            "country": "Canada",
+            "countryCode": "CA"
+        },
+        "198.244.183.106": {
+            "isp": "OVH SAS",
+            "city": "London",
+            "country": "United Kingdom",
+            "countryCode": "GB"
+        },
+        "2401:4900:5951:7ed1::c25:893b": {
+            "isp": "Bharti Airtel Limited",
+            "city": "Jhajjar",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d6:da:f44c:f4dc:779e:eb:3db": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d6:da:f44c:45f:7100:9d0a:dafc": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2401:4900:be84:4d74:6e4c:7e:da0f:704f": {
+            "isp": "Bharti Airtel Limited",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2405:201:4008:d87b:752f:77c2:260:1ef5": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d0:13:d359:88a6:e0ff:fee7:f669": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d0:3f:9693:883c:16ff:fed1:cabc": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d0:3f:9693:9408:80ff:fe4c:9ab7": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d6:1d:5d1a:6091:4cff:fe99:449f": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d6:da:f44c:b12c:7132:349b:a843": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d6:da:f44c:ca5b:76ff:fed3:83fd": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d6:da:f44c:edd3:521c:7172:8204": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2401:4900:1c74:23a8:29f5:ea76:3e86:3f94": {
+            "isp": "Bharti Airtel",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2401:4900:1c74:23a8:b490:bc64:8db2:3242": {
+            "isp": "Bharti Airtel",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2401:4900:be8d:cedf:46da:8f0f:d4f7:3d98": {
+            "isp": "Bharti Airtel Limited",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d0:1009:65dc:bc19:5eff:feb9:d60a": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d0:1330:1387:109d:1fff:fe77:d18d": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d0:202d:a9bd:a0d1:33ff:feca:1576": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d6:1009:71aa:3c47:82ff:febf:54e5": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d6:1099:12a5:d161:675b:d641:6d67": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d6:119f:b255:d044:3dff:fefc:93c0": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Panipat",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d0:20:eea9:3407:37ff:fe9c:284b": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "New Delhi",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "198.244.242.128": {
+            "country": "United Kingdom",
+            "countryCode": "GB",
+            "city": "London",
+            "isp": "OVH SAS"
+        },
+        "43.163.22.66": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "2409:40d6:1099:12a5:931:4ddf:ce9:45a2": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Delhi",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "43.173.177.136": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "43.173.169.232": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        }
+    },
+    "devices": {
+        "Mobile": 259,
+        "Desktop": 1015,
+        "Unknown": 5141
+    },
+    "browsers": {
+        "Other": 10,
+        "Chrome": 1189,
+        "Safari": 6,
+        "Firefox": 69,
+        "Unknown": 5141
+    },
+    "os": {
+        "iOS": 3,
+        "Linux": 992,
+        "Other": 10,
+        "macOS": 4,
+        "Android": 256,
+        "Unknown": 5141,
+        "Windows": 9
+    },
+    "last_updated": "2025-12-24T14:04:37.833609"
+}
