@@ -24,8 +24,8 @@ const InstallPWA: React.FC = () => {
             return;
         }
 
-        // Check if already dismissed
-        const dismissed = localStorage.getItem('pwa-install-dismissed');
+        // Check if dismissed in current session only (not persisted across reloads)
+        const dismissed = sessionStorage.getItem('pwa-install-dismissed');
         if (dismissed === 'true') {
             return;
         }
@@ -51,7 +51,7 @@ const InstallPWA: React.FC = () => {
         const handleAppInstalled = () => {
             setIsInstalled(true);
             setShowInstallPrompt(false);
-            localStorage.removeItem('pwa-install-dismissed');
+            sessionStorage.removeItem('pwa-install-dismissed');
         };
 
         window.addEventListener('appinstalled', handleAppInstalled);
@@ -86,7 +86,7 @@ const InstallPWA: React.FC = () => {
 
     const handleDismiss = () => {
         setShowInstallPrompt(false);
-        localStorage.setItem('pwa-install-dismissed', 'true');
+        sessionStorage.setItem('pwa-install-dismissed', 'true');
     };
 
     // Don't show if already installed

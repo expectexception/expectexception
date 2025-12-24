@@ -35,7 +35,21 @@ interface RichTextEditorProps {
     onChange: (content: string) => void;
 }
 
-const MenuBar = ({ editor, isFullscreen, toggleFullscreen }: { editor: any, isFullscreen: boolean, toggleFullscreen: () => void }) => {
+
+// MenuBar Props Interface
+interface MenuBarProps {
+    editor: any;
+    isFullscreen: boolean;
+    toggleFullscreen: () => void;
+    uploadImage: (file?: File) => Promise<void>;
+}
+
+const MenuBar: React.FC<MenuBarProps> = ({ 
+    editor, 
+    isFullscreen, 
+    toggleFullscreen,
+    uploadImage 
+}) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const openTableMenu = Boolean(anchorEl);
 
@@ -45,34 +59,6 @@ const MenuBar = ({ editor, isFullscreen, toggleFullscreen }: { editor: any, isFu
     const handleTableClose = () => {
         setAnchorEl(null);
     };
-
-    const uploadImage = useCallback(async () => {
-        if (!editor) return;
-
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = async (e: any) => {
-            const file = e.target.files[0];
-            if (file) {
-                const formData = new FormData();
-                formData.append('image', file);
-                try {
-                    const response = await apiClient.post(endpoints.blog.uploadImage, formData, {
-                        headers: { 'Content-Type': 'multipart/form-data' }
-                    });
-                    let imageUrl = response.data.url;
-                    if (imageUrl.startsWith('/')) {
-                        imageUrl = `${API_BASE_URL}${imageUrl}`;
-                    }
-                    editor.chain().focus().setImage({ src: imageUrl }).run();
-                } catch (error) {
-                    console.error('Failed to upload image', error);
-                }
-            }
-        };
-        input.click();
-    }, [editor]);
 
     if (!editor) return null;
 
@@ -93,6 +79,7 @@ const MenuBar = ({ editor, isFullscreen, toggleFullscreen }: { editor: any, isFu
             editor.chain().focus().setColor(color).run();
         }
     };
+
 
     return (
         <Box sx={{
@@ -235,7 +222,7 @@ const MenuBar = ({ editor, isFullscreen, toggleFullscreen }: { editor: any, isFu
                     </IconButton>
                 </Tooltip>
                 <Tooltip title="Insert Image">
-                    <IconButton size="small" onClick={uploadImage}>
+                    <IconButton size="small" onClick={() => uploadImage()}>
                         <AddPhotoAlternate fontSize="small" />
                     </IconButton>
                 </Tooltip>
@@ -286,6 +273,78 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         },
     });
 
+    // Upload image function - shared between button click and drag-drop
+    const uploadImage = useCallback(async (file?: File) => {
+        if (!editor) return;
+
+        // If no file provided, show file picker
+        if (!file) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async (e: any) => {
+                const selectedFile = e.target.files[0];
+                if (selectedFile) {
+                    await uploadImage(selectedFile);
+                }
+            };
+            input.click();
+            return;
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image must be smaller than 5MB');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            // Show loading placeholder
+            editor.chain().focus().run();
+
+            const response = await apiClient.post(endpoints.blog.uploadImage, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            let imageUrl = response.data.url;
+            if (imageUrl.startsWith('/')) {
+                imageUrl = `${API_BASE_URL}${imageUrl}`;
+            }
+
+            editor.chain().focus().setImage({ src: imageUrl }).run();
+        } catch (error) {
+            console.error('Failed to upload image', error);
+            alert('Failed to upload image. Please try again.');
+        }
+    }, [editor]);
+
+    // Drag and drop image upload
+    const handleDrop = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const files = Array.from(e.dataTransfer.files);
+        const imageFile = files.find(file => file.type.startsWith('image/'));
+
+        if (imageFile && editor) {
+            uploadImage(imageFile);
+        }
+    }, [editor, uploadImage]);
+
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+    }, []);
+
     return (
         <Box sx={{
             border: isFullscreen ? 0 : 1,
@@ -305,15 +364,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
             transition: 'all 0.3s ease',
             '&:focus-within': { boxShadow: isFullscreen ? 'none' : '0 4px 30px rgba(37, 99, 235, 0.15)', borderColor: 'primary.main' }
         }}>
-            <MenuBar editor={editor} isFullscreen={isFullscreen} toggleFullscreen={toggleFullscreen} />
-            <Box sx={{
-                p: { xs: 1, sm: 3 },
-                flexGrow: 1,
-                cursor: 'text',
-                minHeight: isFullscreen ? 'calc(100vh - 100px)' : '300px',
-                overflow: 'auto',
-                bgcolor: '#fff'
-            }} onClick={() => editor?.chain().focus().run()}>
+            <MenuBar
+                editor={editor}
+                isFullscreen={isFullscreen}
+                toggleFullscreen={toggleFullscreen}
+                uploadImage={uploadImage}
+            />
+            <Box
+                sx={{
+                    p: { xs: 1, sm: 3 },
+                    flexGrow: 1,
+                    cursor: 'text',
+                    minHeight: isFullscreen ? 'calc(100vh - 100px)' : '300px',
+                    overflow: 'auto',
+                    bgcolor: '#fff'
+                }}
+                onClick={() => editor?.chain().focus().run()}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+            >
                 <EditorContent editor={editor} />
             </Box>
             <style>{`

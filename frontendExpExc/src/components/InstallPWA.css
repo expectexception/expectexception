@@ -88,7 +88,7 @@
 
 .install-pwa-btn.install {
     background: white;
-    color: #0047AB;
+    color: #a0a0a0;
 }
 
 .install-pwa-btn.install:hover {
@@ -166,6 +166,7 @@
         padding: 8px 12px;
         font-size: 12px;
         border-radius: 6px;
+
     }
 
     .install-pwa-btn.install {

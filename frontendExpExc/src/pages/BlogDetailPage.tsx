@@ -13,16 +13,18 @@ import {
     Card,
     Snackbar,
     IconButton,
+    Grid,
+    useMediaQuery,
+    useTheme,
 } from '@mui/material';
 import {
     CalendarToday,
     ThumbUp,
     Comment as CommentIcon,
-
     ArrowBack,
     Bookmark,
     BookmarkBorder,
-    Share,
+    AccessTime,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
@@ -30,21 +32,34 @@ import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { Post, Comment } from '../types';
 import CommentSection from '../components/blog/CommentSection';
+import TableOfContents from '../components/blog/TableOfContents';
+import CodeBlock from '../components/blog/CodeBlock';
+import ShareButtons from '../components/blog/ShareButtons';
+import ReadingProgressBar from '../components/blog/ReadingProgressBar';
 import { useAuth } from '../context/AuthContext';
 
 const BlogDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const { user } = useAuth();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const [post, setPost] = useState<Post | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     // Interaction state
     const [isLiked, setIsLiked] = useState(false);
-
     const [likesCount, setLikesCount] = useState(0);
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+
+    // Calculate reading time from content
+    const calculateReadingTime = (content: string): number => {
+        const wordsPerMinute = 200;
+        const text = content.replace(/<[^>]*>/g, ''); // Strip HTML tags
+        const words = text.split(/\s+/).length;
+        return Math.ceil(words / wordsPerMinute);
+    };
 
     useEffect(() => {
         if (id) {
@@ -124,6 +139,118 @@ const BlogDetailPage: React.FC = () => {
         setSnackbar({ ...snackbar, open: false });
     };
 
+    // Enhanced content renderer with code highlighting
+    const renderEnhancedContent = (htmlContent: string) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+
+        // Find all code blocks
+        const codeBlocks = doc.querySelectorAll('pre code');
+        const codeBlocksData: { index: number; code: string; language: string }[] = [];
+
+        codeBlocks.forEach((block, index) => {
+            const code = block.textContent || '';
+            const className = block.className || '';
+            const languageMatch = className.match(/language-(\w+)/);
+            const language = languageMatch ? languageMatch[1] : 'text';
+
+            codeBlocksData.push({ index, code, language });
+
+            // Replace with placeholder
+            const pre = block.parentElement;
+            if (pre) {
+                pre.setAttribute('data-code-block', index.toString());
+            }
+        });
+
+        return (
+            <Box
+                sx={{
+                    // Enhanced typography styles
+                    '& img': {
+                        maxWidth: '100%',
+                        height: 'auto',
+                        borderRadius: 2,
+                        my: 3,
+                        boxShadow: 2,
+                    },
+                    '& h2': {
+                        mt: 5,
+                        mb: 2.5,
+                        fontWeight: 700,
+                        fontSize: { xs: '1.5rem', md: '2rem' },
+                        color: 'text.primary',
+                        scrollMarginTop: '100px', // For smooth scroll offset
+                    },
+                    '& h3': {
+                        mt: 4,
+                        mb: 2,
+                        fontWeight: 600,
+                        fontSize: { xs: '1.25rem', md: '1.5rem' },
+                        color: 'text.primary',
+                        scrollMarginTop: '100px',
+                    },
+                    '& p': {
+                        lineHeight: 1.8,
+                        fontSize: { xs: '1rem', md: '1.1rem' },
+                        mb: 2.5,
+                        color: 'text.primary',
+                    },
+                    '& ul, & ol': {
+                        mb: 3,
+                        pl: { xs: 3, md: 4 },
+                        '& li': {
+                            mb: 1.5,
+                            lineHeight: 1.8,
+                        },
+                    },
+                    '& a': {
+                        color: 'primary.main',
+                        fontWeight: 500,
+                        textDecoration: 'none',
+                        '&:hover': {
+                            textDecoration: 'underline',
+                        },
+                    },
+                    '& blockquote': {
+                        borderLeft: '4px solid',
+                        borderColor: 'primary.main',
+                        pl: 3,
+                        py: 1,
+                        my: 3,
+                        fontStyle: 'italic',
+                        color: 'text.secondary',
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                    },
+                    '& pre[data-code-block]': {
+                        display: 'none', // Hide original pre tags
+                    },
+                    '& code:not(pre code)': {
+                        bgcolor: 'action.hover',
+                        color: 'error.main',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 0.5,
+                        fontSize: '0.9em',
+                        fontFamily: 'monospace',
+                    },
+                }}
+            >
+                <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                {/* Render code blocks with syntax highlighting */}
+                {codeBlocksData.map((data) => (
+                    <CodeBlock
+                        key={data.index}
+                        code={data.code}
+                        language={data.language}
+                        showLineNumbers={true}
+                    />
+                ))}
+            </Box>
+        );
+    };
+
     const handleAddComment = async (content: string, parentId?: number) => {
         if (!post) return;
         try {
@@ -149,7 +276,7 @@ const BlogDetailPage: React.FC = () => {
 
     if (error || !post) {
         return (
-            <Container maxWidth="md" sx={{ py: 4 }}>
+            <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
                 <Alert severity="error">{error || 'Post not found'}</Alert>
                 <Button component={Link} to="/blogs" startIcon={<ArrowBack />} sx={{ mt: 2 }}>
                     Back to Blogs
@@ -158,110 +285,147 @@ const BlogDetailPage: React.FC = () => {
         );
     }
 
+    const readingTime = calculateReadingTime(post.content);
+
     return (
-        <Container maxWidth="md" sx={{ py: 6 }}>
-            <Helmet>
-                <title>{post.seo_title || post.title} | ExpectException</title>
-                <meta name="description" content={post.seo_description || post.content.substring(0, 160)} />
-                <meta name="keywords" content={post.keywords || post.tags.map(t => t.name).join(', ')} />
-            </Helmet>
+        <>
+            <ReadingProgressBar />
+            <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
+                <Helmet>
+                    <title>{post.seo_title || post.title} | ExpectException</title>
+                    <meta name="description" content={post.seo_description || post.content.substring(0, 160)} />
+                    <meta name="keywords" content={post.keywords || post.tags.map(t => t.name).join(', ')} />
+                </Helmet>
 
-            <Button component={Link} to="/blogs" startIcon={<ArrowBack />} sx={{ mb: 4 }}>
-                Back to Blogs
-            </Button>
+                <Button component={Link} to="/blogs" startIcon={<ArrowBack />} sx={{ mb: { xs: 2, md: 4 } }}>
+                    Back to Blogs
+                </Button>
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                {/* Header */}
-                <Box sx={{ mb: 4 }}>
-                    <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                        {post.tags.map((tag) => (
-                            <Chip key={tag.id} label={tag.name} color="primary" size="small" />
-                        ))}
-                    </Stack>
-                    <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 800 }}>
-                        {post.title}
-                    </Typography>
-
-                    <Stack direction="row" alignItems="center" spacing={3} sx={{ mt: 3, color: 'text.secondary' }}>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                            <Avatar sx={{ width: 32, height: 32 }}>
-                                {post.author.email.charAt(0).toUpperCase()}
-                            </Avatar>
-                            <Typography variant="subtitle2" fontWeight={600} color="text.primary">
-                                {post.author.email}
-                            </Typography>
-                        </Stack>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                            <CalendarToday fontSize="small" />
-                            <Typography variant="body2">
-                                {new Date(post.created_at).toLocaleDateString()}
-                            </Typography>
-                        </Stack>
-                    </Stack>
-                </Box>
-
-                {/* Content - HTML rendering */}
-                <Card sx={{ p: 4, mb: 4, bgcolor: 'background.paper' }}>
-                    <Box
-                        sx={{
-                            // Basic styling for HTML content
-                            '& img': { maxWidth: '100%', height: 'auto', borderRadius: 2, my: 2 },
-                            '& h2': { mt: 4, mb: 2, fontWeight: 700 },
-                            '& p': { lineHeight: 1.8, fontSize: '1.1rem', mb: 2 },
-                            '& ul, & ol': { mb: 2, pl: 4 },
-                            '& li': { mb: 1 },
-                            '& a': { color: 'primary.main' }
-                        }}
-                        dangerouslySetInnerHTML={{ __html: post.content }}
-                    />
-                </Card>
-
-                {/* Interaction */}
-                <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 3 }}>
-                    <Stack direction="row" spacing={2}>
-                        <Button
-                            startIcon={<ThumbUp />}
-                            variant={isLiked ? "contained" : "outlined"}
-                            onClick={handleLike}
-                            color={isLiked ? "primary" : "inherit"}
+                <Grid container spacing={{ xs: 0, md: 4 }}>
+                    {/* Main Content Column */}
+                    <Grid item xs={12} md={8}>
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
                         >
-                            Like ({likesCount})
-                        </Button>
-                        <Button startIcon={<CommentIcon />} variant="text">
-                            Comments ({post.comments?.length || 0})
-                        </Button>
+                            {/* Header */}
+                            <Box sx={{ mb: { xs: 3, md: 4 } }}>
+                                <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                                    {post.tags.map((tag) => (
+                                        <Chip key={tag.id} label={tag.name} color="primary" size="small" />
+                                    ))}
+                                </Stack>
+                                <Typography
+                                    variant="h3"
+                                    component="h1"
+                                    gutterBottom
+                                    sx={{
+                                        fontWeight: 800,
+                                        fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' },
+                                        lineHeight: 1.2,
+                                    }}
+                                >
+                                    {post.title}
+                                </Typography>
 
-                        <IconButton onClick={handleBookmark} color={isBookmarked ? "primary" : "default"}>
-                            {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
-                        </IconButton>
-                        <IconButton onClick={handleShare}>
-                            <Share />
-                        </IconButton>
-                    </Stack>
-                </Box>
+                                <Stack
+                                    direction={{ xs: 'column', sm: 'row' }}
+                                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                                    spacing={{ xs: 1, sm: 3 }}
+                                    sx={{ mt: 3, color: 'text.secondary' }}
+                                >
+                                    <Stack direction="row" spacing={1} alignItems="center">
+                                        <Avatar sx={{ width: 32, height: 32 }}>
+                                            {post.author.email.charAt(0).toUpperCase()}
+                                        </Avatar>
+                                        <Typography variant="subtitle2" fontWeight={600} color="text.primary">
+                                            {post.author.email}
+                                        </Typography>
+                                    </Stack>
+                                    <Stack direction="row" spacing={1} alignItems="center">
+                                        <CalendarToday fontSize="small" />
+                                        <Typography variant="body2">
+                                            {new Date(post.created_at).toLocaleDateString()}
+                                        </Typography>
+                                    </Stack>
+                                    <Stack direction="row" spacing={1} alignItems="center">
+                                        <AccessTime fontSize="small" />
+                                        <Typography variant="body2">
+                                            {readingTime} min read
+                                        </Typography>
+                                    </Stack>
+                                </Stack>
+                            </Box>
 
-                <Snackbar
-                    open={snackbar.open}
-                    autoHideDuration={3000}
-                    onClose={handleCloseSnackbar}
-                    message={snackbar.message}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                />
+                            {/* Content with Enhanced Rendering */}
+                            <Card sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: { xs: 3, md: 4 }, bgcolor: 'background.paper' }}>
+                                {renderEnhancedContent(post.content)}
+                            </Card>
 
-                {/* Comments Section */}
-                <Box sx={{ mt: 4 }}>
-                    <CommentSection
-                        comments={post.comments?.filter((c: any) => !c.parent) || []}
-                        postId={post.id}
-                        onAddComment={handleAddComment}
-                    />
-                </Box>
-            </motion.div>
-        </Container>
+                            {/* Interaction Buttons */}
+                            <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 3, mb: 4 }}>
+                                <Stack direction="row" spacing={2} flexWrap="wrap">
+                                    <Button
+                                        startIcon={<ThumbUp />}
+                                        variant={isLiked ? "contained" : "outlined"}
+                                        onClick={handleLike}
+                                        color={isLiked ? "primary" : "inherit"}
+                                        sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                                    >
+                                        Like ({likesCount})
+                                    </Button>
+                                    <Button
+                                        startIcon={<CommentIcon />}
+                                        variant="text"
+                                        sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                                    >
+                                        Comments ({post.comments?.length || 0})
+                                    </Button>
+
+                                    <IconButton onClick={handleBookmark} color={isBookmarked ? "primary" : "default"}>
+                                        {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
+                                    </IconButton>
+                                    <ShareButtons
+                                        title={post.title}
+                                        description={post.seo_description || post.content.substring(0, 160)}
+                                    />
+                                </Stack>
+                            </Box>
+
+                            <Snackbar
+                                open={snackbar.open}
+                                autoHideDuration={3000}
+                                onClose={handleCloseSnackbar}
+                                message={snackbar.message}
+                                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                            />
+
+                            {/* Comments Section */}
+                            <Box sx={{ mt: 4 }}>
+                                <CommentSection
+                                    comments={post.comments?.filter((c: any) => !c.parent) || []}
+                                    postId={post.id}
+                                    onAddComment={handleAddComment}
+                                />
+                            </Box>
+                        </motion.div>
+                    </Grid>
+
+                    {/* Table of Contents Sidebar - Desktop */}
+                    {!isMobile && (
+                        <Grid item md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
+                            <TableOfContents content={post.content} />
+                        </Grid>
+                    )}
+                </Grid>
+
+                {/* Mobile TOC Drawer */}
+                {isMobile && (
+                    <TableOfContents content={post.content} />
+                )}
+            </Container>
+        </>
     );
 };
 
