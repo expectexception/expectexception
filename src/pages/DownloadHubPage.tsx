@@ -24,6 +24,8 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   Search,
@@ -49,6 +51,9 @@ import { endpoints } from '../api/endpoints';
 const DownloadHubPage: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -196,13 +201,28 @@ const DownloadHubPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
       {/* Header */}
-      <Box sx={{ mb: 6 }}>
-        <Typography variant="h3" gutterBottom sx={{ fontWeight: 800 }}>
+      <Box sx={{ mb: { xs: 3, sm: 4, md: 6 } }}>
+        <Typography
+          variant="h3"
+          gutterBottom
+          sx={{
+            fontWeight: 800,
+            fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' }
+          }}
+        >
           Download Hub
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
+        <Typography
+          variant="h6"
+          color="text.secondary"
+          sx={{
+            mb: 4,
+            fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
+            px: { xs: 0, sm: 0 }
+          }}
+        >
           Access premium resources, templates, and tools for your projects
         </Typography>
         {user?.is_staff && (
@@ -219,7 +239,7 @@ const DownloadHubPage: React.FC = () => {
       </Box>
 
       {/* Stats */}
-      <Grid container spacing={3} sx={{ mb: 6 }}>
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 3, sm: 4, md: 6 } }}>
         {[
           { label: 'Total Files', value: stats.total_files, color: 'primary' },
           { label: 'Total Downloads', value: stats.total_downloads.toLocaleString(), color: 'secondary' },
@@ -230,18 +250,27 @@ const DownloadHubPage: React.FC = () => {
             color: 'warning'
           },
         ].map((stat, index) => (
-          <Grid item xs={6} md={3} key={index}>
+          <Grid item xs={6} sm={6} md={3} key={index}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
               <Card>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h4" fontWeight={800} gutterBottom>
+                <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+                  <Typography
+                    variant="h4"
+                    fontWeight={800}
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}
+                  >
                     {stat.value}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                  >
                     {stat.label}
                   </Typography>
                   <LinearProgress
@@ -264,10 +293,10 @@ const DownloadHubPage: React.FC = () => {
         ))}
       </Grid>
 
-      {/* Search and Categories */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      {/* Search and Sort */}
+      <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: { xs: 3, md: 4 } }}>
         <Grid item xs={12} md={8}>
-          <Card sx={{ p: 2 }}>
+          <Card sx={{ p: { xs: 1.5, sm: 2 } }}>
             <TextField
               fullWidth
               placeholder="Search files by name, category, or version..."
@@ -289,16 +318,26 @@ const DownloadHubPage: React.FC = () => {
                   </InputAdornment>
                 ),
               }}
+              size="small"
             />
           </Card>
         </Grid>
         <Grid item xs={12} md={4}>
-          <Card sx={{ p: 2, height: '100%' }}>
+          <Card sx={{ p: { xs: 1.5, sm: 2 }, height: '100%' }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="subtitle2" fontWeight={600}>
-                Sort by: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)} ({sortOrder})
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+              >
+                Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
               </Typography>
-              <Button endIcon={<Sort />} size="small" onClick={handleSortClick}>
+              <Button
+                endIcon={<Sort />}
+                size="small"
+                onClick={handleSortClick}
+                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+              >
                 Sort
               </Button>
               <Menu
@@ -317,10 +356,24 @@ const DownloadHubPage: React.FC = () => {
       </Grid>
 
       {/* Categories */}
-      <Grid container spacing={2} sx={{ mb: 4 }}>
-        {fileCategories.map((category) => (
-          <Grid item key={category.value}>
-            <motion.div whileHover={{ scale: 1.05 }}>
+      <Box sx={{ mb: { xs: 3, md: 4 } }}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{
+            overflowX: 'auto',
+            pb: 1,
+            '&::-webkit-scrollbar': {
+              height: '6px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              borderRadius: '3px',
+            },
+          }}
+        >
+          {fileCategories.map((category) => (
+            <motion.div key={category.value} whileHover={{ scale: 1.05 }} style={{ flexShrink: 0 }}>
               <Chip
                 icon={category.icon}
                 label={`${category.label} (${category.count})`}
@@ -328,137 +381,221 @@ const DownloadHubPage: React.FC = () => {
                 color={selectedCategory === category.value ? 'primary' : 'default'}
                 onClick={() => setSelectedCategory(category.value)}
                 sx={{
-                  px: 2,
-                  py: 2,
+                  px: { xs: 1.5, sm: 2 },
+                  py: { xs: 1.5, sm: 2 },
                   '& .MuiChip-label': {
                     px: 1,
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
                   },
                 }}
               />
             </motion.div>
-          </Grid>
-        ))}
-      </Grid>
+          ))}
+        </Stack>
+      </Box>
 
-      {/* Files Table */}
-      <Card sx={{ mb: 6 }}>
+      {/* Files - Card View on Mobile, Table on Desktop */}
+      <Card sx={{ mb: { xs: 3, md: 6 } }}>
         <CardContent sx={{ p: 0 }}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ bgcolor: 'action.hover' }}>
-                  <TableCell>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      File Name
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      Category
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      Size
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      Downloads
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      Version
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      Actions
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {sortedFiles
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((file) => (
-                    <motion.tr
-                      key={file.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <TableCell>
-                        <Stack direction="row" alignItems="center" spacing={2}>
+          {isMobile ? (
+            // Mobile Card View
+            <Box sx={{ p: 2 }}>
+              {sortedFiles
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((file) => (
+                  <motion.div
+                    key={file.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card sx={{ mb: 2, bgcolor: 'action.hover' }}>
+                      <CardContent sx={{ p: 2 }}>
+                        <Stack direction="row" alignItems="flex-start" spacing={2} sx={{ mb: 2 }}>
                           <Box
                             sx={{
                               width: 40,
                               height: 40,
                               borderRadius: 1,
-                              bgcolor: 'action.hover',
+                              bgcolor: 'background.paper',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
+                              flexShrink: 0,
                             }}
                           >
                             {getCategoryIcon(file.category)}
                           </Box>
-                          <Box>
-                            <Typography variant="body2" fontWeight={600}>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
                               {file.name}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography variant="caption" color="text.secondary" display="block">
                               Updated {file.date}
                             </Typography>
                           </Box>
                         </Stack>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={fileCategories.find(c => c.value === file.category)?.label || 'Unknown'}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{file.size}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <CloudDownload fontSize="small" />
-                          <Typography variant="body2">
-                            {formatDownloadCount(file.downloads)}
-                          </Typography>
+
+                        <Stack direction="row" spacing={1} sx={{ mb: 1.5, flexWrap: 'wrap' }}>
+                          <Chip
+                            label={fileCategories.find(c => c.value === file.category)?.label || 'Unknown'}
+                            size="small"
+                            variant="outlined"
+                          />
+                          <Chip
+                            label={file.version}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
                         </Stack>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={file.version}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Tooltip title="Download">
-                            <IconButton size="small" color="primary" onClick={() => handleDownload(file.id, file.name)}>
-                              <DownloadIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Info">
-                            <IconButton size="small">
-                              <Info />
-                            </IconButton>
-                          </Tooltip>
+
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Size: {file.size}
+                            </Typography>
+                            <Stack direction="row" alignItems="center" spacing={0.5}>
+                              <CloudDownload fontSize="small" sx={{ fontSize: '0.875rem' }} />
+                              <Typography variant="caption">
+                                {formatDownloadCount(file.downloads)}
+                              </Typography>
+                            </Stack>
+                          </Box>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<DownloadIcon />}
+                            onClick={() => handleDownload(file.id, file.name)}
+                            sx={{ fontSize: '0.75rem' }}
+                          >
+                            Download
+                          </Button>
                         </Stack>
-                      </TableCell>
-                    </motion.tr>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+            </Box>
+          ) : (
+            // Desktop Table View
+            <TableContainer sx={{ overflowX: 'auto' }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: 'action.hover' }}>
+                    <TableCell>
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        File Name
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        Category
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        Size
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        Downloads
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        Version
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        Actions
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {sortedFiles
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((file) => (
+                      <motion.tr
+                        key={file.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <TableCell>
+                          <Stack direction="row" alignItems="center" spacing={2}>
+                            <Box
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 1,
+                                bgcolor: 'action.hover',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              {getCategoryIcon(file.category)}
+                            </Box>
+                            <Box>
+                              <Typography variant="body2" fontWeight={600}>
+                                {file.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Updated {file.date}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={fileCategories.find(c => c.value === file.category)?.label || 'Unknown'}
+                            size="small"
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{file.size}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Stack direction="row" alignItems="center" spacing={1}>
+                            <CloudDownload fontSize="small" />
+                            <Typography variant="body2">
+                              {formatDownloadCount(file.downloads)}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={file.version}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <Stack direction="row" spacing={1} justifyContent="flex-end">
+                            <Tooltip title="Download">
+                              <IconButton size="small" color="primary" onClick={() => handleDownload(file.id, file.name)}>
+                                <DownloadIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Info">
+                              <IconButton size="small">
+                                <Info />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                        </TableCell>
+                      </motion.tr>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
@@ -467,45 +604,81 @@ const DownloadHubPage: React.FC = () => {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' }
+              }
+            }}
           />
         </CardContent>
       </Card>
 
       {/* Popular Files */}
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{
+          fontWeight: 700,
+          mb: { xs: 2, md: 3 },
+          fontSize: { xs: '1.25rem', sm: '1.5rem' }
+        }}
+      >
         Most Popular Downloads
       </Typography>
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 2, sm: 3 }}>
         {popularFiles.map((file, index) => (
-          <Grid item xs={12} md={6} key={file.id}>
+          <Grid item xs={12} sm={6} md={6} key={file.id}>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
               <Card>
-                <CardContent>
-                  <Stack direction="row" alignItems="center" spacing={3}>
+                <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                    spacing={{ xs: 2, sm: 3 }}
+                  >
                     <Box
                       sx={{
-                        width: 60,
-                        height: 60,
+                        width: { xs: 50, sm: 60 },
+                        height: { xs: 50, sm: 60 },
                         borderRadius: 2,
                         bgcolor: 'primary.light',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: 'white',
+                        flexShrink: 0,
                       }}
                     >
                       {getCategoryIcon(file.category)}
                     </Box>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                      <Typography
+                        variant="h6"
+                        fontWeight={600}
+                        gutterBottom
+                        sx={{
+                          fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' },
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
                         {file.name}
                       </Typography>
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <Typography variant="body2" color="text.secondary">
+                      <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        spacing={{ xs: 0.5, sm: 2 }}
+                        alignItems={{ xs: 'flex-start', sm: 'center' }}
+                      >
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                        >
                           {file.size}
                         </Typography>
                         <Chip
@@ -513,14 +686,21 @@ const DownloadHubPage: React.FC = () => {
                           size="small"
                           color="success"
                           variant="outlined"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                         />
                       </Stack>
                     </Box>
                     <Button
                       variant="contained"
                       startIcon={<DownloadIcon />}
-                      sx={{ whiteSpace: 'nowrap' }}
+                      sx={{
+                        whiteSpace: 'nowrap',
+                        width: { xs: '100%', sm: 'auto' },
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        mt: { xs: 1, sm: 0 }
+                      }}
                       onClick={() => handleDownload(file.id, file.name)}
+                      size={isMobile ? 'medium' : 'large'}
                     >
                       Download
                     </Button>
@@ -533,15 +713,32 @@ const DownloadHubPage: React.FC = () => {
       </Grid>
 
       {/* Download Guidelines */}
-      <Card sx={{ mt: 6, bgcolor: 'info.light' }}>
-        <CardContent>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Info sx={{ fontSize: 40, color: 'info.main' }} />
+      <Card sx={{ mt: { xs: 3, md: 6 }, bgcolor: 'info.light' }}>
+        <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            alignItems={{ xs: 'flex-start', sm: 'center' }}
+            spacing={2}
+          >
+            <Info
+              sx={{
+                fontSize: { xs: 32, sm: 40 },
+                color: 'info.main',
+                flexShrink: 0
+              }}
+            />
             <Box>
-              <Typography variant="h6" gutterBottom>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+              >
                 Download Guidelines
               </Typography>
-              <Typography variant="body2">
+              <Typography
+                variant="body2"
+                sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+              >
                 • All files are virus-scanned before upload
                 • Respect copyright and licensing terms
                 • Report any issues with downloads

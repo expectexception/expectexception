@@ -144,19 +144,20 @@ const BlogPage: React.FC = () => {
     );
 
     return (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
             <Seo
                 title="Developer Blog & Tech Insights - ExpectException"
                 description="Read our latest articles on software development, AI, web performance, and developer productivity tools."
                 keywords={['developer blog', 'tech news', 'programming tutorials', 'ai insights', 'web development tips', 'software engineering blog', 'coding best practices', 'ai technology updates', 'productivity tool reviews']}
             />
             {/* Header */}
-            <Box sx={{ mb: 6, textAlign: 'center' }}>
+            <Box sx={{ mb: { xs: 3, sm: 4, md: 6 }, textAlign: 'center' }}>
                 <Typography
                     variant="h2"
                     gutterBottom
                     sx={{
                         fontWeight: 800,
+                        fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
                         background: 'linear-gradient(45deg, #60a5fa, #a78bfa)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
@@ -164,7 +165,16 @@ const BlogPage: React.FC = () => {
                 >
                     Our Blog
                 </Typography>
-                <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: 'auto' }}>
+                <Typography
+                    variant="h6"
+                    color="text.secondary"
+                    sx={{
+                        maxWidth: 700,
+                        mx: 'auto',
+                        fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
+                        px: { xs: 2, sm: 0 }
+                    }}
+                >
                     Insights, tutorials, and latest updates from ExpectException
                 </Typography>
                 {user?.is_staff && (
@@ -181,7 +191,7 @@ const BlogPage: React.FC = () => {
             </Box>
 
             {/* Search and Filters */}
-            <Grid container spacing={3} sx={{ mb: 6 }}>
+            <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: { xs: 3, md: 6 } }}>
                 <Grid item xs={12} md={8}>
                     <TextField
                         fullWidth
@@ -196,19 +206,29 @@ const BlogPage: React.FC = () => {
                             ),
                         }}
                         sx={{ bgcolor: 'background.paper', borderRadius: 2 }}
+                        size="small"
                     />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                    <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={2} sx={{ height: '100%' }}>
+                    <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent={{ xs: 'center', md: 'flex-end' }}
+                        spacing={2}
+                        sx={{ height: '100%' }}
+                    >
                         <ToggleButtonGroup
                             value={filter}
                             exclusive
                             onChange={(_, value) => value && setFilter(value)}
-                            size="medium"
-                            sx={{ bgcolor: 'background.paper' }}
+                            size="small"
+                            sx={{
+                                bgcolor: 'background.paper',
+                                width: { xs: '100%', sm: 'auto' }
+                            }}
                         >
-                            <ToggleButton value="latest">Latest</ToggleButton>
-                            <ToggleButton value="popular">Popular</ToggleButton>
+                            <ToggleButton value="latest" sx={{ flex: { xs: 1, sm: 'initial' } }}>Latest</ToggleButton>
+                            <ToggleButton value="popular" sx={{ flex: { xs: 1, sm: 'initial' } }}>Popular</ToggleButton>
                         </ToggleButtonGroup>
                     </Stack>
                 </Grid>
@@ -228,16 +248,16 @@ const BlogPage: React.FC = () => {
                     </Typography>
                 </Box>
             ) : (
-                <Grid container spacing={4}>
+                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                     {filteredPosts.map((post, index) => (
-                        <Grid item xs={12} md={4} key={post.id}>
+                        <Grid item xs={12} sm={6} md={4} key={post.id}>
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                             >
                                 <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                    <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                                    <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2.5, md: 3 } }}>
                                         <Box sx={{ mb: 2 }}>
                                             {post.tags.map(tag => (
                                                 <Chip
@@ -251,14 +271,20 @@ const BlogPage: React.FC = () => {
                                             ))}
                                         </Box>
 
-                                        <Typography variant="h5" component={Link} to={`/blogs/${post.id}`} sx={{
-                                            textDecoration: 'none',
-                                            color: 'inherit',
-                                            fontWeight: 700,
-                                            display: 'block',
-                                            mb: 1,
-                                            '&:hover': { color: 'primary.main' }
-                                        }}>
+                                        <Typography
+                                            variant="h5"
+                                            component={Link}
+                                            to={`/blogs/${post.id}`}
+                                            sx={{
+                                                textDecoration: 'none',
+                                                color: 'inherit',
+                                                fontWeight: 700,
+                                                fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
+                                                display: 'block',
+                                                mb: 1,
+                                                '&:hover': { color: 'primary.main' }
+                                            }}
+                                        >
                                             {post.title}
                                         </Typography>
 
@@ -266,30 +292,51 @@ const BlogPage: React.FC = () => {
                                             {getExcerpt(post.content)}
                                         </Typography>
 
-                                        <Stack direction="row" alignItems="center" spacing={2} sx={{ mt: 2 }}>
-                                            <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32 }}>
+                                        <Stack direction="row" alignItems="center" spacing={{ xs: 1, sm: 2 }} sx={{ mt: 2 }}>
+                                            <Avatar sx={{ bgcolor: 'secondary.main', width: { xs: 28, sm: 32 }, height: { xs: 28, sm: 32 } }}>
                                                 {post.author.email.charAt(0).toUpperCase()}
                                             </Avatar>
-                                            <Box>
-                                                <Typography variant="subtitle2">
+                                            <Box sx={{ minWidth: 0, flex: 1 }}>
+                                                <Typography
+                                                    variant="subtitle2"
+                                                    sx={{
+                                                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap'
+                                                    }}
+                                                >
                                                     {post.author.email}
                                                 </Typography>
-                                                <Typography variant="caption" color="text.secondary">
+                                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                                     {formatDate(post.created_at)}
                                                 </Typography>
                                             </Box>
                                         </Stack>
                                     </CardContent>
 
-                                    <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between' }}>
-                                        <Button startIcon={<ThumbUp />} size="small" color="inherit">
+                                    <Box sx={{ p: { xs: 1.5, sm: 2 }, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between' }}>
+                                        <Button
+                                            startIcon={<ThumbUp />}
+                                            size="small"
+                                            color="inherit"
+                                            sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                                        >
                                             {post.likes_count}
                                         </Button>
-                                        <Stack direction="row">
-                                            <IconButton size="small" onClick={() => handleBookmark(post)}>
+                                        <Stack direction="row" spacing={{ xs: 0, sm: 0.5 }}>
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleBookmark(post)}
+                                                sx={{ p: { xs: 0.75, sm: 1 } }}
+                                            >
                                                 {post.bookmarked ? <Bookmark color="primary" /> : <BookmarkBorder />}
                                             </IconButton>
-                                            <IconButton size="small" onClick={() => handleShare(post)}>
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleShare(post)}
+                                                sx={{ p: { xs: 0.75, sm: 1 } }}
+                                            >
                                                 <Share />
                                             </IconButton>
                                         </Stack>
@@ -311,13 +358,18 @@ const BlogPage: React.FC = () => {
 
             {/* Pagination */}
             {!loading && filteredPosts.length > 0 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 4, sm: 6, md: 8 } }}>
                     <Pagination
                         count={Math.ceil(posts.length / 9)}
                         page={page}
                         onChange={(_, value) => setPage(value)}
                         color="primary"
-                        size="large"
+                        size={{ xs: 'small', sm: 'medium', md: 'large' } as any}
+                        sx={{
+                            '& .MuiPaginationItem-root': {
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                            }
+                        }}
                     />
                 </Box>
             )}
