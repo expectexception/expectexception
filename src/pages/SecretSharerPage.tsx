@@ -65,6 +65,25 @@ const SecretSharerPage: React.FC = () => {
     useEffect(() => {
         if (id) {
             setViewing(true);
+            // Proactive check: does this secret even exist?
+            const checkExistence = async () => {
+                try {
+                    if (type === 'file') {
+                        // @ts-ignore
+                        await apiClient.head(endpoints.services.secretSharer.viewFile(id));
+                    } else {
+                        // @ts-ignore
+                        await apiClient.head(endpoints.services.secretSharer.view(id));
+                    }
+                } catch (err: any) {
+                    // If check fails (404/410), show error immediately
+                    if (err.response && (err.response.status === 404 || err.response.status === 410)) {
+                        setBurnState('destroyed');
+                        setError('This secret has expired or does not exist.');
+                    }
+                }
+            };
+            checkExistence();
         } else {
             setViewing(false);
             setGeneratedLink('');
@@ -72,7 +91,7 @@ const SecretSharerPage: React.FC = () => {
             setFile(null);
             setActiveTab(0);
         }
-    }, [id]);
+    }, [id, type]);
 
     const handleCreate = async () => {
         if (activeTab === 0 && !secret.trim()) return;
