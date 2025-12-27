@@ -26,7 +26,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
-    tags = TagSerializer(many=True, required=False)
+    tags = TagSerializer(many=True, read_only=True)
+    tag_names = serializers.ListField(child=serializers.CharField(), write_only=True, required=False)
     comments = CommentSerializer(many=True, read_only=True)
     likes_count = serializers.SerializerMethodField()
     bookmarks_count = serializers.SerializerMethodField()
@@ -36,30 +37,30 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = (
-            'id', 'title', 'slug', 'content', 'author', 'tags', 'status', 'created_at', 'updated_at',
+            'id', 'title', 'slug', 'content', 'author', 'tags', 'tag_names', 'status', 'created_at', 'updated_at',
             'published_at', 'cover_image', 'comments', 'likes_count', 'bookmarks_count', 'liked', 'bookmarked',
             'seo_title', 'seo_description', 'keywords', 'reading_time', 'view_count', 'featured', 
             'excerpt', 'table_of_contents', 'series'
         )
-        read_only_fields = ('slug', 'author', 'published_at', 'reading_time', 'view_count', 'excerpt', 'table_of_contents')
+        read_only_fields = ('author', 'published_at', 'reading_time', 'view_count', 'table_of_contents')
 
     def create(self, validated_data):
-        tags_data = validated_data.pop('tags', [])
+        tags_data = validated_data.pop('tag_names', [])
         post = Post.objects.create(**validated_data)
-        for tag in tags_data:
-            t, _ = Tag.objects.get_or_create(name=tag['name'])
+        for tag_name in tags_data:
+            t, _ = Tag.objects.get_or_create(name=tag_name)
             post.tags.add(t)
         return post
 
     def update(self, instance, validated_data):
-        tags_data = validated_data.pop('tags', None)
+        tags_data = validated_data.pop('tag_names', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         if tags_data is not None:
             instance.tags.clear()
-            for tag in tags_data:
-                t, _ = Tag.objects.get_or_create(name=tag['name'])
+            for tag_name in tags_data:
+                t, _ = Tag.objects.get_or_create(name=tag_name)
                 instance.tags.add(t)
         return instance
 

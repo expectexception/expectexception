@@ -143,23 +143,7 @@ const YtDownloader: React.FC = () => {
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Seo
                 title="YouTube Video Downloader - Free 4K Video & MP3 Converter"
-                description="Download YouTube videos in 4K, 1080p, and convert to MP3/M4A for free. Fast, secure, and unlimited downloads."
-                keywords={[
-                    'youtube downloader',
-                    'video converter',
-                    '4k downloader',
-                    'mp3 converter',
-                    'youtube to mp3',
-                    'download youtube 4k',
-                    'fast youtube downloader',
-                    'online youtube downloader free',
-                    'extract audio from youtube',
-                    'yt to mp4',
-                    'youtube downloader 1080p',
-                    'save youtube videos online',
-                    'best youtube downloader 2025',
-                    'high quality youtube converter'
-                ]}
+                toolId={5}
             />
             <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
                 YouTube Downloader

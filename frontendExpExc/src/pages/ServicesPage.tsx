@@ -61,16 +61,26 @@ const ServicesPage: React.FC = () => {
   React.useEffect(() => {
     const fetchServicesAndStats = async () => {
       // Skip API call during static generation to prevent hydration mismatch
-      // The initial state (staticServices) will be used for SEO, which matches the static data.
       if (navigator.userAgent === 'ReactSnap') {
         return;
       }
       try {
         const [servicesRes, statsRes] = await Promise.all([
-          apiClient.get(endpoints.services.tools), // Use stable ordering
+          apiClient.get(endpoints.services.tools),
           apiClient.get(endpoints.services.downloadStats)
         ]);
-        setServices(servicesRes.data.results || servicesRes.data);
+
+        // "Hardcoded on frontend side only":
+        // We use the API only to check which services are Active (exist in DB).
+        // We trust staticServices (tools.json) for Order, Popularity, Title, etc.
+        const activePaths = new Set((servicesRes.data.results || servicesRes.data).map((s: any) => s.path));
+
+        const finalServices = [...staticServices]
+          .filter(s => activePaths.has(s.path))
+          .sort((a, b) => b.popularity - a.popularity);
+
+        setServices(finalServices);
+
         if (statsRes.data) {
           setStats(statsRes.data);
         }

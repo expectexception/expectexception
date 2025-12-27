@@ -31,8 +31,26 @@ class DownloadableResource(models.Model):
     downloads = models.IntegerField(default=0)
     version = models.CharField(max_length=20, default='v1.0.0')
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    # SEO & Content Fields
+    description = models.TextField(blank=True, help_text="Full description of the resource")
+    keywords = models.CharField(max_length=255, blank=True, help_text="Comma-separated SEO keywords")
+    slug = models.SlugField(max_length=255, unique=True, blank=True, help_text="URL-friendly identifier")
+    seo_title = models.CharField(max_length=100, blank=True, help_text="Custom SEO title (optional)")
+    seo_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description (optional)")
+    cover_image = models.ImageField(upload_to='downloads/covers/', null=True, blank=True)
 
     def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            while DownloadableResource.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+            
         if self.file and not self.size:
             try:
                 self.size = self.format_file_size(self.file.size)

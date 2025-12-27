@@ -9,7 +9,11 @@ class ServiceSerializer(serializers.ModelSerializer):
 class DownloadableResourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DownloadableResource
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'file', 'category', 'size', 'downloads', 'version', 'created_at',
+            'description', 'keywords', 'slug', 'seo_title', 'seo_description', 'cover_image'
+        )
+        read_only_fields = ('size', 'downloads', 'created_at')
 
 class UserActivitySerializer(serializers.ModelSerializer):
     class Meta:

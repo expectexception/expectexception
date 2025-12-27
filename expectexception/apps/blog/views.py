@@ -275,8 +275,13 @@ class BlogImageUploadView(APIView):
         if not image.content_type.startswith('image/'):
             return Response({'error': 'Invalid file type'}, status=status.HTTP_400_BAD_REQUEST)
             
-        ext = os.path.splitext(image.name)[1]
-        filename = f"blog_content/{uuid.uuid4()}{ext}"
+        # Optimize image
+        from .services import optimize_image
+        image = optimize_image(image)
+        
+        # Original extension won't matter as we converted to webp if successful
+        # optimize_image returns a ContentFile with .webp name if optimized
+        filename = f"blog_content/{uuid.uuid4()}_{image.name}"
         path = os.path.join(settings.MEDIA_ROOT, filename)
         
         # Ensure dir exists

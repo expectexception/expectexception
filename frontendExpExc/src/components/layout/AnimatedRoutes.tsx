@@ -23,6 +23,7 @@ const ServicesPage = lazy(() => import('../../pages/ServicesPage'));
 const BlogPage = lazy(() => import('../../pages/BlogPage'));
 const BlogDetailPage = lazy(() => import('../../pages/BlogDetailPage'));
 const DownloadHubPage = lazy(() => import('../../pages/DownloadHubPage'));
+const DownloadDetailsPage = lazy(() => import('../../pages/DownloadDetailsPage'));
 const LoginPage = lazy(() => import('../../pages/LoginPage'));
 const ProfilePage = lazy(() => import('../../pages/ProfilePage'));
 const RegisterPage = lazy(() => import('../../pages/RegisterPage'));

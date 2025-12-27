@@ -278,7 +278,11 @@ const SecretSharerPage: React.FC = () => {
     // Render Create Mode
     return (
         <Container maxWidth="lg" sx={{ py: 8 }}>
-            <Seo title="Create One-Time Secret" description="Share passwords and files securely." />
+            <Seo
+                title="Create One-Time Secret"
+                description="Share passwords and files securely with self-destructing links. Encrypted, private, and permanent deletion after viewing."
+                toolId={4}
+            />
 
             <Box sx={{ mb: 6, textAlign: 'center' }}>
                 <Typography variant="h2" gutterBottom sx={{ fontWeight: 800 }}>One-Time <span style={{ color: '#f44336' }}>Secret</span></Typography>

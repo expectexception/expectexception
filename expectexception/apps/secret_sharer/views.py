@@ -68,6 +68,17 @@ class ViewSecretView(APIView):
         except Exception as e:
             return Response({'error': 'Decryption failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def head(self, request, pk):
+        """Check if secret exists without burning it"""
+        try:
+            secret = Secret.objects.get(pk=pk)
+            if secret.is_expired():
+                secret.delete()
+                return Response(status=status.HTTP_410_GONE)
+            return Response(status=status.HTTP_200_OK)
+        except Secret.DoesNotExist:
+             return Response(status=status.HTTP_404_NOT_FOUND)
+
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
@@ -150,3 +161,14 @@ class DownloadFileSecretView(APIView):
             return response
         except Exception as e:
             return Response({'error': 'Decryption failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def head(self, request, pk):
+        """Check if file exists without burning it"""
+        try:
+            secret = FileSecret.objects.get(pk=pk)
+            if secret.is_expired():
+                secret.delete()
+                return Response(status=status.HTTP_410_GONE)
+            return Response(status=status.HTTP_200_OK)
+        except FileSecret.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)

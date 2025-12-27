@@ -47,6 +47,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
+import ResourceDetailsDialog from '../components/services/ResourceDetailsDialog';
 
 const DownloadHubPage: React.FC = () => {
   const { user } = useAuth();
@@ -61,6 +62,8 @@ const DownloadHubPage: React.FC = () => {
   const [sortBy, setSortBy] = useState('popularity'); // popularity, date, name, size
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedResource, setSelectedResource] = useState<any | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Sync search state with URL query param
   React.useEffect(() => {
@@ -182,6 +185,17 @@ const DownloadHubPage: React.FC = () => {
     } catch (error) {
       console.error('Download failed:', error);
     }
+  };
+
+  const handleResourceClick = (e: React.MouseEvent, resource: any) => {
+    e.preventDefault();
+    setSelectedResource(resource);
+    setDetailsOpen(true);
+  };
+
+  const handleCloseDetails = () => {
+    setDetailsOpen(false);
+    setTimeout(() => setSelectedResource(null), 300);
   };
 
   const getCategoryIcon = (category: string) => {
@@ -409,8 +423,8 @@ const DownloadHubPage: React.FC = () => {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card sx={{ mb: 2, bgcolor: 'action.hover' }}>
-                      <CardContent sx={{ p: 2 }}>
+                    <Card sx={{ mb: 2, bgcolor: 'action.hover' }} onClick={(e) => handleResourceClick(e, file)}>
+                      <CardContent sx={{ p: 2, cursor: 'pointer' }}>
                         <Stack direction="row" alignItems="flex-start" spacing={2} sx={{ mb: 2 }}>
                           <Box
                             sx={{
@@ -422,12 +436,19 @@ const DownloadHubPage: React.FC = () => {
                               alignItems: 'center',
                               justifyContent: 'center',
                               flexShrink: 0,
+                              cursor: 'pointer'
                             }}
+                            onClick={(e) => { e.stopPropagation(); handleResourceClick(e, file); }}
                           >
                             {getCategoryIcon(file.category)}
                           </Box>
                           <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                            <Typography
+                              variant="body2"
+                              fontWeight={600}
+                              sx={{ mb: 0.5, textDecoration: 'none', color: 'text.primary', '&:hover': { color: 'primary.main' } }}
+                              onClick={(e) => { e.stopPropagation(); handleResourceClick(e, file); }}
+                            >
                               {file.name}
                             </Typography>
                             <Typography variant="caption" color="text.secondary" display="block">
@@ -465,11 +486,11 @@ const DownloadHubPage: React.FC = () => {
                           <Button
                             variant="contained"
                             size="small"
-                            startIcon={<DownloadIcon />}
-                            onClick={() => handleDownload(file.id, file.name)}
+                            startIcon={<Info />}
+                            onClick={(e) => { e.stopPropagation(); handleResourceClick(e, file); }}
                             sx={{ fontSize: '0.75rem' }}
                           >
-                            Download
+                            Details
                           </Button>
                         </Stack>
                       </CardContent>
@@ -522,8 +543,10 @@ const DownloadHubPage: React.FC = () => {
                       <motion.tr
                         key={file.id}
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3 }}
+                        onClick={(e) => handleResourceClick(e, file)}
+                        style={{ cursor: 'pointer' }}
                       >
                         <TableCell>
                           <Stack direction="row" alignItems="center" spacing={2}>
@@ -536,12 +559,19 @@ const DownloadHubPage: React.FC = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
+                                cursor: 'pointer'
                               }}
+                              onClick={(e) => { e.stopPropagation(); handleResourceClick(e, file); }}
                             >
                               {getCategoryIcon(file.category)}
                             </Box>
                             <Box>
-                              <Typography variant="body2" fontWeight={600}>
+                              <Typography
+                                variant="body2"
+                                fontWeight={600}
+                                sx={{ textDecoration: 'none', color: 'text.primary', '&:hover': { color: 'primary.main' }, cursor: 'pointer' }}
+                                onClick={(e) => { e.stopPropagation(); handleResourceClick(e, file); }}
+                              >
                                 {file.name}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
@@ -578,16 +608,12 @@ const DownloadHubPage: React.FC = () => {
                         </TableCell>
                         <TableCell align="right">
                           <Stack direction="row" spacing={1} justifyContent="flex-end">
-                            <Tooltip title="Download">
-                              <IconButton size="small" color="primary" onClick={() => handleDownload(file.id, file.name)}>
-                                <DownloadIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Info">
-                              <IconButton size="small">
+                            <Tooltip title="View Details">
+                              <IconButton size="small" color="primary" onClick={(e) => { e.stopPropagation(); handleResourceClick(e, file); }}>
                                 <Info />
                               </IconButton>
                             </Tooltip>
+                            {/* Keep direct download or move to details? Let's hide it to encourage visiting page for SEO */}
                           </Stack>
                         </TableCell>
                       </motion.tr>
@@ -633,8 +659,8 @@ const DownloadHubPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <Card>
-                <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer' }} onClick={(e) => handleResourceClick(e, file)}>
+                <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 }, flexGrow: 1 }}>
                   <Stack
                     direction={{ xs: 'column', sm: 'row' }}
                     alignItems={{ xs: 'flex-start', sm: 'center' }}
@@ -651,7 +677,10 @@ const DownloadHubPage: React.FC = () => {
                         justifyContent: 'center',
                         color: 'white',
                         flexShrink: 0,
+                        cursor: 'pointer'
                       }}
+                      component={Link}
+                      to={`/downloads/${file.slug}`}
                     >
                       {getCategoryIcon(file.category)}
                     </Box>
@@ -660,11 +689,16 @@ const DownloadHubPage: React.FC = () => {
                         variant="h6"
                         fontWeight={600}
                         gutterBottom
+                        component={Link}
+                        to={`/downloads/${file.slug}`}
                         sx={{
                           fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' },
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
+                          color: 'text.primary',
+                          textDecoration: 'none',
+                          '&:hover': { color: 'primary.main' }
                         }}
                       >
                         {file.name}
@@ -691,18 +725,16 @@ const DownloadHubPage: React.FC = () => {
                       </Stack>
                     </Box>
                     <Button
-                      variant="contained"
-                      startIcon={<DownloadIcon />}
+                      variant="outlined"
+                      size={isMobile ? 'medium' : 'large'}
+                      onClick={(e) => { e.stopPropagation(); handleResourceClick(e, file); }}
                       sx={{
                         whiteSpace: 'nowrap',
                         width: { xs: '100%', sm: 'auto' },
-                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
                         mt: { xs: 1, sm: 0 }
                       }}
-                      onClick={() => handleDownload(file.id, file.name)}
-                      size={isMobile ? 'medium' : 'large'}
                     >
-                      Download
+                      View Details
                     </Button>
                   </Stack>
                 </CardContent>
@@ -748,7 +780,14 @@ const DownloadHubPage: React.FC = () => {
           </Stack>
         </CardContent>
       </Card>
-    </Container >
+
+      <ResourceDetailsDialog
+        open={detailsOpen}
+        onClose={handleCloseDetails}
+        resource={selectedResource}
+        onDownload={(slug, name) => handleDownload(selectedResource?.id, name)}
+      />
+    </Container>
   );
 };
 

@@ -640,7 +640,7 @@ from .serializers import (
 User = get_user_model()
 
 class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Service.objects.filter(is_active=True).order_by('id')
+    queryset = Service.objects.filter(is_active=True).order_by('-popularity', 'id')
     serializer_class = ServiceSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = None  # Show all tools (no pagination)
@@ -648,15 +648,29 @@ class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
 class DownloadableResourceViewSet(viewsets.ModelViewSet):
     queryset = DownloadableResource.objects.all().order_by('-downloads')
     serializer_class = DownloadableResourceSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny] # Allow public read access (admin write is handled inside)
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+    lookup_field = 'slug' 
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [IsAdminOrReadOnly] # Admin only for writes
+        else:
+            permission_classes = [permissions.AllowAny] # Public for read
+        return [permission() for permission in permission_classes]
 
     def perform_create(self, serializer):
         serializer.save()
 
     @action(detail=True, methods=['get'])
-    def download(self, request, pk=None):
-        resource = self.get_object()
+    def download(self, request, slug=None):
+        # Allow lookup by ID or Slug for backward compat
+        try:
+            resource = self.get_object()
+        except:
+             # Fallback if slug lookup fails, though get_object handles lookup_field
+             return Response({'error': 'Resource not found'}, status=status.HTTP_404_NOT_FOUND)
+
         resource.downloads += 1
         resource.save()
         

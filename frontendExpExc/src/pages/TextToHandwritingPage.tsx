@@ -84,8 +84,7 @@ const TextToHandwritingPage: React.FC = () => {
         <Container maxWidth="lg" sx={{ py: 8 }}>
             <Seo
                 title="AI Text to Handwriting | Human-like Handwriting Generator"
-                description="Convert your typed text into realistic human-like handwriting using our advanced AI generation tool. Multiple styles and papers available."
-                keywords={["text to handwriting", "handwriting generator", "ai handwriting", "realistic handwriting", "convert text to handwritten"]}
+                toolId={2}
             />
 
             <Box sx={{ mb: 6, textAlign: 'center' }}>

@@ -39,19 +39,7 @@ const MarkdownPreview: React.FC = () => {
         <Container maxWidth="xl" sx={{ py: 4 }}>
             <Seo
                 title="Live Markdown Preview & Editor - GitHub Flavor"
-                description="Write and preview GitHub Flavored Markdown in real-time. Fast, responsive editor with live HTML rendering and syntax highlighting."
-                keywords={[
-                    'markdown preview',
-                    'online markdown editor',
-                    'github flavored markdown',
-                    'markdown to html',
-                    'live markdown viewer',
-                    'markdown editor',
-                    'markdown previewer',
-                    'md to html converter',
-                    'view markdown output online',
-                    'write markdown with live preview'
-                ]}
+                toolId={23}
             />
 
 

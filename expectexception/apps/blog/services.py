@@ -91,22 +91,22 @@ def optimize_image(image_file, max_width=1200, max_height=1200, quality=85):
         # Open image
         img = Image.open(image_file)
         
-        # Convert RGBA to RGB if necessary
-        if img.mode in ('RGBA', 'LA', 'P'):
-            background = Image.new('RGB', img.size, (255, 255, 255))
-            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-            img = background
+        # Convert to RGB if necessary (WebP supports RGBA but RGB is safer for consistency if transparency isn't needed, 
+        # but let's keep RGBA for WebP to support transparent PNGs)
+        if img.mode in ('P', 'CMYK'):
+            img = img.convert('RGB')
         
         # Calculate new dimensions maintaining aspect ratio
         img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
         
-        # Save to BytesIO
+        # Save to BytesIO as WebP
         output = BytesIO()
-        img.save(output, format='JPEG', quality=quality, optimize=True)
+        img.save(output, format='WEBP', quality=quality, method=4) # method=4 is a good balance of speed/compression
         output.seek(0)
         
-        # Get original filename
-        filename = os.path.splitext(image_file.name)[0] + '.jpg'
+        # Generate new filename with .webp extension
+        original_name = os.path.splitext(image_file.name)[0]
+        filename = f"{original_name}.webp"
         
         return ContentFile(output.read(), name=filename)
     

@@ -63,22 +63,7 @@ const ImageConverter: React.FC = () => {
         <Container maxWidth="md" sx={{ py: 4 }}>
             <Seo
                 title="Online Image Converter - JPG, PNG, WebP, SVG, GIF"
-                description="Convert images between JPG, PNG, WebP, SVG, GIF, BMP, and TIFF formats instantly. High quality conversion with batch support."
-                keywords={[
-                    'image converter',
-                    'png to jpg',
-                    'jpg to webp',
-                    'online photo converter',
-                    'free image format switcher',
-                    'svg converter',
-                    'image format converter',
-                    'jpeg optimizer',
-                    'webp converter',
-                    'convert heic to jpg',
-                    'tiff to png',
-                    'bulk image converter',
-                    'convert images online free'
-                ]}
+                toolId={19}
             />
 
 
