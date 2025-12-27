@@ -52,7 +52,9 @@ import { staticServices, staticStats } from '../data/StaticData';
 const ServicesPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
-  const [services, setServices] = useState<any[]>(staticServices);
+  const [services, setServices] = useState<any[]>(() => {
+    return [...staticServices].sort((a, b) => b.popularity - a.popularity);
+  });
 
   const [stats, setStats] = useState(staticStats);
 
