@@ -39,6 +39,8 @@ import {
   PictureAsPdf,
   AutoFixHigh,
   Fingerprint,
+  Create,
+  Lock,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -56,6 +58,11 @@ const ServicesPage: React.FC = () => {
 
   React.useEffect(() => {
     const fetchServicesAndStats = async () => {
+      // Skip API call during static generation to prevent hydration mismatch
+      // The initial state (staticServices) will be used for SEO, which matches the static data.
+      if (navigator.userAgent === 'ReactSnap') {
+        return;
+      }
       try {
         const [servicesRes, statsRes] = await Promise.all([
           apiClient.get(endpoints.services.tools), // Use stable ordering
@@ -103,6 +110,8 @@ const ServicesPage: React.FC = () => {
       case 'PictureAsPdf': return <PictureAsPdf fontSize="large" />;
       case 'AutoFixHigh': return <AutoFixHigh fontSize="large" />;
       case 'Fingerprint': return <Fingerprint fontSize="large" />;
+      case 'Create': return <Create fontSize="large" />;
+      case 'Lock': return <Lock fontSize="large" />;
       default: return <Code fontSize="large" />;
     }
   };

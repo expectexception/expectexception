@@ -229,6 +229,28 @@ export const staticServices = [
         popularity: 10,
         category: 'developer',
         tags: ['developer', 'markdown', 'html', 'preview']
+    },
+    {
+        id: 22,
+        title: 'Text to Handwriting',
+        description: 'Convert digital text into realistic human-like handwriting with AI-enhanced variations.',
+        path: '/services/text-to-handwriting',
+        icon: 'Create',
+        color: 'primary',
+        popularity: 95,
+        category: 'converter',
+        tags: ['handwriting', 'ai', 'convert', 'text']
+    },
+    {
+        id: 23,
+        title: 'Secret Sharer',
+        description: 'Securely share sensitive passwords or secrets with self-destructing one-time links.',
+        path: '/services/secret-sharer',
+        icon: 'Lock',
+        color: 'error',
+        popularity: 93,
+        category: 'security',
+        tags: ['security', 'password', 'share', 'encrypt']
     }
 ];
 
