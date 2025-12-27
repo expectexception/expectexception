@@ -93,3 +93,4 @@ dump.rdb
 *.tmp
 *.temp
 .cache/
+requests_analysis.state.json
