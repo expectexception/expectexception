@@ -17,3 +17,19 @@ class Secret(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+class FileSecret(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    file = models.FileField(upload_to='secrets/files/')
+    original_name = models.CharField(max_length=255)
+    file_size = models.BigIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    
+    def is_expired(self):
+        if self.expires_at and timezone.now() > self.expires_at:
+            return True
+        return False
+    
+    def __str__(self):
+        return f"File: {self.original_name} ({self.id})"

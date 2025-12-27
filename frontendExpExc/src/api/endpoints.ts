@@ -117,7 +117,9 @@ export const endpoints = {
         textToHandwriting: '/api/text-to-handwriting/generate/',
         secretSharer: {
             create: '/api/secret-sharer/create/',
-            view: (id: string) => `/api/secret-sharer/view/${id}/`
+            view: (id: string) => `/api/secret-sharer/view/${id}/`,
+            createFile: '/api/secret-sharer/create-file/',
+            viewFile: (id: string) => `/api/secret-sharer/view-file/${id}/`
         },
     },
 

@@ -26,3 +26,11 @@ def encrypt_content(content):
 def decrypt_content(encrypted_content):
     f = get_fernet()
     return f.decrypt(encrypted_content.encode()).decode()
+
+def encrypt_bytes(data):
+    f = get_fernet()
+    return f.encrypt(data)
+
+def decrypt_bytes(encrypted_data):
+    f = get_fernet()
+    return f.decrypt(encrypted_data)
