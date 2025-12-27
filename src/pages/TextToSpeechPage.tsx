@@ -71,7 +71,25 @@ const TextToSpeechPage: React.FC = () => {
             <Seo
                 title="AI Text to Speech (TTS) - Natural Voice Generator"
                 description="Convert text to natural-sounding speech instantly with our free AI Text to Speech (TTS) tool. Supports multiple languages and lifelike voices."
-                keywords={['text to speech', 'tts', 'ai voice generator', 'online text reader', 'speech synthesis', 'mp3 generator', 'natural voice synthesis', 'free tts online', 'ai speech generator', 'convert text to audio']}
+                keywords={[
+                    'text to speech',
+                    'tts',
+                    'ai voice generator',
+                    'online text reader',
+                    'speech synthesis',
+                    'mp3 generator',
+                    'natural voice synthesis',
+                    'free tts online',
+                    'ai speech generator',
+                    'convert text to audio',
+                    'neural text to speech',
+                    'google tts online',
+                    'high quality ai voices',
+                    'text to audio converter free',
+                    'voiceover generator ai',
+                    'read my text aloud',
+                    'automated voice generator'
+                ]}
             />
 
             <Typography variant="h3" gutterBottom sx={{ fontWeight: 800, textAlign: 'center', mb: 4 }}>

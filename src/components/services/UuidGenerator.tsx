@@ -41,7 +41,19 @@ const UuidGenerator: React.FC = () => {
             <Seo
                 title="UUID / GUID Generator - v1 & v4 Random IDs"
                 description="Generate secure, unique version 1 and version 4 UUIDs instantly. Bulk generate identifiers for developers and testing."
-                keywords={['uuid generator', 'guid generator', 'random id generator', 'v4 uuid', 'v1 uuid', 'developer tools', 'random uuid generator', 'generate guid online', 'unique identifier']}
+                keywords={[
+                    'uuid generator',
+                    'guid generator',
+                    'random id generator',
+                    'v4 uuid',
+                    'v1 uuid',
+                    'developer tools',
+                    'random uuid generator',
+                    'generate guid online',
+                    'unique identifier',
+                    'bulk uuid generator free',
+                    'online random id creator'
+                ]}
             />
 
 

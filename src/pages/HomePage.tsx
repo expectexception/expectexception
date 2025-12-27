@@ -83,7 +83,8 @@ const HomePage: React.FC = () => {
 
   const fetchServices = async () => {
     try {
-      const response = await apiClient.get(endpoints.services.tools + '?ordering=-popularity');
+      // Use stable ordering (by ID) instead of popularity to prevent layout jumps
+      const response = await apiClient.get(endpoints.services.tools);
       const results = (response.data.results || response.data).slice(0, 4);
       if (results && results.length > 0) {
         setServices(results);
@@ -151,21 +152,38 @@ const HomePage: React.FC = () => {
         description="Access free, high-performance developer tools: YouTube 4K Downloader, PDF to Word Converter, AI Image Detector, OCR, and Image Compressor. No signup required."
         keywords={[
           'youtube downloader 4k',
+          'yt mp4 downloader',
+          'youtube to mp3 converter free',
+          'download youtube video high quality',
           'pdf to word converter free',
+          'pdf to docx converter online',
+          'edit pdf free no signup',
           'ai image detector',
+          'chatgpt text detector free',
+          'is this ai generated',
+          'ai content analyzer',
           'image compressor online',
-          'ocr online free',
-          'developer tools',
-          'json formatter',
-          'qr code generator',
-          'free developer utilities',
-          'online productivity tools',
-          'background remover ai',
+          'reduce image size without losing quality',
+          'ocr online free no registration',
+          'extract text from image online',
+          'developer tools online',
+          'json formatter and validator',
+          'qr code generator with logo',
+          'background remover ai free',
           'base64 encoder decoder',
-          'secure hash generator',
+          'secure hash generator sha256',
           'pdf merger and splitter',
-          'uuid gui generator',
-          'color converter online'
+          'uuid generator online',
+          'color converter hex rgb hsl',
+          'text to speech online natural voices',
+          'markdown to html previewer',
+          'programming utilities for developers',
+          'web development tools suite',
+          'expert exception tools',
+          'expectexception online services',
+          'best free developer tools 2025',
+          'productivity tools for creators',
+          'all in one multimedia converter'
         ]}
         structuredData={appSchema}
       />
@@ -407,6 +425,7 @@ const HomePage: React.FC = () => {
                   to={service.path}
                   sx={{
                     height: '100%',
+                    minHeight: { xs: '240px', sm: '320px' }, // Set minHeight to prevent shift
                     textDecoration: 'none',
                     color: 'inherit',
                     position: 'relative',
@@ -471,11 +490,11 @@ const HomePage: React.FC = () => {
                       color="text.secondary"
                       sx={{
                         mb: { xs: 1, sm: 3 },
-                        minHeight: { xs: '36px', sm: '48px' },
+                        height: { xs: '40px', sm: '48px' }, // Fixed height to prevent shift
                         lineHeight: { xs: 1.4, sm: 1.6 },
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        display: { xs: '-webkit-box', sm: 'block' },
-                        overflow: { xs: 'hidden', sm: 'visible' },
+                        display: '-webkit-box',
+                        overflow: 'hidden',
                         WebkitBoxOrient: 'vertical',
                         WebkitLineClamp: 2,
                       }}
@@ -529,11 +548,19 @@ const HomePage: React.FC = () => {
               // Skeletons
               [1, 2, 3].map(n => (
                 <Grid item xs={12} md={4} key={n}>
-                  <Card sx={{ height: '100%' }}>
+                  <Card sx={{ height: '100%', minHeight: '280px' }}>
                     <CardContent>
-                      <Skeleton variant="text" width="60%" />
-                      <Skeleton variant="rectangular" height={100} sx={{ my: 1 }} />
-                      <Skeleton variant="text" width="40%" />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                        <Skeleton variant="rectangular" width={60} height={24} sx={{ borderRadius: 1 }} />
+                        <Skeleton variant="text" width={80} />
+                      </Box>
+                      <Skeleton variant="text" width="90%" height={32} sx={{ mb: 1 }} />
+                      <Skeleton variant="text" width="100%" height={20} />
+                      <Skeleton variant="text" width="100%" height={20} />
+                      <Skeleton variant="text" width="70%" height={20} sx={{ mb: 2 }} />
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Skeleton variant="rectangular" width={100} height={32} sx={{ borderRadius: 1 }} />
+                      </Box>
                     </CardContent>
                   </Card>
                 </Grid>
@@ -549,6 +576,7 @@ const HomePage: React.FC = () => {
                     <Card
                       sx={{
                         height: '100%',
+                        minHeight: '280px', // Set minHeight to match skeleton
                         background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(30, 41, 59, 0.3) 100%)',
                         backdropFilter: 'blur(16px)',
                         border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -570,7 +598,18 @@ const HomePage: React.FC = () => {
                         <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                           {blog.title}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, display: '-webkit-box', overflow: 'hidden', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            mb: 2,
+                            height: '60px', // Fixed height for content
+                            display: '-webkit-box',
+                            overflow: 'hidden',
+                            WebkitBoxOrient: 'vertical',
+                            WebkitLineClamp: 3
+                          }}
+                        >
                           {blog.content}
                         </Typography>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>

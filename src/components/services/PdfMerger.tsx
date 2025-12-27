@@ -53,7 +53,21 @@ const PdfMerger: React.FC = () => {
             <Seo
                 title="Merge PDF Files Online - Combine Documents Free"
                 description="Combine multiple PDF documents into a single file easily. Secure, fast, and no file limits. Perfectly preserve your document quality."
-                keywords={['pdf merger', 'combine pdf', 'join pdf files', 'free online pdf merger', 'merge documents', 'merge pdf files', 'combine pdf documents', 'pdf joiner', 'concatenate pdf files', 'pdf file merger cloud']}
+                keywords={[
+                    'pdf merger',
+                    'combine pdf',
+                    'join pdf files',
+                    'free online pdf merger',
+                    'merge documents',
+                    'merge pdf files',
+                    'combine pdf documents',
+                    'pdf joiner',
+                    'concatenate pdf files',
+                    'pdf file merger cloud',
+                    'how to merge pdf files free',
+                    'combine multiple pdf into one',
+                    'secure pdf merger online'
+                ]}
             />
 
 

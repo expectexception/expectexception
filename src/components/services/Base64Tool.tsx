@@ -48,7 +48,20 @@ const Base64Tool: React.FC = () => {
             <Seo
                 title="Base64 Encoder & Decoder - Online Text & File Converter"
                 description="Encode strings or files to Base64 format and decode them back to original form instantly. Fast, secure, and easy to use."
-                keywords={['base64 encoder', 'base64 decoder', 'online converter', 'binary to base64', 'text to base64', 'developer tools', 'online base64 tool', 'base64 to binary', 'developer encoding tool', 'base64 tool']}
+                keywords={[
+                    'base64 encoder',
+                    'base64 decoder',
+                    'online converter',
+                    'binary to base64',
+                    'text to base64',
+                    'developer tools',
+                    'online base64 tool',
+                    'base64 to binary',
+                    'developer encoding tool',
+                    'base64 tool',
+                    'convert string to base64',
+                    'decode base64 online free'
+                ]}
             />
 
 

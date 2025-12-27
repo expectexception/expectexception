@@ -71,7 +71,19 @@ const ImageToText: React.FC = () => {
             <Seo
                 title="Image to Text (OCR) - Extract Text from Photos Free"
                 description="Advanced AI-powered OCR to extract text from images, photos, and scanned documents. Supports multiple languages and provides instant results."
-                keywords={['image to text', 'ocr online', 'extract text from image', 'photo to text converter', 'free ocr tool', 'image to text scanner', 'ai ocr', 'copy text from image']}
+                keywords={[
+                    'image to text',
+                    'ocr online',
+                    'extract text from image',
+                    'photo to text converter',
+                    'free ocr tool',
+                    'image to text scanner',
+                    'ai ocr',
+                    'copy text from image',
+                    'extract text from png',
+                    'handwriting to text online',
+                    'best ocr software free'
+                ]}
             />
 
             <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>

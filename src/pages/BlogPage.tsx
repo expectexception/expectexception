@@ -364,7 +364,7 @@ const BlogPage: React.FC = () => {
                         page={page}
                         onChange={(_, value) => setPage(value)}
                         color="primary"
-                        size={{ xs: 'small', sm: 'medium', md: 'large' } as any}
+                        size="medium"
                         sx={{
                             '& .MuiPaginationItem-root': {
                                 fontSize: { xs: '0.75rem', sm: '0.875rem' }

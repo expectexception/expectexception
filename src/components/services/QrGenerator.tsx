@@ -122,7 +122,22 @@ const QrGenerator: React.FC = () => {
       <Seo
         title="Free QR Code Generator - Custom & High Quality"
         description="Create custom QR codes instantly. Free online QR code generator for URLs, text, WiFi, and more. Customize colors, size, and download in high resolution."
-        keywords={['qr code generator', 'free qr code', 'custom qr code', 'create qr code online', 'wifi qr code', 'qr code maker', 'qr generator online', 'qr code download', 'generate qr code for free', 'vector qr code generator']}
+        keywords={[
+          'qr code generator',
+          'free qr code',
+          'custom qr code',
+          'create qr code online',
+          'wifi qr code',
+          'qr code maker',
+          'qr generator online',
+          'qr code download',
+          'generate qr code for free',
+          'vector qr code generator',
+          'branded qr code',
+          'qr code with logo',
+          'high res qr code',
+          'qr code for business cards'
+        ]}
       />
 
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>

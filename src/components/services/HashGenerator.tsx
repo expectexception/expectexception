@@ -42,7 +42,22 @@ const HashGenerator: React.FC = () => {
             <Seo
                 title="Secure Hash Generator - MD5, SHA-1, SHA-256, SHA-512"
                 description="Generate secure cryptographic hashes for strings and files. Supports MD5, SHA-1, SHA-256, and SHA-512. Fast, private, and browser-based."
-                keywords={['hash generator', 'md5 generator', 'sha256 generator', 'sha1 generator', 'cryptographic hash', 'file integrity check', 'sha512 generator', 'checksum tool', 'file hash calculator', 'sha1 online', 'secure hash algorithm generator', 'cryptographic hash tool']}
+                keywords={[
+                    'hash generator',
+                    'md5 generator',
+                    'sha256 generator',
+                    'sha1 generator',
+                    'cryptographic hash',
+                    'file integrity check',
+                    'sha512 generator',
+                    'checksum tool',
+                    'file hash calculator',
+                    'sha1 online',
+                    'secure hash algorithm generator',
+                    'cryptographic hash tool',
+                    'generate md5 hash online',
+                    'verify file checksum'
+                ]}
             />
 
 
