@@ -99,7 +99,22 @@ const JsonFormatter: React.FC = () => {
             <Seo
                 title="JSON Formatter & Validator - Beautify & Minify"
                 description="The best online JSON formatter, beautifier, and validator. Clean up messy JSON data, validate syntax, and minify for production."
-                keywords={['json formatter', 'json beautifier', 'validate json', 'minify json', 'json editor online', 'developer tools', 'json pretty print', 'json validator', 'json minify', 'format json string', 'validate json data']}
+                keywords={[
+                    'json formatter',
+                    'json beautifier',
+                    'validate json',
+                    'minify json',
+                    'json editor online',
+                    'developer tools',
+                    'json pretty print',
+                    'json validator',
+                    'json minify',
+                    'format json string',
+                    'validate json data',
+                    'fix json online',
+                    'clean json code',
+                    'json tree viewer'
+                ]}
             />
 
             <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>

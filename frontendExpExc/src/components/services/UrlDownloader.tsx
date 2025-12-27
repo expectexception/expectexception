@@ -153,7 +153,23 @@ const UrlDownloader: React.FC = () => {
             <Seo
                 title="Universal URL Downloader - Fast & Secure File Saving"
                 description="Download files from any URL securely. Universal file downloader utility for developers and users. Paste a link and save content instantly."
-                keywords={['url downloader', 'file downloader', 'direct link downloader', 'online downloader', 'save from url', 'direct file download', 'url fetcher', 'download from link', 'online file downloader', 'remote upload to cloud', 'save file from url']}
+                keywords={[
+                    'url downloader',
+                    'file downloader',
+                    'direct link downloader',
+                    'online downloader',
+                    'save from url',
+                    'direct file download',
+                    'url fetcher',
+                    'download from link',
+                    'online file downloader',
+                    'remote upload to cloud',
+                    'save file from url',
+                    'web link downloader',
+                    'fast link downloader online',
+                    'download large files from url',
+                    'secure url downloader'
+                ]}
             />
 
             <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>

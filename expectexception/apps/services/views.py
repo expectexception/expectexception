@@ -640,7 +640,7 @@ from .serializers import (
 User = get_user_model()
 
 class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Service.objects.filter(is_active=True).order_by('-popularity')
+    queryset = Service.objects.filter(is_active=True).order_by('id')
     serializer_class = ServiceSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = None  # Show all tools (no pagination)

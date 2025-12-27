@@ -58,7 +58,7 @@ const ServicesPage: React.FC = () => {
     const fetchServicesAndStats = async () => {
       try {
         const [servicesRes, statsRes] = await Promise.all([
-          apiClient.get(endpoints.services.tools),
+          apiClient.get(endpoints.services.tools), // Use stable ordering
           apiClient.get(endpoints.services.downloadStats)
         ]);
         setServices(servicesRes.data.results || servicesRes.data);
@@ -132,7 +132,29 @@ const ServicesPage: React.FC = () => {
       <Seo
         title="All Tools & Services - Free Developer Utilities"
         description="Explore our curated collection of high-performance developer tools: YouTube Downloader, AI Image Detector, PDF Merger, URL Converter, and more. All free and ready to use."
-        keywords={['developer tools', 'free online tools', 'youtube downloader', 'pdf tools', 'ai detector', 'json formatter', 'qr generator', 'online conversion tools', 'image processing utilities', 'productivity software free', 'web developer toolkit', 'all-in-one dev tools']}
+        keywords={[
+          'developer tools',
+          'free online tools',
+          'youtube downloader 4k',
+          'yt to mp3 converter',
+          'pdf to word online free',
+          'ai detector chatgpt',
+          'json formatter and validator',
+          'qr code generator custom',
+          'online conversion tools',
+          'image processing utilities',
+          'productivity software free',
+          'web developer toolkit 2025',
+          'all-in-one dev tools',
+          'free document converters',
+          'online encryption tools sha256',
+          'technical utilities for programmers',
+          'creative tools online',
+          'base64 converter',
+          'image to text ocr free',
+          'background removal ai',
+          'pdf merger splitter online'
+        ]}
       />
 
       {/* Header */}
@@ -205,7 +227,7 @@ const ServicesPage: React.FC = () => {
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 layout
               >
-                <Card sx={{ height: '100%' }}>
+                <Card sx={{ height: '100%', minHeight: '340px' }}>
                   <CardContent>
                     {/* Service Header */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
@@ -235,7 +257,18 @@ const ServicesPage: React.FC = () => {
                     <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                       {service.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        mb: 3,
+                        height: '48px', // Fixed height
+                        display: '-webkit-box',
+                        overflow: 'hidden',
+                        WebkitBoxOrient: 'vertical',
+                        WebkitLineClamp: 2,
+                      }}
+                    >
                       {service.description}
                     </Typography>
 

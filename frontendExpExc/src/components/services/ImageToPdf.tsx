@@ -56,7 +56,19 @@ const ImageToPdf: React.FC = () => {
             <Seo
                 title="Convert Images to PDF - Combine Photos Online"
                 description="Easily convert JPG, PNG, and BMP images into a single professional PDF document. Fast, free, and no installation required."
-                keywords={['image to pdf', 'convert jpg to pdf', 'png to pdf', 'combine images to pdf', 'online photo to pdf converter', 'combine images pdf', 'photo collage pdf', 'batch image to pdf', 'convert images to pdf online']}
+                keywords={[
+                    'image to pdf',
+                    'convert jpg to pdf',
+                    'png to pdf',
+                    'combine images to pdf',
+                    'online photo to pdf converter',
+                    'combine images pdf',
+                    'photo collage pdf',
+                    'batch image to pdf',
+                    'convert images to pdf online',
+                    'jpeg to pdf converter free',
+                    'turn pictures into pdf'
+                ]}
             />
 
 

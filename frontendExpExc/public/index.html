@@ -16,6 +16,8 @@
   <meta name="theme-color" content="#0047AB" />
   <meta name="description"
     content="ExpectException - Free online developer tools and services. High-performance YouTube downloader, PDF to Word converter, AI image detector, Image compressor, and OCR. Fast, secure, and no registration required." />
+  <meta name="keywords"
+    content="YouTube Downloader, AI Detector, PDF to Word, Image Compressor, OCR, Developer Tools, JSON Formatter, QR Generator, Text to Speech, Background Remover, ExpectException" />
 
   <!-- PWA & Mobile Optimization -->
   <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
@@ -160,15 +162,13 @@
   <script>
     // Remove loading screen after React mounts
     window.addEventListener('load', function () {
-      setTimeout(function () {
-        var loader = document.getElementById('app-loading');
-        if (loader) {
-          loader.style.opacity = '0';
-          setTimeout(function () {
-            loader.style.display = 'none';
-          }, 500);
-        }
-      }, 500);
+      var loader = document.getElementById('app-loading');
+      if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(function () {
+          loader.style.display = 'none';
+        }, 300); // Shortened from 500ms
+      }
     });
   </script>
   <!--

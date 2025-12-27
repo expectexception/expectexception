@@ -19,6 +19,7 @@ import {
     MenuItem,
     Stack,
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import {
     Menu as MenuIcon,
     Home,
@@ -45,6 +46,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, logout, user } = useAuth();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const theme = useTheme();
     const location = useLocation();
 
     // Scroll detection for navbar effects
@@ -103,16 +105,27 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     };
 
     const drawer = (
-        <Box sx={{ width: 280, height: '100%', bgcolor: 'background.paper' }}>
+        <Box sx={{
+            width: 280,
+            height: '100%',
+            bgcolor: 'background.paper',
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundImage: `linear-gradient(to bottom, ${alpha(theme.palette.primary.main, 0.05)}, transparent)`,
+        }}>
             <Box sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="h6" color="primary" fontWeight="bold">
-                    ExpectException
-                </Typography>
-                <IconButton onClick={handleDrawerToggle}>
-                    <Close />
+                <Stack direction="row" alignItems="center" spacing={1.5}>
+                    <Dashboard sx={{ color: 'primary.main', fontSize: 28 }} />
+                    <Typography variant="h6" color="text.primary" fontWeight="800" sx={{ letterSpacing: '-0.02em' }}>
+                        ExpectException
+                    </Typography>
+                </Stack>
+                <IconButton onClick={handleDrawerToggle} sx={{ bgcolor: alpha(theme.palette.text.primary, 0.05) }}>
+                    <Close fontSize="small" />
                 </IconButton>
             </Box>
-            <List>
+
+            <List sx={{ px: 2, flexGrow: 1 }}>
                 {navItems.map((item) => (
                     <ListItem
                         key={item.label}
@@ -120,67 +133,136 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         to={item.path}
                         onClick={handleDrawerToggle}
                         sx={{
-                            mx: 2,
-                            borderRadius: 2,
+                            borderRadius: 3,
                             mb: 1,
-                            bgcolor: location.pathname === item.path ? 'primary.light' : 'transparent',
-                            color: location.pathname === item.path ? 'white' : 'inherit',
+                            py: 1.5,
+                            bgcolor: location.pathname === item.path ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                            color: location.pathname === item.path ? 'primary.main' : 'text.secondary',
+                            border: '1px solid',
+                            borderColor: location.pathname === item.path ? alpha(theme.palette.primary.main, 0.2) : 'transparent',
                             '&:hover': {
-                                bgcolor: location.pathname === item.path ? 'primary.main' : 'action.hover',
+                                bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                color: 'primary.main',
                             },
+                            transition: 'all 0.2s',
                         }}
                     >
-                        <ListItemIcon sx={{ color: location.pathname === item.path ? 'white' : 'inherit' }}>
+                        <ListItemIcon sx={{
+                            color: location.pathname === item.path ? 'primary.main' : 'text.secondary',
+                            minWidth: 40
+                        }}>
                             {item.icon}
                         </ListItemIcon>
-                        <ListItemText primary={item.label} />
+                        <ListItemText
+                            primary={item.label}
+                            primaryTypographyProps={{
+                                fontWeight: location.pathname === item.path ? 700 : 500,
+                                fontSize: '0.95rem'
+                            }}
+                        />
                     </ListItem>
                 ))}
-
-                {/* Mobile Auth Items */}
-                <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-                    {isAuthenticated ? (
-                        <>
-                            <ListItem
-                                component={Link}
-                                to={`/profile/${user?.email}`}
-                                onClick={handleDrawerToggle}
-                                sx={{
-                                    mx: 2,
-                                    borderRadius: 2,
-                                    mb: 1,
-                                    bgcolor: location.pathname === `/profile/${user?.email}` ? 'primary.light' : 'transparent',
-                                    color: location.pathname === `/profile/${user?.email}` ? 'white' : 'inherit',
-                                }}
-                            >
-                                <ListItemIcon sx={{ color: location.pathname === `/profile/${user?.email}` ? 'white' : 'inherit' }}>
-                                    <Person />
-                                </ListItemIcon>
-                                <ListItemText primary="My Profile" />
-                            </ListItem>
-                            <ListItem
-                                component="button"
-                                onClick={handleLogout}
-                                sx={{ mx: 2, borderRadius: 2, width: 'calc(100% - 32px)', border: 'none', bgcolor: 'transparent', textAlign: 'left', cursor: 'pointer' }}
-                            >
-                                <ListItemIcon><Logout /></ListItemIcon>
-                                <ListItemText primary="Logout" />
-                            </ListItem>
-                        </>
-                    ) : (
-                        <>
-                            <ListItem component={Link} to="/login" onClick={handleDrawerToggle} sx={{ mx: 2 }}>
-                                <ListItemIcon><Login /></ListItemIcon>
-                                <ListItemText primary="Sign In" />
-                            </ListItem>
-                            <ListItem component={Link} to="/register" onClick={handleDrawerToggle} sx={{ mx: 2 }}>
-                                <ListItemIcon><AppRegistration /></ListItemIcon>
-                                <ListItemText primary="Register" />
-                            </ListItem>
-                        </>
-                    )}
-                </Box>
             </List>
+
+            {/* Mobile Auth Section */}
+            <Box sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider', bgcolor: alpha(theme.palette.background.paper, 0.5) }}>
+                {isAuthenticated ? (
+                    <Stack spacing={2}>
+                        <Box sx={{
+                            p: 2,
+                            borderRadius: 3,
+                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                            border: '1px solid',
+                            borderColor: alpha(theme.palette.primary.main, 0.1),
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2
+                        }}>
+                            <Avatar sx={{
+                                bgcolor: 'secondary.main',
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.4)}`,
+                                border: '2px solid rgba(255,255,255,0.1)'
+                            }}>
+                                {user?.email?.charAt(0).toUpperCase()}
+                            </Avatar>
+                            <Box sx={{ minWidth: 0 }}>
+                                <Typography variant="subtitle2" fontWeight="bold" noWrap>
+                                    {user?.email?.split('@')[0]}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" noWrap display="block">
+                                    {user?.email}
+                                </Typography>
+                            </Box>
+                        </Box>
+                        <Button
+                            component={Link}
+                            to={`/profile/${user?.email}`}
+                            onClick={handleDrawerToggle}
+                            variant="outlined"
+                            startIcon={<Person />}
+                            fullWidth
+                            sx={{ borderRadius: 3 }}
+                        >
+                            My Profile
+                        </Button>
+                        <Button
+                            onClick={handleLogout}
+                            variant="text"
+                            color="error"
+                            startIcon={<Logout />}
+                            fullWidth
+                            sx={{ borderRadius: 3 }}
+                        >
+                            Logout
+                        </Button>
+                    </Stack>
+                ) : (
+                    <Stack spacing={2}>
+                        <Button
+                            component={Link}
+                            to="/login"
+                            onClick={handleDrawerToggle}
+                            variant="outlined"
+                            startIcon={<Login />}
+                            fullWidth
+                            sx={{
+                                borderRadius: 3,
+                                py: 1.5,
+                                borderColor: alpha(theme.palette.primary.main, 0.3),
+                                color: 'text.primary',
+                                '&:hover': {
+                                    borderColor: theme.palette.primary.main,
+                                    bgcolor: alpha(theme.palette.primary.main, 0.05)
+                                }
+                            }}
+                        >
+                            Sign In
+                        </Button>
+                        <Button
+                            component={Link}
+                            to="/register"
+                            onClick={handleDrawerToggle}
+                            variant="contained"
+                            startIcon={<AppRegistration />}
+                            fullWidth
+                            sx={{
+                                borderRadius: 3,
+                                py: 1.5,
+                                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                                boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
+                                fontWeight: 700,
+                                '&:hover': {
+                                    background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: `0 12px 24px ${alpha(theme.palette.primary.main, 0.4)}`,
+                                }
+                            }}
+                        >
+                            Register Now
+                        </Button>
+                    </Stack>
+                )}
+            </Box>
         </Box>
     );
 

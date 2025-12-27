@@ -814,7 +814,16 @@ const AIDetectorPage: React.FC = () => {
             <Seo
                 title="AI Image Detector - Forensic AI Generation Check"
                 description="Advanced AI image detection using multi-model ensemble analysis. Check if images are real or AI-generated with ELA and forensic tools."
-                keywords={['ai image detector', 'check if image is ai', 'fake image detector', 'forensic image analysis', 'deepfake detector', 'detect ai generated images', 'is it ai generated', 'ai content detection', 'verify image authenticity']}
+                keywords={[
+                    'chatgpt image detector',
+                    'midjourney detector',
+                    'dall-e 3 detection',
+                    'stable diffusion detector online',
+                    'ai text generator detector',
+                    'verify real photo online',
+                    'detect ai face',
+                    'forensic photo analysis'
+                ]}
             />
             <Box sx={{ mb: { xs: 3, sm: 6 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                 <Box>

@@ -43,7 +43,21 @@ const ColorConverter: React.FC = () => {
             <Seo
                 title="Color Converter & Code Generator - HEX, RGB, HSL, CMYK"
                 description="Convert colors between HEX, RGB, HSL, and CMYK formats. Visual color picker and CSS code generator included. Simple and free."
-                keywords={['color converter', 'hex to rgb', 'rgb to hex', 'hsl converter', 'css color picker', 'color code generator', 'color picker online', 'css color converter', 'color code conversion', 'color palette tool', 'web color converter']}
+                keywords={[
+                    'color converter',
+                    'hex to rgb',
+                    'rgb to hex',
+                    'hsl converter',
+                    'css color picker',
+                    'color code generator',
+                    'color picker online',
+                    'css color converter',
+                    'color code conversion',
+                    'color palette tool',
+                    'web color converter',
+                    'find color hex from rgb',
+                    'design color tool'
+                ]}
             />
 
 

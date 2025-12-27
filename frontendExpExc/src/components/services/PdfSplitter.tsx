@@ -47,7 +47,20 @@ const PdfSplitter: React.FC = () => {
             <Seo
                 title="Split PDF Online - Extract Pages Free"
                 description="Extract specific pages or a range of pages from your PDF file. High-performance PDF splitter that keeps your data secure."
-                keywords={['pdf splitter', 'split pdf online', 'extract pages from pdf', 'separate pdf pages', 'free pdf tool', 'split pdf pages', 'pdf page cutter', 'pdf splitter free', 'extract pages from pdf online']}
+                keywords={[
+                    'pdf splitter',
+                    'split pdf online',
+                    'extract pages from pdf',
+                    'separate pdf pages',
+                    'free pdf tool',
+                    'split pdf pages',
+                    'pdf page cutter',
+                    'pdf splitter free',
+                    'extract pages from pdf online',
+                    'cut pdf pages free',
+                    'how to extract pages from pdf',
+                    'split large pdf'
+                ]}
             />
 
 
