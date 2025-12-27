@@ -46,20 +46,7 @@ const BackgroundRemover: React.FC = () => {
         <Container maxWidth="md" sx={{ py: 4 }}>
             <Seo
                 title="AI Background Remover - Transparent Images in Seconds"
-                description="Remove backgrounds from images automatically using AI. Get high-quality transparent PNGs instantly for free."
-                keywords={[
-                    'remove background ai',
-                    'transparent background maker',
-                    'bg remover',
-                    'automatic background removal',
-                    'free online background remover',
-                    'online background remover',
-                    'free background removal tool',
-                    'image editing',
-                    'ai image processing',
-                    'cut out image background',
-                    'make image transparent free'
-                ]}
+                toolId={6}
             />
 
 

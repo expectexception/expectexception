@@ -25,6 +25,8 @@ const UploadResourcePage: React.FC = () => {
         category: 'other',
         version: 'v1.0.0',
         size: '',
+        description: '',
+        keywords: '',
     });
     const [file, setFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -58,6 +60,8 @@ const UploadResourcePage: React.FC = () => {
         uploadData.append('category', formData.category);
         uploadData.append('version', formData.version);
         uploadData.append('size', formData.size);
+        uploadData.append('description', formData.description);
+        uploadData.append('keywords', formData.keywords);
         uploadData.append('file', file);
 
         try {
@@ -139,6 +143,25 @@ const UploadResourcePage: React.FC = () => {
                             value={formData.size}
                             onChange={(e) => setFormData({ ...formData, size: e.target.value })}
                             helperText="Auto-calculated, but you can override"
+                        />
+
+                        <TextField
+                            label="Description"
+                            fullWidth
+                            multiline
+                            rows={4}
+                            required
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            helperText="Detailed description of the resource for the specialized download page."
+                        />
+
+                        <TextField
+                            label="Keywords"
+                            fullWidth
+                            value={formData.keywords}
+                            onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
+                            helperText="Comma-separated keywords for SEO (e.g. 'pdf, tool, converter')"
                         />
 
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>

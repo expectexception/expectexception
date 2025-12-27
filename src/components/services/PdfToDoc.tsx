@@ -170,22 +170,7 @@ const PdfToDoc: React.FC = () => {
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Seo
                 title="PDF to Word Converter - Free DOCX & DOC Conversion"
-                description="Convert PDF files to Word documents (DOCX, DOC) online for free. Fast, secure, and high-quality PDF to Word conversion. Maintain formatting perfectly."
-                keywords={[
-                    'pdf to word',
-                    'pdf to docx',
-                    'pdf converter',
-                    'convert pdf to doc',
-                    'free pdf converter',
-                    'online pdf to word',
-                    'docx converter',
-                    'pdf to doc converter free',
-                    'microsoft word converter',
-                    'edit pdf online free',
-                    'convert pdf to word without losing formatting',
-                    'best pdf to word converter',
-                    'secure pdf to docx'
-                ]}
+                toolId={8}
             />
 
             <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>

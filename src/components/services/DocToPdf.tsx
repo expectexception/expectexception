@@ -58,21 +58,7 @@ const DocToPdf: React.FC = () => {
         <Container maxWidth="md" sx={{ py: 4 }}>
             <Seo
                 title="Convert Word to PDF Online - Fast & Free"
-                description="High fidelity Word (DOC/DOCX) to PDF conversion. Keep your layout and fonts perfectly. No file size limits. Quick and easy."
-                keywords={[
-                    'word to pdf',
-                    'doc to pdf',
-                    'docx to pdf converter',
-                    'online document converter',
-                    'free word to pdf',
-                    'convert docx',
-                    'online doc to pdf',
-                    'docx to pdf converter free',
-                    'microsoft word to pdf',
-                    'convert word to pdf without software',
-                    'fast doc to pdf conversion',
-                    'high resolution word to pdf'
-                ]}
+                toolId={9}
             />
 
 

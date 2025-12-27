@@ -80,19 +80,7 @@ const ImageCompressorPage: React.FC = () => {
         <Container maxWidth="md" sx={{ py: 6 }}>
             <Seo
                 title="Online Image Compressor - Reduce Image Size Free"
-                description="Compress JPEG/PNG/WEBP images online with controlled quality. Reduce file size for faster websites without losing visual quality."
-                keywords={[
-                    'image compressor',
-                    'reduce image size online',
-                    'compress jpeg free',
-                    'png compressor online',
-                    'webp converter and compressor',
-                    'optimize images for web',
-                    'shrink image file size',
-                    'high quality image compression',
-                    'free online photo resizer',
-                    'batch image optimizer'
-                ]}
+                toolId={11}
             />
             <Typography variant="h3" gutterBottom sx={{ fontWeight: 800, textAlign: 'center', mb: 4 }}>
                 Image Compressor

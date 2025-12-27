@@ -1,67 +1,139 @@
 [
     {
         "id": 1,
-        "title": "URL Downloader",
-        "description": "Download files from any URL with support for multiple formats and batch processing.",
-        "path": "/services/url-downloader",
-        "icon": "Download",
-        "color": "primary",
-        "popularity": 96,
+        "title": "YT Video Downloader",
+        "description": "Download YouTube videos in various resolutions (HD, 4K) and multiple formats.",
+        "path": "/services/yt-downloader",
+        "icon": "Movie",
+        "color": "secondary",
+        "popularity": 98,
         "category": "download",
         "tags": [
-            "file",
-            "download",
-            "batch"
+            "video",
+            "youtube",
+            "media"
+        ],
+        "keywords": [
+            "youtube downloader",
+            "yt video download",
+            "youtube to mp4",
+            "4k video downloader",
+            "save youtube videos",
+            "download yt videos online",
+            "free youtube downloader",
+            "youtube clip saver",
+            "hd video downloader"
         ]
     },
     {
         "id": 2,
+        "title": "Text to Handwriting",
+        "description": "Convert digital text into realistic human-like handwriting with AI-enhanced variations.",
+        "path": "/services/text-to-handwriting",
+        "icon": "Create",
+        "color": "primary",
+        "popularity": 95,
+        "category": "converter",
+        "tags": [
+            "handwriting",
+            "ai",
+            "convert",
+            "text"
+        ],
+        "keywords": [
+            "text to handwriting",
+            "handwriting generator",
+            "homework generator",
+            "digital to handwritten",
+            "write text in handwriting",
+            "realistic handwriting converter",
+            "note generator",
+            "assignment maker",
+            "ai handwriting"
+        ]
+    },
+    {
+        "id": 3,
         "title": "AI Detector",
         "description": "Detect AI-generated content in text using advanced analysis algorithms.",
         "path": "/services/ai-detector",
         "icon": "SmartToy",
         "color": "secondary",
-        "popularity": 95,
+        "popularity": 94,
         "category": "developer",
         "tags": [
             "ai",
             "detect",
             "analysis"
+        ],
+        "keywords": [
+            "ai detector",
+            "chatgpt detector",
+            "ai content checker",
+            "detect ai writing",
+            "is this text ai",
+            "gpt zero alternative",
+            "ai plagiarism checker",
+            "check for ai content",
+            "artificial intelligence detector"
         ]
     },
     {
-        "id": 3,
+        "id": 4,
         "title": "Secret Sharer",
         "description": "Securely share sensitive passwords or secrets with self-destructing one-time links.",
         "path": "/services/secret-sharer",
         "icon": "Lock",
         "color": "error",
-        "popularity": 94,
+        "popularity": 93,
         "category": "security",
         "tags": [
             "security",
             "password",
             "share",
             "encrypt"
-        ]
-    },
-    {
-        "id": 4,
-        "title": "YT Video Downloader",
-        "description": "Download YouTube videos in various resolutions (HD, 4K) and multiple formats.",
-        "path": "/services/yt-downloader",
-        "icon": "Movie",
-        "color": "secondary",
-        "popularity": 93,
-        "category": "download",
-        "tags": [
-            "video",
-            "youtube",
-            "media"
+        ],
+        "keywords": [
+            "secret sharer",
+            "one time secret",
+            "password share",
+            "secure note",
+            "self destruct message",
+            "privnote alternative",
+            "secure file transfer",
+            "encrypted message",
+            "share password securely",
+            "temporary link"
         ]
     },
     {
         "id": 5,
+        "title": "URL Downloader",
+        "description": "Download files from any URL with support for multiple formats and batch processing.",
+        "path": "/services/url-downloader",
+        "icon": "Download",
+        "color": "primary",
+        "popularity": 92.1,
+        "category": "download",
+        "tags": [
+            "file",
+            "download",
+            "batch"
+        ],
+        "keywords": [
+            "url downloader",
+            "file downloader online",
+            "download file from link",
+            "batch url downloader",
+            "link saver",
+            "online download manager",
+            "direct link downloader",
+            "wget online",
+            "save file from url"
+        ]
+    },
+    {
+        "id": 6,
         "title": "Background Remover",
         "description": "Remove backgrounds from images automatically using AI-powered technology.",
         "path": "/services/background-remover",
@@ -73,22 +145,16 @@
             "image",
             "background",
             "ai"
-        ]
-    },
-    {
-        "id": 6,
-        "title": "Text to Handwriting",
-        "description": "Convert digital text into realistic human-like handwriting with AI-enhanced variations.",
-        "path": "/services/text-to-handwriting",
-        "icon": "Create",
-        "color": "primary",
-        "popularity": 91,
-        "category": "converter",
-        "tags": [
-            "handwriting",
-            "ai",
-            "convert",
-            "text"
+        ],
+        "keywords": [
+            "background remover",
+            "remove bg",
+            "transparent background maker",
+            "delete background",
+            "ai background removal",
+            "image background remover",
+            "free background eraser",
+            "photo cutout tool"
         ]
     },
     {
@@ -98,12 +164,23 @@
         "path": "/services/json-formatter",
         "icon": "Code",
         "color": "warning",
-        "popularity": 90,
+        "popularity": 91,
         "category": "developer",
         "tags": [
             "json",
             "developer",
             "format"
+        ],
+        "keywords": [
+            "json formatter",
+            "json beautifier",
+            "json validator",
+            "format json online",
+            "json viewer",
+            "json lint",
+            "minify json",
+            "json parser",
+            "pretty print json"
         ]
     },
     {
@@ -119,6 +196,16 @@
             "pdf",
             "doc",
             "convert"
+        ],
+        "keywords": [
+            "pdf to doc",
+            "pdf to word",
+            "convert pdf to editable word",
+            "pdf converter online",
+            "pdf to docx",
+            "change pdf to word",
+            "free pdf converter",
+            "document converter"
         ]
     },
     {
@@ -134,6 +221,16 @@
             "doc",
             "pdf",
             "convert"
+        ],
+        "keywords": [
+            "doc to pdf",
+            "word to pdf",
+            "convert word to pdf",
+            "docx to pdf",
+            "save word as pdf",
+            "document via pdf",
+            "microsoft word to pdf",
+            "online pdf creator"
         ]
     },
     {
@@ -143,12 +240,23 @@
         "path": "/services/qr-generator",
         "icon": "QrCode",
         "color": "success",
-        "popularity": 88,
+        "popularity": 87,
         "category": "converter",
         "tags": [
             "qr",
             "generator",
             "share"
+        ],
+        "keywords": [
+            "qr code generator",
+            "url to qr",
+            "create qr code",
+            "free qr generator",
+            "custom qr code",
+            "qr maker",
+            "link to qr code",
+            "qr code with logo",
+            "qrcode generator"
         ]
     },
     {
@@ -158,12 +266,23 @@
         "path": "/services/image-compressor",
         "icon": "Compress",
         "color": "error",
-        "popularity": 88,
+        "popularity": 86,
         "category": "media",
         "tags": [
             "image",
             "compress",
             "optimize"
+        ],
+        "keywords": [
+            "image compressor",
+            "compress jpeg",
+            "compress png",
+            "reduce image size",
+            "optimize images",
+            "shrink image",
+            "smaller photo size",
+            "image optimizer online",
+            "kb reducer"
         ]
     },
     {
@@ -173,12 +292,23 @@
         "path": "/services/image-resizer",
         "icon": "PhotoSizeSelectLarge",
         "color": "error",
-        "popularity": 88,
+        "popularity": 85,
         "category": "media",
         "tags": [
             "image",
             "resize",
             "scale"
+        ],
+        "keywords": [
+            "image resizer",
+            "resize photos",
+            "change image size",
+            "scale image",
+            "resize jpg",
+            "resize png",
+            "photo resizer online",
+            "dimension changer",
+            "picture resizer"
         ]
     },
     {
@@ -188,12 +318,23 @@
         "path": "/services/pdf-merger",
         "icon": "MergeType",
         "color": "success",
-        "popularity": 87,
+        "popularity": 84,
         "category": "document",
         "tags": [
             "pdf",
             "merge",
             "combine"
+        ],
+        "keywords": [
+            "pdf merger",
+            "combine pdfs",
+            "merge pdf files",
+            "pdf joiner",
+            "join pdf",
+            "combine multiple pdfs",
+            "bind pdf",
+            "file merger",
+            "pdf binder"
         ]
     },
     {
@@ -203,12 +344,22 @@
         "path": "/services/image-to-text",
         "icon": "TextFields",
         "color": "secondary",
-        "popularity": 87,
+        "popularity": 83,
         "category": "converter",
         "tags": [
             "ocr",
             "text",
             "extract"
+        ],
+        "keywords": [
+            "image to text",
+            "ocr online",
+            "extract text from image",
+            "picture to text",
+            "photo to text",
+            "grab text from image",
+            "ocr converter",
+            "text extractor"
         ]
     },
     {
@@ -218,12 +369,22 @@
         "path": "/services/pdf-splitter",
         "icon": "CallSplit",
         "color": "warning",
-        "popularity": 86,
+        "popularity": 82,
         "category": "document",
         "tags": [
             "pdf",
             "split",
             "extract"
+        ],
+        "keywords": [
+            "pdf splitter",
+            "split pdf pages",
+            "separate pdf pages",
+            "extract pages from pdf",
+            "cut pdf",
+            "break pdf",
+            "divide pdf",
+            "pdf separator"
         ]
     },
     {
@@ -233,12 +394,23 @@
         "path": "/services/text-to-speech",
         "icon": "VolumeUp",
         "color": "info",
-        "popularity": 85,
+        "popularity": 81,
         "category": "converter",
         "tags": [
             "audio",
             "text",
             "speech"
+        ],
+        "keywords": [
+            "text to speech",
+            "tts online",
+            "read text aloud",
+            "voice generator",
+            "speech synthesis",
+            "ai voice",
+            "text reader",
+            "convert text to audio",
+            "mp3 from text"
         ]
     },
     {
@@ -248,12 +420,22 @@
         "path": "/services/image-to-pdf",
         "icon": "Image",
         "color": "info",
-        "popularity": 85,
+        "popularity": 80,
         "category": "document",
         "tags": [
             "image",
             "pdf",
             "convert"
+        ],
+        "keywords": [
+            "image to pdf",
+            "jpg to pdf",
+            "png to pdf",
+            "photos to pdf",
+            "convert images to document",
+            "create pdf from images",
+            "img2pdf",
+            "picture to pdf"
         ]
     },
     {
@@ -263,12 +445,22 @@
         "path": "/services/base64",
         "icon": "Code",
         "color": "warning",
-        "popularity": 85,
+        "popularity": 79.9,
         "category": "developer",
         "tags": [
             "base64",
             "encode",
             "decode"
+        ],
+        "keywords": [
+            "base64 encode",
+            "base64 decode",
+            "string to base64",
+            "base64 converter",
+            "decode base64 string",
+            "base64 translator",
+            "encode file to base64",
+            "developer tools"
         ]
     },
     {
@@ -278,12 +470,22 @@
         "path": "/services/image-converter",
         "icon": "SwapHoriz",
         "color": "success",
-        "popularity": 84,
+        "popularity": 79.8,
         "category": "media",
         "tags": [
             "image",
             "convert",
             "format"
+        ],
+        "keywords": [
+            "image converter",
+            "jpg to png",
+            "png to jpg",
+            "webp converter",
+            "convert picture format",
+            "image file converter",
+            "change image type",
+            "photo converter"
         ]
     },
     {
@@ -293,12 +495,22 @@
         "path": "/services/hash-generator",
         "icon": "Fingerprint",
         "color": "info",
-        "popularity": 83,
+        "popularity": 79.7,
         "category": "developer",
         "tags": [
             "hash",
             "crypto",
             "security"
+        ],
+        "keywords": [
+            "hash generator",
+            "md5 generator",
+            "sha256 generator",
+            "check file hash",
+            "online hasher",
+            "fingerprint generator",
+            "cryptographic hash",
+            "checksum calculator"
         ]
     },
     {
@@ -308,12 +520,22 @@
         "path": "/services/uuid-generator",
         "icon": "Key",
         "color": "error",
-        "popularity": 82,
+        "popularity": 79.6,
         "category": "developer",
         "tags": [
             "uuid",
             "generate",
             "unique"
+        ],
+        "keywords": [
+            "uuid generator",
+            "guid generator",
+            "random uuid",
+            "uuid v4",
+            "unique identifier generator",
+            "generate guid",
+            "bulk uuid",
+            "mac address uuid"
         ]
     },
     {
@@ -323,12 +545,22 @@
         "path": "/services/color-converter",
         "icon": "Palette",
         "color": "primary",
-        "popularity": 81,
+        "popularity": 79.5,
         "category": "developer",
         "tags": [
             "color",
             "convert",
             "design"
+        ],
+        "keywords": [
+            "color converter",
+            "hex to rgb",
+            "rgb to hex",
+            "cmyk converter",
+            "hsl converter",
+            "color code picker",
+            "css color converter",
+            "web color translator"
         ]
     },
     {
@@ -338,13 +570,23 @@
         "path": "/services/markdown-preview",
         "icon": "Code",
         "color": "info",
-        "popularity": 80,
+        "popularity": 79.4,
         "category": "developer",
         "tags": [
             "developer",
             "markdown",
             "html",
             "preview"
+        ],
+        "keywords": [
+            "markdown preview",
+            "markdown editor",
+            "md to html",
+            "markdown viewer",
+            "live markdown",
+            "github markdown preview",
+            "markdown renderer",
+            "convert md to html"
         ]
     }
 ]

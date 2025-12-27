@@ -56,19 +56,7 @@ const ImageResizer: React.FC = () => {
         <Container maxWidth="md" sx={{ py: 4 }}>
             <Seo
                 title="Resize Images Online - Pixel & Percentage Scaler"
-                description="Resize your images by pixels or percentage while maintaining aspect ratio. Fast, free, and simple online tool for photo scaling."
-                keywords={[
-                    'resize image',
-                    'photo resizer',
-                    'image scaler online',
-                    'change image dimensions',
-                    'free image resizer',
-                    'online image resizer',
-                    'free image scaling',
-                    'web image editor',
-                    'developer image tool',
-                    'batch photo resizer free'
-                ]}
+                toolId={12}
             />
 
 

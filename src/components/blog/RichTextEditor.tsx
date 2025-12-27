@@ -44,11 +44,11 @@ interface MenuBarProps {
     uploadImage: (file?: File) => Promise<void>;
 }
 
-const MenuBar: React.FC<MenuBarProps> = ({ 
-    editor, 
-    isFullscreen, 
+const MenuBar: React.FC<MenuBarProps> = ({
+    editor,
+    isFullscreen,
     toggleFullscreen,
-    uploadImage 
+    uploadImage
 }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const openTableMenu = Boolean(anchorEl);
@@ -311,9 +311,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
             // Show loading placeholder
             editor.chain().focus().run();
 
-            const response = await apiClient.post(endpoints.blog.uploadImage, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            const response = await apiClient.post(endpoints.blog.uploadImage, formData);
 
             let imageUrl = response.data.url;
             if (imageUrl.startsWith('/')) {

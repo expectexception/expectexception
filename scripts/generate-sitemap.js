@@ -2,30 +2,11 @@ const fs = require('fs');
 const path = require('path');
 
 const baseUrl = 'https://expectexception.com';
-const routes = [
+const tools = require('../src/data/tools.json');
+
+const staticRoutes = [
     '/',
     '/services',
-    '/services/qr-generator',
-    '/services/json-formatter',
-    '/services/url-downloader',
-    '/services/yt-downloader',
-    '/services/text-to-speech',
-    '/services/image-compressor',
-    '/services/ai-detector',
-    '/services/pdf-to-doc',
-    '/services/doc-to-pdf',
-    '/services/pdf-merger',
-    '/services/pdf-splitter',
-    '/services/image-to-pdf',
-    '/services/image-resizer',
-    '/services/background-remover',
-    '/services/image-to-text',
-    '/services/image-converter',
-    '/services/base64',
-    '/services/hash-generator',
-    '/services/uuid-generator',
-    '/services/color-converter',
-    '/services/markdown-preview',
     '/search',
     '/blogs',
     '/downloads',
@@ -34,10 +15,31 @@ const routes = [
     '/contact'
 ];
 
-const generateSitemap = () => {
+const toolRoutes = tools.map(tool => tool.path);
+
+const routes = [...staticRoutes, ...toolRoutes];
+
+const axios = require('axios'); // Ensure axios is available or use native fetch/https
+
+const generateSitemap = async () => {
+    let blogRoutes = [];
+    try {
+        // Fetch published blog posts
+        // Attempting to fetch from local backend first, fallback or skip if offline
+        const response = await axios.get('http://127.0.0.1:8000/api/blog/posts/');
+        if (response.data && Array.isArray(response.data.results)) {
+            blogRoutes = response.data.results.map(post => `/blogs/${post.id}`);
+            console.log(`Fetched ${blogRoutes.length} blog posts for sitemap.`);
+        }
+    } catch (error) {
+        console.warn('Warning: Could not fetch blog posts for sitemap (Backend might be down). Skipping blog routes.', error.message);
+    }
+
+    const allRoutes = [...routes, ...blogRoutes];
+
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${routes
+${allRoutes
             .map(route => {
                 return `  <url>
     <loc>${baseUrl}${route}</loc>

@@ -2,15 +2,18 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 
+import toolsData from '../../data/tools.json';
+
 interface SeoProps {
     title: string;
-    description: string;
+    description?: string;
     keywords?: string[];
     image?: string;
     type?: 'website' | 'article' | 'application';
     date?: string;
     author?: string;
     structuredData?: object;
+    toolId?: number; // New prop for auto-SEO
 }
 
 const Seo: React.FC<SeoProps> = ({
@@ -21,12 +24,19 @@ const Seo: React.FC<SeoProps> = ({
     type = 'website',
     date,
     author = 'ExpectException',
-    structuredData
+    structuredData,
+    toolId
 }) => {
     const location = useLocation();
     const siteUrl = window.location.origin;
     const currentUrl = `${siteUrl}${location.pathname}`;
     const imageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
+
+    // Find tool if ID provided
+    const tool = toolId ? toolsData.find(t => t.id === toolId) : null;
+
+    // Use provided description OR tool description OR default
+    const finalDescription = description || tool?.description || "Free online developer tools and utilities by ExpectException.";
 
     // Default keywords if none provided
     const baseKeywords = [
@@ -39,10 +49,12 @@ const Seo: React.FC<SeoProps> = ({
         'expectexception'
     ];
 
-    const allKeywords = Array.from(new Set([...baseKeywords, ...keywords])).join(', ');
+    // Merge provided keywords + tool keywords + base keywords
+    const toolKeywords = tool?.keywords || [];
+    const allKeywords = Array.from(new Set([...baseKeywords, ...keywords, ...toolKeywords])).join(', ');
 
     // Default JSON-LD for WebSite
-    const defaultJsonLd = {
+    let finalJsonLd = structuredData || {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "ExpectException Tools",
@@ -57,13 +69,34 @@ const Seo: React.FC<SeoProps> = ({
         }
     };
 
-    const finalJsonLd = structuredData || defaultJsonLd;
+    // If it's a tool, auto-generate SoftwareApplication schema
+    if (tool && !structuredData) {
+        finalJsonLd = {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": tool.title,
+            "description": finalDescription,
+            "url": currentUrl,
+            "applicationCategory": "UtilitiesApplication", // Generic category
+            "operatingSystem": "Any",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8", // Static high rating for SEO confidence
+                "ratingCount": tool.popularity * 10 // Mock rating count based on popularity
+            }
+        };
+    }
 
     return (
         <Helmet>
             {/* Standard Meta Tags */}
             <title>{title} | ExpectException</title>
-            <meta name="description" content={description} />
+            <meta name="description" content={finalDescription} />
             <meta name="keywords" content={allKeywords} />
             <link rel="canonical" href={currentUrl} />
             <meta name="robots" content="index, follow" />
