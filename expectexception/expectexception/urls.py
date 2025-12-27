@@ -25,6 +25,8 @@ urlpatterns = [
     path('api/profiles/', include('apps.profiles.urls')),
     path('api/notifications/', include('apps.notifications.urls')),
     path('api/ai-detector/', include('apps.ai_detector.urls')),
+    path('api/text-to-handwriting/', include('apps.text_to_handwriting.urls')),
+    path('api/secret-sharer/', include('apps.secret_sharer.urls')),
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='docs'),

@@ -114,6 +114,11 @@ export const endpoints = {
             toggleFavorite: '/api/services/dashboard/toggle_favorite/',
         },
         search: '/api/services/search/',
+        textToHandwriting: '/api/text-to-handwriting/generate/',
+        secretSharer: {
+            create: '/api/secret-sharer/create/',
+            view: (id: string) => `/api/secret-sharer/view/${id}/`
+        },
     },
 
     // AI Image Detector

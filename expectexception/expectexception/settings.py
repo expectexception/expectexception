@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'apps.profiles',
     'apps.notifications',
     'apps.ai_detector',
+    'apps.text_to_handwriting',
+    'apps.secret_sharer',
     'django.contrib.sites',
     'django.contrib.sitemaps',
 ]

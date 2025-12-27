@@ -35,6 +35,9 @@ const PrivacyPolicy = lazy(() => import('../../pages/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('../../pages/legal/TermsOfService'));
 const ContactPage = lazy(() => import('../../pages/ContactPage'));
 const SearchPage = lazy(() => import('../../pages/SearchPage'));
+const TextToHandwritingPage = lazy(() => import('../../pages/TextToHandwritingPage'));
+const SecretSharerPage = lazy(() => import('../../pages/SecretSharerPage'));
+
 
 // Service components - Lazy loaded
 const QrGenerator = lazy(() => import('../services/QrGenerator'));
@@ -96,6 +99,9 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/markdown-preview" element={<PageTransition><MarkdownPreview /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
+                    <Route path="/services/text-to-handwriting" element={<PageTransition><TextToHandwritingPage /></PageTransition>} />
+                    <Route path="/services/secret-sharer" element={<PageTransition><SecretSharerPage /></PageTransition>} />
+                    <Route path="/services/secret-sharer/:id" element={<PageTransition><SecretSharerPage /></PageTransition>} />
 
                     {/* Blog */}
                     <Route path="/blogs" element={<PageTransition><BlogPage /></PageTransition>} />
