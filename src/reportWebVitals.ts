@@ -1,13 +1,17 @@
 import { ReportHandler } from 'web-vitals';
+import { sendToAnalytics } from './utils/analytics';
 
 const reportWebVitals = (onPerfEntry?: ReportHandler) => {
-  if (onPerfEntry && onPerfEntry instanceof Function) {
+  // If a custom handler is passed, use it (development), otherwise send to GA4
+  const handler = onPerfEntry || sendToAnalytics;
+
+  if (handler && handler instanceof Function) {
     import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      getCLS(onPerfEntry);
-      getFID(onPerfEntry);
-      getFCP(onPerfEntry);
-      getLCP(onPerfEntry);
-      getTTFB(onPerfEntry);
+      getCLS(handler);
+      getFID(handler);
+      getFCP(handler);
+      getLCP(handler);
+      getTTFB(handler);
     });
   }
 };

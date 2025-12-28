@@ -1,22 +1,25 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-
-declare global {
-    interface Window {
-        gtag: (...args: any[]) => void;
-    }
-}
+import { useAuth } from '../../context/AuthContext';
+import { logPageView, setUserId } from '../../utils/analytics';
 
 const GATracker = () => {
     const location = useLocation();
+    const { user } = useAuth();
 
+    // Track Page Views
     useEffect(() => {
-        if (window.gtag) {
-            window.gtag('config', 'G-BN291MYX4T', {
-                page_path: location.pathname + location.search,
-            });
-        }
+        logPageView(location.pathname + location.search);
     }, [location]);
+
+    // Track User Identity
+    useEffect(() => {
+        if (user?.id) {
+            setUserId(user.id);
+        } else {
+            setUserId(null); // Clear ID on logout if supported/needed
+        }
+    }, [user]);
 
     return null;
 };
