@@ -7,7 +7,7 @@ class StaticSitemap(Sitemap):
     changefreq = 'daily'
 
     def items(self):
-        return ['home', 'services', 'downloads', 'blogs', 'contact', 'privacy-policy', 'terms-of-service']
+        return ['home', 'services', 'downloads', 'blogs', 'contact', 'privacy-policy', 'terms-of-service', 'about-us', 'faq', 'careers']
 
     def location(self, item):
         # Frontend routes - returned as absolute paths
@@ -54,6 +54,7 @@ class ToolsSitemap(Sitemap):
             'text-to-speech',
             'image-compressor',
             'ai-detector',
+            'secret-sharer',
             # Document tools
             'pdf-to-doc',
             'doc-to-pdf',

@@ -1,19 +1,19 @@
 {
-    "offset": 1935314,
-    "total_lines": 8423,
-    "parsed_lines": 7949,
+    "offset": 1986649,
+    "total_lines": 8589,
+    "parsed_lines": 8112,
     "ips": {
-        "127.0.0.1": 1577,
+        "127.0.0.1": 1579,
         "74.7.230.7": 2,
         "35.94.85.75": 1,
         "74.7.244.58": 1,
         "192.178.6.97": 15,
-        "192.178.6.98": 9,
+        "192.178.6.98": 11,
         "192.178.6.99": 3,
         "43.163.22.66": 1,
         "49.36.179.52": 33,
         "51.222.95.96": 1,
-        "54.219.39.36": 5,
+        "54.219.39.36": 6,
         "57.128.243.0": 1,
         "74.125.19.45": 3,
         "106.210.96.54": 19,
@@ -22,8 +22,8 @@
         "15.235.98.210": 1,
         "152.59.93.207": 75,
         "157.49.38.215": 2,
-        "192.178.6.102": 26,
-        "192.178.6.103": 21,
+        "192.178.6.102": 36,
+        "192.178.6.103": 24,
         "192.178.6.104": 13,
         "205.169.39.43": 3,
         "213.35.110.52": 3,
@@ -80,22 +80,25 @@
         "43.173.181.226": 1,
         "43.173.181.249": 1,
         "43.173.182.233": 1,
+        "51.159.194.214": 22,
         "92.222.104.198": 1,
         "92.222.108.122": 1,
         "104.210.140.128": 1,
         "104.210.140.129": 1,
+        "104.210.140.130": 1,
         "104.210.140.131": 1,
         "104.210.140.137": 1,
         "104.210.140.139": 1,
         "146.190.242.161": 5,
         "195.178.110.190": 1,
+        "196.190.249.127": 1,
         "198.244.183.106": 1,
         "198.244.242.128": 1,
         "2401:4900:5951:7ed1::c25:893b": 14,
         "2401:4900:b8ef:9bb1::2879:bc75": 8,
         "2409:40d6:da:f44c:f4dc:779e:eb:3db": 52,
         "2409:40d6:da:f44c:1ef:4ecd:eff:e946": 7,
-        "2409:40d6:9:3cbd:74c9:bcff:fefe:a737": 48,
+        "2409:40d6:9:3cbd:74c9:bcff:fefe:a737": 115,
         "2409:40d6:da:f44c:45f:7100:9d0a:dafc": 1045,
         "2409:40d6:e5:563f:100c:756:ec1d:ddfc": 6,
         "2401:4900:be84:4d74:6e4c:7e:da0f:704f": 12,
@@ -109,10 +112,11 @@
         "2409:40d6:1099:12a5:931:4ddf:ce9:45a2": 3,
         "2409:40d6:11:94f2:44f4:2cff:fe65:bafa": 8,
         "2409:40d6:1d:5d1a:6091:4cff:fe99:449f": 13,
+        "2409:40d6:da:f44c:29ba:9a16:1095:ec32": 303,
         "2409:40d6:da:f44c:8446:f4ca:dc2d:7a3c": 10,
         "2409:40d6:da:f44c:b12c:7132:349b:a843": 82,
         "2409:40d6:da:f44c:c553:effe:1733:b690": 1,
-        "2409:40d6:da:f44c:ca5b:76ff:fed3:83fd": 89,
+        "2409:40d6:da:f44c:ca5b:76ff:fed3:83fd": 97,
         "2409:40d6:da:f44c:e56d:8b95:346c:2648": 2,
         "2409:40d6:da:f44c:edd3:521c:7172:8204": 1547,
         "2409:40d6:e5:563f:b04b:511e:3978:7890": 3,
@@ -124,6 +128,8 @@
         "2401:4900:1c74:23a8:5579:ebd4:f57f:a795": 3,
         "2401:4900:1c74:23a8:55c7:e896:2cc6:a07b": 12,
         "2401:4900:1c74:23a8:b490:bc64:8db2:3242": 17,
+        "2401:4900:1c89:a452:88e9:f4d9:6919:d947": 14,
+        "2401:4900:8200:c90f:6453:3eff:fe13:53b9": 3,
         "2401:4900:be8d:cedf:46da:8f0f:d4f7:3d98": 10,
         "2409:40d0:1009:65dc:bc19:5eff:feb9:d60a": 116,
         "2409:40d0:1330:1387:109d:1fff:fe77:d18d": 24,
@@ -132,45 +138,44 @@
         "2409:40d6:1099:12a5:d161:675b:d641:6d67": 12,
         "2409:40d6:1188:e150:b0d3:1eff:fee3:2434": 10,
         "2409:40d6:119f:b255:d044:3dff:fefc:93c0": 283,
-        "196.190.249.127": 1,
-        "2401:4900:1c89:a452:88e9:f4d9:6919:d947": 14,
-        "2401:4900:8200:c90f:6453:3eff:fe13:53b9": 3,
-        "2409:40d6:da:f44c:29ba:9a16:1095:ec32": 238,
-        "51.159.194.214": 22,
-        "104.210.140.130": 1
+        "92.222.104.222": 1,
+        "2001:4ca0:108:42::24": 1,
+        "74.7.228.10": 1,
+        "51.68.111.244": 1,
+        "2409:40d6:e5:563f:d487:9d46:2ac4:9e59": 1
     },
     "paths": {
         "/": 1,
         "/api": 3,
         "/api/": 1,
-        "/admin": 31,
+        "/admin": 32,
         "//admin": 1,
         "/api/gql": 2,
         "/api/.env": 1,
         "/api/blogs/": 1,
         "/api/stats/": 1,
-        "/robots.txt": 71,
+        "/robots.txt": 79,
         "/api/graphql": 2,
         "/favicon.ico": 3,
-        "/sitemap.xml": 15,
+        "/sitemap.xml": 18,
         "/api/services/": 2,
         "/administrator/": 1,
         "/api/config.env": 1,
         "/api/auth/login/": 19,
         "/api/auth/token/": 1,
         "/api/blog/media/": 1,
-        "/api/blog/posts/": 659,
+        "/api/blog/posts/": 681,
         "/api/shared/.env": 1,
         "/api/blog/series/": 1,
         "/api/swagger.json": 2,
-        "/api/auth/profile/": 189,
-        "/api/blog/posts/1/": 61,
+        "/api/auth/profile/": 192,
+        "/api/blog/posts/1/": 63,
         "/api/services/tts/": 20,
         "/api/auth/register/": 3,
         "/api/blog/comments/": 5,
-        "/api/notifications/": 440,
+        "/api/notifications/": 490,
         "/api/api/blog/posts/": 2,
-        "/api/services/tools/": 1083,
+        "/api/services/tools/": 1104,
         "/api/services/base64/": 13,
         "/api/services/search/": 5,
         "/api-docs/swagger.json": 2,
@@ -181,7 +186,7 @@
         "/api/ai-detector/health/": 1,
         "/api/api/services/tools/": 3,
         "/api/auth/token/refresh/": 33,
-        "/api/services/downloads/": 113,
+        "/api/services/downloads/": 121,
         "/api/services/pdf-merge/": 1,
         "/api/services/pdf-split/": 1,
         "/api/videos/downloads/1/": 6,
@@ -193,7 +198,7 @@
         "/api/videos/downloads/7/": 12,
         "/api/videos/downloads/8/": 15,
         "/api/videos/downloads/9/": 3,
-        "/api/ai-detector/analyze/": 86,
+        "/api/ai-detector/analyze/": 87,
         "/api/ai-detector/history/": 9,
         "/api/config/tsconfig.json": 1,
         "/api/services/pdf-to-doc/": 14,
@@ -206,13 +211,16 @@
         "/api/videos/downloads/16/": 7,
         "/api/videos/downloads/17/": 2,
         "/api/videos/downloads/18/": 2,
+        "/api/videos/downloads/19/": 28,
+        "/api/videos/downloads/20/": 2,
+        "/api/secret-sharer/create/": 4,
         "/api/blog/posts/1/bookmark/": 1,
         "/api/services/image-resize/": 4,
         "/api/services/image-to-pdf/": 1,
         "/api/services/log-analysis/": 1,
         "/api/services/image-convert/": 3,
         "/api/services/image-to-text/": 2,
-        "/api/services/server-health/": 2,
+        "/api/services/server-health/": 3,
         "/api/services/yt-downloader/": 69,
         "/api/api/ai-detector/analyze/": 2,
         "/api/services/compress-image/": 2,
@@ -227,7 +235,7 @@
         "/api/videos/downloads/8/file/": 1,
         "/api/videos/downloads/9/file/": 1,
         "/api/services/color-converter/": 4,
-        "/api/services/downloads/stats/": 1056,
+        "/api/services/downloads/stats/": 1085,
         "/api/videos/downloads/10/file/": 2,
         "/api/videos/downloads/11/file/": 1,
         "/api/videos/downloads/12/file/": 1,
@@ -235,12 +243,16 @@
         "/api/videos/downloads/16/file/": 1,
         "/api/videos/downloads/17/file/": 1,
         "/api/videos/downloads/18/file/": 1,
+        "/api/videos/downloads/19/file/": 1,
+        "/api/videos/downloads/20/file/": 1,
+        "/api/secret-sharer/create-file/": 4,
         "/api/services/markdown-preview/": 7,
         "/api/services/background-remove/": 19,
         "/api/services/dashboard/activity/": 33,
         "/api/api/services/downloads/stats/": 3,
-        "/api/services/analytics-dashboard/": 2,
+        "/api/services/analytics-dashboard/": 3,
         "/api/services/dashboard/favorites/": 29,
+        "/api/text-to-handwriting/generate/": 10,
         "//media/wp-includes/wlwmanifest.xml": 1,
         "/api/services/downloads/2/download/": 1,
         "/api/services/downloads/3/download/": 2,
@@ -250,6 +262,7 @@
         "/api/ai-detector/status/00209b16-ed27-42d7-821b-7c51c5db5bdc/": 324,
         "/api/ai-detector/status/016acf36-d327-4d40-8eec-ac378d30fd96/": 3,
         "/api/ai-detector/status/06e50b1e-edc0-4848-9d5e-62fd9c59202b/": 1,
+        "/api/ai-detector/status/0a1289e0-08c9-4927-830b-a6dd54791646/": 1,
         "/api/ai-detector/status/0b5e37ec-9301-4be1-b6b1-be7d57041ebc/": 79,
         "/api/ai-detector/status/169bb86c-4b1e-47d7-ab9b-d03e5d9c2bd4/": 15,
         "/api/ai-detector/status/1b3802a7-2dab-4f81-86cc-29a5110baa31/": 150,
@@ -296,35 +309,31 @@
         "/api/ai-detector/status/e9732aab-73f2-4629-9c6d-b0eb2233d76b/": 224,
         "/api/ai-detector/status/ead85e5b-98c3-41cf-8238-cd2fd08cef69/": 2,
         "/api/ai-detector/status/f203c74c-73de-412c-8847-3952a410dabe/": 153,
-        "/api/videos/downloads/19/": 28,
-        "/api/videos/downloads/19/file/": 1,
-        "/api/ai-detector/status/0a1289e0-08c9-4927-830b-a6dd54791646/": 1,
-        "/api/text-to-handwriting/generate/": 10,
-        "/api/videos/downloads/20/": 2,
-        "/api/videos/downloads/20/file/": 1,
-        "/api/secret-sharer/create/": 3,
+        "/api/secret-sharer/view/07cd1c13-3d74-450a-906b-2136bacf28be/": 4,
         "/api/secret-sharer/view/4246a682-509a-45f6-9228-0b8ff252b030/": 2,
-        "/api/secret-sharer/create-file/": 4,
         "/api/secret-sharer/view-file/66d88b04-a42e-485f-8d41-46caa5f36847/": 1,
-        "/api/secret-sharer/view/07cd1c13-3d74-450a-906b-2136bacf28be/": 4
+        "/api/secret-sharer/view/d96be452-318e-4064-be7c-9e76ecea8c7c/": 6,
+        "/api/ai-detector/status/26122453-1f07-424e-9162-b3bd8e3d6bb5/": 5,
+        "/api/secret-sharer/view/0e035e6e-ec7f-4b34-8648-aa597e57f1a0/": 1
     },
     "status_codes": {
-        "200": 7541,
+        "200": 7644,
         "201": 28,
-        "202": 52,
+        "202": 53,
         "400": 22,
         "401": 56,
         "403": 2,
-        "404": 157,
+        "404": 215,
         "415": 8,
         "500": 75,
-        "503": 8
+        "503": 8,
+        "410": 1
     },
     "users": {
-        "Anonymous": 6215,
+        "Anonymous": 6299,
         "rajat1@gmail.com": 49,
         "Rajatrathee@gmail.com": 960,
-        "admin@expectexception.com": 725
+        "admin@expectexception.com": 804
     },
     "durations_agg": {
         "/": {
@@ -340,8 +349,8 @@
             "count": 1
         },
         "/admin": {
-            "sum": 82.37700000000004,
-            "count": 31
+            "sum": 82.37800000000004,
+            "count": 32
         },
         "//admin": {
             "sum": 0.018,
@@ -364,8 +373,8 @@
             "count": 1
         },
         "/robots.txt": {
-            "sum": 0.01800000000000001,
-            "count": 71
+            "sum": 0.023000000000000013,
+            "count": 79
         },
         "/api/graphql": {
             "sum": 0.022,
@@ -376,8 +385,8 @@
             "count": 3
         },
         "/sitemap.xml": {
-            "sum": 6.644,
-            "count": 15
+            "sum": 6.647000000000001,
+            "count": 18
         },
         "/api/services/": {
             "sum": 4.642,
@@ -404,8 +413,8 @@
             "count": 1
         },
         "/api/blog/posts/": {
-            "sum": 135.96199999999993,
-            "count": 659
+            "sum": 137.58699999999993,
+            "count": 681
         },
         "/api/shared/.env": {
             "sum": 0.006,
@@ -420,12 +429,12 @@
             "count": 2
         },
         "/api/auth/profile/": {
-            "sum": 46.66999999999999,
-            "count": 189
+            "sum": 46.83999999999999,
+            "count": 192
         },
         "/api/blog/posts/1/": {
-            "sum": 2.840000000000001,
-            "count": 61
+            "sum": 2.9440000000000013,
+            "count": 63
         },
         "/api/services/tts/": {
             "sum": 163.47199999999998,
@@ -440,16 +449,16 @@
             "count": 5
         },
         "/api/notifications/": {
-            "sum": 57.72499999999999,
-            "count": 440
+            "sum": 57.986999999999924,
+            "count": 490
         },
         "/api/api/blog/posts/": {
             "sum": 0.053000000000000005,
             "count": 2
         },
         "/api/services/tools/": {
-            "sum": 416.28399999999937,
-            "count": 1083
+            "sum": 417.34699999999947,
+            "count": 1104
         },
         "/api/services/base64/": {
             "sum": 0.019000000000000003,
@@ -492,8 +501,8 @@
             "count": 33
         },
         "/api/services/downloads/": {
-            "sum": 16.936000000000003,
-            "count": 113
+            "sum": 17.26,
+            "count": 121
         },
         "/api/services/pdf-merge/": {
             "sum": 0.234,
@@ -540,8 +549,8 @@
             "count": 3
         },
         "/api/ai-detector/analyze/": {
-            "sum": 533.467,
-            "count": 86
+            "sum": 536.435,
+            "count": 87
         },
         "/api/ai-detector/history/": {
             "sum": 3.395,
@@ -591,6 +600,18 @@
             "sum": 0.078,
             "count": 2
         },
+        "/api/videos/downloads/19/": {
+            "sum": 1.36,
+            "count": 28
+        },
+        "/api/videos/downloads/20/": {
+            "sum": 0.125,
+            "count": 2
+        },
+        "/api/secret-sharer/create/": {
+            "sum": 5.534,
+            "count": 4
+        },
         "/api/blog/posts/1/bookmark/": {
             "sum": 0.012,
             "count": 1
@@ -616,8 +637,8 @@
             "count": 2
         },
         "/api/services/server-health/": {
-            "sum": 1.079,
-            "count": 2
+            "sum": 2.1559999999999997,
+            "count": 3
         },
         "/api/services/yt-downloader/": {
             "sum": 339.6819999999999,
@@ -676,8 +697,8 @@
             "count": 4
         },
         "/api/services/downloads/stats/": {
-            "sum": 461.9009999999992,
-            "count": 1056
+            "sum": 463.43299999999914,
+            "count": 1085
         },
         "/api/videos/downloads/10/file/": {
             "sum": 0.028,
@@ -707,6 +728,18 @@
             "sum": 0.074,
             "count": 1
         },
+        "/api/videos/downloads/19/file/": {
+            "sum": 0.1,
+            "count": 1
+        },
+        "/api/videos/downloads/20/file/": {
+            "sum": 0.203,
+            "count": 1
+        },
+        "/api/secret-sharer/create-file/": {
+            "sum": 5.128,
+            "count": 4
+        },
         "/api/services/markdown-preview/": {
             "sum": 0.896,
             "count": 7
@@ -724,12 +757,16 @@
             "count": 3
         },
         "/api/services/analytics-dashboard/": {
-            "sum": 0.007,
-            "count": 2
+            "sum": 5.986,
+            "count": 3
         },
         "/api/services/dashboard/favorites/": {
             "sum": 0.46000000000000013,
             "count": 29
+        },
+        "/api/text-to-handwriting/generate/": {
+            "sum": 5.622999999999999,
+            "count": 10
         },
         "//media/wp-includes/wlwmanifest.xml": {
             "sum": 0.006,
@@ -765,6 +802,10 @@
         },
         "/api/ai-detector/status/06e50b1e-edc0-4848-9d5e-62fd9c59202b/": {
             "sum": 0.001,
+            "count": 1
+        },
+        "/api/ai-detector/status/0a1289e0-08c9-4927-830b-a6dd54791646/": {
+            "sum": 0.03,
             "count": 1
         },
         "/api/ai-detector/status/0b5e37ec-9301-4be1-b6b1-be7d57041ebc/": {
@@ -951,49 +992,29 @@
             "sum": 71.54800000000004,
             "count": 153
         },
-        "/api/videos/downloads/19/": {
-            "sum": 1.36,
-            "count": 28
-        },
-        "/api/videos/downloads/19/file/": {
-            "sum": 0.1,
-            "count": 1
-        },
-        "/api/ai-detector/status/0a1289e0-08c9-4927-830b-a6dd54791646/": {
-            "sum": 0.03,
-            "count": 1
-        },
-        "/api/text-to-handwriting/generate/": {
-            "sum": 5.622999999999999,
-            "count": 10
-        },
-        "/api/videos/downloads/20/": {
-            "sum": 0.125,
-            "count": 2
-        },
-        "/api/videos/downloads/20/file/": {
-            "sum": 0.203,
-            "count": 1
-        },
-        "/api/secret-sharer/create/": {
-            "sum": 5.359,
-            "count": 3
+        "/api/secret-sharer/view/07cd1c13-3d74-450a-906b-2136bacf28be/": {
+            "sum": 0.364,
+            "count": 4
         },
         "/api/secret-sharer/view/4246a682-509a-45f6-9228-0b8ff252b030/": {
             "sum": 0.376,
             "count": 2
         },
-        "/api/secret-sharer/create-file/": {
-            "sum": 5.128,
-            "count": 4
-        },
         "/api/secret-sharer/view-file/66d88b04-a42e-485f-8d41-46caa5f36847/": {
             "sum": 4.755,
             "count": 1
         },
-        "/api/secret-sharer/view/07cd1c13-3d74-450a-906b-2136bacf28be/": {
-            "sum": 0.364,
-            "count": 4
+        "/api/secret-sharer/view/d96be452-318e-4064-be7c-9e76ecea8c7c/": {
+            "sum": 0.48,
+            "count": 6
+        },
+        "/api/ai-detector/status/26122453-1f07-424e-9162-b3bd8e3d6bb5/": {
+            "sum": 0.683,
+            "count": 5
+        },
+        "/api/secret-sharer/view/0e035e6e-ec7f-4b34-8648-aa597e57f1a0/": {
+            "sum": 0.167,
+            "count": 1
         }
     },
     "hourly_hits": {
@@ -1116,7 +1137,12 @@
         "2025-12-27 17": 49,
         "2025-12-27 18": 101,
         "2025-12-27 19": 51,
-        "2025-12-27 20": 131
+        "2025-12-27 20": 277,
+        "2025-12-28 00": 2,
+        "2025-12-28 02": 3,
+        "2025-12-28 03": 1,
+        "2025-12-28 04": 2,
+        "2025-12-28 05": 9
     },
     "path_errors": {
         "/": {
@@ -1129,7 +1155,7 @@
             "404": 1
         },
         "/admin": {
-            "404": 31
+            "404": 32
         },
         "//admin": {
             "404": 1
@@ -1153,7 +1179,8 @@
             "404": 3
         },
         "/sitemap.xml": {
-            "500": 1
+            "500": 1,
+            "404": 3
         },
         "/administrator/": {
             "404": 1
@@ -1191,7 +1218,7 @@
         },
         "/api/notifications/": {
             "401": 9,
-            "404": 36,
+            "404": 86,
             "500": 12
         },
         "/api/api/blog/posts/": {
@@ -1260,6 +1287,9 @@
             "401": 7,
             "500": 23
         },
+        "/api/secret-sharer/create-file/": {
+            "404": 3
+        },
         "/api/services/background-remove/": {
             "415": 5,
             "503": 4
@@ -1274,6 +1304,9 @@
             "403": 1,
             "404": 1
         },
+        "/api/text-to-handwriting/generate/": {
+            "404": 6
+        },
         "//media/wp-includes/wlwmanifest.xml": {
             "404": 1
         },
@@ -1286,17 +1319,17 @@
         "/api/auth/profiles/admin@expectexception.com/": {
             "400": 2
         },
-        "/api/text-to-handwriting/generate/": {
-            "404": 6
+        "/api/secret-sharer/view/07cd1c13-3d74-450a-906b-2136bacf28be/": {
+            "404": 3
         },
         "/api/secret-sharer/view/4246a682-509a-45f6-9228-0b8ff252b030/": {
             "404": 1
         },
-        "/api/secret-sharer/create-file/": {
-            "404": 3
+        "/api/secret-sharer/view/d96be452-318e-4064-be7c-9e76ecea8c7c/": {
+            "404": 4
         },
-        "/api/secret-sharer/view/07cd1c13-3d74-450a-906b-2136bacf28be/": {
-            "404": 3
+        "/api/secret-sharer/view/0e035e6e-ec7f-4b34-8648-aa597e57f1a0/": {
+            "410": 1
         }
     },
     "geo_cache": {
@@ -1756,6 +1789,12 @@
             "country": "Singapore",
             "countryCode": "SG"
         },
+        "51.159.194.214": {
+            "isp": "SCALEWAY",
+            "city": "Paris",
+            "country": "France",
+            "countryCode": "FR"
+        },
         "92.222.104.198": {
             "isp": "OVH SAS",
             "city": "Paris",
@@ -1775,6 +1814,12 @@
             "countryCode": "US"
         },
         "104.210.140.129": {
+            "isp": "Microsoft Corporation",
+            "city": "San Antonio",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "104.210.140.130": {
             "isp": "Microsoft Corporation",
             "city": "San Antonio",
             "country": "United States",
@@ -1809,6 +1854,12 @@
             "city": "Andorra la Vella",
             "country": "Andorra",
             "countryCode": "AD"
+        },
+        "196.190.249.127": {
+            "isp": "Ethiotelecom",
+            "city": "Addis Ababa",
+            "country": "Ethiopia",
+            "countryCode": "ET"
         },
         "198.244.183.106": {
             "isp": "OVH SAS",
@@ -1930,6 +1981,12 @@
             "country": "India",
             "countryCode": "IN"
         },
+        "2409:40d6:da:f44c:29ba:9a16:1095:ec32": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
         "2409:40d6:da:f44c:8446:f4ca:dc2d:7a3c": {
             "isp": "Reliance Jio Infocomm Limited",
             "city": "Karn\u0101l",
@@ -2020,6 +2077,18 @@
             "country": "India",
             "countryCode": "IN"
         },
+        "2401:4900:1c89:a452:88e9:f4d9:6919:d947": {
+            "isp": "Bharti Airtel",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2401:4900:8200:c90f:6453:3eff:fe13:53b9": {
+            "isp": "Bharti Airtel Limited",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
         "2401:4900:be8d:cedf:46da:8f0f:d4f7:3d98": {
             "isp": "Bharti Airtel Limited",
             "city": "New Delhi",
@@ -2068,64 +2137,58 @@
             "country": "India",
             "countryCode": "IN"
         },
-        "196.190.249.127": {
-            "country": "Ethiopia",
-            "countryCode": "ET",
-            "city": "Addis Ababa",
-            "isp": "Ethiotelecom"
-        },
-        "104.210.140.130": {
+        "74.7.228.10": {
             "country": "United States",
             "countryCode": "US",
-            "city": "San Antonio",
+            "city": "Atlanta",
             "isp": "Microsoft Corporation"
         },
-        "2401:4900:8200:c90f:6453:3eff:fe13:53b9": {
-            "country": "India",
-            "countryCode": "IN",
-            "city": "New Delhi",
-            "isp": "Bharti Airtel Limited"
+        "51.68.111.244": {
+            "country": "France",
+            "countryCode": "FR",
+            "city": "Roubaix",
+            "isp": "OVH SAS"
         },
-        "2401:4900:1c89:a452:88e9:f4d9:6919:d947": {
-            "country": "India",
-            "countryCode": "IN",
-            "city": "New Delhi",
-            "isp": "Bharti Airtel"
+        "92.222.104.222": {
+            "country": "France",
+            "countryCode": "FR",
+            "city": "Paris",
+            "isp": "OVH SAS"
         },
-        "2409:40d6:da:f44c:29ba:9a16:1095:ec32": {
+        "2001:4ca0:108:42::24": {
+            "country": "Germany",
+            "countryCode": "DE",
+            "city": "Munich",
+            "isp": "Leibniz-Rechenzentrum"
+        },
+        "2409:40d6:e5:563f:d487:9d46:2ac4:9e59": {
             "country": "India",
             "countryCode": "IN",
             "city": "Karn\u0101l",
             "isp": "Reliance Jio Infocomm Limited"
-        },
-        "51.159.194.214": {
-            "country": "France",
-            "countryCode": "FR",
-            "city": "Paris",
-            "isp": "SCALEWAY"
         }
     },
     "devices": {
-        "Mobile": 1359,
-        "Desktop": 1449,
+        "Mobile": 1433,
+        "Desktop": 1538,
         "Unknown": 5141
     },
     "browsers": {
         "Edge": 1,
-        "Other": 58,
-        "Chrome": 2412,
-        "Safari": 37,
+        "Other": 66,
+        "Chrome": 2566,
+        "Safari": 38,
         "Firefox": 300,
         "Unknown": 5141
     },
     "os": {
-        "iOS": 26,
-        "Linux": 1353,
-        "Other": 57,
-        "macOS": 22,
-        "Android": 1333,
+        "iOS": 27,
+        "Linux": 1432,
+        "Other": 65,
+        "macOS": 23,
+        "Android": 1406,
         "Unknown": 5141,
-        "Windows": 17
+        "Windows": 18
     },
-    "last_updated": "2025-12-27T20:23:35.733009"
+    "last_updated": "2025-12-28T05:22:42.565922"
 }
