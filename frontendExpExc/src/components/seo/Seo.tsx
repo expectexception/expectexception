@@ -28,7 +28,11 @@ const Seo: React.FC<SeoProps> = ({
     toolId
 }) => {
     const location = useLocation();
-    const siteUrl = window.location.origin;
+    // Use window.location.origin ONLY for localhost development
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const siteUrl = isLocal
+        ? window.location.origin
+        : (process.env.REACT_APP_SITE_URL || 'https://expectexception.com');
     const currentUrl = `${siteUrl}${location.pathname}`;
     const imageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
 

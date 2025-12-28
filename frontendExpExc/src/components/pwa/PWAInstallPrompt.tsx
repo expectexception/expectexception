@@ -40,6 +40,16 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onI
 
     useEffect(() => {
         if (deferredPrompt) {
+            const lastDismissed = localStorage.getItem('pwaPromptLastDismissed');
+            if (lastDismissed) {
+                const timeSinceLastDismiss = Date.now() - parseInt(lastDismissed, 10);
+                // 6 hours * 60 min * 60 sec * 1000 ms = 21600000
+                if (timeSinceLastDismiss < 21600000) {
+                    console.log('PWA Prompt suppressed: dismissed less than 6 hours ago.');
+                    return;
+                }
+            }
+
             // Small delay to ensure smooth entry
             const timer = setTimeout(() => setIsVisible(true), 1500);
             return () => clearTimeout(timer);
@@ -66,6 +76,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onI
     const handleClose = () => {
         setIsVisible(false);
         setTimeout(onDismiss, 300); // Allow exit animation
+        localStorage.setItem('pwaPromptLastDismissed', Date.now().toString());
     };
 
     // Variants for animation
@@ -85,11 +96,14 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onI
         <Paper
             elevation={24}
             sx={{
-                background: 'rgba(255, 255, 255, 0.85)',
+                background: theme.palette.mode === 'dark'
+                    ? 'rgba(15, 23, 42, 0.8)' // Darker slate for dark mode
+                    : 'rgba(255, 255, 255, 0.85)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: isMobile ? '24px 24px 0 0' : '24px',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 overflow: 'hidden',
+                color: theme.palette.text.primary,
                 ...props.sx
             }}
         >
@@ -131,19 +145,25 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onI
                             {/* Header Gradient */}
                             <Box sx={{
                                 height: 6,
-                                background: 'linear-gradient(90deg, #FF3366 0%, #BA265D 100%)'
+                                background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`
                             }} />
 
                             <Box sx={{ p: 3, position: 'relative' }}>
                                 <IconButton
                                     onClick={handleClose}
                                     size="small"
-                                    sx={{ position: 'absolute', top: 8, right: 8, color: 'text.secondary' }}
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 8,
+                                        right: 8,
+                                        color: 'text.secondary',
+                                        '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+                                    }}
                                 >
                                     <Close fontSize="small" />
                                 </IconButton>
 
-                                <Stack spacing={2.5} sx={{ background: 'linear-gradient(45deg, #030023ff 30%, #34002aff 90%)' }}>
+                                <Stack spacing={2.5}>
                                     {/* Content for Install Step */}
                                     {step === 'install' && (
                                         <>
@@ -151,10 +171,15 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onI
                                                 <Avatar
                                                     src="/logo192.png"
                                                     variant="rounded"
-                                                    sx={{ width: 56, height: 56, boxShadow: theme.shadows[3] }}
+                                                    sx={{
+                                                        width: 56,
+                                                        height: 56,
+                                                        boxShadow: theme.shadows[3],
+                                                        bgcolor: 'transparent'
+                                                    }}
                                                 />
                                                 <Box>
-                                                    <Typography variant="h6" fontWeight={800} lineHeight={1.2}>
+                                                    <Typography variant="h6" fontWeight={800} lineHeight={1.2} color="text.primary">
                                                         Install App
                                                     </Typography>
                                                     <Typography variant="body2" color="text.secondary">
@@ -164,17 +189,17 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onI
                                             </Stack>
 
                                             <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                                                <Box sx={{ flex: 1, p: 1.5, bgcolor: 'rgba(0,0,0,0.04)', borderRadius: 2, textAlign: 'center' }}>
+                                                <Box sx={{ flex: 1, p: 1.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2, textAlign: 'center' }}>
                                                     <GetApp color="primary" />
-                                                    <Typography variant="caption" display="block" fontWeight={600}>Offline</Typography>
+                                                    <Typography variant="caption" display="block" fontWeight={600} color="text.primary">Offline</Typography>
                                                 </Box>
-                                                <Box sx={{ flex: 1, p: 1.5, bgcolor: 'rgba(0,0,0,0.04)', borderRadius: 2, textAlign: 'center' }}>
-                                                    <NotificationsActive color="primary" />
-                                                    <Typography variant="caption" display="block" fontWeight={600}>Updates</Typography>
+                                                <Box sx={{ flex: 1, p: 1.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2, textAlign: 'center' }}>
+                                                    <NotificationsActive color="secondary" />
+                                                    <Typography variant="caption" display="block" fontWeight={600} color="text.primary">Updates</Typography>
                                                 </Box>
-                                                <Box sx={{ flex: 1, p: 1.5, bgcolor: 'rgba(0,0,0,0.04)', borderRadius: 2, textAlign: 'center' }}>
-                                                    <Share color="primary" />
-                                                    <Typography variant="caption" display="block" fontWeight={600}>Share</Typography>
+                                                <Box sx={{ flex: 1, p: 1.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2, textAlign: 'center' }}>
+                                                    <Share color="action" />
+                                                    <Typography variant="caption" display="block" fontWeight={600} color="text.primary">Share</Typography>
                                                 </Box>
                                             </Stack>
 
@@ -189,8 +214,8 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onI
                                                     py: 1.5,
                                                     fontSize: '1rem',
                                                     fontWeight: 700,
-                                                    boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-                                                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                                                    boxShadow: `0 8px 20px ${theme.palette.primary.main}40`,
+                                                    background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.dark} 90%)`,
                                                 }}
                                             >
                                                 Add to Home Screen
@@ -202,11 +227,11 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onI
                                     {step === 'notifications' && (
                                         <>
                                             <Stack direction="row" spacing={2} alignItems="center">
-                                                <Avatar sx={{ bgcolor: 'warning.light', color: 'warning.dark' }}>
+                                                <Avatar sx={{ bgcolor: theme.palette.secondary.dark, color: theme.palette.common.white }}>
                                                     <NotificationsActive />
                                                 </Avatar>
                                                 <Box>
-                                                    <Typography variant="h6" fontWeight={800}>
+                                                    <Typography variant="h6" fontWeight={800} color="text.primary">
                                                         Stay Updated?
                                                     </Typography>
                                                     <Typography variant="body2" color="text.secondary">
@@ -220,7 +245,15 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onI
                                                     fullWidth
                                                     variant="outlined"
                                                     onClick={handleClose}
-                                                    sx={{ borderRadius: 2 }}
+                                                    sx={{
+                                                        borderRadius: 2,
+                                                        borderColor: 'rgba(255,255,255,0.2)',
+                                                        color: 'text.secondary',
+                                                        '&:hover': {
+                                                            borderColor: 'text.primary',
+                                                            color: 'text.primary'
+                                                        }
+                                                    }}
                                                 >
                                                     Later
                                                 </Button>
@@ -230,7 +263,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onI
                                                     onClick={handleNotificationEnable}
                                                     sx={{
                                                         borderRadius: 2,
-                                                        background: 'linear-gradient(45deg, #FF9800 30%, #FFB74D 90%)',
+                                                        background: `linear-gradient(45deg, ${theme.palette.secondary.main} 30%, ${theme.palette.secondary.dark} 90%)`,
                                                         color: 'white'
                                                     }}
                                                 >
