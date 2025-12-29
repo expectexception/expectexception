@@ -4,22 +4,23 @@ import {
     Box,
     Button,
     Typography,
-    IconButton,
-    Stack,
+    Modal,
     useTheme,
     useMediaQuery,
+    Fade,
+    Backdrop,
+    IconButton,
     Avatar,
-    Paper,
-    Backdrop
+    Stack
 } from '@mui/material';
 import {
     Close,
     GetApp,
-    NotificationsActive,
-    Share,
-    AddToHomeScreen
+    AddToHomeScreen,
+    Star,
+    Speed,
+    Security
 } from '@mui/icons-material';
-import NotificationManager from '../../utils/NotificationManager';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt(): Promise<void>;
@@ -35,250 +36,218 @@ interface PWAInstallPromptProps {
 const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ deferredPrompt, onInstall, onDismiss }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const [step, setStep] = useState<'install' | 'notifications'>('install');
-    const [isVisible, setIsVisible] = useState(false);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
+        if (!isMobile) return;
+
         if (deferredPrompt) {
             const lastDismissed = localStorage.getItem('pwaPromptLastDismissed');
             if (lastDismissed) {
                 const timeSinceLastDismiss = Date.now() - parseInt(lastDismissed, 10);
-                // 6 hours * 60 min * 60 sec * 1000 ms = 21600000
-                if (timeSinceLastDismiss < 21600000) {
-                    console.log('PWA Prompt suppressed: dismissed less than 6 hours ago.');
+                // 24 hours cooldown
+                if (timeSinceLastDismiss < 86400000) {
                     return;
                 }
             }
-
-            // Small delay to ensure smooth entry
-            const timer = setTimeout(() => setIsVisible(true), 1500);
+            // Small delay for better UX
+            const timer = setTimeout(() => setOpen(true), 2000);
             return () => clearTimeout(timer);
         } else {
-            setIsVisible(false);
+            setOpen(false);
         }
-    }, [deferredPrompt]);
+    }, [deferredPrompt, isMobile]);
 
-    const handleInstallClick = async () => {
+    const handleInstallClick = () => {
         onInstall();
-        // After install (or attempt), move to notifications step if supported and not denied
-        if (NotificationManager.isSupported() && NotificationManager.getPermissionStatus() === 'default') {
-            setStep('notifications');
-        } else {
-            setIsVisible(false);
-        }
-    };
-
-    const handleNotificationEnable = async () => {
-        await NotificationManager.subscribe();
-        setIsVisible(false);
+        setOpen(false);
     };
 
     const handleClose = () => {
-        setIsVisible(false);
-        setTimeout(onDismiss, 300); // Allow exit animation
+        setOpen(false);
         localStorage.setItem('pwaPromptLastDismissed', Date.now().toString());
+        setTimeout(onDismiss, 300);
     };
 
-    // Variants for animation
-    const containerVariants = {
-        hidden: { y: '100%', opacity: 0 },
-        visible: { y: 0, opacity: 1 },
-        exit: { y: '100%', opacity: 0 }
-    };
-
-    const desktopVariants = {
-        hidden: { y: 20, opacity: 0, scale: 0.95 },
-        visible: { y: 0, opacity: 1, scale: 1 },
-        exit: { y: 20, opacity: 0, scale: 0.95 }
-    };
-
-    const GlassPaper = (props: any) => (
-        <Paper
-            elevation={24}
+    const GlassCard = React.forwardRef<HTMLDivElement>((props, ref) => (
+        <Box
+            ref={ref}
             sx={{
-                background: theme.palette.mode === 'dark'
-                    ? 'rgba(15, 23, 42, 0.8)' // Darker slate for dark mode
-                    : 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(20px)',
-                borderRadius: isMobile ? '24px 24px 0 0' : '24px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: isMobile ? '90%' : 450,
+                outline: 'none',
+                borderRadius: 4,
                 overflow: 'hidden',
-                color: theme.palette.text.primary,
-                ...props.sx
+                background: theme.palette.mode === 'dark'
+                    ? 'rgba(15, 23, 42, 0.6)'
+                    : 'rgba(255, 255, 255, 0.6)',
+                backdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: theme.palette.mode === 'dark'
+                    ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                    : '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
             }}
         >
-            {props.children}
-        </Paper>
-    );
+            {/* Decorative Gradient Background (Orb effect inside card) */}
+            <Box sx={{
+                position: 'absolute',
+                top: '-50%',
+                left: '-50%',
+                width: '200%',
+                height: '200%',
+                background: `radial-gradient(circle at 50% 50%, ${theme.palette.primary.main}15 0%, transparent 50%)`,
+                zIndex: -1,
+                pointerEvents: 'none'
+            }} />
+
+            {/* Content */}
+            <Box sx={{ p: 4, position: 'relative' }}>
+                <IconButton
+                    onClick={handleClose}
+                    sx={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        color: 'text.secondary',
+                        '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+                    }}
+                >
+                    <Close />
+                </IconButton>
+
+                <Stack spacing={3} alignItems="center">
+                    {/* Logo / Icon */}
+                    <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <Avatar
+                            src="/logo192.png"
+                            sx={{
+                                width: 80,
+                                height: 80,
+                                boxShadow: `0 0 30px ${theme.palette.primary.main}60`,
+                                bgcolor: theme.palette.primary.main
+                            }}
+                        >
+                            <GetApp />
+                        </Avatar>
+                    </motion.div>
+
+                    <Box textAlign="center">
+                        <Typography variant="h5" fontWeight={800} gutterBottom sx={{
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}>
+                            Install ExpectException
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary">
+                            Install our app for a faster, full-screen experience with offline access.
+                        </Typography>
+                    </Box>
+
+                    {/* Features Grid */}
+                    <Stack direction="row" spacing={1} width="100%" justifyContent="center">
+                        {[
+                            { icon: <Speed fontSize="small" />, label: 'Faster' },
+                            { icon: <Security fontSize="small" />, label: 'Secure' },
+                            { icon: <Star fontSize="small" />, label: 'Premium' },
+                        ].map((feature, idx) => (
+                            <Box
+                                key={idx}
+                                sx={{
+                                    flex: 1,
+                                    py: 1.5,
+                                    borderRadius: 3,
+                                    bgcolor: 'rgba(255,255,255,0.05)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                    border: '1px solid rgba(255,255,255,0.05)'
+                                }}
+                            >
+                                <Box sx={{ color: theme.palette.primary.main }}>{feature.icon}</Box>
+                                <Typography variant="caption" fontWeight={600} color="text.primary">
+                                    {feature.label}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Stack>
+
+                    {/* Actions */}
+                    <Stack width="100%" spacing={1.5}>
+                        <Button
+                            onClick={handleInstallClick}
+                            variant="contained"
+                            size="large"
+                            startIcon={<AddToHomeScreen />}
+                            sx={{
+                                py: 1.5,
+                                borderRadius: 3,
+                                fontSize: '1rem',
+                                fontWeight: 700,
+                                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                                boxShadow: `0 8px 20px ${theme.palette.primary.main}40`,
+                                '&:hover': {
+                                    boxShadow: `0 12px 28px ${theme.palette.primary.main}60`,
+                                }
+                            }}
+                        >
+                            Install Now
+                        </Button>
+                        <Button
+                            onClick={handleClose}
+                            variant="text"
+                            sx={{
+                                color: 'text.secondary',
+                                borderRadius: 3,
+                                '&:hover': { color: 'text.primary', bgcolor: 'transparent' }
+                            }}
+                        >
+                            Maybe Later
+                        </Button>
+                    </Stack>
+                </Stack>
+            </Box>
+        </Box>
+    ));
 
     return (
-        <AnimatePresence>
-            {isVisible && (
-                <>
-                    {/* Backdrop for mobile focus */}
-                    {isMobile && (
-                        <Backdrop
-                            open={isVisible}
-                            onClick={handleClose}
-                            sx={{ zIndex: theme.zIndex.drawer + 1, backdropFilter: 'blur(4px)' }}
-                        />
-                    )}
-
-                    <Box
-                        component={motion.div}
-                        variants={isMobile ? containerVariants : desktopVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        sx={{
-                            position: 'fixed',
-                            bottom: isMobile ? 0 : 32,
-                            right: isMobile ? 0 : 32,
-                            left: isMobile ? 0 : 'auto',
-                            width: isMobile ? '100%' : 400,
-                            maxWidth: '100%',
-                            zIndex: theme.zIndex.drawer + 2,
-                        }}
-                    >
-                        <GlassPaper sx={{ p: 0 }}>
-                            {/* Header Gradient */}
-                            <Box sx={{
-                                height: 6,
-                                background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`
-                            }} />
-
-                            <Box sx={{ p: 3, position: 'relative' }}>
-                                <IconButton
-                                    onClick={handleClose}
-                                    size="small"
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 8,
-                                        right: 8,
-                                        color: 'text.secondary',
-                                        '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
-                                    }}
-                                >
-                                    <Close fontSize="small" />
-                                </IconButton>
-
-                                <Stack spacing={2.5}>
-                                    {/* Content for Install Step */}
-                                    {step === 'install' && (
-                                        <>
-                                            <Stack direction="row" spacing={2} alignItems="center">
-                                                <Avatar
-                                                    src="/logo192.png"
-                                                    variant="rounded"
-                                                    sx={{
-                                                        width: 56,
-                                                        height: 56,
-                                                        boxShadow: theme.shadows[3],
-                                                        bgcolor: 'transparent'
-                                                    }}
-                                                />
-                                                <Box>
-                                                    <Typography variant="h6" fontWeight={800} lineHeight={1.2} color="text.primary">
-                                                        Install App
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Get the full native experience.
-                                                    </Typography>
-                                                </Box>
-                                            </Stack>
-
-                                            <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                                                <Box sx={{ flex: 1, p: 1.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2, textAlign: 'center' }}>
-                                                    <GetApp color="primary" />
-                                                    <Typography variant="caption" display="block" fontWeight={600} color="text.primary">Offline</Typography>
-                                                </Box>
-                                                <Box sx={{ flex: 1, p: 1.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2, textAlign: 'center' }}>
-                                                    <NotificationsActive color="secondary" />
-                                                    <Typography variant="caption" display="block" fontWeight={600} color="text.primary">Updates</Typography>
-                                                </Box>
-                                                <Box sx={{ flex: 1, p: 1.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2, textAlign: 'center' }}>
-                                                    <Share color="action" />
-                                                    <Typography variant="caption" display="block" fontWeight={600} color="text.primary">Share</Typography>
-                                                </Box>
-                                            </Stack>
-
-                                            <Button
-                                                variant="contained"
-                                                size="large"
-                                                fullWidth
-                                                startIcon={<AddToHomeScreen />}
-                                                onClick={handleInstallClick}
-                                                sx={{
-                                                    borderRadius: 3,
-                                                    py: 1.5,
-                                                    fontSize: '1rem',
-                                                    fontWeight: 700,
-                                                    boxShadow: `0 8px 20px ${theme.palette.primary.main}40`,
-                                                    background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.dark} 90%)`,
-                                                }}
-                                            >
-                                                Add to Home Screen
-                                            </Button>
-                                        </>
-                                    )}
-
-                                    {/* Content for Notifications Step */}
-                                    {step === 'notifications' && (
-                                        <>
-                                            <Stack direction="row" spacing={2} alignItems="center">
-                                                <Avatar sx={{ bgcolor: theme.palette.secondary.dark, color: theme.palette.common.white }}>
-                                                    <NotificationsActive />
-                                                </Avatar>
-                                                <Box>
-                                                    <Typography variant="h6" fontWeight={800} color="text.primary">
-                                                        Stay Updated?
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Get notified when downloads complete.
-                                                    </Typography>
-                                                </Box>
-                                            </Stack>
-
-                                            <Stack direction="row" spacing={2}>
-                                                <Button
-                                                    fullWidth
-                                                    variant="outlined"
-                                                    onClick={handleClose}
-                                                    sx={{
-                                                        borderRadius: 2,
-                                                        borderColor: 'rgba(255,255,255,0.2)',
-                                                        color: 'text.secondary',
-                                                        '&:hover': {
-                                                            borderColor: 'text.primary',
-                                                            color: 'text.primary'
-                                                        }
-                                                    }}
-                                                >
-                                                    Later
-                                                </Button>
-                                                <Button
-                                                    fullWidth
-                                                    variant="contained"
-                                                    onClick={handleNotificationEnable}
-                                                    sx={{
-                                                        borderRadius: 2,
-                                                        background: `linear-gradient(45deg, ${theme.palette.secondary.main} 30%, ${theme.palette.secondary.dark} 90%)`,
-                                                        color: 'white'
-                                                    }}
-                                                >
-                                                    Enable
-                                                </Button>
-                                            </Stack>
-                                        </>
-                                    )}
-                                </Stack>
-                            </Box>
-                        </GlassPaper>
-                    </Box>
-                </>
-            )}
-        </AnimatePresence>
+        <Modal
+            open={open}
+            onClose={handleClose}
+            closeAfterTransition
+            BackdropComponent={Backdrop}
+            BackdropProps={{
+                timeout: 500,
+                sx: {
+                    backdropFilter: 'blur(8px)',
+                    bgcolor: 'rgba(0,0,0,0.4)',
+                    pointerEvents: 'auto' // Ensure clicks are registered
+                },
+                onClick: handleClose // Explicitly handle click
+            }}
+        >
+            <Fade in={open}>
+                <Box onClick={handleClose} sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    outline: 'none'
+                }}>
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <GlassCard />
+                    </div>
+                </Box>
+            </Fade>
+        </Modal>
     );
 };
 
