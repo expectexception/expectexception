@@ -30,7 +30,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Sum, Max, Q
 from django.contrib.auth import get_user_model
 User = get_user_model()
-from .models import Service, DownloadableResource, UserActivity, FavoriteTool, DownloadHistory
+from .models import Service, DownloadableResource, UserActivity, FavoriteTool, DownloadHistory, ToolUsage
 from .serializers import ServiceSerializer, DownloadableResourceSerializer, UserActivitySerializer, FavoriteToolSerializer, DownloadHistorySerializer
 from apps.videos.models import VideoDownload
 from apps.videos.tasks import download_video_async
@@ -52,20 +52,92 @@ def get_client_ip(request):
     return ip
 
 
+def _safe_tool_name(tool_name: str, request=None) -> str:
+    if tool_name:
+        return str(tool_name)[:120]
+    if request is None:
+        return 'unknown'
+    return (getattr(request, 'resolver_match', None) and request.resolver_match.url_name) or request.path[:120] or 'unknown'
+
+
+def log_tool_usage(
+    *,
+    request,
+    tool_name: str,
+    status_label: str = 'success',
+    http_status: int | None = None,
+    started_at: float | None = None,
+    error: Exception | None = None,
+    extra: dict | None = None,
+):
+    """Persist tool usage for admin/auditing.
+
+    Works for both authenticated and anonymous users.
+    """
+
+    try:
+        exec_ms = None
+        if started_at is not None:
+            exec_ms = int((time.time() - started_at) * 1000)
+
+        forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        request_id = request.META.get('HTTP_X_REQUEST_ID')
+        parsed_request_id = None
+        if request_id:
+            try:
+                parsed_request_id = uuid.UUID(str(request_id))
+            except Exception:
+                parsed_request_id = None
+
+        ToolUsage.objects.create(
+            user=request.user if getattr(request, 'user', None) and request.user.is_authenticated else None,
+            tool_name=_safe_tool_name(tool_name, request),
+            endpoint=request.path[:255] if getattr(request, 'path', None) else '',
+            method=getattr(request, 'method', '') or '',
+            ip_address=get_client_ip(request) if request is not None else None,
+            forwarded_for=forwarded_for,
+            user_agent=user_agent,
+            status=status_label,
+            http_status=http_status,
+            error_message=(str(error)[:2000] if error else ''),
+            execution_time_ms=exec_ms,
+            request_id=parsed_request_id,
+            extra=extra or {},
+        )
+    except Exception:
+        # Never break the endpoint if logging fails.
+        logger.exception('ToolUsage logging failed')
+
+
 def log_activity(user, action, details=None, request=None):
-    """Enhanced activity logging with request metadata"""
+    """Enhanced activity logging with request metadata.
+
+    Also mirrors the event into ToolUsage for auditing.
+    """
     if user.is_authenticated:
         activity_data = {
             'user': user,
             'action': action,
             'details': details,
         }
-        
+
         if request:
             activity_data['ip_address'] = get_client_ip(request)
             activity_data['user_agent'] = request.META.get('HTTP_USER_AGENT', '')
-        
+
         UserActivity.objects.create(**activity_data)
+
+    if request is not None:
+        log_tool_usage(
+            request=request,
+            tool_name=action,
+            status_label='success',
+            http_status=None,
+            started_at=None,
+            error=None,
+            extra={'details': details or ''},
+        )
 
 
 
@@ -74,11 +146,20 @@ class TextToSpeechView(APIView):
     parser_classes = [JSONParser]
 
     def post(self, request):
+        started_at = time.time()
         text = request.data.get('text')
         lang = request.data.get('lang', 'en')
         gender = request.data.get('gender', 'Female') # Male or Female
         
         if not text:
+            log_tool_usage(
+                request=request,
+                tool_name='tts',
+                status_label='failed',
+                http_status=status.HTTP_400_BAD_REQUEST,
+                started_at=started_at,
+                error=ValueError('Text is required'),
+            )
             return Response({'error': 'Text is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Mapping of (lang, gender) -> Voice
@@ -133,12 +214,29 @@ class TextToSpeechView(APIView):
             
             log_activity(request.user, "text_to_speech", f"Lang: {lang}, Gender: {gender}, Voice: {voice}")
 
+            log_tool_usage(
+                request=request,
+                tool_name='tts',
+                status_label='success',
+                http_status=status.HTTP_200_OK,
+                started_at=started_at,
+                extra={'lang': lang, 'gender': gender, 'voice': voice},
+            )
+
             return Response({
                 'audio_url': file_url,
                 'filename': filename
             })
 
         except Exception as e:
+            log_tool_usage(
+                request=request,
+                tool_name='tts',
+                status_label='failed',
+                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                started_at=started_at,
+                error=e,
+            )
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ImageCompressorView(APIView):
@@ -146,15 +244,33 @@ class ImageCompressorView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
+        started_at = time.time()
         image_file = request.FILES.get('image')
         quality = int(request.data.get('quality', 80))
         format_type = request.data.get('format', 'WEBP').upper()
         
         if not image_file:
+            log_tool_usage(
+                request=request,
+                tool_name='compress-image',
+                status_label='failed',
+                http_status=status.HTTP_400_BAD_REQUEST,
+                started_at=started_at,
+                error=ValueError('Image file is required'),
+            )
             return Response({'error': 'Image file is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         valid_formats = ['JPEG', 'PNG', 'WEBP']
         if format_type not in valid_formats:
+            log_tool_usage(
+                request=request,
+                tool_name='compress-image',
+                status_label='failed',
+                http_status=status.HTTP_400_BAD_REQUEST,
+                started_at=started_at,
+                error=ValueError('Invalid format'),
+                extra={'format': format_type},
+            )
             return Response({'error': f'Invalid format. Supported: {valid_formats}'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -180,6 +296,15 @@ class ImageCompressorView(APIView):
             
             log_activity(request.user, "compress_image", f"Format: {format_type}, Quality: {quality}")
 
+            log_tool_usage(
+                request=request,
+                tool_name='compress-image',
+                status_label='success',
+                http_status=status.HTTP_200_OK,
+                started_at=started_at,
+                extra={'format': format_type, 'quality': quality},
+            )
+
             return Response({
                 'image_url': file_url,
                 'filename': filename,
@@ -188,17 +313,34 @@ class ImageCompressorView(APIView):
             })
 
         except Exception as e:
+            log_tool_usage(
+                request=request,
+                tool_name='compress-image',
+                status_label='failed',
+                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                started_at=started_at,
+                error=e,
+            )
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class QrGeneratorView(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
+        started_at = time.time()
         data = request.data.get('data')
         fg_color = request.data.get('fg_color', '#000000')
         bg_color = request.data.get('bg_color', '#ffffff')
 
         if not data:
+            log_tool_usage(
+                request=request,
+                tool_name='qr-generator',
+                status_label='failed',
+                http_status=status.HTTP_400_BAD_REQUEST,
+                started_at=started_at,
+                error=ValueError('Data is required'),
+            )
             return Response({'error': 'Data is required'}, status=status.HTTP_400_BAD_REQUEST)
             
         qr = qrcode.QRCode(
@@ -225,6 +367,15 @@ class QrGeneratorView(APIView):
             
         log_activity(request.user, "generate_qr", f"Data: {data[:50]}...")
 
+        log_tool_usage(
+            request=request,
+            tool_name='qr-generator',
+            status_label='success',
+            http_status=status.HTTP_200_OK,
+            started_at=started_at,
+            extra={'data_preview': str(data)[:80]},
+        )
+
         return Response({
             'qr_url': f"{settings.MEDIA_URL}qr/{filename}"
         })
@@ -233,8 +384,17 @@ class JsonFormatterView(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
+        started_at = time.time()
         raw_json = request.data.get('json_data')
         if not raw_json:
+            log_tool_usage(
+                request=request,
+                tool_name='json-formatter',
+                status_label='failed',
+                http_status=status.HTTP_400_BAD_REQUEST,
+                started_at=started_at,
+                error=ValueError('JSON data is required'),
+            )
             return Response({'error': 'JSON data is required'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             if isinstance(raw_json, str):
@@ -244,9 +404,25 @@ class JsonFormatterView(APIView):
             formatted = json.dumps(parsed, indent=4)
             
             log_activity(request.user, "format_json", "JSON Formatted")
+
+            log_tool_usage(
+                request=request,
+                tool_name='json-formatter',
+                status_label='success',
+                http_status=status.HTTP_200_OK,
+                started_at=started_at,
+            )
             
             return Response({'formatted_json': formatted})
         except json.JSONDecodeError:
+            log_tool_usage(
+                request=request,
+                tool_name='json-formatter',
+                status_label='failed',
+                http_status=status.HTTP_400_BAD_REQUEST,
+                started_at=started_at,
+                error=ValueError('Invalid JSON'),
+            )
             return Response({'error': 'Invalid JSON'}, status=status.HTTP_400_BAD_REQUEST)
 
 class UrlDownloaderView(APIView):
@@ -1590,11 +1766,29 @@ class ImageUpscalerView(APIView):
     MAX_SCALE = 4.0
 
     def post(self, request):
+        started_at = time.time()
         image_file = request.FILES.get('image')
         if not image_file:
+            log_tool_usage(
+                request=request,
+                tool_name='image-upscale',
+                status_label='failed',
+                http_status=status.HTTP_400_BAD_REQUEST,
+                started_at=started_at,
+                error=ValueError('Image file is required'),
+            )
             return Response({'error': 'Image file is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         if image_file.size > self.MAX_FILE_SIZE:
+            log_tool_usage(
+                request=request,
+                tool_name='image-upscale',
+                status_label='failed',
+                http_status=status.HTTP_400_BAD_REQUEST,
+                started_at=started_at,
+                error=ValueError('File too large'),
+                extra={'size': int(image_file.size), 'max_size': int(self.MAX_FILE_SIZE)},
+            )
             return Response(
                 {'error': f'File too large. Maximum size is {self.MAX_FILE_SIZE // (1024 * 1024)}MB'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -1658,6 +1852,22 @@ class ImageUpscalerView(APIView):
                 request
             )
 
+            log_tool_usage(
+                request=request,
+                tool_name='image-upscale',
+                status_label='success',
+                http_status=status.HTTP_200_OK,
+                started_at=started_at,
+                extra={
+                    'scale': scale,
+                    'sharpness': sharpness,
+                    'denoise': reduce_noise,
+                    'boost_color': boost_color,
+                    'src_mode': source_mode,
+                    'out_format': output_format,
+                },
+            )
+
             return Response({
                 'success': True,
                 'file_url': file_url,
@@ -1674,6 +1884,14 @@ class ImageUpscalerView(APIView):
             })
         except Exception as e:
             logger.exception(f"Image upscale error: {e}")
+            log_tool_usage(
+                request=request,
+                tool_name='image-upscale',
+                status_label='failed',
+                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                started_at=started_at,
+                error=e,
+            )
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class Base64View(APIView):

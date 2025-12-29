@@ -35,6 +35,7 @@ import { motion } from 'framer-motion';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { User } from '../types';
+import { isReactSnap } from '../utils/isReactSnap';
 
 // Define interfaces matching backend
 interface Tag {
@@ -70,6 +71,10 @@ const BlogPage: React.FC = () => {
     const [snackbar, setSnackbar] = useState({ open: false, message: '' });
 
     useEffect(() => {
+        if (isReactSnap()) {
+            setLoading(false);
+            return;
+        }
         fetchPosts();
     }, [page, filter]);
 
@@ -83,7 +88,9 @@ const BlogPage: React.FC = () => {
             const data = Array.isArray(response.data) ? response.data : response.data.results || [];
             setPosts(data);
         } catch (err) {
-            console.error('Error fetching posts:', err);
+            if (!isReactSnap()) {
+                console.error('Error fetching posts:', err);
+            }
             setError('Failed to load blog posts. Please try again later.');
         } finally {
             setLoading(false);

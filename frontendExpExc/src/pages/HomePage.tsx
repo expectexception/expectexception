@@ -36,6 +36,7 @@ import { endpoints } from '../api/endpoints';
 import { Post } from '../types';
 import Seo from '../components/seo/Seo';
 import { staticServices, staticStats } from '../data/StaticData';
+import { isReactSnap } from '../utils/isReactSnap';
 
 const HomePage: React.FC = () => {
   const theme = useTheme();
@@ -65,6 +66,11 @@ const HomePage: React.FC = () => {
   };
 
   useEffect(() => {
+    // Avoid network calls during react-snap prerender
+    if (isReactSnap()) {
+      setLoadingPosts(false);
+      return;
+    }
     fetchLatestPosts();
     fetchServices();
     fetchStats();

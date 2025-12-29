@@ -260,6 +260,31 @@
         ]
     },
     {
+        "id": 999,
+        "title": "AI Image Upscaler",
+        "description": "Enhance and enlarge photos with sharper details and reduced noise.",
+        "path": "/services/image-upscale",
+        "icon": "AutoFixHigh",
+        "color": "info",
+        "popularity": 88,
+        "category": "media",
+        "tags": [
+            "image",
+            "enhance",
+            "upscale",
+            "quality"
+        ],
+        "keywords": [
+            "image upscaler",
+            "enhance image quality",
+            "increase photo resolution",
+            "ai image enhancer",
+            "upscale photo online",
+            "improve picture quality",
+            "enlarge image without losing quality"
+        ]
+    },
+    {
         "id": 11,
         "title": "Image Compressor",
         "description": "Compress images while maintaining quality with batch processing support.",

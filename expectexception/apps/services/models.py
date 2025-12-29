@@ -92,6 +92,59 @@ class UserActivity(models.Model):
         return f"{self.user} - {self.action} - {self.created_at}"
 
 
+class ToolUsage(models.Model):
+    """Audit log for tool usage by user/IP.
+
+    This is designed to answer: who (user), from where (ip), used which tool,
+    when, and whether it succeeded.
+    """
+
+    STATUS_CHOICES = [
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+        ('partial', 'Partial'),
+    ]
+
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tool_usages',
+    )
+
+    tool_name = models.CharField(max_length=120, db_index=True, help_text="Logical tool name e.g. 'qr-generator'")
+    endpoint = models.CharField(max_length=255, blank=True, help_text="Request path e.g. /api/services/qr-generator/")
+    method = models.CharField(max_length=10, blank=True)
+
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    forwarded_for = models.TextField(blank=True, help_text="Raw X-Forwarded-For header")
+    user_agent = models.TextField(blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='success', db_index=True)
+    http_status = models.IntegerField(null=True, blank=True)
+    error_message = models.TextField(blank=True)
+
+    execution_time_ms = models.IntegerField(null=True, blank=True)
+    request_id = models.UUIDField(null=True, blank=True, db_index=True)
+
+    extra = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['tool_name', '-created_at']),
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['ip_address', '-created_at']),
+            models.Index(fields=['status', '-created_at']),
+        ]
+
+    def __str__(self):
+        user_label = getattr(self.user, 'email', None) or getattr(self.user, 'username', None) or 'Anonymous'
+        return f"{user_label} • {self.tool_name} • {self.status} • {self.created_at}"
+
+
 class DownloadHistory(models.Model):
     """Track all downloads for analytics and user history"""
     DOWNLOAD_TYPES = [

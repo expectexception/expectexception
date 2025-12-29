@@ -54,6 +54,7 @@ const ImageResizer = lazy(() => import('../services/ImageResizer'));
 const BackgroundRemover = lazy(() => import('../services/BackgroundRemover'));
 const ImageToText = lazy(() => import('../services/ImageToText'));
 const ImageConverter = lazy(() => import('../services/ImageConverter'));
+const ImageUpscaler = lazy(() => import('../services/ImageUpscaler'));
 const Base64Tool = lazy(() => import('../services/Base64Tool'));
 const HashGenerator = lazy(() => import('../services/HashGenerator'));
 const UuidGenerator = lazy(() => import('../services/UuidGenerator'));
@@ -91,6 +92,7 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/background-remover" element={<PageTransition><BackgroundRemover /></PageTransition>} />
                     <Route path="/services/image-to-text" element={<PageTransition><ImageToText /></PageTransition>} />
                     <Route path="/services/image-converter" element={<PageTransition><ImageConverter /></PageTransition>} />
+                    <Route path="/services/image-upscale" element={<PageTransition><ImageUpscaler /></PageTransition>} />
 
                     {/* Developer Tools */}
                     <Route path="/services/base64" element={<PageTransition><Base64Tool /></PageTransition>} />

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { isReactSnap } from './utils/isReactSnap';
 
 const rootElement = document.getElementById('root') as HTMLElement;
 const root = ReactDOM.createRoot(rootElement);
@@ -18,7 +19,16 @@ root.render(
 reportWebVitals();
 
 // Register service worker for PWA functionality
-if ('serviceWorker' in navigator) {
+const isMobileDevice = () => {
+  const ua = navigator.userAgent || '';
+  const isMobileUA = /Android|iPhone|iPad|iPod/i.test(ua);
+  const hasCoarsePointer = typeof window !== 'undefined' && window.matchMedia
+    ? window.matchMedia('(pointer: coarse)').matches
+    : false;
+  return isMobileUA || hasCoarsePointer;
+};
+
+if ('serviceWorker' in navigator && isMobileDevice() && !isReactSnap()) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/service-worker.js')
@@ -33,5 +43,12 @@ if ('serviceWorker' in navigator) {
       .catch((error) => {
         console.log('[PWA] Service Worker registration failed:', error);
       });
+  });
+} else if ('serviceWorker' in navigator && !isReactSnap()) {
+  // Desktop: ensure no active SW keeps the app installable.
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.getRegistrations().then((regs) => {
+      regs.forEach((reg) => reg.unregister());
+    });
   });
 }

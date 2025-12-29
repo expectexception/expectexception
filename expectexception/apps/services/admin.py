@@ -4,7 +4,7 @@ from django.template.response import TemplateResponse
 from django.utils.html import format_html
 from django.conf import settings
 import os
-from .models import Service, DownloadableResource, UserActivity, DownloadHistory, FavoriteTool, LogAnalysis, ServerHealth
+from .models import Service, DownloadableResource, UserActivity, DownloadHistory, FavoriteTool, LogAnalysis, ServerHealth, ToolUsage
 from .log_analyzer import get_log_analysis
 
 @admin.register(Service)
@@ -104,6 +104,41 @@ class UserActivityAdmin(admin.ModelAdmin):
     list_filter = ('action', 'status', 'created_at')
     search_fields = ('user__email', 'details')
     readonly_fields = ('created_at',)
+
+
+@admin.register(ToolUsage)
+class ToolUsageAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'tool_name', 'status', 'http_status', 'user', 'ip_address', 'method', 'endpoint')
+    list_filter = ('tool_name', 'status', 'method', 'created_at')
+    search_fields = ('tool_name', 'endpoint', 'user__email', 'user__username', 'ip_address', 'user_agent', 'error_message')
+    date_hierarchy = 'created_at'
+    ordering = ('-created_at',)
+    readonly_fields = (
+        'created_at',
+        'user',
+        'tool_name',
+        'endpoint',
+        'method',
+        'ip_address',
+        'forwarded_for',
+        'user_agent',
+        'status',
+        'http_status',
+        'error_message',
+        'execution_time_ms',
+        'request_id',
+        'extra',
+    )
+
+    fieldsets = (
+        (None, {'fields': ('created_at', 'tool_name', 'status', 'http_status')}),
+        ('Requester', {'fields': ('user', 'ip_address', 'forwarded_for', 'user_agent')}),
+        ('Request', {'fields': ('method', 'endpoint', 'request_id')}),
+        ('Execution', {'fields': ('execution_time_ms', 'error_message', 'extra')}),
+    )
+
+    def has_add_permission(self, request):
+        return False
 
 @admin.register(DownloadHistory)
 class DownloadHistoryAdmin(admin.ModelAdmin):
