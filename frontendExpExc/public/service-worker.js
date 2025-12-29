@@ -1,7 +1,7 @@
 // ExpectException Service Worker
 // Enables offline functionality and PWA installation
 
-const CACHE_NAME = 'expectexception-v1';
+const CACHE_NAME = 'expectexception-v2';
 const RUNTIME_CACHE = 'expectexception-runtime';
 
 // Assets to cache immediately on install
