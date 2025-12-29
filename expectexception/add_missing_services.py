@@ -20,6 +20,17 @@ missing_services = [
         'color': 'info',
         'is_active': True,
         'popularity': 10
+    },
+    {
+        'title': 'AI Image Upscaler',
+        'description': 'Enhance and enlarge photos with crisp edges and low noise.',
+        'icon': 'AutoFixHigh',
+        'path': '/services/image-upscale',
+        'category': 'Media',
+        'tags': ['image', 'ai', 'upscale', 'enhance'],
+        'color': 'info',
+        'is_active': True,
+        'popularity': 40
     }
 ]
 

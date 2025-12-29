@@ -48,7 +48,7 @@ def analyze_image_task(
         Dict with detection results
     """
     from .detector import EnsembleDetector, format_results
-    from .extractor import extract_metadata, get_image_stats, perform_ela
+    from .extractor import gather_image_context
     from .cache import detection_cache
     
     tmp_path = None
@@ -84,15 +84,9 @@ def analyze_image_task(
         # Update task state
         self.update_state(state='PROCESSING', meta={'step': 'metadata'})
         
-        # Extract metadata
-        metadata = extract_metadata(tmp_path)
-        
-        # Get image stats
-        stats = get_image_stats(tmp_path)
-        
-        # Perform ELA
+        # Extract metadata, stats, and ELA concurrently to shorten task runtime
         self.update_state(state='PROCESSING', meta={'step': 'ela'})
-        ela_image = perform_ela(tmp_path, quality=90)
+        metadata, stats, ela_image = gather_image_context(tmp_path)
         ela_base64 = None
         if ela_image:
             buffered = BytesIO()

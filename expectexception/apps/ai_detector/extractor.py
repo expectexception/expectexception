@@ -11,6 +11,7 @@ from datetime import datetime
 import numpy as np
 import tempfile
 import logging
+from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -159,3 +160,17 @@ def get_image_stats(image_path):
         stats["Error"] = str(e)
     
     return stats
+
+
+def gather_image_context(image_path):
+    """Run metadata, stats, and ELA calculations concurrently for better latency"""
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        metadata_future = executor.submit(extract_metadata, image_path)
+        stats_future = executor.submit(get_image_stats, image_path)
+        ela_future = executor.submit(perform_ela, image_path)
+
+        metadata = metadata_future.result()
+        stats = stats_future.result()
+        ela_image = ela_future.result()
+
+    return metadata, stats, ela_image

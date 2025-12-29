@@ -20,7 +20,7 @@ from .serializers import (
     AnalysisResultSerializer
 )
 from .detector import EnsembleDetector, AIDetector, format_results
-from .extractor import extract_metadata, get_image_stats, perform_ela
+from .extractor import gather_image_context
 from .cache import detection_cache
 from io import BytesIO
 
@@ -142,14 +142,8 @@ def analyze_image(request):
         raw_results = detector.detect(tmp_path, use_ensemble=use_ensemble)
         results = format_results(raw_results)
         
-        # Metadata Extraction
-        metadata = extract_metadata(tmp_path)
-        
-        # Image Stats
-        stats = get_image_stats(tmp_path)
-        
-        # Perform ELA
-        ela_image = perform_ela(tmp_path, quality=90)
+        # Run heavy metadata/stats/ELA work in parallel to trim latency
+        metadata, stats, ela_image = gather_image_context(tmp_path)
         ela_base64 = None
         if ela_image:
             buffered = BytesIO()

@@ -16,7 +16,7 @@ import asyncio
 from asgiref.sync import async_to_sync
 import edge_tts
 from deep_translator import GoogleTranslator
-from PIL import Image
+from PIL import Image, ImageFilter, ImageEnhance
 import qrcode
 import json
 import requests
@@ -1580,6 +1580,101 @@ class ImageConverterView(APIView):
             logger.exception(f"Image convert error: {e}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class ImageUpscalerView(APIView):
+    """Upscale and enhance images using high-quality interpolation"""
+    permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser, FormParser]
+
+    MAX_FILE_SIZE = 25 * 1024 * 1024  # 25MB limit to keep memory manageable
+    MAX_SCALE = 4.0
+
+    def post(self, request):
+        image_file = request.FILES.get('image')
+        if not image_file:
+            return Response({'error': 'Image file is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if image_file.size > self.MAX_FILE_SIZE:
+            return Response(
+                {'error': f'File too large. Maximum size is {self.MAX_FILE_SIZE // (1024 * 1024)}MB'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            scale = float(request.data.get('scale', 2))
+        except (TypeError, ValueError):
+            scale = 2.0
+        scale = max(1.0, min(scale, self.MAX_SCALE))
+
+        try:
+            sharpness = float(request.data.get('sharpness', 1.2))
+        except (TypeError, ValueError):
+            sharpness = 1.2
+        sharpness = max(0.5, min(sharpness, 2.5))
+
+        reduce_noise = str(request.data.get('denoise', 'true')).lower() == 'true'
+        boost_color = str(request.data.get('boost_color', 'false')).lower() == 'true'
+
+        try:
+            image = Image.open(image_file)
+            source_mode = image.mode
+            if image.mode not in ('RGB', 'RGBA'):
+                image = image.convert('RGB')
+
+            new_size = (int(image.width * scale), int(image.height * scale))
+            upscaled = image.resize(new_size, Image.LANCZOS)
+
+            if reduce_noise:
+                upscaled = upscaled.filter(ImageFilter.SMOOTH_MORE)
+
+            if sharpness != 1.0:
+                upscaled = ImageEnhance.Sharpness(upscaled).enhance(sharpness)
+
+            if boost_color:
+                upscaled = ImageEnhance.Color(upscaled).enhance(1.05)
+                upscaled = ImageEnhance.Contrast(upscaled).enhance(1.03)
+
+            buffer = io.BytesIO()
+            output_format = 'PNG' if upscaled.mode == 'RGBA' else 'JPEG'
+            upscaled.save(buffer, format=output_format, quality=95)
+            buffer.seek(0)
+
+            output_dir = os.path.join(settings.MEDIA_ROOT, 'enhanced')
+            os.makedirs(output_dir, exist_ok=True)
+
+            ext = '.png' if output_format == 'PNG' else '.jpg'
+            filename = f"upscaled_{uuid.uuid4().hex[:8]}{ext}"
+            output_path = os.path.join(output_dir, filename)
+
+            with open(output_path, 'wb') as f:
+                f.write(buffer.getvalue())
+
+            file_url = f"{settings.MEDIA_URL}enhanced/{filename}"
+
+            log_activity(
+                request.user,
+                "image_upscale",
+                f"Scale {scale}x, sharpness {sharpness} (src mode {source_mode})",
+                request
+            )
+
+            return Response({
+                'success': True,
+                'file_url': file_url,
+                'filename': filename,
+                'scale': scale,
+                'original_size': f"{image.width}x{image.height}",
+                'upscaled_size': f"{upscaled.width}x{upscaled.height}",
+                'output_format': output_format,
+                'adjustments': {
+                    'sharpness': sharpness,
+                    'denoise': reduce_noise,
+                    'boost_color': boost_color,
+                }
+            })
+        except Exception as e:
+            logger.exception(f"Image upscale error: {e}")
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class Base64View(APIView):
     """Encode/decode Base64"""

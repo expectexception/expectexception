@@ -21,6 +21,7 @@ from .views import (
     BackgroundRemoverView,
     ImageToTextView,
     ImageConverterView,
+    ImageUpscalerView,
     Base64View,
     HashGeneratorView,
     UuidGeneratorView,
@@ -61,6 +62,7 @@ urlpatterns = [
     path('background-remove/', BackgroundRemoverView.as_view(), name='background-remove'),
     path('image-to-text/', ImageToTextView.as_view(), name='image-to-text'),
     path('image-convert/', ImageConverterView.as_view(), name='image-convert'),
+    path('image-upscale/', ImageUpscalerView.as_view(), name='image-upscale'),
     
     # Developer tools
     path('base64/', Base64View.as_view(), name='base64'),
