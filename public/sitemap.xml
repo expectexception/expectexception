@@ -91,6 +91,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://expectexception.com/services/image-upscale</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://expectexception.com/services/image-compressor</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -156,7 +161,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://expectexception.com/blogs/1</loc>
+    <loc>https://expectexception.com/blogs/2</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

@@ -3,12 +3,22 @@
 
 <head>
   <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BN291MYX4T"></script>
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'G-BN291MYX4T');
+    // Skip third-party scripts during react-snap prerender to avoid noisy net::ERR_FAILED logs.
+    window.__IS_REACT_SNAP__ = (typeof navigator !== 'undefined' && navigator.userAgent === 'ReactSnap');
+  </script>
+  <script>
+    if (!window.__IS_REACT_SNAP__) {
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-BN291MYX4T';
+      document.head.appendChild(s);
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-BN291MYX4T');
+    }
   </script>
   <meta charset="utf-8" />
   <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
@@ -29,6 +39,22 @@
   <meta name="apple-mobile-web-app-title" content="ExpectException" />
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
+  <!-- Desktop PWA install is disabled; keep mobile install enabled. -->
+  <script>
+    (function () {
+      try {
+        var ua = navigator.userAgent || '';
+        var isMobileUA = /Android|iPhone|iPad|iPod/i.test(ua);
+        var hasCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var isMobile = isMobileUA || hasCoarsePointer;
+        if (!isMobile) {
+          var link = document.querySelector('link[rel="manifest"]');
+          if (link && link.parentNode) link.parentNode.removeChild(link);
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- SEO & Social Sharing (Open Graph) -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://expectexception.com/" />
@@ -46,11 +72,25 @@
   <meta name="twitter:image" content="%PUBLIC_URL%/logo512.png" />
 
   <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
+  <script>
+    if (!window.__IS_REACT_SNAP__) {
+      var pre1 = document.createElement('link');
+      pre1.rel = 'preconnect';
+      pre1.href = 'https://fonts.googleapis.com';
+      document.head.appendChild(pre1);
+
+      var pre2 = document.createElement('link');
+      pre2.rel = 'preconnect';
+      pre2.href = 'https://fonts.gstatic.com';
+      pre2.crossOrigin = 'anonymous';
+      document.head.appendChild(pre2);
+
+      var css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap';
+      document.head.appendChild(css);
+    }
+  </script>
 
   <link rel="canonical" href="https://expectexception.com/" />
   <title>ExpectException - Free Developer Tools & Services | YouTube Downloader, PDF Converter, AI Detector, </title>

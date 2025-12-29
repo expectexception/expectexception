@@ -48,6 +48,7 @@ import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import ResourceDetailsDialog from '../components/services/ResourceDetailsDialog';
+import { isReactSnap } from '../utils/isReactSnap';
 
 const DownloadHubPage: React.FC = () => {
   const { user } = useAuth();
@@ -95,6 +96,9 @@ const DownloadHubPage: React.FC = () => {
   React.useEffect(() => {
     const fetchDownloads = async () => {
       try {
+        if (isReactSnap()) {
+          return;
+        }
         const [filesRes, statsRes] = await Promise.all([
           apiClient.get(endpoints.services.downloads),
           apiClient.get(endpoints.services.downloadStats)
@@ -102,7 +106,9 @@ const DownloadHubPage: React.FC = () => {
         setFiles(filesRes.data.results || filesRes.data);
         setStats(statsRes.data);
       } catch (error) {
-        console.error('Failed to fetch downloads:', error);
+        if (!isReactSnap()) {
+          console.error('Failed to fetch downloads:', error);
+        }
 
       }
     };

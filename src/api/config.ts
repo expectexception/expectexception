@@ -1,5 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
+const isReactSnap = () => typeof navigator !== 'undefined' && navigator.userAgent === 'ReactSnap';
+
 // Get base URL from environment variable or use default
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 const WS_BASE_URL = process.env.REACT_APP_WS_BASE_URL || 'ws://localhost:8000';
@@ -16,6 +18,10 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor for adding auth token and handling FormData
 apiClient.interceptors.request.use(
     (config) => {
+        // During react-snap prerender we don't want network calls (they fail and spam logs)
+        if (isReactSnap()) {
+            return Promise.reject(new axios.Cancel('ReactSnap prerender: request skipped'));
+        }
         // Get token from localStorage if available
         const token = localStorage.getItem('accessToken');
         if (token) {

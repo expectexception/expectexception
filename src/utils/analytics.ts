@@ -1,4 +1,5 @@
 import { Metric } from 'web-vitals';
+import { isReactSnap } from './isReactSnap';
 
 declare global {
     interface Window {
@@ -22,17 +23,21 @@ export const initGA = () => {
 
 // Log Page View
 export const logPageView = (path: string) => {
+    if (isReactSnap()) return;
     if (isProduction && window.gtag) {
         window.gtag('event', 'page_view', {
             page_path: path,
         });
     } else {
+        // Avoid noisy logs in local/dev and in react-snap
+        // eslint-disable-next-line no-console
         console.log(`[Analytics] Page View: ${path}`);
     }
 };
 
 // Log Custom Event
 export const logEvent = (category: string, action: string, label?: string, value?: number) => {
+    if (isReactSnap()) return;
     if (isProduction && window.gtag) {
         window.gtag('event', action, {
             event_category: category,
@@ -40,17 +45,20 @@ export const logEvent = (category: string, action: string, label?: string, value
             value: value,
         });
     } else {
+        // eslint-disable-next-line no-console
         console.log(`[Analytics] Event: ${category} - ${action}`, { label, value });
     }
 };
 
 // Set User ID
 export const setUserId = (userId: string | number | null) => {
+    if (isReactSnap()) return;
     if (isProduction && window.gtag) {
         window.gtag('config', GA_MEASUREMENT_ID, {
             user_id: userId,
         });
     } else if (userId) {
+        // eslint-disable-next-line no-console
         console.log(`[Analytics] User ID Set: ${userId}`);
     }
 };

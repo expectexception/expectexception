@@ -86,6 +86,7 @@ export const endpoints = {
         backgroundRemove: '/api/services/background-remove/',
         imageToText: '/api/services/image-to-text/',
         imageConvert: '/api/services/image-convert/',
+        imageUpscale: '/api/services/image-upscale/',
 
         // Developer tools
         base64: '/api/services/base64/',

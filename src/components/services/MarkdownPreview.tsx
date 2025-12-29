@@ -6,6 +6,7 @@ import { Article } from '@mui/icons-material';
 import Seo from '../seo/Seo';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
+import { isReactSnap } from '../../utils/isReactSnap';
 
 const MarkdownPreview: React.FC = () => {
     const [markdown, setMarkdown] = useState('# Hello World\n\nThis is a **markdown** preview tool.\n\n## Features\n\n- Live preview\n- GitHub Flavored Markdown\n- Code highlighting\n\n```javascript\nconst hello = "world";\nconsole.log(hello);\n```');
@@ -13,7 +14,11 @@ const MarkdownPreview: React.FC = () => {
     const [loading, setLoading] = useState(false);
 
     // Convert on change with debounce
+
     React.useEffect(() => {
+        if (isReactSnap()) {
+            return;
+        }
         const timer = setTimeout(async () => {
             if (!markdown.trim()) {
                 setHtml('');
@@ -34,7 +39,6 @@ const MarkdownPreview: React.FC = () => {
 
         return () => clearTimeout(timer);
     }, [markdown]);
-
     return (
         <Container maxWidth="xl" sx={{ py: 4 }}>
             <Seo

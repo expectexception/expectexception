@@ -6,6 +6,7 @@ import { Palette, ContentCopy } from '@mui/icons-material';
 import Seo from '../seo/Seo';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
+import { isReactSnap } from '../../utils/isReactSnap';
 
 const ColorConverter: React.FC = () => {
     const [color, setColor] = useState('#3b82f6');
@@ -33,6 +34,9 @@ const ColorConverter: React.FC = () => {
 
     // Convert on input change after debounce
     React.useEffect(() => {
+        if (isReactSnap()) {
+            return;
+        }
         if (color.match(/^#[0-9A-Fa-f]{6}$/)) {
             handleConvert();
         }
