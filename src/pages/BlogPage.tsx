@@ -97,9 +97,25 @@ const BlogPage: React.FC = () => {
         }
     };
 
-    // Helper to extract text from content (simple strip html if needed)
-    const getExcerpt = (content: string, length = 100) => {
-        return content.length > length ? content.substring(0, length) + '...' : content;
+    const stripHtml = (html: string) => {
+        if (!html) return '';
+
+        // Browser-safe decode/strip
+        if (typeof document !== 'undefined') {
+            const el = document.createElement('div');
+            el.innerHTML = html;
+            return (el.textContent || el.innerText || '').replace(/\s+/g, ' ').trim();
+        }
+
+        // Fallback for non-DOM environments
+        const tagRe = new RegExp('<[^>]*>', 'g');
+        return html.replace(tagRe, ' ').replace(/\s+/g, ' ').trim();
+    };
+
+    // Helper to extract text excerpt from HTML content
+    const getExcerpt = (content: string, length = 140) => {
+        const text = stripHtml(content);
+        return text.length > length ? text.substring(0, length) + '…' : text;
     };
 
     // Helper to format date
@@ -145,10 +161,13 @@ const BlogPage: React.FC = () => {
     const handleCloseSnackbar = () => {
         setSnackbar({ ...snackbar, open: false });
     };
-    const filteredPosts = posts.filter(post =>
-        post.title.toLowerCase().includes(search.toLowerCase()) ||
-        post.content.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredPosts = posts.filter(post => {
+        const q = search.toLowerCase();
+        return (
+            post.title.toLowerCase().includes(q) ||
+            stripHtml(post.content).toLowerCase().includes(q)
+        );
+    });
 
     return (
         <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
