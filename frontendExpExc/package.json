@@ -44,8 +44,8 @@
     "html2canvas": "^1.4.1",
     "prismjs": "^1.30.0",
     "qrcode.react": "^3.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "react-helmet-async": "^2.0.5",
     "react-intersection-observer": "^10.0.0",
     "react-qrcode": "^0.3.6",
@@ -60,6 +60,7 @@
     "dev": "react-scripts start",
     "build": "react-scripts build && node scripts/generate-sitemap.js",
     "postbuild": "react-snap",
+    "postinstall": "node scripts/patch-react-snap.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer 'build/static/js/*.js'"
@@ -111,7 +112,7 @@
     ]
   },
   "overrides": {
-    "puppeteer": "^24.15.0",
+    "puppeteer": "22.15.0",
     "qs": "^6.11.0",
     "path-to-regexp": "^0.1.12",
     "postcss": "^8.4.31",
