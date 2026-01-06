@@ -41,6 +41,10 @@ import {
   Fingerprint,
   Create,
   Lock,
+  AltRoute,
+  Dns,
+  Speed,
+  Mic,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -73,10 +77,19 @@ const ServicesPage: React.FC = () => {
         // "Hardcoded on frontend side only":
         // We use the API only to check which services are Active (exist in DB).
         // We trust staticServices (tools.json) for Order, Popularity, Title, etc.
-        const activePaths = new Set((servicesRes.data.results || servicesRes.data).map((s: any) => s.path));
+        // Normalize backend paths (strip trailing slashes and any '/api' prefix)
+        const normalizePath = (p: string) => {
+          if (!p) return p;
+          const withoutApi = p.startsWith('/api') ? p.replace(/^\/api/, '') : p;
+          return withoutApi.endsWith('/') ? withoutApi.slice(0, -1) : withoutApi;
+        };
 
-        const finalServices = [...staticServices]
-          .filter(s => activePaths.has(s.path))
+        const backendList: any[] = (servicesRes.data?.results ?? servicesRes.data) || [];
+        const activePaths = new Set(backendList.map((s: any) => normalizePath(s.path)));
+
+        // If intersection is empty (e.g., mismatched paths or empty DB), fall back to showing all static services
+        let finalServices = [...staticServices]
+          .filter(s => activePaths.size === 0 || activePaths.has(normalizePath(s.path)))
           .sort((a, b) => b.popularity - a.popularity);
 
         setServices(finalServices);
@@ -86,6 +99,8 @@ const ServicesPage: React.FC = () => {
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
+        // On error, keep the static services visible
+        setServices([...staticServices].sort((a, b) => b.popularity - a.popularity));
       }
     };
     fetchServicesAndStats();
@@ -124,6 +139,10 @@ const ServicesPage: React.FC = () => {
       case 'Fingerprint': return <Fingerprint fontSize="large" />;
       case 'Create': return <Create fontSize="large" />;
       case 'Lock': return <Lock fontSize="large" />;
+      case 'AltRoute': return <AltRoute fontSize="large" />;
+      case 'Dns': return <Dns fontSize="large" />;
+      case 'Mic': return <Mic fontSize="large" />;
+      case 'Speed': return <Speed fontSize="large" />;
       default: return <Code fontSize="large" />;
     }
   };

@@ -1,617 +1,480 @@
 [
     {
         "id": 1,
-        "title": "YT Video Downloader",
-        "description": "Download YouTube videos in various resolutions (HD, 4K) and multiple formats.",
-        "path": "/services/yt-downloader",
-        "icon": "Movie",
-        "color": "secondary",
-        "popularity": 98,
-        "category": "download",
-        "tags": [
-            "video",
-            "youtube",
-            "media"
-        ],
-        "keywords": [
-            "youtube downloader",
-            "yt video download",
-            "youtube to mp4",
-            "4k video downloader",
-            "save youtube videos",
-            "download yt videos online",
-            "free youtube downloader",
-            "youtube clip saver",
-            "hd video downloader"
-        ]
-    },
-    {
-        "id": 2,
-        "title": "Text to Handwriting",
-        "description": "Convert digital text into realistic human-like handwriting with AI-enhanced variations.",
-        "path": "/services/text-to-handwriting",
-        "icon": "Create",
-        "color": "primary",
-        "popularity": 95,
-        "category": "converter",
-        "tags": [
-            "handwriting",
-            "ai",
-            "convert",
-            "text"
-        ],
-        "keywords": [
-            "text to handwriting",
-            "handwriting generator",
-            "homework generator",
-            "digital to handwritten",
-            "write text in handwriting",
-            "realistic handwriting converter",
-            "note generator",
-            "assignment maker",
-            "ai handwriting"
-        ]
-    },
-    {
-        "id": 3,
-        "title": "AI Detector",
-        "description": "Detect AI-generated content in text using advanced analysis algorithms.",
-        "path": "/services/ai-detector",
-        "icon": "SmartToy",
-        "color": "secondary",
-        "popularity": 94,
-        "category": "developer",
-        "tags": [
-            "ai",
-            "detect",
-            "analysis"
-        ],
-        "keywords": [
-            "ai detector",
-            "chatgpt detector",
-            "ai content checker",
-            "detect ai writing",
-            "is this text ai",
-            "gpt zero alternative",
-            "ai plagiarism checker",
-            "check for ai content",
-            "artificial intelligence detector"
-        ]
-    },
-    {
-        "id": 4,
-        "title": "Secret Sharer",
-        "description": "Securely share sensitive passwords or secrets with self-destructing one-time links.",
-        "path": "/services/secret-sharer",
-        "icon": "Lock",
-        "color": "error",
-        "popularity": 93,
-        "category": "security",
-        "tags": [
-            "security",
-            "password",
-            "share",
-            "encrypt"
-        ],
-        "keywords": [
-            "secret sharer",
-            "one time secret",
-            "password share",
-            "secure note",
-            "self destruct message",
-            "privnote alternative",
-            "secure file transfer",
-            "encrypted message",
-            "share password securely",
-            "temporary link"
-        ]
-    },
-    {
-        "id": 5,
         "title": "URL Downloader",
         "description": "Download files from any URL with support for multiple formats and batch processing.",
-        "path": "/services/url-downloader",
         "icon": "Download",
-        "color": "primary",
-        "popularity": 92.1,
+        "path": "/services/url-downloader",
         "category": "download",
+        "popularity": 95,
         "tags": [
             "file",
             "download",
             "batch"
         ],
-        "keywords": [
-            "url downloader",
-            "file downloader online",
-            "download file from link",
-            "batch url downloader",
-            "link saver",
-            "online download manager",
-            "direct link downloader",
-            "wget online",
-            "save file from url"
-        ]
+        "color": "primary",
+        "is_active": true
     },
     {
-        "id": 6,
-        "title": "Background Remover",
-        "description": "Remove backgrounds from images automatically using AI-powered technology.",
-        "path": "/services/background-remover",
-        "icon": "AutoFixHigh",
-        "color": "primary",
+        "id": 2,
+        "title": "YT Video Downloader",
+        "description": "Download YouTube videos in various resolutions (HD, 4K) and multiple formats.",
+        "icon": "Movie",
+        "path": "/services/yt-downloader",
+        "category": "download",
         "popularity": 92,
-        "category": "media",
         "tags": [
-            "image",
-            "background",
-            "ai"
+            "video",
+            "youtube",
+            "media"
         ],
-        "keywords": [
-            "background remover",
-            "remove bg",
-            "transparent background maker",
-            "delete background",
-            "ai background removal",
-            "image background remover",
-            "free background eraser",
-            "photo cutout tool"
-        ]
-    },
-    {
-        "id": 7,
-        "title": "JSON Formatter",
-        "description": "Format, validate, minify, and beautify JSON data with syntax highlighting.",
-        "path": "/services/json-formatter",
-        "icon": "Code",
-        "color": "warning",
-        "popularity": 91,
-        "category": "developer",
-        "tags": [
-            "json",
-            "developer",
-            "format"
-        ],
-        "keywords": [
-            "json formatter",
-            "json beautifier",
-            "json validator",
-            "format json online",
-            "json viewer",
-            "json lint",
-            "minify json",
-            "json parser",
-            "pretty print json"
-        ]
-    },
-    {
-        "id": 8,
-        "title": "PDF to DOC Converter",
-        "description": "Convert PDF documents to editable Word (DOC/DOCX) format with formatting preserved.",
-        "path": "/services/pdf-to-doc",
-        "icon": "Description",
-        "color": "primary",
-        "popularity": 90,
-        "category": "document",
-        "tags": [
-            "pdf",
-            "doc",
-            "convert"
-        ],
-        "keywords": [
-            "pdf to doc",
-            "pdf to word",
-            "convert pdf to editable word",
-            "pdf converter online",
-            "pdf to docx",
-            "change pdf to word",
-            "free pdf converter",
-            "document converter"
-        ]
-    },
-    {
-        "id": 9,
-        "title": "DOC to PDF Converter",
-        "description": "Convert Word documents (DOC/DOCX) to PDF format with high fidelity.",
-        "path": "/services/doc-to-pdf",
-        "icon": "PictureAsPdf",
         "color": "secondary",
-        "popularity": 89,
-        "category": "document",
-        "tags": [
-            "doc",
-            "pdf",
-            "convert"
-        ],
-        "keywords": [
-            "doc to pdf",
-            "word to pdf",
-            "convert word to pdf",
-            "docx to pdf",
-            "save word as pdf",
-            "document via pdf",
-            "microsoft word to pdf",
-            "online pdf creator"
-        ]
+        "is_active": true
     },
     {
-        "id": 10,
+        "id": 3,
         "title": "URL to QR Converter",
         "description": "Generate QR codes from URLs with custom colors, sizes, and logo integration.",
-        "path": "/services/qr-generator",
         "icon": "QrCode",
-        "color": "success",
-        "popularity": 87,
+        "path": "/services/qr-generator",
         "category": "converter",
+        "popularity": 88,
         "tags": [
             "qr",
             "generator",
             "share"
         ],
-        "keywords": [
-            "qr code generator",
-            "url to qr",
-            "create qr code",
-            "free qr generator",
-            "custom qr code",
-            "qr maker",
-            "link to qr code",
-            "qr code with logo",
-            "qrcode generator"
-        ]
-    },
-    {
-        "id": 999,
-        "title": "AI Image Upscaler",
-        "description": "Enhance and enlarge photos with sharper details and reduced noise.",
-        "path": "/services/image-upscale",
-        "icon": "AutoFixHigh",
-        "color": "info",
-        "popularity": 88,
-        "category": "media",
-        "tags": [
-            "image",
-            "enhance",
-            "upscale",
-            "quality"
-        ],
-        "keywords": [
-            "image upscaler",
-            "enhance image quality",
-            "increase photo resolution",
-            "ai image enhancer",
-            "upscale photo online",
-            "improve picture quality",
-            "enlarge image without losing quality"
-        ]
-    },
-    {
-        "id": 11,
-        "title": "Image Compressor",
-        "description": "Compress images while maintaining quality with batch processing support.",
-        "path": "/services/image-compressor",
-        "icon": "Compress",
-        "color": "error",
-        "popularity": 86,
-        "category": "media",
-        "tags": [
-            "image",
-            "compress",
-            "optimize"
-        ],
-        "keywords": [
-            "image compressor",
-            "compress jpeg",
-            "compress png",
-            "reduce image size",
-            "optimize images",
-            "shrink image",
-            "smaller photo size",
-            "image optimizer online",
-            "kb reducer"
-        ]
-    },
-    {
-        "id": 12,
-        "title": "Image Resizer",
-        "description": "Resize images to custom dimensions while maintaining aspect ratio and quality.",
-        "path": "/services/image-resizer",
-        "icon": "PhotoSizeSelectLarge",
-        "color": "error",
-        "popularity": 85,
-        "category": "media",
-        "tags": [
-            "image",
-            "resize",
-            "scale"
-        ],
-        "keywords": [
-            "image resizer",
-            "resize photos",
-            "change image size",
-            "scale image",
-            "resize jpg",
-            "resize png",
-            "photo resizer online",
-            "dimension changer",
-            "picture resizer"
-        ]
-    },
-    {
-        "id": 13,
-        "title": "PDF Merger",
-        "description": "Merge multiple PDF files into a single document with custom page ordering.",
-        "path": "/services/pdf-merger",
-        "icon": "MergeType",
         "color": "success",
-        "popularity": 84,
-        "category": "document",
-        "tags": [
-            "pdf",
-            "merge",
-            "combine"
-        ],
-        "keywords": [
-            "pdf merger",
-            "combine pdfs",
-            "merge pdf files",
-            "pdf joiner",
-            "join pdf",
-            "combine multiple pdfs",
-            "bind pdf",
-            "file merger",
-            "pdf binder"
-        ]
+        "is_active": true
     },
     {
-        "id": 14,
-        "title": "Image to Text (OCR)",
-        "description": "Extract text from images using Optical Character Recognition technology.",
-        "path": "/services/image-to-text",
-        "icon": "TextFields",
-        "color": "secondary",
-        "popularity": 83,
-        "category": "converter",
+        "id": 4,
+        "title": "JSON Formatter",
+        "description": "Format, validate, minify, and beautify JSON data with syntax highlighting.",
+        "icon": "Code",
+        "path": "/services/json-formatter",
+        "category": "developer",
+        "popularity": 90,
         "tags": [
-            "ocr",
-            "text",
-            "extract"
+            "json",
+            "developer",
+            "format"
         ],
-        "keywords": [
-            "image to text",
-            "ocr online",
-            "extract text from image",
-            "picture to text",
-            "photo to text",
-            "grab text from image",
-            "ocr converter",
-            "text extractor"
-        ]
-    },
-    {
-        "id": 15,
-        "title": "PDF Splitter",
-        "description": "Split PDF documents into multiple files by page ranges or individual pages.",
-        "path": "/services/pdf-splitter",
-        "icon": "CallSplit",
         "color": "warning",
-        "popularity": 82,
-        "category": "document",
-        "tags": [
-            "pdf",
-            "split",
-            "extract"
-        ],
-        "keywords": [
-            "pdf splitter",
-            "split pdf pages",
-            "separate pdf pages",
-            "extract pages from pdf",
-            "cut pdf",
-            "break pdf",
-            "divide pdf",
-            "pdf separator"
-        ]
+        "is_active": true
     },
     {
-        "id": 16,
+        "id": 5,
         "title": "Text to Speech",
         "description": "Convert text to speech with multiple voice options and languages.",
-        "path": "/services/text-to-speech",
         "icon": "VolumeUp",
-        "color": "info",
-        "popularity": 81,
+        "path": "/services/text-to-speech",
         "category": "converter",
+        "popularity": 85,
         "tags": [
             "audio",
             "text",
             "speech"
         ],
-        "keywords": [
-            "text to speech",
-            "tts online",
-            "read text aloud",
-            "voice generator",
-            "speech synthesis",
-            "ai voice",
-            "text reader",
-            "convert text to audio",
-            "mp3 from text"
-        ]
+        "color": "info",
+        "is_active": true
     },
     {
-        "id": 17,
+        "id": 6,
+        "title": "Image Compressor",
+        "description": "Compress images while maintaining quality with batch processing support.",
+        "icon": "Compress",
+        "path": "/services/image-compressor",
+        "category": "media",
+        "popularity": 88,
+        "tags": [
+            "image",
+            "compress",
+            "optimize"
+        ],
+        "color": "error",
+        "is_active": true
+    },
+    {
+        "id": 7,
+        "title": "PDF to DOC Converter",
+        "description": "Convert PDF documents to editable Word (DOC/DOCX) format with formatting preserved.",
+        "icon": "Description",
+        "path": "/services/pdf-to-doc",
+        "category": "document",
+        "popularity": 90,
+        "tags": [
+            "pdf",
+            "doc",
+            "convert"
+        ],
+        "color": "primary",
+        "is_active": true
+    },
+    {
+        "id": 8,
+        "title": "DOC to PDF Converter",
+        "description": "Convert Word documents (DOC/DOCX) to PDF format with high fidelity.",
+        "icon": "PictureAsPdf",
+        "path": "/services/doc-to-pdf",
+        "category": "document",
+        "popularity": 89,
+        "tags": [
+            "doc",
+            "pdf",
+            "convert"
+        ],
+        "color": "secondary",
+        "is_active": true
+    },
+    {
+        "id": 9,
+        "title": "PDF Merger",
+        "description": "Merge multiple PDF files into a single document with custom page ordering.",
+        "icon": "MergeType",
+        "path": "/services/pdf-merger",
+        "category": "document",
+        "popularity": 87,
+        "tags": [
+            "pdf",
+            "merge",
+            "combine"
+        ],
+        "color": "success",
+        "is_active": true
+    },
+    {
+        "id": 10,
+        "title": "PDF Splitter",
+        "description": "Split PDF documents into multiple files by page ranges or individual pages.",
+        "icon": "CallSplit",
+        "path": "/services/pdf-splitter",
+        "category": "document",
+        "popularity": 86,
+        "tags": [
+            "pdf",
+            "split",
+            "extract"
+        ],
+        "color": "warning",
+        "is_active": true
+    },
+    {
+        "id": 11,
         "title": "Image to PDF",
         "description": "Convert images (JPG, PNG, etc.) to PDF documents with multiple images per file.",
-        "path": "/services/image-to-pdf",
         "icon": "Image",
-        "color": "info",
-        "popularity": 80,
+        "path": "/services/image-to-pdf",
         "category": "document",
+        "popularity": 85,
         "tags": [
             "image",
             "pdf",
             "convert"
         ],
-        "keywords": [
-            "image to pdf",
-            "jpg to pdf",
-            "png to pdf",
-            "photos to pdf",
-            "convert images to document",
-            "create pdf from images",
-            "img2pdf",
-            "picture to pdf"
-        ]
+        "color": "info",
+        "is_active": true
     },
     {
-        "id": 18,
-        "title": "Base64 Encoder/Decoder",
-        "description": "Encode text or files to Base64, or decode Base64 strings back to original format.",
-        "path": "/services/base64",
-        "icon": "Code",
-        "color": "warning",
-        "popularity": 79.9,
-        "category": "developer",
+        "id": 12,
+        "title": "Image Resizer",
+        "description": "Resize images to custom dimensions while maintaining aspect ratio and quality.",
+        "icon": "PhotoSizeSelectLarge",
+        "path": "/services/image-resizer",
+        "category": "media",
+        "popularity": 88,
         "tags": [
-            "base64",
-            "encode",
-            "decode"
+            "image",
+            "resize",
+            "scale"
         ],
-        "keywords": [
-            "base64 encode",
-            "base64 decode",
-            "string to base64",
-            "base64 converter",
-            "decode base64 string",
-            "base64 translator",
-            "encode file to base64",
-            "developer tools"
-        ]
+        "color": "error",
+        "is_active": true
     },
     {
-        "id": 19,
+        "id": 13,
+        "title": "Background Remover",
+        "description": "Remove backgrounds from images automatically using AI-powered technology.",
+        "icon": "AutoFixHigh",
+        "path": "/services/background-remover",
+        "category": "media",
+        "popularity": 92,
+        "tags": [
+            "image",
+            "background",
+            "ai"
+        ],
+        "color": "primary",
+        "is_active": true
+    },
+    {
+        "id": 14,
+        "title": "Image to Text (OCR)",
+        "description": "Extract text from images using Optical Character Recognition technology.",
+        "icon": "TextFields",
+        "path": "/services/image-to-text",
+        "category": "converter",
+        "popularity": 87,
+        "tags": [
+            "ocr",
+            "text",
+            "extract"
+        ],
+        "color": "secondary",
+        "is_active": true
+    },
+    {
+        "id": 15,
         "title": "Image Converter",
         "description": "Convert images between formats (JPG, PNG, WebP, GIF, BMP, TIFF).",
-        "path": "/services/image-converter",
         "icon": "SwapHoriz",
-        "color": "success",
-        "popularity": 79.8,
+        "path": "/services/image-converter",
         "category": "media",
+        "popularity": 84,
         "tags": [
             "image",
             "convert",
             "format"
         ],
-        "keywords": [
-            "image converter",
-            "jpg to png",
-            "png to jpg",
-            "webp converter",
-            "convert picture format",
-            "image file converter",
-            "change image type",
-            "photo converter"
-        ]
+        "color": "success",
+        "is_active": true
     },
     {
-        "id": 20,
+        "id": 16,
+        "title": "Base64 Encoder/Decoder",
+        "description": "Encode text or files to Base64, or decode Base64 strings back to original format.",
+        "icon": "Code",
+        "path": "/services/base64",
+        "category": "developer",
+        "popularity": 85,
+        "tags": [
+            "base64",
+            "encode",
+            "decode"
+        ],
+        "color": "warning",
+        "is_active": true
+    },
+    {
+        "id": 17,
         "title": "Hash Generator",
         "description": "Generate cryptographic hashes (MD5, SHA-1, SHA-256, SHA-512) from text or files.",
-        "path": "/services/hash-generator",
         "icon": "Fingerprint",
-        "color": "info",
-        "popularity": 79.7,
+        "path": "/services/hash-generator",
         "category": "developer",
+        "popularity": 83,
         "tags": [
             "hash",
             "crypto",
             "security"
         ],
-        "keywords": [
-            "hash generator",
-            "md5 generator",
-            "sha256 generator",
-            "check file hash",
-            "online hasher",
-            "fingerprint generator",
-            "cryptographic hash",
-            "checksum calculator"
-        ]
+        "color": "info",
+        "is_active": true
     },
     {
-        "id": 21,
+        "id": 18,
         "title": "UUID Generator",
         "description": "Generate unique identifiers (UUID v1, v4) for database records and APIs.",
-        "path": "/services/uuid-generator",
         "icon": "Key",
-        "color": "error",
-        "popularity": 79.6,
+        "path": "/services/uuid-generator",
         "category": "developer",
+        "popularity": 82,
         "tags": [
             "uuid",
             "generate",
             "unique"
         ],
-        "keywords": [
-            "uuid generator",
-            "guid generator",
-            "random uuid",
-            "uuid v4",
-            "unique identifier generator",
-            "generate guid",
-            "bulk uuid",
-            "mac address uuid"
-        ]
+        "color": "error",
+        "is_active": true
     },
     {
-        "id": 22,
+        "id": 19,
         "title": "Color Converter",
         "description": "Convert colors between HEX, RGB, HSL, and CMYK formats with live preview.",
-        "path": "/services/color-converter",
         "icon": "Palette",
-        "color": "primary",
-        "popularity": 79.5,
+        "path": "/services/color-converter",
         "category": "developer",
+        "popularity": 81,
         "tags": [
             "color",
             "convert",
             "design"
         ],
-        "keywords": [
-            "color converter",
-            "hex to rgb",
-            "rgb to hex",
-            "cmyk converter",
-            "hsl converter",
-            "color code picker",
-            "css color converter",
-            "web color translator"
-        ]
+        "color": "primary",
+        "is_active": true
     },
     {
-        "id": 23,
+        "id": 20,
+        "title": "AI Detector",
+        "description": "Detect AI-generated content in text using advanced analysis algorithms.",
+        "icon": "SmartToy",
+        "path": "/services/ai-detector",
+        "category": "developer",
+        "popularity": 94,
+        "tags": [
+            "ai",
+            "detect",
+            "analysis"
+        ],
+        "color": "secondary",
+        "is_active": true
+    },
+    {
+        "id": 21,
         "title": "Markdown Preview",
         "description": "Convert Markdown text to HTML with real-time preview.",
-        "path": "/services/markdown-preview",
         "icon": "Code",
-        "color": "info",
-        "popularity": 79.4,
-        "category": "developer",
+        "path": "/services/markdown-preview",
+        "category": "Developer Tools",
+        "popularity": 10,
         "tags": [
             "developer",
             "markdown",
             "html",
             "preview"
         ],
+        "color": "info",
+        "is_active": true
+    },
+    {
+        "id": 22,
+        "title": "Text to Handwriting",
+        "description": "Convert digital text into realistic handwritten notes on paper background.",
+        "path": "/services/text-to-handwriting",
+        "icon": "Gesture",
+        "color": "primary",
+        "popularity": 91.0,
+        "category": "utility",
+        "tags": [
+            "handwriting",
+            "text",
+            "converter",
+            "notes"
+        ],
         "keywords": [
-            "markdown preview",
-            "markdown editor",
-            "md to html",
-            "markdown viewer",
-            "live markdown",
-            "github markdown preview",
-            "markdown renderer",
-            "convert md to html"
+            "text to handwriting",
+            "handwriting generator",
+            "digital to handwritten",
+            "notes generator"
+        ]
+    },
+    {
+        "id": 23,
+        "title": "Secret Sharer",
+        "description": "Share sensitive text or files securely with self-destructing links.",
+        "path": "/services/secret-sharer",
+        "icon": "VpnKey",
+        "color": "secondary",
+        "popularity": 89.0,
+        "category": "security",
+        "tags": [
+            "security",
+            "encryption",
+            "share",
+            "secret"
+        ],
+        "keywords": [
+            "secret sharer",
+            "secure link",
+            "self destruct message",
+            "password share"
+        ]
+    },
+    {
+        "id": 24,
+        "title": "AI Image Upscaler",
+        "description": "Upscale and enhance low-resolution images using AI super-resolution.",
+        "path": "/services/image-upscale",
+        "icon": "AutoFixHigh",
+        "color": "warning",
+        "popularity": 86.0,
+        "category": "media",
+        "tags": [
+            "upscale",
+            "enhance",
+            "image",
+            "ai"
+        ],
+        "keywords": [
+            "ai upscaler",
+            "image enhancer",
+            "super resolution",
+            "enlarge image"
+        ]
+    },
+    {
+        "id": 25,
+        "title": "Website Diagnostics",
+        "description": "Run DNS lookup and redirect-chain inspection from a single dashboard.",
+        "path": "/services/website-diagnostics",
+        "icon": "Terminal",
+        "color": "info",
+        "popularity": 78.9,
+        "category": "developer",
+        "tags": [
+            "dns",
+            "redirect",
+            "headers",
+            "debug"
+        ],
+        "keywords": [
+            "website diagnostics",
+            "site diagnostics",
+            "dns and redirects",
+            "redirect chain",
+            "dns lookup",
+            "http headers",
+            "website debug"
+        ]
+    },
+    {
+        "id": 26,
+        "title": "Internet Speed Test",
+        "description": "Accurately measure your download, upload, and latency speeds in real-time.",
+        "path": "/services/speed-test",
+        "icon": "Speed",
+        "color": "primary",
+        "popularity": 99.0,
+        "category": "developer",
+        "tags": [
+            "speed",
+            "network",
+            "internet",
+            "test"
+        ],
+        "keywords": [
+            "internet speed test",
+            "speedtest",
+            "wifi speed test",
+            "check internet speed",
+            "bandwidth test",
+            "ping test",
+            "real time speed test",
+            "network speed",
+            "download upload test"
+        ]
+    },
+    {
+        "id": 27,
+        "title": "Audio Source Separator",
+        "description": "Extract vocals and instrumentals from any song using AI.",
+        "path": "/services/audio-separator",
+        "icon": "Mic",
+        "color": "secondary",
+        "popularity": 96.0,
+        "category": "media",
+        "tags": [
+            "audio",
+            "vocal remover",
+            "karaoke",
+            "ai"
+        ],
+        "keywords": [
+            "vocal remover",
+            "extract vocals",
+            "karaoke maker",
+            "remove drums",
+            "audio splitter"
         ]
     }
 ]

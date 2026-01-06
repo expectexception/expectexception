@@ -16,6 +16,11 @@ import {
     MenuItem,
     Chip,
     alpha,
+    Switch,
+    FormControlLabel,
+    Collapse,
+    IconButton,
+    Tooltip,
 } from '@mui/material';
 import {
     PictureAsPdf,
@@ -26,6 +31,10 @@ import {
     Error as ErrorIcon,
     Refresh,
     InsertDriveFile,
+    ExpandMore,
+    ExpandLess,
+    Settings,
+    Info,
 } from '@mui/icons-material';
 import Seo from '../seo/Seo';
 import apiClient, { API_BASE_URL } from '../../api/config';
@@ -49,6 +58,10 @@ const PdfToDoc: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<ConversionResult | null>(null);
     const [dragActive, setDragActive] = useState(false);
+
+    // New Advanced Features
+    const [ocrEnabled, setOcrEnabled] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
     const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -117,17 +130,20 @@ const PdfToDoc: React.FC = () => {
         const formData = new FormData();
         formData.append('pdf', selectedFile);
         formData.append('format', outputFormat);
+        formData.append('ocr_enabled', ocrEnabled.toString());
 
         try {
-            // Simulate progress
+            // Simulate progress - slower if OCR is on
+            const intervalTime = ocrEnabled ? 800 : 500;
             const progressInterval = setInterval(() => {
-                setProgress((prev) => Math.min(prev + 10, 90));
-            }, 500);
+                setProgress((prev) => Math.min(prev + 5, 90));
+            }, intervalTime);
 
             const response = await apiClient.post(endpoints.services.pdfToDoc, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                timeout: 120000, // 2 minutes timeout for OCR
             });
 
             clearInterval(progressInterval);
@@ -156,6 +172,7 @@ const PdfToDoc: React.FC = () => {
         setResult(null);
         setError(null);
         setProgress(0);
+        setOcrEnabled(false);
     };
 
     const outputFormats = [
@@ -169,7 +186,7 @@ const PdfToDoc: React.FC = () => {
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Seo
-                title="PDF to Word Converter - Free DOCX & DOC Conversion"
+                title="Advanced PDF to Word Converter with OCR"
                 toolId={8}
             />
 
@@ -177,7 +194,7 @@ const PdfToDoc: React.FC = () => {
                 PDF to Word Converter
             </Typography>
             <Typography variant="subtitle1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
-                Convert PDF files to editable Word documents with high accuracy
+                Convert standard and scanned PDFs to editable documents with high accuracy
             </Typography>
 
             {error && (
@@ -296,7 +313,7 @@ const PdfToDoc: React.FC = () => {
                                         }}
                                     />
                                     <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
-                                        Converting... {progress}%
+                                        {ocrEnabled ? 'Processing OCR & Converting...' : 'Converting...'} {progress}%
                                     </Typography>
                                 </Box>
                             )}
@@ -316,7 +333,7 @@ const PdfToDoc: React.FC = () => {
                                     fontWeight: 600,
                                 }}
                             >
-                                {loading ? 'Converting...' : `Convert to ${outputFormat.toUpperCase()}`}
+                                {loading ? 'Processing...' : `Convert to ${outputFormat.toUpperCase()}`}
                             </Button>
                         </CardContent>
                     </Card>
@@ -327,14 +344,14 @@ const PdfToDoc: React.FC = () => {
                     <Card sx={{ height: '100%' }}>
                         <CardContent sx={{ p: 4 }}>
                             <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                                Output Format
+                                Settings
                             </Typography>
 
-                            <FormControl fullWidth>
-                                <InputLabel>Format</InputLabel>
+                            <FormControl fullWidth sx={{ mb: 3 }}>
+                                <InputLabel>Output Format</InputLabel>
                                 <Select
                                     value={outputFormat}
-                                    label="Format"
+                                    label="Output Format"
                                     onChange={(e) => setOutputFormat(e.target.value)}
                                 >
                                     {outputFormats.map((format) => (
@@ -347,6 +364,55 @@ const PdfToDoc: React.FC = () => {
                                     ))}
                                 </Select>
                             </FormControl>
+
+                            {/* Advanced Settings */}
+                            <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
+                                <Box
+                                    onClick={() => setShowAdvanced(!showAdvanced)}
+                                    sx={{
+                                        p: 2,
+                                        bgcolor: 'action.hover',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Settings fontSize="small" color="action" />
+                                        <Typography variant="subtitle2" fontWeight={600}>
+                                            Advanced Options
+                                        </Typography>
+                                    </Box>
+                                    {showAdvanced ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+                                </Box>
+                                <Collapse in={showAdvanced}>
+                                    <Box sx={{ p: 2 }}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    checked={ocrEnabled}
+                                                    onChange={(e) => setOcrEnabled(e.target.checked)}
+                                                    color="primary"
+                                                />
+                                            }
+                                            label={
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <Typography variant="body2">Enable OCR (Scanned Docs)</Typography>
+                                                    <Tooltip title="Use this for scanned documents or images converted to PDF. It takes longer but extracts text from images.">
+                                                        <Info fontSize="small" color="action" sx={{ fontSize: 16 }} />
+                                                    </Tooltip>
+                                                </Box>
+                                            }
+                                        />
+                                        {ocrEnabled && (
+                                            <Alert severity="info" sx={{ mt: 1, py: 0 }}>
+                                                OCR implementation is slower but more accurate for images.
+                                            </Alert>
+                                        )}
+                                    </Box>
+                                </Collapse>
+                            </Box>
 
                             {/* Result Info */}
                             {result && (
@@ -400,29 +466,29 @@ const PdfToDoc: React.FC = () => {
             {/* Features */}
             <Box sx={{ mt: 6 }}>
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
-                    Features
+                    Why Use Our Converter?
                 </Typography>
                 <Grid container spacing={3} sx={{ mt: 2 }}>
                     {[
                         {
-                            title: 'High Quality',
+                            title: 'High Accuracy',
                             description: 'Preserve formatting, tables, images, and text layout accurately.',
                             icon: <CheckCircle />,
                         },
                         {
-                            title: 'Multiple Formats',
-                            description: 'Convert to DOCX, DOC, ODT, RTF, or plain text.',
-                            icon: <Description />,
+                            title: 'OCR Technology',
+                            description: 'Advanced Optical Character Recognition for scanned documents.',
+                            icon: <Settings />,
                         },
                         {
-                            title: 'Fast & Secure',
-                            description: 'Quick conversion with automatic file cleanup for privacy.',
+                            title: 'Secure Processing',
+                            description: 'Files are processed securely and automatically deleted after conversion.',
                             icon: <CloudUpload />,
                         },
                         {
-                            title: 'No Watermarks',
-                            description: 'Get clean, professional documents without any watermarks.',
-                            icon: <InsertDriveFile />,
+                            title: 'Multiple Formats',
+                            description: 'Support for DOCX, DOC, ODT, RTF, and plain text formats.',
+                            icon: <Description />,
                         },
                     ].map((feature, index) => (
                         <Grid item xs={12} sm={6} md={3} key={index}>

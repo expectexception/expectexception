@@ -286,7 +286,7 @@ const YtDownloader: React.FC = () => {
                                     fullWidth
                                     sx={{ py: 2 }}
                                 >
-                                    Download Now
+                                    Process Now
                                 </Button>
                             ) : (
                                 <Button

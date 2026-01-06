@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@m-lab/ndt7": "^0.0.6",
     "@mui/icons-material": "^5.15.14",
     "@mui/material": "^5.15.14",
     "@mui/x-date-pickers": "^6.19.7",
@@ -46,12 +47,15 @@
     "qrcode.react": "^3.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-dropzone": "^14.3.8",
+    "react-gauge-chart": "^0.5.1",
     "react-helmet-async": "^2.0.5",
     "react-intersection-observer": "^10.0.0",
     "react-qrcode": "^0.3.6",
     "react-router-dom": "^6.22.3",
     "react-scripts": "5.0.1",
     "react-syntax-highlighter": "^16.1.0",
+    "recharts": "^3.6.0",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
@@ -84,6 +88,7 @@
     ]
   },
   "devDependencies": {
+    "@types/react-dropzone": "^5.1.0",
     "ajv": "^8.17.1",
     "react-snap": "^1.23.0",
     "source-map-explorer": "^2.5.3"

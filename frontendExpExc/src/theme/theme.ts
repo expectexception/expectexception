@@ -55,7 +55,7 @@ export const theme = createTheme({
     fontFamily: '"Outfit", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
       fontWeight: 800,
-      fontSize: '3.5rem',
+      fontSize: 'clamp(2.2rem, 6vw, 3.5rem)',
       lineHeight: 1.1,
       letterSpacing: '-0.02em',
       background: 'linear-gradient(to right, #60a5fa, #a78bfa)',
@@ -64,17 +64,17 @@ export const theme = createTheme({
     },
     h2: {
       fontWeight: 700,
-      fontSize: '2.5rem',
+      fontSize: 'clamp(1.75rem, 4.5vw, 2.5rem)',
       lineHeight: 1.2,
       letterSpacing: '-0.01em',
     },
     h3: {
       fontWeight: 700,
-      fontSize: '2rem',
+      fontSize: 'clamp(1.4rem, 3.5vw, 2rem)',
     },
     h4: {
       fontWeight: 600,
-      fontSize: '1.5rem',
+      fontSize: 'clamp(1.15rem, 3vw, 1.5rem)',
     },
     button: {
       fontWeight: 600,
@@ -113,6 +113,10 @@ export const theme = createTheme({
           boxShadow: 'none',
           fontSize: '0.95rem',
           transition: 'all 0.2s',
+          '@media (max-width:600px)': {
+            padding: '9px 16px',
+            fontSize: '0.9rem',
+          },
           '&:hover': {
             transform: 'translateY(-2px)',
             boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',

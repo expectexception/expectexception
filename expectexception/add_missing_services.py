@@ -31,6 +31,28 @@ missing_services = [
         'color': 'info',
         'is_active': True,
         'popularity': 40
+    },
+    {
+        'title': 'Internet Speed Test',
+        'description': 'Accurately measure your download, upload, and latency speeds in real-time.',
+        'icon': 'Speed',
+        'path': '/services/speed-test',
+        'category': 'Developer Tools',
+        'tags': ['speed', 'network', 'internet', 'test'],
+        'color': 'primary',
+        'is_active': True,
+        'popularity': 99
+    },
+    {
+        'title': 'Audio Source Separator',
+        'description': 'Extract vocals and instrumentals from any song using AI.',
+        'icon': 'Mic',
+        'path': '/services/audio-separator',
+        'category': 'Media',
+        'tags': ['audio', 'vocal remover', 'karaoke', 'ai'],
+        'color': 'secondary',
+        'is_active': True,
+        'popularity': 96
     }
 ]
 

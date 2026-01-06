@@ -259,6 +259,14 @@ SPECTACULAR_SETTINGS = {
 # AI Image Detector Settings
 # =============================================================================
 
+# Audio separator defaults
+# model options depend on installed demucs versions (e.g., 'htdemucs', 'mdx_extra')
+AUDIO_SEPARATOR_MODEL = os.getenv('AUDIO_SEPARATOR_MODEL', 'mdx_extra')
+# Per-task timeout in seconds
+AUDIO_SEPARATOR_TIMEOUT = int(os.getenv('AUDIO_SEPARATOR_TIMEOUT', '300'))
+# Cache timeout for task results (seconds)
+AUDIO_SEPARATOR_CACHE_TIMEOUT = int(os.getenv('AUDIO_SEPARATOR_CACHE_TIMEOUT', str(24 * 3600)))
+
 # Detection models configuration (ensemble mode)
 # Each model contributes to the final prediction with its weight
 AI_DETECTOR_MODELS = [

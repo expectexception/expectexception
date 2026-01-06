@@ -18,6 +18,30 @@ body {
   overflow-x: hidden;
 }
 
+/* Mobile-safe defaults */
+img,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+iframe {
+  max-width: 100%;
+}
+
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+code,
+a {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

@@ -36,3 +36,6 @@ PyPDF2>=3.0.0
 rembg>=2.0.50
 pytesseract>=0.3.10
 markdown>=3.5.0
+dnspython>=2.6.1
+pdf2image>=1.16.3
+pdf2docx>=0.5.6

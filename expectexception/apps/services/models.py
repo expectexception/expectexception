@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 
 class Service(models.Model):
     title = models.CharField(max_length=100)
@@ -238,3 +239,39 @@ class ServerHealth(Service):
         proxy = True
         verbose_name = "Server Health"
         verbose_name_plural = "Server Health"
+
+
+class WebhookEndpoint(models.Model):
+    """Represents an ephemeral webhook endpoint that collects incoming requests."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=120, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    secret = models.CharField(max_length=128, blank=True, help_text="Optional secret for validating incoming requests")
+    max_requests = models.IntegerField(default=100)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Webhook {self.id} ({self.name})"
+
+
+class WebhookRequest(models.Model):
+    """Stores a received webhook request for an endpoint."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    endpoint = models.ForeignKey(WebhookEndpoint, on_delete=models.CASCADE, related_name='requests')
+    method = models.CharField(max_length=10, blank=True)
+    path = models.CharField(max_length=500, blank=True)
+    headers = models.JSONField(default=dict, blank=True)
+    body = models.TextField(blank=True)
+    remote_addr = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Request {self.id} -> {self.endpoint_id} @ {self.created_at}"

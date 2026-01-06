@@ -36,6 +36,7 @@ import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { User } from '../types';
 import { isReactSnap } from '../utils/isReactSnap';
+import { excerptFromHtml, stripHtmlToText } from '../utils/text';
 
 // Define interfaces matching backend
 interface Tag {
@@ -97,26 +98,7 @@ const BlogPage: React.FC = () => {
         }
     };
 
-    const stripHtml = (html: string) => {
-        if (!html) return '';
-
-        // Browser-safe decode/strip
-        if (typeof document !== 'undefined') {
-            const el = document.createElement('div');
-            el.innerHTML = html;
-            return (el.textContent || el.innerText || '').replace(/\s+/g, ' ').trim();
-        }
-
-        // Fallback for non-DOM environments
-        const tagRe = new RegExp('<[^>]*>', 'g');
-        return html.replace(tagRe, ' ').replace(/\s+/g, ' ').trim();
-    };
-
-    // Helper to extract text excerpt from HTML content
-    const getExcerpt = (content: string, length = 140) => {
-        const text = stripHtml(content);
-        return text.length > length ? text.substring(0, length) + '…' : text;
-    };
+    const getExcerpt = (content: string) => excerptFromHtml(content, 140);
 
     // Helper to format date
     const formatDate = (dateString: string) => {
@@ -165,7 +147,7 @@ const BlogPage: React.FC = () => {
         const q = search.toLowerCase();
         return (
             post.title.toLowerCase().includes(q) ||
-            stripHtml(post.content).toLowerCase().includes(q)
+            stripHtmlToText(post.content).toLowerCase().includes(q)
         );
     });
 
