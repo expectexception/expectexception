@@ -37,6 +37,7 @@ import { Post } from '../types';
 import Seo from '../components/seo/Seo';
 import { staticServices, staticStats } from '../data/StaticData';
 import { isReactSnap } from '../utils/isReactSnap';
+import { excerptFromHtml } from '../utils/text';
 
 const HomePage: React.FC = () => {
   const theme = useTheme();
@@ -616,7 +617,7 @@ const HomePage: React.FC = () => {
                             WebkitLineClamp: 3
                           }}
                         >
-                          {blog.content}
+                          {excerptFromHtml(blog.content, 160)}
                         </Typography>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                           <Button

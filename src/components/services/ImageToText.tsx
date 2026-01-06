@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Container, Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
     TextField, FormControl, InputLabel, Select, MenuItem, alpha
@@ -14,7 +14,18 @@ const ImageToText: React.FC = () => {
     const [language, setLanguage] = useState('eng');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [result, setResult] = useState<{ text: string; characters: number } | null>(null);
+    const [warning, setWarning] = useState<string | null>(null);
+    const [result, setResult] = useState<{
+        text: string;
+        characters: number;
+        language?: string;
+        requested_language?: string;
+        warning?: string;
+    } | null>(null);
+
+    const [availableLanguages, setAvailableLanguages] = useState<Array<{ code: string; name: string }>>([
+        { code: 'eng', name: 'English' },
+    ]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
@@ -22,14 +33,63 @@ const ImageToText: React.FC = () => {
             setFile(f);
             setPreview(URL.createObjectURL(f));
             setError(null);
+            setWarning(null);
             setResult(null);
         }
     };
+
+    useEffect(() => {
+        let mounted = true;
+
+        (async () => {
+            try {
+                const resp = await apiClient.get(endpoints.services.imageToText);
+                const langs: string[] = resp?.data?.languages;
+                if (!mounted || !Array.isArray(langs) || langs.length === 0) return;
+
+                // Map some common codes to nicer names; fallback to code.
+                const nameMap: Record<string, string> = {
+                    eng: 'English',
+                    osd: 'Orientation / Script Detection (OSD)',
+                    spa: 'Spanish',
+                    fra: 'French',
+                    deu: 'German',
+                    ita: 'Italian',
+                    por: 'Portuguese',
+                    rus: 'Russian',
+                    jpn: 'Japanese',
+                    kor: 'Korean',
+                    chi_sim: 'Chinese (Simplified)',
+                    hin: 'Hindi',
+                    ara: 'Arabic',
+                };
+
+                const options = langs
+                    .filter((c) => typeof c === 'string' && c.trim().length > 0)
+                    .map((code) => ({ code, name: nameMap[code] || code }));
+
+                setAvailableLanguages(options);
+
+                // Keep current selection if still valid; else reset to eng.
+                if (!options.some((o) => o.code === language)) {
+                    setLanguage(options.some((o) => o.code === 'eng') ? 'eng' : options[0].code);
+                }
+            } catch {
+                // Ignore: fallback to default list.
+            }
+        })();
+
+        return () => {
+            mounted = false;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleExtract = async () => {
         if (!file) return;
         setLoading(true);
         setError(null);
+        setWarning(null);
 
         const formData = new FormData();
         formData.append('image', file);
@@ -37,7 +97,15 @@ const ImageToText: React.FC = () => {
 
         try {
             const response = await apiClient.post(endpoints.services.imageToText, formData);
-            setResult(response.data);
+            const data = response.data;
+            setResult({
+                text: data?.text || '',
+                characters: Number(data?.characters || 0),
+                language: data?.language,
+                requested_language: data?.requested_language,
+                warning: data?.warning,
+            });
+            if (data?.warning) setWarning(String(data.warning));
         } catch (err: any) {
             setError(err.response?.data?.error || 'Text extraction failed');
         } finally {
@@ -50,21 +118,6 @@ const ImageToText: React.FC = () => {
             navigator.clipboard.writeText(result.text);
         }
     };
-
-    const languages = [
-        { code: 'eng', name: 'English' },
-        { code: 'spa', name: 'Spanish' },
-        { code: 'fra', name: 'French' },
-        { code: 'deu', name: 'German' },
-        { code: 'ita', name: 'Italian' },
-        { code: 'por', name: 'Portuguese' },
-        { code: 'rus', name: 'Russian' },
-        { code: 'jpn', name: 'Japanese' },
-        { code: 'kor', name: 'Korean' },
-        { code: 'chi_sim', name: 'Chinese (Simplified)' },
-        { code: 'hin', name: 'Hindi' },
-        { code: 'ara', name: 'Arabic' },
-    ];
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -81,12 +134,19 @@ const ImageToText: React.FC = () => {
             </Typography>
 
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+            {warning && <Alert severity="warning" sx={{ mb: 3 }}>{warning}</Alert>}
 
-            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    gap: { xs: 2, sm: 3 },
+                    flexDirection: { xs: 'column', md: 'row' },
+                }}
+            >
                 {/* Left: Upload */}
-                <Card sx={{ flex: 1, minWidth: 300 }}>
-                    <CardContent sx={{ p: 4 }}>
-                        <Box sx={{ border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: 4, textAlign: 'center', mb: 3 }}>
+                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 300 } }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
+                        <Box sx={{ border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: { xs: 2, sm: 4 }, textAlign: 'center', mb: 3 }}>
                             <input accept="image/*" style={{ display: 'none' }} id="image-upload" type="file" onChange={handleFileSelect} />
                             <label htmlFor="image-upload" style={{ cursor: 'pointer' }}>
                                 {preview ? (
@@ -103,7 +163,7 @@ const ImageToText: React.FC = () => {
                         <FormControl fullWidth sx={{ mb: 3 }}>
                             <InputLabel>Language</InputLabel>
                             <Select value={language} label="Language" onChange={(e) => setLanguage(e.target.value)}>
-                                {languages.map(lang => (
+                                {availableLanguages.map(lang => (
                                     <MenuItem key={lang.code} value={lang.code}>{lang.name}</MenuItem>
                                 ))}
                             </Select>
@@ -126,8 +186,8 @@ const ImageToText: React.FC = () => {
                 </Card>
 
                 {/* Right: Result */}
-                <Card sx={{ flex: 1, minWidth: 300 }}>
-                    <CardContent sx={{ p: 4 }}>
+                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 300 } }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                             <Typography variant="h6">Extracted Text</Typography>
                             {result && (

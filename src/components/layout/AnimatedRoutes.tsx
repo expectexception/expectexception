@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Box, CircularProgress } from '@mui/material';
 import PageTransition from './PageTransition';
@@ -60,6 +60,16 @@ const HashGenerator = lazy(() => import('../services/HashGenerator'));
 const UuidGenerator = lazy(() => import('../services/UuidGenerator'));
 const ColorConverter = lazy(() => import('../services/ColorConverter'));
 const MarkdownPreview = lazy(() => import('../services/MarkdownPreview'));
+const RegexTester = lazy(() => import('../services/RegexTester'));
+const KeypairGenerator = lazy(() => import('../services/KeypairGenerator'));
+const RedirectInspector = lazy(() => import('../services/RedirectInspector'));
+const DnsLookup = lazy(() => import('../services/DnsLookup'));
+const WebsiteDiagnostics = lazy(() => import('../services/WebsiteDiagnostics'));
+const SpeedTest = lazy(() => import('../services/SpeedTest'));
+const AudioSeparator = lazy(() => import('../services/AudioSeparator'));
+
+
+
 
 const AnimatedRoutes: React.FC = () => {
     const location = useLocation();
@@ -100,6 +110,13 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/uuid-generator" element={<PageTransition><UuidGenerator /></PageTransition>} />
                     <Route path="/services/color-converter" element={<PageTransition><ColorConverter /></PageTransition>} />
                     <Route path="/services/markdown-preview" element={<PageTransition><MarkdownPreview /></PageTransition>} />
+                    <Route path="/services/regex-tester" element={<PageTransition><RegexTester /></PageTransition>} />
+                    <Route path="/services/keypair-generator" element={<PageTransition><KeypairGenerator /></PageTransition>} />
+                    <Route path="/services/redirect-inspector" element={<PageTransition><RedirectInspector /></PageTransition>} />
+                    <Route path="/services/dns-lookup" element={<PageTransition><DnsLookup /></PageTransition>} />
+                    <Route path="/services/website-diagnostics" element={<PageTransition><WebsiteDiagnostics /></PageTransition>} />
+                    <Route path="/services/speed-test" element={<PageTransition><SpeedTest /></PageTransition>} />
+                    <Route path="/services/audio-separator" element={<PageTransition><AudioSeparator /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition><TextToHandwritingPage /></PageTransition>} />
@@ -128,6 +145,8 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
                     <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
                     <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+                    {/* Catch-all: redirect any unlisted URL to home */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </AnimatePresence>
         </Suspense>

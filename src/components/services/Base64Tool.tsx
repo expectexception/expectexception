@@ -72,9 +72,15 @@ const Base64Tool: React.FC = () => {
                 </ToggleButtonGroup>
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <Card sx={{ flex: 1, minWidth: 300 }}>
-                    <CardContent>
+            <Box
+                sx={{
+                    display: 'flex',
+                    gap: { xs: 2, sm: 2 },
+                    flexDirection: { xs: 'column', md: 'row' },
+                }}
+            >
+                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 300 } }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                         <Typography variant="h6" gutterBottom>
                             {mode === 'encode' ? 'Text Input' : 'Base64 Input'}
                         </Typography>
@@ -99,8 +105,8 @@ const Base64Tool: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                <Card sx={{ flex: 1, minWidth: 300 }}>
-                    <CardContent>
+                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 300 } }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                             <Typography variant="h6">Output</Typography>
                             <Stack direction="row" spacing={1}>
