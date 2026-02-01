@@ -19,6 +19,12 @@ CSRF_COOKIE_SECURE = False
 
 
 INSTALLED_APPS = [
+    # Unfold Admin (Must come before django.contrib.admin)
+    "unfold",
+    "unfold.contrib.filters",
+    "unfold.contrib.forms",
+    "unfold.contrib.import_export",
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,9 +44,12 @@ INSTALLED_APPS = [
 
     'apps.profiles',
     'apps.notifications',
+    'apps.dashboard',
     'apps.ai_detector',
     'apps.text_to_handwriting',
     'apps.secret_sharer',
+    'apps.contact',
+    'apps.chatbot',
     'django.contrib.sites',
     'django.contrib.sitemaps',
 ]
@@ -127,9 +136,20 @@ SIMPLE_JWT = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# Simple email backend for development (writes to console)
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@localhost')
+# =============================================================================
+# Email Configuration (SMTP)
+# =============================================================================
+# For Gmail: use App Password (not regular password)
+# Generate at: https://myaccount.google.com/apppasswords
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@expectexception.com')
+# Where to send contact form submissions (Cloudflare routes to Gmail)
+CONTACT_EMAIL = os.getenv('CONTACT_EMAIL', 'contact@expectexception.com')
 
 # Celery settings
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
@@ -340,3 +360,36 @@ P5wsdv2wfa0ovn02mzpxrzWNU6OFsy+pWjE6mHJewCw0Ea25w6Hgga2Z
 -----END PRIVATE KEY-----''')
 VAPID_EMAIL = os.getenv('VAPID_EMAIL', 'admin@expectexception.com')
 
+# =============================================================================
+# AI Chatbot Settings (Ollama + SmolLM2)
+# =============================================================================
+# Install Ollama: curl -fsSL https://ollama.com/install.sh | sh
+# Pull model: ollama pull smollm2:1.7b
+
+OLLAMA_BASE_URL = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
+CHATBOT_MODEL = os.getenv('CHATBOT_MODEL', 'qwen2:1.5b')
+CHATBOT_MAX_TOKENS = int(os.getenv('CHATBOT_MAX_TOKENS', '2048'))
+
+# =============================================================================
+# Unfold Admin Configuration
+# =============================================================================
+UNFOLD = {
+    "SITE_TITLE": "ExpExc Admin",
+    "SITE_HEADER": "ExpectException Dashboard",
+    "SITE_URL": "/",
+    "DASHBOARD_CALLBACK": "apps.dashboard.views.dashboard_callback",
+    "COLORS": {
+        "primary": {
+            "50": "239 246 255",
+            "100": "219 234 254",
+            "200": "191 219 254",
+            "300": "147 197 253",
+            "400": "96 165 250",
+            "500": "59 130 246",
+            "600": "37 99 235",
+            "700": "29 78 216",
+            "800": "30 64 175",
+            "900": "30 58 138",
+        },
+    },
+}

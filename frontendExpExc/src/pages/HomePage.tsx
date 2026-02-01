@@ -233,7 +233,7 @@ const HomePage: React.FC = () => {
                   A comprehensive suite of tools for developers, content creators, and power users.
                   Everything you need in one place.
                 </Typography>
-                <Stack direction="row" spacing={2} sx={{ mt: 4 }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 4 }} flexWrap="wrap">
                   <Button
                     component={Link}
                     to="/services"
@@ -243,6 +243,9 @@ const HomePage: React.FC = () => {
                     sx={{
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
+                      px: { xs: 3, sm: 4 },
+                      py: { xs: 1.25, sm: 1.5 },
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
                       '&:hover': {
                         bgcolor: theme.palette.primary.dark,
                       },
@@ -252,12 +255,33 @@ const HomePage: React.FC = () => {
                   </Button>
                   <Button
                     component={Link}
+                    to="/hire"
+                    variant="contained"
+                    size="large"
+                    sx={{
+                      background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)',
+                      color: 'white',
+                      px: { xs: 3, sm: 4 },
+                      py: { xs: 1.25, sm: 1.5 },
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #6d28d9 0%, #1d4ed8 100%)',
+                      },
+                    }}
+                  >
+                    Hire Developer
+                  </Button>
+                  <Button
+                    component={Link}
                     to="/downloads"
                     variant="outlined"
                     size="large"
                     sx={{
                       borderColor: theme.palette.primary.main,
                       color: theme.palette.primary.main,
+                      px: { xs: 3, sm: 4 },
+                      py: { xs: 1.25, sm: 1.5 },
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
                       '&:hover': {
                         borderColor: theme.palette.primary.dark,
                         bgcolor: alpha(theme.palette.primary.main, 0.1),

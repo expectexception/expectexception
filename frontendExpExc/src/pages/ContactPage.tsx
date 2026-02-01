@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Container, Typography, Box, Paper, Grid, TextField, Button, Snackbar, Alert, Stack } from '@mui/material';
+import { Container, Typography, Box, Paper, Grid, TextField, Button, Snackbar, Alert, Stack, CircularProgress } from '@mui/material';
 import Seo from '../components/seo/Seo';
 import { Email, LocationOn, Send } from '@mui/icons-material';
+import apiClient from '../api/config';
 
 const ContactPage: React.FC = () => {
     const [formData, setFormData] = useState({
@@ -11,18 +12,40 @@ const ContactPage: React.FC = () => {
         message: ''
     });
     const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Here you would typically send the data to your backend
-        console.log('Form submitted:', formData);
-        setOpenSnackbar(true);
-        // Reset form
-        setFormData({ name: '', email: '', subject: '', message: '' });
+        setIsSubmitting(true);
+
+        try {
+            await apiClient.post('/api/contact/', {
+                name: formData.name,
+                email: formData.email,
+                subject: formData.subject,
+                message: formData.message,
+                inquiry_type: 'general',
+            });
+
+            setSnackbarMessage('Message sent successfully! We\'ll get back to you soon.');
+            setSnackbarSeverity('success');
+            setOpenSnackbar(true);
+            setFormData({ name: '', email: '', subject: '', message: '' });
+        } catch (error: any) {
+            console.error('Form submission error:', error);
+            const errorMsg = error.response?.data?.message || 'Something went wrong. Please try again.';
+            setSnackbarMessage(errorMsg);
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -93,6 +116,7 @@ const ContactPage: React.FC = () => {
                                         value={formData.name}
                                         onChange={handleChange}
                                         variant="outlined"
+                                        disabled={isSubmitting}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
@@ -105,6 +129,7 @@ const ContactPage: React.FC = () => {
                                         value={formData.email}
                                         onChange={handleChange}
                                         variant="outlined"
+                                        disabled={isSubmitting}
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -116,6 +141,7 @@ const ContactPage: React.FC = () => {
                                         value={formData.subject}
                                         onChange={handleChange}
                                         variant="outlined"
+                                        disabled={isSubmitting}
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -129,6 +155,7 @@ const ContactPage: React.FC = () => {
                                         value={formData.message}
                                         onChange={handleChange}
                                         variant="outlined"
+                                        disabled={isSubmitting}
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -136,10 +163,11 @@ const ContactPage: React.FC = () => {
                                         type="submit"
                                         variant="contained"
                                         size="large"
-                                        endIcon={<Send />}
+                                        disabled={isSubmitting}
+                                        endIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <Send />}
                                         sx={{ px: 4, py: 1.5, borderRadius: 2 }}
                                     >
-                                        Send Message
+                                        {isSubmitting ? 'Sending...' : 'Send Message'}
                                     </Button>
                                 </Grid>
                             </Grid>
@@ -154,8 +182,8 @@ const ContactPage: React.FC = () => {
                 onClose={() => setOpenSnackbar(false)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             >
-                <Alert onClose={() => setOpenSnackbar(false)} severity="success" sx={{ width: '100%' }}>
-                    Message sent successfully! We'll get back to you soon.
+                <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
                 </Alert>
             </Snackbar>
         </Container>

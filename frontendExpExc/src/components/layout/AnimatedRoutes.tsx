@@ -38,6 +38,8 @@ const ContactPage = lazy(() => import('../../pages/ContactPage'));
 const SearchPage = lazy(() => import('../../pages/SearchPage'));
 const TextToHandwritingPage = lazy(() => import('../../pages/TextToHandwritingPage'));
 const SecretSharerPage = lazy(() => import('../../pages/SecretSharerPage'));
+const HirePage = lazy(() => import('../../pages/HirePage'));
+const ChatbotPage = lazy(() => import('../../pages/ChatbotPage'));
 
 
 // Service components - Lazy loaded
@@ -145,6 +147,8 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
                     <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
                     <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+                    <Route path="/hire" element={<PageTransition><HirePage /></PageTransition>} />
+                    <Route path="/chat" element={<PageTransition><ChatbotPage /></PageTransition>} />
                     {/* Catch-all: redirect any unlisted URL to home */}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
