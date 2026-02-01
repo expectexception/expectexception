@@ -75,12 +75,17 @@ const AudioSeparator = lazy(() => import('../services/AudioSeparator'));
 
 const AnimatedRoutes: React.FC = () => {
     const location = useLocation();
+    const isYtd = window.location.hostname.startsWith('ytd.');
 
     return (
         <Suspense fallback={<LoadingFallback />}>
             <AnimatePresence mode="wait">
                 <Routes location={location} key={location.pathname}>
-                    <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+                    <Route path="/" element={
+                        <PageTransition>
+                            {isYtd ? <YtDownloader /> : <HomePage />}
+                        </PageTransition>
+                    } />
 
                     {/* Services */}
                     <Route path="/services" element={<PageTransition><ServicesPage /></PageTransition>} />

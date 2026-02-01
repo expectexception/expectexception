@@ -2,7 +2,9 @@
 import logging
 import time
 import requests
-from typing import Generator, Optional, Dict, Any, List
+import httpx
+import json
+from typing import Generator, AsyncGenerator, Optional, Dict, Any, List
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -60,8 +62,10 @@ class OllamaService:
             "model": model,
             "messages": messages,
             "stream": stream,
+            "keep_alive": -1,
             "options": {
-                "num_predict": self.max_tokens,
+                "num_predict": 256,
+                "num_ctx": 4096,
             }
         }
         
@@ -86,7 +90,53 @@ class OllamaService:
         except requests.RequestException as e:
             logger.error(f"Ollama chat error: {e}")
             yield f"Error: Unable to connect to AI model. Please try again later."
+            yield f"Error: Unable to connect to AI model. Please try again later."
     
+    async def chat_async(
+        self,
+        messages: List[Dict[str, str]],
+        model: Optional[str] = None
+    ) -> AsyncGenerator[str, None]:
+        """
+        Send async chat request to Ollama and yield streaming response.
+        Uses httpx for non-blocking I/O.
+        """
+        model = model or self.model
+        url = f"{self.base_url}/api/chat"
+        
+        payload = {
+            "model": model,
+            "messages": messages,
+            "stream": True,
+            "keep_alive": -1,  # Keep model loaded indefinitely
+            "options": {
+                "num_predict": 256,  # Reduced from max to improve speed
+                "num_ctx": 4096,     # Ensure context window is sufficient
+            }
+        }
+        
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                async with client.stream("POST", url, json=payload) as response:
+                    if response.status_code != 200:
+                        yield f"data: {json.dumps({'error': f'Ollama API Error: {response.status_code}'})}\n\n"
+                        return
+
+                    async for line in response.aiter_lines():
+                        if line:
+                            try:
+                                data = json.loads(line)
+                                if 'message' in data and 'content' in data['message']:
+                                    yield data['message']['content']
+                                if data.get('done', False):
+                                    break
+                            except json.JSONDecodeError:
+                                continue
+                                
+        except httpx.RequestError as e:
+            logger.error(f"Ollama async chat error: {e}")
+            yield f"Error: Unable to connect to AI model."
+
     def generate_title(self, first_message: str) -> str:
         """Generate a conversation title from the first message."""
         messages = [

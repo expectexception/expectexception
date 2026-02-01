@@ -3,8 +3,12 @@ import json
 import logging
 import time
 import uuid
-from django.http import StreamingHttpResponse
+import os
+from django.conf import settings
+from django.http import StreamingHttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from asgiref.sync import sync_to_async
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -57,6 +61,19 @@ def list_conversations(request):
     serializer = ConversationSerializer(conversations[:20], many=True)
     return Response(serializer.data)
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_personas(request):
+    """Get available personas from backend JSON."""
+    try:
+        json_path = os.path.join(settings.BASE_DIR, 'apps/chatbot/data/personas.json')
+        with open(json_path, 'r') as f:
+            personas = json.load(f)
+        return Response(personas)
+    except Exception as e:
+        logger.error(f"Failed to load personas: {e}")
+        return Response({'error': 'Failed to load personas'}, status=500)
+
 
 @api_view(['GET', 'DELETE'])
 @permission_classes([AllowAny])
@@ -79,112 +96,109 @@ def conversation_detail(request, pk):
     return Response(serializer.data)
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def chat(request):
-    """
-    Send a message and get AI response.
-    
-    POST /api/chatbot/chat/
-    {
-        "message": "Hello, how are you?",
-        "conversation_id": null  // or existing conversation ID
-    }
-    """
-    serializer = ChatRequestSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response({
-            'error': 'Invalid request',
-            'details': serializer.errors
-        }, status=400)
-    
-    user_message = serializer.validated_data['message']
-    conversation_id = serializer.validated_data.get('conversation_id')
-    system_prompt = serializer.validated_data.get('system_prompt', '')
-    
-    # Check if Ollama is available
-    if not ollama_service.is_available():
-        return Response({
-            'error': 'AI service is temporarily unavailable. Please try again later.'
-        }, status=503)
-    
-    # Get or create conversation
-    if conversation_id:
-        try:
-            if request.user.is_authenticated:
-                conversation = Conversation.objects.get(pk=conversation_id, user=request.user)
-            else:
-                session_id = get_session_id(request)
-                conversation = Conversation.objects.get(pk=conversation_id, session_id=session_id)
-        except Conversation.DoesNotExist:
-            return Response({'error': 'Conversation not found'}, status=404)
-    else:
-        # Create new conversation
-        conversation = Conversation.objects.create(
-            user=request.user if request.user.is_authenticated else None,
-            session_id=get_session_id(request) if not request.user.is_authenticated else '',
-            title='New Chat',
-        )
-    
-    # Save user message
-    user_msg = Message.objects.create(
-        conversation=conversation,
-        role='user',
-        content=user_message
+# --- Async Helper Functions ---
+
+@sync_to_async
+def get_conversation_async(pk, user, session_id):
+    if pk is None:
+        raise Conversation.DoesNotExist
+    if user and user.is_authenticated:
+        return Conversation.objects.get(pk=pk, user=user)
+    return Conversation.objects.get(pk=pk, session_id=session_id)
+
+@sync_to_async
+def create_conversation_async(user, session_id, title='New Chat'):
+    return Conversation.objects.create(
+        user=user if user and user.is_authenticated else None,
+        session_id=session_id if not (user and user.is_authenticated) else '',
+        title=title
     )
+
+@sync_to_async
+def save_message_async(conversation, role, content, generation_time=0):
+    return Message.objects.create(
+        conversation=conversation,
+        role=role,
+        content=content,
+        generation_time=generation_time
+    )
+
+@sync_to_async
+def get_context_async(conversation):
+    return conversation.get_messages_for_context()
+
+@sync_to_async
+def update_title_async(conversation, title):
+    conversation.title = title
+    conversation.save()
+
+
+# --- Async Chat View ---
+
+@csrf_exempt
+async def chat(request):
+    """
+    Fully Async Chat Endpoint for high performance.
+    Handles streaming responses from Ollama.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    user_message = data.get('message')
+    conversation_id = data.get('conversation_id')
+    system_prompt = data.get('system_prompt', '')
     
-    # Generate title for new conversation
-    if conversation.messages.count() == 1:
-        try:
-            title = ollama_service.generate_title(user_message)
-            conversation.title = title
-            conversation.save()
-        except Exception as e:
-            logger.error(f"Failed to generate title: {e}")
+    if not user_message:
+        return JsonResponse({'error': 'Message is required'}, status=400)
     
-    # Get conversation context
-    messages = conversation.get_messages_for_context()
+    # Auth Logic
+    session_id = await sync_to_async(get_session_id)(request)
+    user = request.user
     
-    # Prepend system prompt if provided
+    # Get/Create Conversation
+    try:
+        if conversation_id:
+            conversation = await get_conversation_async(conversation_id, user, session_id)
+        else:
+            conversation = await create_conversation_async(user, session_id)
+            
+    except Conversation.DoesNotExist:
+        return JsonResponse({'error': 'Conversation not found'}, status=404)
+    
+    # Save User Message
+    await save_message_async(conversation, 'user', user_message)
+    
+    # Prepare messages context
+    messages = await get_context_async(conversation)
     if system_prompt:
         messages = [{'role': 'system', 'content': system_prompt}] + messages
-    
-    # Generate streaming response
-    def generate():
+
+    async def event_generator():
         full_response = ""
         start_time = time.time()
         
         try:
-            for chunk in ollama_service.chat(messages, stream=True):
+            async for chunk in ollama_service.chat_async(messages):
                 full_response += chunk
                 yield f"data: {json.dumps({'chunk': chunk})}\n\n"
             
-            # Save assistant message
             generation_time = time.time() - start_time
-            assistant_msg = Message.objects.create(
-                conversation=conversation,
-                role='assistant',
-                content=full_response,
-                generation_time=generation_time
-            )
             
-            # Update conversation timestamp
-            conversation.save()
+            # Save assistant message
+            assistant_msg = await save_message_async(conversation, 'assistant', full_response, generation_time)
             
-            # Send final event
             yield f"data: {json.dumps({'done': True, 'message_id': assistant_msg.id, 'conversation_id': conversation.id, 'title': conversation.title})}\n\n"
             
         except Exception as e:
-            logger.error(f"Streaming error: {e}")
+            logger.error(f"Async Stream Error: {e}")
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
-    
-    response = StreamingHttpResponse(
-        generate(),
-        content_type='text/event-stream'
-    )
-    response['Cache-Control'] = 'no-cache'
-    response['X-Accel-Buffering'] = 'no'
-    return response
+
+    return StreamingHttpResponse(event_generator(), content_type='text/event-stream')
 
 
 @api_view(['POST'])

@@ -1,0 +1,21 @@
+[Unit]
+Description=ExpectException Django Backend
+After=network.target postgresql.service redis.service
+
+[Service]
+Type=notify
+User=rjt
+WorkingDirectory=/home/rjt/expexcV2/expectexception
+Environment="PATH=/home/rjt/expexcV2/expectexception/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/rjt/expexcV2/expectexception/.venv/bin/gunicorn expectexception.asgi:application \
+    --workers 9 \
+    --worker-class expectexception.workers.ImprovedUvicornWorker \
+    --bind 127.0.0.1:8000 \
+    --timeout 60 \
+    --access-logfile - \
+    --error-logfile - \
+    --preload
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

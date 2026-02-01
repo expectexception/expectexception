@@ -9,13 +9,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost').split(',') + ['djangobackend']
-CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',')
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost').split(',') + ['djangobackend', 'ytd.expectexception.com']
+CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',') + ['https://ytd.expectexception.com']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Session and CSRF cookies - Cloudflare handles HTTPS
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+# Session and CSRF cookies - Secure for HTTPS
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 
 INSTALLED_APPS = [
@@ -45,7 +47,7 @@ INSTALLED_APPS = [
     'apps.profiles',
     'apps.notifications',
     'apps.dashboard',
-    'apps.ai_detector',
+    # 'apps.ai_detector',
     'apps.text_to_handwriting',
     'apps.secret_sharer',
     'apps.contact',
@@ -240,17 +242,17 @@ LOGGING = {
         'django': {
             'handlers': ['console', 'file_all'],
             'level': 'INFO',
-            'propagate': False,
+            'propagate': True,
         },
         'django.request': {
-            'handlers': ['file_errors', 'console'],
+            'handlers': ['console', 'file_errors'],
             'level': 'ERROR',
             'propagate': False,
         },
         'apps': {
             'handlers': ['console', 'file_all'],
             'level': 'INFO',
-            'propagate': False,
+            'propagate': True,
         },
         'apps.services.downloads': {
             'handlers': ['file_downloads', 'console'],
@@ -352,13 +354,13 @@ FILE_UPLOAD_TEMP_DIR = '/tmp/django_uploads'
 
 # VAPID keys for web push notifications
 # Generate with: python generate_vapid.py
-VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', 'BGcxbIdFOOx06gl9Nt_D0IMsNM1pfe4_nCx2_bB9rSi-fTabOnGvNY1To4WzL6laMTqYcl7ALDQRrbnDoeCBrZk')
-VAPID_PRIVATE_KEY_PEM = os.getenv('VAPID_PRIVATE_KEY_PEM', '''-----BEGIN PRIVATE KEY-----
-MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgzMlUEwcRRAhPj6UO
-zlziQq7uXAKEeLyinMl8p1RHPPWhRANCAARnMWyHRTjsdOoJfTbfw9CDLDTNaX3u
-P5wsdv2wfa0ovn02mzpxrzWNU6OFsy+pWjE6mHJewCw0Ea25w6Hgga2Z
------END PRIVATE KEY-----''')
-VAPID_EMAIL = os.getenv('VAPID_EMAIL', 'admin@expectexception.com')
+# VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', 'BGcxbIdFOOx06gl9Nt_D0IMsNM1pfe4_nCx2_bB9rSi-fTabOnGvNY1To4WzL6laMTqYcl7ALDQRrbnDoeCBrZk')
+# VAPID_PRIVATE_KEY_PEM = os.getenv('VAPID_PRIVATE_KEY_PEM', '''-----BEGIN PRIVATE KEY-----
+# MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgzMlUEwcRRAhPj6UO
+# zlziQq7uXAKEeLyinMl8p1RHPPWhRANCAARnMWyHRTjsdOoJfTbfw9CDLDTNaX3u
+# P5wsdv2wfa0ovn02mzpxrzWNU6OFsy+pWjE6mHJewCw0Ea25w6Hgga2Z
+# -----END PRIVATE KEY-----''')
+# VAPID_EMAIL = os.getenv('VAPID_EMAIL', 'admin@expectexception.com')
 
 # =============================================================================
 # AI Chatbot Settings (Ollama + SmolLM2)
@@ -367,7 +369,7 @@ VAPID_EMAIL = os.getenv('VAPID_EMAIL', 'admin@expectexception.com')
 # Pull model: ollama pull smollm2:1.7b
 
 OLLAMA_BASE_URL = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
-CHATBOT_MODEL = os.getenv('CHATBOT_MODEL', 'qwen2:1.5b')
+CHATBOT_MODEL = os.getenv('CHATBOT_MODEL', 'dolphin-llama3')
 CHATBOT_MAX_TOKENS = int(os.getenv('CHATBOT_MAX_TOKENS', '2048'))
 
 # =============================================================================

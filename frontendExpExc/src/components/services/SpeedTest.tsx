@@ -52,11 +52,11 @@ const SpeedTest: React.FC = () => {
     const smoothedDownloadRef = useRef(0);
     const smoothedUploadRef = useRef(0);
 
-    const MAX_SPEED = 1000; // Cap for gauge visual
+    const MAX_SPEED = 1000;
 
     // Derived active values
     const activeSpeed = phase === 'upload' ? uploadSpeed : downloadSpeed;
-    const activeColor = phase === 'upload' ? '#bd00ff' : '#00eeff'; // Purple vs Cyan
+    const activeColor = phase === 'upload' ? '#bd00ff' : '#00eeff';
     const activeSpeedSmoothed = phase === 'upload' ? smoothedUpload : smoothedDownload;
     const progress = Math.min(activeSpeedSmoothed / MAX_SPEED * 100, 100);
 
@@ -84,7 +84,7 @@ const SpeedTest: React.FC = () => {
 
     // Smooth incoming speed updates with EMA
     useEffect(() => {
-        const alpha = 0.18;
+        const alpha = 0.25; // Slightly faster reaction
         setSmoothedDownload(prev => {
             const next = prev * (1 - alpha) + downloadSpeed * alpha;
             smoothedDownloadRef.current = next;
@@ -93,7 +93,7 @@ const SpeedTest: React.FC = () => {
     }, [downloadSpeed]);
 
     useEffect(() => {
-        const alpha = 0.18;
+        const alpha = 0.25;
         setSmoothedUpload(prev => {
             const next = prev * (1 - alpha) + uploadSpeed * alpha;
             smoothedUploadRef.current = next;
@@ -101,18 +101,19 @@ const SpeedTest: React.FC = () => {
         });
     }, [uploadSpeed]);
 
-    // Feed the graph at a steady rate (uses smoothed refs to avoid rapid re-renders)
+    // Feed the graph at a steady rate
     useEffect(() => {
         const interval = setInterval(() => {
+            if (!running) return;
             const now = (Date.now() / 1000);
             const speed = phase === 'upload' ? smoothedUploadRef.current : smoothedDownloadRef.current;
-            const point: SpeedPoint = { time: Math.round(now), speed: Number(speed.toFixed(2)) };
-            dataPointsRef.current = [...dataPointsRef.current.slice(-120), point];
+            const point: SpeedPoint = { time: parseFloat(now.toFixed(2)), speed: parseFloat(speed.toFixed(2)) };
+            dataPointsRef.current = [...dataPointsRef.current.slice(-100), point];
             setDataPoints([...dataPointsRef.current]);
-        }, 700);
+        }, 150); // Faster updates for smoother chart
 
         return () => clearInterval(interval);
-    }, [phase]);
+    }, [phase, running]);
 
     const runNdt7 = async () => {
         return new Promise<void>((resolve, reject) => {
@@ -120,9 +121,6 @@ const SpeedTest: React.FC = () => {
                 reject(new Error("NDT7 library not loaded"));
                 return;
             }
-
-            let currentPoints: SpeedPoint[] = [];
-            const startTime = Date.now();
 
             try {
                 ndt7.test(
@@ -140,23 +138,19 @@ const SpeedTest: React.FC = () => {
                                 setPhase('download');
                                 const data = origin.Data;
 
-                                // --- SERVER MSG (Latency) ---
                                 if (origin.Source === 'server') {
                                     if (data.TCPInfo && data.TCPInfo.MinRTT) {
-                                        // MinRTT is in microseconds
                                         const rtt = data.TCPInfo.MinRTT / 1000;
                                         setLatency(Math.round(rtt));
                                     }
                                 }
 
-                                // --- CLIENT MSG (Throughput) ---
                                 if (origin.Source === 'client') {
                                     let speed = 0;
                                     if (data.MeanClientMbps) {
-                                        speed = parseFloat(data.MeanClientMbps.toFixed(2));
-                                    } else if (data.AppInfo && data.AppInfo.NumBytes && data.AppInfo.ElapsedTime) {
-                                        // Calc fallback
-                                        speed = data.mbps ? parseFloat(data.mbps.toFixed(2)) : 0;
+                                        speed = data.MeanClientMbps;
+                                    } else if (data.mbps) {
+                                        speed = data.mbps;
                                     }
 
                                     if (speed > 0) {
@@ -172,9 +166,9 @@ const SpeedTest: React.FC = () => {
 
                                 let speed = 0;
                                 if (data.MeanClientMbps) {
-                                    speed = parseFloat(data.MeanClientMbps.toFixed(2));
-                                } else {
-                                    speed = data.mbps ? parseFloat(data.mbps.toFixed(2)) : 0;
+                                    speed = data.MeanClientMbps;
+                                } else if (data.mbps) {
+                                    speed = data.mbps;
                                 }
 
                                 if (speed > 0) {
@@ -199,7 +193,6 @@ const SpeedTest: React.FC = () => {
 
     // --- Custom Gauge Components ---
     const GaugeNeedle = ({ percent }: { percent: number }) => {
-        // -135deg to +135deg range
         const rotation = -135 + (percent / 100) * 270;
         return (
             <Box
@@ -210,12 +203,11 @@ const SpeedTest: React.FC = () => {
                     width: '100%',
                     height: '100%',
                     transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-                    transition: 'transform 0.1s linear',
+                    transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     pointerEvents: 'none',
                     zIndex: 2
                 }}
             >
-                {/* Needle Design - tapered line */}
                 <Box
                     sx={{
                         position: 'absolute',
@@ -223,9 +215,9 @@ const SpeedTest: React.FC = () => {
                         left: 'calc(50% - 2px)',
                         width: '4px',
                         height: '40%',
-                        background: activeColor,
+                        background: `linear-gradient(to bottom, ${activeColor}, transparent)`,
                         borderRadius: '4px',
-                        boxShadow: `0 0 15px ${activeColor}, 0 0 30px ${activeColor}`
+                        boxShadow: `0 0 15px ${activeColor}, 0 0 30px ${activeColor}66`
                     }}
                 />
             </Box>
@@ -234,10 +226,15 @@ const SpeedTest: React.FC = () => {
 
     const GaugeArc = () => (
         <svg viewBox="0 0 200 200" style={{ transform: 'rotate(135deg)', width: '100%', height: '100%' }}>
-            {/* Background Track */}
-            <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4" strokeDasharray="410" strokeDashoffset="105" strokeLinecap="round" />
-
-            {/* Active Progress */}
+            <circle
+                cx="100" cy="100" r="90"
+                fill="none"
+                stroke="rgba(255,255,255,0.05)"
+                strokeWidth="6"
+                strokeDasharray="424"
+                strokeDashoffset="106"
+                strokeLinecap="round"
+            />
             {running && (
                 <circle
                     cx="100"
@@ -245,11 +242,14 @@ const SpeedTest: React.FC = () => {
                     r="90"
                     fill="none"
                     stroke={activeColor}
-                    strokeWidth="4"
-                    strokeDasharray="410"
-                    strokeDashoffset={410 - (410 * 0.75 * (progress / 100))}
+                    strokeWidth="6"
+                    strokeDasharray="424"
+                    strokeDashoffset={424 - (424 * 0.75 * (progress / 100))}
                     strokeLinecap="round"
-                    style={{ transition: 'stroke-dashoffset 0.1s linear' }}
+                    style={{
+                        transition: 'stroke-dashoffset 0.2s ease-out',
+                        filter: `drop-shadow(0 0 8px ${activeColor})`
+                    }}
                 />
             )}
         </svg>
@@ -260,52 +260,48 @@ const SpeedTest: React.FC = () => {
             minHeight: '80vh',
             bgcolor: '#0a0e17',
             color: '#fff',
-            pb: 8,
-            overflow: 'hidden',
-            backgroundImage: 'radial-gradient(circle at 50% 30%, #1a2333 0%, #0a0e17 70%)'
+            pb: 4,
+            overflowX: 'hidden',
+            backgroundImage: 'radial-gradient(circle at 50% 30%, #1a2333 0%, #0a0e17 80%)'
         }}>
-            <Seo title="Internet Speed Test" description="Accurate broadband speed test." toolId={99} />
+            <Seo title="Internet Speed Test" description="Accurate real-time broadband speed test." toolId={99} />
 
-            <Container maxWidth="lg" sx={{ pt: 4, px: { xs: 2, md: 4 }, position: 'relative', zIndex: 1 }}>
+            <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 4 }, px: { xs: 2, md: 4 }, position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
-                {/* Header Info */}
+                {/* Header Stats Strip */}
                 <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    justifyContent="space-between"
-                    alignItems={{ xs: 'flex-start', sm: 'center' }}
-                    spacing={2}
-                    sx={{ mb: 6 }}
+                    direction="row"
+                    justifyContent="center"
+                    spacing={{ xs: 4, sm: 6 }}
+                    sx={{ mb: { xs: 2, md: 6 }, opacity: 0.8 }}
                 >
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ opacity: 0.7 }}>
-                        <Public fontSize="small" />
-                        <Typography variant="body2">SERVER: M-Lab (Global)</Typography>
+                    <Stack alignItems="center">
+                        <Typography variant="caption" sx={{ color: activeColor, fontWeight: 700, fontSize: '0.7rem' }}>PHASE</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{phase.toUpperCase()}</Typography>
                     </Stack>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ opacity: 0.7 }}>
-                        <Wifi fontSize="small" />
-                        <Typography variant="body2">{running ? 'TESTING...' : 'IDLE'}</Typography>
+                    <Stack alignItems="center">
+                        <Typography variant="caption" sx={{ color: activeColor, fontWeight: 700, fontSize: '0.7rem' }}>SERVER</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>M-Lab Global</Typography>
                     </Stack>
                 </Stack>
 
-                <Grid container spacing={4} alignItems="center" justifyContent="center">
+                <Grid container spacing={4} alignItems="center" justifyContent="center" sx={{ flex: 1, alignContent: 'center' }}>
 
-                    {/* Main Gauge Section */}
+                    {/* Left: Gauge */}
                     <Grid item xs={12} md={6}>
                         <Box sx={{
                             position: 'relative',
                             width: '100%',
-                            maxWidth: 320,
+                            maxWidth: { xs: 260, md: 380 },
                             aspectRatio: '1/1',
                             mx: 'auto'
                         }}>
-                            {/* Gauge SVG Layer */}
-                            <Box sx={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+                            <Box sx={{ position: 'absolute', inset: 0 }}>
                                 <GaugeArc />
                             </Box>
 
-                            {/* Needle Layer */}
                             {running && <GaugeNeedle percent={progress} />}
 
-                            {/* Center Content */}
                             <Box sx={{
                                 position: 'absolute',
                                 inset: 0,
@@ -319,20 +315,20 @@ const SpeedTest: React.FC = () => {
                                     <Button
                                         onClick={startTest}
                                         sx={{
-                                            width: { xs: 100, sm: 120 },
-                                            height: { xs: 100, sm: 120 },
+                                            width: { xs: 100, md: 140 },
+                                            height: { xs: 100, md: 140 },
                                             borderRadius: '50%',
-                                            border: '2px solid rgba(0, 238, 255, 0.3)',
+                                            border: `2px solid ${alpha('#00eeff', 0.3)}`,
                                             color: '#00eeff',
-                                            fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                                            fontSize: { xs: '1.5rem', md: '1.75rem' },
                                             fontWeight: 900,
-                                            background: 'rgba(0, 238, 255, 0.05)',
-                                            backdropFilter: 'blur(5px)',
-                                            transition: 'all 0.3s ease',
+                                            background: alpha('#00eeff', 0.05),
+                                            backdropFilter: 'blur(10px)',
+                                            transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                                             '&:hover': {
-                                                background: 'rgba(0, 238, 255, 0.15)',
-                                                boxShadow: '0 0 30px rgba(0, 238, 255, 0.4)',
-                                                transform: 'scale(1.05)'
+                                                background: alpha('#00eeff', 0.2),
+                                                boxShadow: '0 0 40px rgba(0, 238, 255, 0.5)',
+                                                transform: 'scale(1.1)'
                                             }
                                         }}
                                     >
@@ -340,64 +336,116 @@ const SpeedTest: React.FC = () => {
                                     </Button>
                                 ) : (
                                     <Box sx={{ textAlign: 'center' }}>
-                                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', letterSpacing: 1 }}>
-                                            {phase === 'download' ? 'DOWNLOAD' : phase === 'upload' ? 'UPLOAD' : 'RESULT'}
-                                        </Typography>
                                         <Typography variant="h2" sx={{
-                                            fontWeight: 700,
+                                            fontWeight: 800,
                                             letterSpacing: -2,
-                                            my: 0,
-                                            fontSize: { xs: '3rem', sm: '3.75rem' },
-                                            textShadow: `0 0 20px ${activeColor}55`
+                                            fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+                                            textShadow: `0 0 30px ${activeColor}66`,
+                                            fontFamily: 'monospace'
                                         }}>
-                                            {activeSpeedSmoothed.toFixed(0)}
+                                            {activeSpeedSmoothed.toFixed(2)}
                                         </Typography>
-                                        <Typography variant="body1" sx={{ color: activeColor, fontWeight: 600 }}>
+                                        <Typography variant="h6" sx={{ color: activeColor, fontWeight: 700, mt: -1, fontSize: { xs: '1rem', md: '1.25rem' } }}>
                                             Mbps
                                         </Typography>
                                     </Box>
-                                )}
-
-                                {phase === 'complete' && !running && (
-                                    <Button
-                                        startIcon={<Refresh />}
-                                        onClick={startTest}
-                                        sx={{ mt: 2, color: 'rgba(255,255,255,0.7)' }}
-                                    >
-                                        Restart
-                                    </Button>
                                 )}
                             </Box>
                         </Box>
                     </Grid>
 
-                    {/* Stats List */}
-                    <Grid item xs={12} md={4}>
-                        <Stack spacing={2} direction={{ xs: 'row', md: 'column' }} justifyContent="center">
-                            <Paper sx={{ p: 2, flex: 1, bgcolor: 'rgba(255,255,255,0.03)', borderLeft: '4px solid #fff' }}>
-                                <Typography variant="caption" color="text.secondary">PING</Typography>
-                                <Typography variant="h6" sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>{latency !== null ? `${latency} ms` : '-'}</Typography>
-                            </Paper>
-                                <Paper sx={{ p: 2, flex: 1, bgcolor: 'rgba(255,255,255,0.03)', borderLeft: '4px solid #00eeff' }}>
-                                <Typography variant="caption" color="text.secondary">DOWNLOAD</Typography>
-                                <Typography variant="h6" sx={{ fontSize: { xs: '1rem', md: '1.25rem' }, color: '#00eeff' }}>{smoothedDownload > 0 ? smoothedDownload.toFixed(0) : '-'}</Typography>
-                            </Paper>
-                            <Paper sx={{ p: 2, flex: 1, bgcolor: 'rgba(255,255,255,0.03)', borderLeft: '4px solid #bd00ff' }}>
-                                <Typography variant="caption" color="text.secondary">UPLOAD</Typography>
-                                <Typography variant="h6" sx={{ fontSize: { xs: '1rem', md: '1.25rem' }, color: '#bd00ff' }}>{smoothedUpload > 0 ? smoothedUpload.toFixed(0) : '-'}</Typography>
-                            </Paper>
-                        </Stack>
+                    {/* Right: Results Dashboard */}
+                    <Grid item xs={12} md={5}>
+                        {/* Mobile: Horizontal Grid / Desktop: Vertical Stack */}
+                        <Grid container spacing={2}>
+                            <Grid item xs={4} md={12}>
+                                <Paper sx={{
+                                    p: { xs: 1.5, md: 3 },
+                                    bgcolor: alpha('#fff', 0.03),
+                                    border: `1px solid ${alpha('#fff', 0.05)}`,
+                                    borderLeft: `4px solid #fff`,
+                                    borderRadius: 2,
+                                    height: '100%'
+                                }}>
+                                    <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: { xs: '0.65rem', md: '0.75rem' } }}>PING</Typography>
+                                    <Typography variant="h5" fontWeight={800} sx={{ fontSize: { xs: '1.2rem', md: '2.125rem' } }}>{latency !== null ? `${latency}` : '--'}<Typography component="span" variant="caption" sx={{ ml: 0.5, opacity: 0.7 }}>ms</Typography></Typography>
+                                </Paper>
+                            </Grid>
+
+                            <Grid item xs={4} md={12}>
+                                <Paper sx={{
+                                    p: { xs: 1.5, md: 3 },
+                                    bgcolor: alpha('#00eeff', 0.03),
+                                    border: `1px solid ${alpha('#00eeff', 0.1)}`,
+                                    borderLeft: `4px solid #00eeff`,
+                                    borderRadius: 2,
+                                    height: '100%'
+                                }}>
+                                    <Typography variant="caption" sx={{ color: '#00eeff', opacity: 0.8, fontSize: { xs: '0.65rem', md: '0.75rem' } }} fontWeight={700}>DOWNLOAD</Typography>
+                                    <Typography variant="h5" fontWeight={800} color="#00eeff" sx={{ fontSize: { xs: '1.2rem', md: '2.125rem' } }}>
+                                        {smoothedDownload > 0 ? smoothedDownload.toFixed(0) : '--'}
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+
+                            <Grid item xs={4} md={12}>
+                                <Paper sx={{
+                                    p: { xs: 1.5, md: 3 },
+                                    bgcolor: alpha('#bd00ff', 0.03),
+                                    border: `1px solid ${alpha('#bd00ff', 0.1)}`,
+                                    borderLeft: `4px solid #bd00ff`,
+                                    borderRadius: 2,
+                                    height: '100%'
+                                }}>
+                                    <Typography variant="caption" sx={{ color: '#bd00ff', opacity: 0.8, fontSize: { xs: '0.65rem', md: '0.75rem' } }} fontWeight={700}>UPLOAD</Typography>
+                                    <Typography variant="h5" fontWeight={800} color="#bd00ff" sx={{ fontSize: { xs: '1.2rem', md: '2.125rem' } }}>
+                                        {smoothedUpload > 0 ? smoothedUpload.toFixed(0) : '--'}
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+                        </Grid>
+
+                        {phase === 'complete' && (
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                startIcon={<Refresh />}
+                                onClick={startTest}
+                                sx={{
+                                    mt: 2,
+                                    py: 1.5,
+                                    borderColor: alpha('#fff', 0.2),
+                                    color: '#fff',
+                                    '&:hover': { borderColor: '#fff' }
+                                }}
+                            >
+                                RETEST
+                            </Button>
+                        )}
                     </Grid>
                 </Grid>
 
-                {/* Graph at Bottom */}
-                <Box sx={{ mt: 8, height: 200, opacity: 0.8, display: { xs: 'none', sm: 'block' } }}>
+                {/* Performance History Chart */}
+                <Box sx={{
+                    mt: { xs: 4, md: 10 },
+                    p: { xs: 0, md: 3 },
+                    height: { xs: 120, md: 300 },
+                    bgcolor: { xs: 'transparent', md: alpha('#fff', 0.02) },
+                    borderRadius: 4,
+                    border: { xs: 'none', md: `1px solid ${alpha('#fff', 0.05)}` },
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    <Typography variant="caption" sx={{ position: 'absolute', top: 0, left: 16, opacity: 0.5, fontWeight: 600, display: { xs: 'none', md: 'block' } }}>
+                        REAL-TIME THROUGHPUT (Mbps)
+                    </Typography>
+
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={dataPoints}>
                             <defs>
-                                <linearGradient id="gradientGraph" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={activeColor} stopOpacity={0.4} />
-                                    <stop offset="100%" stopColor={activeColor} stopOpacity={0} />
+                                <linearGradient id="speedGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={activeColor} stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor={activeColor} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <XAxis hide dataKey="time" />
@@ -406,49 +454,31 @@ const SpeedTest: React.FC = () => {
                                 type="monotone"
                                 dataKey="speed"
                                 stroke={activeColor}
-                                strokeWidth={2}
-                                fill="url(#gradientGraph)"
+                                strokeWidth={3}
+                                fillOpacity={1}
+                                fill="url(#speedGradient)"
                                 isAnimationActive={false}
                             />
                         </AreaChart>
                     </ResponsiveContainer>
-                </Box>
 
-                {/* Background graph visible on mobile (smaller height) with latest-point pulse */}
-                <Box sx={{ mt: 4, height: { xs: 120, sm: 200 }, opacity: 0.75, display: 'block', position: 'relative' }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={dataPoints}>
-                            <defs>
-                                <linearGradient id="gradientGraphMobile" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={activeColor} stopOpacity={0.25} />
-                                    <stop offset="100%" stopColor={activeColor} stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <XAxis hide dataKey="time" />
-                            <YAxis hide domain={[0, 'auto']} />
-                            <Area type="monotone" dataKey="speed" stroke={activeColor} strokeWidth={2} fill="url(#gradientGraphMobile)" isAnimationActive={false} />
-                        </AreaChart>
-                    </ResponsiveContainer>
-
-                    {/* latest-point indicator */}
-                    <Box
-                        sx={(theme) => ({
+                    {/* Data pulse at end of line */}
+                    {running && dataPoints.length > 0 && (
+                        <Box sx={{
                             position: 'absolute',
-                            right: 12,
-                            width: 14,
-                            height: 14,
+                            right: 16,
+                            top: `${90 - (Math.min(activeSpeedSmoothed / MAX_SPEED, 1) * 80)}%`,
+                            width: 10,
+                            height: 10,
+                            bgcolor: activeColor,
                             borderRadius: '50%',
-                            transform: 'translateY(-50%)',
-                            background: activeColor,
-                            boxShadow: `0 0 12px ${activeColor}55, 0 0 24px ${activeColor}33`,
-                            top: `${50 - (Math.min(activeSpeedSmoothed / MAX_SPEED, 1) * 50)}%`,
-                            transition: 'top 400ms ease, box-shadow 400ms',
-                            border: `2px solid ${theme.palette.background.default}`
-                        })}
-                    />
+                            boxShadow: `0 0 15px ${activeColor}`,
+                            transition: 'top 0.3s ease-out'
+                        }} />
+                    )}
                 </Box>
 
-                {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+                {error && <Alert severity="error" variant="filled" sx={{ mt: 4, borderRadius: 2 }}>{error}</Alert>}
             </Container>
         </Box>
     );

@@ -1113,8 +1113,29 @@ class DownloadHistoryViewSet(viewsets.ReadOnlyModelViewSet):
         return response
 
 
+class PdfToDocStatusView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, task_id):
+        """Return cached result if available, else return task state."""
+        cache_key = f"pdf_convert_result:{task_id}"
+        from django.core.cache import cache
+        result = cache.get(cache_key)
+        if result:
+            return Response(result)
+
+        # Fallback: check Celery AsyncResult
+        try:
+            from expectexception.celery import app as celery_app
+            async_res = celery_app.AsyncResult(task_id)
+            state = async_res.state
+            return Response({'status': state})
+        except Exception:
+            return Response({'status': 'unknown'})
+
+
 class PdfToDocView(APIView):
-    """Convert PDF files to DOCX format using LibreOffice"""
+    """Convert PDF files to DOCX format using Celery Task (Async)"""
     permission_classes = [AllowAny]
     parser_classes = [MultiPartParser, FormParser]
     
@@ -1122,90 +1143,6 @@ class PdfToDocView(APIView):
     SUPPORTED_FORMATS = ['docx', 'doc', 'odt', 'rtf', 'txt']
     MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
     
-    def _perform_ocr(self, input_path, lang='eng'):
-        """
-        Convert PDF to images, then use OCR to create a new searchable PDF.
-        Returns path to the new searchable PDF.
-        """
-        try:
-            from pdf2image import convert_from_path
-            from PyPDF2 import PdfMerger
-            import subprocess
-            
-            # Convert PDF pages to images
-            try:
-                images = convert_from_path(input_path)
-            except Exception as e:
-                # If pdf2image fails, it might be poppler issue or non-pdf
-                logger.error(f"pdf2image failed: {e}")
-                raise Exception("Could not convert PDF to images. Is poppler installed?")
-
-            if not images:
-                raise Exception("PDF appears to be empty or could not be read.")
-            
-            merger = PdfMerger()
-            base_temp = os.path.dirname(input_path)
-            ocr_pages = []
-            
-            # Use direct tesseract CLI for better PDF control
-            # Assumes 'tesseract' is in PATH.
-            
-            for i, image in enumerate(images):
-                # Save image to temp file
-                image_path = os.path.join(base_temp, f"page_{i}.png")
-                image.save(image_path, "PNG")
-                
-                # Output base name (tesseract adds .pdf)
-                page_pdf_base = os.path.join(base_temp, f"page_{i}_ocr")
-                page_pdf_file = f"{page_pdf_base}.pdf"
-                
-                # Run tesseract
-                # tesseract input.png outputbase -l eng pdf
-                cmd = ['tesseract', image_path, page_pdf_base, '-l', lang, 'pdf']
-                
-                try:
-                    subprocess.run(
-                        cmd, 
-                        stdout=subprocess.DEVNULL, 
-                        stderr=subprocess.PIPE, 
-                        check=True
-                    )
-                except subprocess.CalledProcessError as e:
-                    logger.error(f"Tesseract CLI failed: {e.stderr.decode()}")
-                    raise Exception("OCR processing failed.")
-                finally:
-                    if os.path.exists(image_path):
-                        os.remove(image_path)
-
-                if os.path.exists(page_pdf_file):
-                    merger.append(page_pdf_file)
-                    ocr_pages.append(page_pdf_file)
-                else:
-                    logger.warning(f"Tesseract did not produce PDF for page {i}")
-            
-            # Define output path with clean name
-            # Avoid ".pdf_ocr.pdf" - just use "_ocr.pdf"
-            dir_name = os.path.dirname(input_path)
-            file_name = os.path.splitext(os.path.basename(input_path))[0]
-            output_pdf_path = os.path.join(dir_name, f"{file_name}_ocr.pdf")
-            
-            merger.write(output_pdf_path)
-            merger.close()
-            
-            # Clean up page chunks
-            for p in ocr_pages:
-                if os.path.exists(p):
-                    os.remove(p)
-                    
-            return output_pdf_path
-
-        except ImportError as e:
-            logger.error(f"OCR dependencies missing: {e}")
-            raise Exception("OCR components (pdf2image/PyPDF2) are not installed.")
-        except Exception as e:
-            logger.error(f"OCR failed: {e}")
-            raise e
-
     def post(self, request):
         pdf_file = request.FILES.get('pdf')
         output_format = request.data.get('format', 'docx').lower()
@@ -1213,220 +1150,55 @@ class PdfToDocView(APIView):
         ocr_lang = request.data.get('language', 'eng')
         
         if not pdf_file:
-            return Response(
-                {'error': 'PDF file is required'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'PDF file is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Validate file size
         if pdf_file.size > self.MAX_FILE_SIZE:
-            return Response(
-                {'error': f'File too large. Maximum size is {self.MAX_FILE_SIZE // (1024*1024)}MB'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': f'File too large. Maximum {self.MAX_FILE_SIZE // (1024*1024)}MB'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Validate output format
         if output_format not in self.SUPPORTED_FORMATS:
-            return Response(
-                {'error': f'Unsupported format. Supported: {", ".join(self.SUPPORTED_FORMATS)}'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Validate it's actually a PDF
-        pdf_file.seek(0)
-        header = pdf_file.read(5)
-        pdf_file.seek(0)
-        if header != b'%PDF-':
-            return Response(
-                {'error': 'Invalid file. Please upload a valid PDF file.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        import subprocess
-        import tempfile
-        import shutil
-        
-        temp_dir = None
-        try:
-            # Create temp directory
-            temp_dir = tempfile.mkdtemp(prefix='pdf_convert_')
+            return Response({'error': 'Unsupported format.'}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Save uploaded PDF to temp file
-            input_filename = f"input_{uuid.uuid4()}.pdf"
+        try:
+            import tempfile
+            import shutil
+            
+            # Save upload to temp file (Celery worker needs access)
+            # Use MEDIA_ROOT/temp for shared access
+            temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp_uploads')
+            os.makedirs(temp_dir, exist_ok=True)
+            
+            original_name = pdf_file.name.replace(' ', '_')
+            input_filename = f"{uuid.uuid4()}_{original_name}"
             input_path = os.path.join(temp_dir, input_filename)
             
-            with open(input_path, 'wb') as f:
+            with open(input_path, 'wb+') as f:
                 for chunk in pdf_file.chunks():
                     f.write(chunk)
             
-            # Perform OCR if requested
-            if ocr_enabled:
-                try:
-                    # Replace input_path with the OCR'd version
-                    input_path = self._perform_ocr(input_path, lang=ocr_lang)
-                    logger.info("OCR preprocessing completed successfully")
-                except Exception as e:
-                    logger.warning(f"OCR failed, falling back to standard conversion: {e}")
-                    # Fallback to original input_path, notify user?
-                    # For now, just log and continue with original file
-                    pass
-
-            # Determine conversion method based on output format
-            if output_format == 'docx':
-                # Use pdf2docx for robust PDF -> DOCX conversion
-                from pdf2docx import Converter
+            # Enqueue task
+            try:
+                from .tasks import convert_pdf_task
+                task = convert_pdf_task.delay(input_path, output_format, ocr_enabled, ocr_lang, original_name)
                 
-                output_filename = input_filename.replace('.pdf', '.docx')
-                output_path = os.path.join(temp_dir, output_filename)
+                return Response({
+                    'task_id': task.id,
+                    'status_url': f"/api/services/pdf-to-doc/status/{task.id}/",
+                    'message': 'Processing started.'
+                }, status=status.HTTP_202_ACCEPTED)
                 
-                try:
-                    # Provide explicit paths and ensure closure
-                    logger.info(f"Starting pdf2docx conversion: {input_path} -> {output_path}")
-                    cv = Converter(input_path)
-                    cv.convert(output_path, start=0, end=None)
-                    cv.close()
-                    
-                    if not os.path.exists(output_path):
-                         logger.error(f"pdf2docx finished but output file missing: {output_path}")
-                         raise Exception("Conversion routine completed but no output file was generated.")
-                         
-                except Exception as e:
-                    logger.error(f"pdf2docx conversion failed: {e}")
-                    raise e # Propagate to main handler
+            except Exception as e:
+                # Sync Fallback
+                logger.warning(f"Celery enqueue failed: {e}. Falling back to sync.")
+                from .tasks import convert_pdf_task
+                res = convert_pdf_task.apply(args=[input_path, output_format, ocr_enabled, ocr_lang, original_name])
+                result = res.get()
+                return Response(result)
 
-            else:
-                 # Original soffice path for legacy formats (rtf, txt)
-                 filter_map = {
-                    'doc': 'MS Word 97',
-                    'odt': 'writer8',
-                    'rtf': 'Rich Text Format',
-                    'txt': 'Text'
-                }
-                 
-                 # Ensure we point to output dir correctly
-                 cmd = [
-                    '/usr/bin/soffice',
-                    '--headless',
-                    '--invisible',
-                    '--nologo',
-                    '--nofirststartwizard',
-                    f'--convert-to',
-                    f'{output_format}:{filter_map.get(output_format, output_format)}',
-                    '--outdir',
-                    temp_dir,
-                    input_path
-                ]
-                 
-                 custom_env = {
-                    'PATH': '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
-                    'HOME': temp_dir,
-                }
-                 if 'LANG' in os.environ: custom_env['LANG'] = os.environ['LANG']
-                 if 'LC_ALL' in os.environ: custom_env['LC_ALL'] = os.environ['LC_ALL']
-
-                 logger.info(f"Running soffice: {cmd}")
-                 result = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=120,
-                    env=custom_env
-                )
-                 
-                 if result.returncode != 0:
-                     logger.error(f"LibreOffice conversion failed: {result.stderr}")
-                     raise Exception(f"Conversion failed using system tools: {result.stderr[:200]}")
-
-            # Find the output file
-            # If docx, we already specific output_path above, but double check
-            if output_format != 'docx':
-                 # Soffice naming convention check: it uses the basename of the input file
-                 # If OCR was used, input_path is "..._ocr.pdf", so output is "..._ocr.rtf"
-                 input_basename = os.path.splitext(os.path.basename(input_path))[0]
-                 expected_name = f"{input_basename}.{output_format}"
-                 output_path = os.path.join(temp_dir, expected_name)
-                 
-                 # Check fallback if name handling was different
-                 if not os.path.exists(output_path):
-                     # Try to finding any file with that extension in temp_dir? No, dangerous.
-                     # Check with lowercase/uppercase?
-                     pass
-            
-            if not os.path.exists(output_path):
-                # Detailed directory listing for debug
-                files_in_temp = []
-                try:
-                    files_in_temp = os.listdir(temp_dir)
-                except: pass
-                
-                logger.error(f"Output file not found at {output_path}. Files in temp: {files_in_temp}")
-                
-                return Response(
-                    {'error': 'Conversion completed but output file not found. Please try a different file.'},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
-            
-            # Save to media folder
-            converted_dir = os.path.join(settings.MEDIA_ROOT, 'converted')
-            os.makedirs(converted_dir, exist_ok=True)
-            
-            # Generate unique filename for the output
-            original_name = os.path.splitext(pdf_file.name)[0]
-            final_filename = f"{original_name}_{uuid.uuid4().hex[:8]}.{output_format}"
-            final_path = os.path.join(converted_dir, final_filename)
-            
-            # Move output to final location
-            shutil.copy2(output_path, final_path)
-            
-            file_url = f"{settings.MEDIA_URL}converted/{final_filename}"
-
-            file_size = os.path.getsize(final_path)
-            
-            # Log activity
-            log_activity(
-                request.user, 
-                "pdf_to_doc", 
-                f"Converted {pdf_file.name} to {output_format.upper()} (OCR: {ocr_enabled})", 
-                request
-            )
-            
-            logger.info(f"PDF conversion successful: {pdf_file.name} -> {final_filename}")
-            
-            return Response({
-                'success': True,
-                'file_url': file_url,
-                'filename': final_filename,
-                'original_name': pdf_file.name,
-                'format': output_format.upper(),
-                'original_size': pdf_file.size,
-                'converted_size': file_size,
-            })
-            
-        except subprocess.TimeoutExpired:
-            logger.error("LibreOffice conversion timed out")
-            return Response(
-                {'error': 'Conversion timed out. The file may be too large or complex.'},
-                status=status.HTTP_408_REQUEST_TIMEOUT
-            )
-        except FileNotFoundError:
-            logger.error("LibreOffice (soffice) not found")
-            return Response(
-                {'error': 'PDF conversion service is not available. Please contact support.'},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
-            )
         except Exception as e:
-            logger.exception(f"PDF conversion error: {e}")
-            return Response(
-                {'error': f'An error occurred: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        finally:
-            # Clean up temp directory
-            if temp_dir and os.path.exists(temp_dir):
-                try:
-                    shutil.rmtree(temp_dir)
-                except Exception as e:
-                    logger.warning(f"Failed to clean up temp dir: {e}")
+            logger.exception("PDF Async View Error")
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class DocToPdfView(APIView):

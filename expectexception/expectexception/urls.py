@@ -24,7 +24,7 @@ urlpatterns = [
     path('api/videos/', include('apps.videos.urls')),
     path('api/profiles/', include('apps.profiles.urls')),
     path('api/notifications/', include('apps.notifications.urls')),
-    path('api/ai-detector/', include('apps.ai_detector.urls')),
+    # path('api/ai-detector/', include('apps.ai_detector.urls')),
     path('api/text-to-handwriting/', include('apps.text_to_handwriting.urls')),
     path('api/secret-sharer/', include('apps.secret_sharer.urls')),
     path('api/contact/', include('apps.contact.urls')),

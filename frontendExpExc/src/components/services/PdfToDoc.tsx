@@ -119,13 +119,48 @@ const PdfToDoc: React.FC = () => {
         }
     }, []);
 
+    const pollStatus = async (taskId: string) => {
+        const interval = setInterval(async () => {
+            try {
+                const res = await apiClient.get(`${endpoints.services.pdfToDoc}/status/${taskId}/`);
+                const status = res.data.status;
+                const resultData = res.data;
+
+                if (status === 'success') {
+                    clearInterval(interval);
+                    setProgress(100);
+                    if (resultData.file_url && !resultData.file_url.startsWith('http')) {
+                        resultData.file_url = `${API_BASE_URL}${resultData.file_url}`;
+                    }
+                    setResult(resultData);
+                    setLoading(false);
+                } else if (status === 'failed') {
+                    clearInterval(interval);
+                    setError(resultData.error || 'Conversion process failed.');
+                    setLoading(false);
+                } else {
+                    // Still processing
+                    // status usually 'PENDING', 'STARTED', 'queued'
+                    // Slowly increment progress fake visualization
+                    setProgress((prev) => Math.min(prev + 2, 95));
+                }
+            } catch (err) {
+                console.error("Polling error", err);
+                // Allow a few fails? For now, stop on error
+                clearInterval(interval);
+                setError('Lost connection to server status.');
+                setLoading(false);
+            }
+        }, 2000);
+    };
+
     const handleConvert = async () => {
         if (!selectedFile) return;
 
         setLoading(true);
         setError(null);
         setResult(null);
-        setProgress(10);
+        setProgress(5);
 
         const formData = new FormData();
         formData.append('pdf', selectedFile);
@@ -133,30 +168,30 @@ const PdfToDoc: React.FC = () => {
         formData.append('ocr_enabled', ocrEnabled.toString());
 
         try {
-            // Simulate progress - slower if OCR is on
-            const intervalTime = ocrEnabled ? 800 : 500;
-            const progressInterval = setInterval(() => {
-                setProgress((prev) => Math.min(prev + 5, 90));
-            }, intervalTime);
-
             const response = await apiClient.post(endpoints.services.pdfToDoc, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-                timeout: 120000, // 2 minutes timeout for OCR
+                headers: { 'Content-Type': 'multipart/form-data' },
+                timeout: 10000, // Short timeout for enqueue call
             });
 
-            clearInterval(progressInterval);
-            setProgress(100);
             const data = response.data;
-            if (data.file_url && !data.file_url.startsWith('http')) {
-                data.file_url = `${API_BASE_URL}${data.file_url}`;
+
+            if (response.status === 202 && data.task_id) {
+                // Async path
+                setProgress(20);
+                pollStatus(data.task_id);
+            } else {
+                // Sync path (fallback)
+                setProgress(100);
+                if (data.file_url && !data.file_url.startsWith('http')) {
+                    data.file_url = `${API_BASE_URL}${data.file_url}`;
+                }
+                setResult(data);
+                setLoading(false);
             }
-            setResult(data);
+
         } catch (err: any) {
-            console.error('Conversion error:', err);
-            setError(err.response?.data?.error || 'Conversion failed. Please try again.');
-        } finally {
+            console.error('Conversion request error:', err);
+            setError(err.response?.data?.error || 'Failed to start conversion.');
             setLoading(false);
         }
     };

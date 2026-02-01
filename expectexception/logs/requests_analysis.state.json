@@ -1,12 +1,13 @@
 {
-    "offset": 2966420,
-    "total_lines": 12195,
-    "parsed_lines": 11429,
+    "offset": 3409213,
+    "total_lines": 13846,
+    "parsed_lines": 12945,
     "ips": {
-        "127.0.0.1": 1650,
+        "127.0.0.1": 1673,
         "74.7.230.7": 2,
         "15.235.98.7": 1,
         "202.71.1.68": 3,
+        "34.66.6.238": 3,
         "35.94.85.75": 1,
         "54.38.147.9": 1,
         "66.249.82.6": 1,
@@ -16,6 +17,7 @@
         "95.217.8.54": 1,
         "109.70.100.8": 2,
         "13.52.79.116": 1,
+        "139.180.5.82": 1,
         "15.235.98.23": 1,
         "152.59.93.54": 30,
         "152.69.210.5": 6,
@@ -26,12 +28,15 @@
         "192.178.6.99": 6,
         "204.8.96.108": 3,
         "40.77.167.33": 1,
+        "40.77.167.37": 1,
         "40.77.167.48": 1,
+        "40.77.167.75": 1,
         "43.163.22.66": 1,
         "43.163.22.99": 1,
         "45.80.158.27": 1,
         "49.36.179.52": 33,
         "51.222.95.96": 1,
+        "51.89.129.59": 1,
         "54.176.1.222": 1,
         "54.219.39.36": 6,
         "57.128.243.0": 1,
@@ -67,6 +72,7 @@
         "43.173.173.11": 1,
         "43.173.173.14": 1,
         "43.173.173.74": 1,
+        "43.173.173.82": 1,
         "43.173.173.93": 1,
         "43.173.175.45": 1,
         "43.173.176.34": 1,
@@ -81,7 +87,8 @@
         "43.240.149.12": 3,
         "45.148.10.143": 6,
         "47.99.243.221": 6,
-        "49.249.236.82": 2937,
+        "49.249.236.82": 2966,
+        "51.140.49.232": 6,
         "51.161.37.182": 1,
         "51.195.183.62": 1,
         "51.68.107.151": 1,
@@ -103,14 +110,17 @@
         "104.28.200.124": 1,
         "138.246.253.24": 2,
         "149.56.160.166": 1,
+        "149.57.176.254": 1,
         "149.57.191.193": 1,
+        "149.57.191.205": 1,
         "149.57.191.206": 2,
         "152.58.102.106": 7,
+        "154.29.239.212": 3,
         "157.49.129.173": 2,
         "157.49.129.210": 33,
         "157.49.158.121": 6,
         "158.94.209.159": 1,
-        "164.92.244.132": 5,
+        "164.92.244.132": 15,
         "172.253.216.52": 3,
         "180.151.90.132": 82,
         "185.220.101.14": 1,
@@ -118,13 +128,18 @@
         "192.42.116.200": 2,
         "192.42.116.214": 5,
         "192.42.116.217": 3,
+        "198.244.183.58": 1,
         "198.244.226.53": 1,
         "198.244.240.29": 1,
         "198.244.242.45": 1,
+        "202.54.205.150": 155,
         "213.55.198.253": 6,
         "216.244.66.198": 3,
         "43.173.169.178": 1,
+        "43.173.169.186": 1,
         "43.173.169.232": 1,
+        "43.173.172.134": 1,
+        "43.173.173.110": 1,
         "43.173.173.122": 1,
         "43.173.173.182": 1,
         "43.173.173.235": 1,
@@ -141,16 +156,21 @@
         "43.173.175.247": 1,
         "43.173.176.168": 1,
         "43.173.176.214": 1,
+        "43.173.177.126": 1,
         "43.173.177.136": 1,
+        "43.173.177.192": 1,
         "43.173.177.252": 1,
         "43.173.178.135": 1,
         "43.173.178.236": 1,
         "43.173.179.172": 1,
         "43.173.179.199": 1,
+        "43.173.179.243": 1,
+        "43.173.180.152": 1,
         "43.173.180.182": 1,
         "43.173.180.227": 1,
         "43.173.180.250": 1,
         "43.173.181.226": 2,
+        "43.173.181.244": 1,
         "43.173.181.249": 1,
         "43.173.182.100": 1,
         "43.173.182.113": 1,
@@ -159,9 +179,11 @@
         "43.173.182.233": 1,
         "51.159.194.214": 22,
         "52.167.144.162": 1,
+        "52.167.144.169": 1,
         "52.167.144.201": 1,
         "52.167.144.210": 1,
         "52.167.144.215": 1,
+        "52.167.144.233": 2,
         "92.222.104.198": 1,
         "92.222.104.222": 1,
         "92.222.108.122": 1,
@@ -175,8 +197,10 @@
         "104.210.140.139": 1,
         "146.190.242.161": 7,
         "161.118.209.189": 3,
+        "161.118.211.239": 6,
         "161.118.217.181": 3,
         "161.118.250.104": 3,
+        "185.220.100.241": 3,
         "185.220.100.242": 2,
         "185.220.100.244": 1,
         "185.220.101.130": 5,
@@ -210,7 +234,7 @@
         "2401:4900:1c64:ae8a:872:8c31:3a63:b9e": 5,
         "2401:4900:be84:4d74:6e4c:7e:da0f:704f": 12,
         "2405:201:4008:d87b:18dc:b50:9367:f7cd": 10,
-        "2405:201:4008:d87b:752f:77c2:260:1ef5": 279,
+        "2405:201:4008:d87b:752f:77c2:260:1ef5": 305,
         "2409:40d0:13:d359:88a6:e0ff:fee7:f669": 10,
         "2409:40d0:19:a2b8:b569:d0e0:ccee:2f3a": 3,
         "2409:40d0:20:eea9:3407:37ff:fe9c:284b": 2,
@@ -243,10 +267,12 @@
         "2409:40d6:db:ede4:ca5b:76ff:fed3:83fd": 1,
         "2409:40d6:db:ede4:dcff:2524:7fdf:fc79": 7,
         "2409:40d6:db:ede4:e4f4:6d0e:635f:a5a3": 14,
+        "2409:40d6:e5:563f:2c2e:e528:64c7:54b2": 3,
         "2409:40d6:e5:563f:ac4a:3ee3:e8cb:c673": 14,
         "2409:40d6:e5:563f:b04b:511e:3978:7890": 3,
         "2409:40d6:e5:563f:d487:9d46:2ac4:9e59": 1,
         "2409:40d6:e5:563f:eddf:572a:70a6:2e60": 9,
+        "2401:4900:1c88:7640:4fd:e250:c857:63e1": 3,
         "2401:4900:a050:c36c:6b0a:d42:ae56:2343": 3,
         "2401:4900:be9f:c53f:4b8f:557:c356:9e80": 17,
         "2409:40d0:12d5:aedf:9d85:a244:8136:814": 3,
@@ -267,6 +293,7 @@
         "2401:4900:83a4:e7e9:6463:98ff:fe59:8cb9": 4,
         "2401:4900:83ad:48db:1c48:efff:fe75:2c0e": 53,
         "2401:4900:83ad:48db:8098:cfff:fe24:14e8": 4,
+        "2401:4900:87fe:1f18:2219:729b:3a86:cd5b": 6,
         "2401:4900:8f60:6ef6:89c1:7c3a:f6ba:b0d8": 3,
         "2401:4900:8f63:2fa7:ad35:f960:1caa:d2de": 3,
         "2401:4900:a072:8298:1930:7be7:f59e:4704": 3,
@@ -277,6 +304,7 @@
         "2409:4090:9044:f223:e5eb:200d:48ce:e813": 30,
         "2409:40d0:1009:65dc:bc19:5eff:feb9:d60a": 116,
         "2409:40d0:1018:a8e2:841a:9cff:fec6:a824": 10,
+        "2409:40d0:101d:af67:dc33:bfff:feed:5aa5": 5,
         "2409:40d0:1034:f2ca:ecfe:2fff:fee8:9d7b": 5,
         "2409:40d0:103b:c88d:2c2a:adff:fef2:104f": 34,
         "2409:40d0:11f4:2fde:286a:d9ff:fe03:cc2f": 14,
@@ -293,73 +321,132 @@
         "2409:40d6:1188:e150:b0d3:1eff:fee3:2434": 10,
         "2409:40d6:1189:ba05:7c90:ddff:fe3c:af6f": 23,
         "2409:40d6:119f:b255:d044:3dff:fefc:93c0": 283,
-        "161.118.211.239": 3,
-        "202.54.205.150": 38,
-        "185.220.100.241": 3,
-        "43.173.173.110": 1,
-        "43.173.177.192": 1,
-        "43.173.179.243": 1,
-        "43.173.173.82": 1,
-        "43.173.177.126": 1,
-        "43.173.169.186": 1,
-        "149.57.191.205": 1,
-        "149.57.176.254": 1,
-        "139.180.5.82": 1,
-        "154.29.239.212": 3,
-        "40.77.167.75": 1,
-        "2409:40d6:e5:563f:2c2e:e528:64c7:54b2": 3,
-        "40.77.167.37": 1,
-        "51.89.129.59": 1,
-        "198.244.183.58": 1,
-        "52.167.144.169": 1,
-        "2409:40d0:101d:af67:dc33:bfff:feed:5aa5": 5,
-        "2401:4900:1c88:7640:4fd:e250:c857:63e1": 3,
-        "52.167.144.233": 1,
-        "43.173.180.152": 1,
-        "43.173.181.244": 1,
-        "43.173.172.134": 1,
-        "2401:4900:87fe:1f18:2219:729b:3a86:cd5b": 6,
-        "51.140.49.232": 3,
-        "34.66.6.238": 3
+        "34.84.123.12": 3,
+        "40.77.167.159": 1,
+        "43.173.176.250": 1,
+        "43.173.174.174": 1,
+        "43.173.182.93": 1,
+        "2409:4090:9027:9e02:e161:2794:9fbf:851d": 3,
+        "2409:40d6:1143:ebb7:e130:3951:d092:78ee": 3,
+        "2409:40d6:1143:ebb7:343e:46ea:1556:971": 3,
+        "52.167.144.220": 1,
+        "2409:40d6:1b:34e9:8463:1cff:fe2e:d078": 12,
+        "52.167.144.23": 1,
+        "43.173.178.129": 1,
+        "2409:4090:9027:9e02:3927:2cc3:1ba3:a7fa": 2,
+        "2405:201:4008:d87b:5499:1266:ca44:cb5a": 3,
+        "213.35.120.237": 3,
+        "43.173.180.14": 1,
+        "2409:40d6:db:ede4:6fb2:8004:55f9:c0f2": 5,
+        "2401:4900:be8e:b14b:c4a:7ff:fe98:6491": 8,
+        "2409:40d6:40b:72a3:4dce:21ca:a338:d860": 9,
+        "43.173.173.203": 1,
+        "207.46.13.87": 1,
+        "51.89.129.76": 1,
+        "192.42.116.183": 3,
+        "2409:4090:9027:9e02:b0a7:15db:f21e:5e96": 3,
+        "213.35.97.64": 2,
+        "2409:40d0:201a:9347:3437:4ff:fe73:b8f3": 8,
+        "103.124.172.32": 6,
+        "207.46.13.54": 1,
+        "207.154.212.47": 5,
+        "206.81.24.74": 5,
+        "195.178.110.132": 1,
+        "40.77.167.74": 1,
+        "198.244.242.198": 1,
+        "54.75.114.190": 6,
+        "2409:40d0:2:11c6:1cca:e8ff:fec6:50c1": 2,
+        "207.46.13.168": 1,
+        "103.211.55.62": 3,
+        "207.46.13.127": 1,
+        "2401:4900:a01f:53a2:7588:e47d:8eb6:b055": 3,
+        "2409:40d6:118f:cffb:f883:1aff:fe38:f8e3": 3,
+        "2409:40d6:11b:f211:694d:7d2c:2956:244": 11,
+        "52.167.144.229": 1,
+        "49.36.182.92": 3,
+        "2405:201:4008:d203:752f:77c2:260:1ef5": 124,
+        "2409:40d6:118c:99d7:4c96:3ff:fe2e:1f37": 15,
+        "47.15.228.247": 175,
+        "2409:40d6:11b:f211:f3e3:d170:1c37:f5f": 1,
+        "2409:40d6:11b:f211:cd4f:6a2c:82cf:9a92": 11,
+        "45.84.107.222": 2,
+        "43.173.175.111": 1,
+        "43.173.181.166": 1,
+        "43.173.172.52": 1,
+        "43.173.178.131": 1,
+        "43.173.177.225": 1,
+        "43.173.172.112": 1,
+        "2409:4090:9027:9e02:89f2:9c4:f07e:5d9c": 6,
+        "2001:ee0:4f34:3258:753e:ca14:33fd:c6dc": 1,
+        "176.222.62.242": 1,
+        "196.188.126.11": 1,
+        "49.43.128.150": 3,
+        "2401:4900:1c75:9864:3c81:8b8d:8c2b:28ed": 6,
+        "152.44.107.80": 1,
+        "2409:40d0:b0:d57d:4079:85ff:fed1:1d3": 62,
+        "157.49.13.117": 20,
+        "2409:40d0:2428:8d81:c0f0:a6ff:fe96:62b": 6,
+        "2409:4090:9027:9e02:5d3c:cf5e:d884:fde4": 3,
+        "2409:4090:9027:9e02:a88b:459b:e88a:8b15": 3,
+        "157.55.39.204": 1,
+        "54.38.147.239": 1,
+        "34.122.147.229": 3,
+        "205.169.39.147": 3,
+        "34.123.170.104": 3,
+        "43.173.180.58": 1,
+        "43.173.181.184": 1,
+        "2409:40d6:11b:f211:49ac:15d5:bf06:de86": 9,
+        "205.169.39.37": 3,
+        "149.56.160.162": 1,
+        "34.173.241.117": 3,
+        "104.197.69.115": 3,
+        "205.169.39.186": 3,
+        "2409:40d6:11b:f211:1c84:2b7e:3f66:a031": 530,
+        "2409:40d6:2e:d3f6:3c45:8ff:fe80:955d": 152,
+        "43.173.177.2": 1,
+        "43.173.178.90": 1,
+        "43.173.176.216": 1,
+        "43.173.175.209": 1,
+        "43.173.180.80": 1
     },
     "paths": {
         "/": 1,
-        "/api": 3,
-        "/api/": 2,
-        "/admin": 60,
+        "/api": 7,
+        "/api/": 3,
+        "/admin": 74,
         "//admin": 1,
-        "/api/gql": 2,
+        "/api/gql": 6,
         "/api/.env": 1,
         "/api/blogs/": 1,
         "/api/stats/": 1,
         "/robots.txt": 82,
-        "/api/graphql": 2,
+        "/api/graphql": 6,
         "/favicon.ico": 3,
-        "/sitemap.xml": 69,
+        "/sitemap.xml": 85,
         "/api/services/": 2,
-        "/administrator/": 9,
+        "/administrator/": 14,
         "/api/config.env": 1,
         "/api/auth/login/": 25,
         "/api/auth/token/": 1,
         "/api/blog/media/": 1,
-        "/api/blog/posts/": 1180,
+        "/api/blog/posts/": 1353,
         "/api/shared/.env": 1,
         "/api/blog/series/": 1,
-        "/api/swagger.json": 4,
+        "/api/swagger.json": 8,
         "/api/auth/profile/": 230,
         "/api/blog/posts/1/": 68,
-        "/api/blog/posts/2/": 13,
-        "/api/blog/posts/3/": 10,
-        "/api/blog/posts/4/": 8,
+        "/api/blog/posts/2/": 14,
+        "/api/blog/posts/3/": 11,
+        "/api/blog/posts/4/": 10,
         "/api/services/tts/": 45,
-        "/api/auth/register/": 11,
+        "/api/auth/register/": 13,
         "/api/blog/comments/": 6,
         "/api/notifications/": 1169,
         "/api/api/blog/posts/": 2,
-        "/api/services/tools/": 1841,
+        "/api/services/tools/": 2046,
         "/api/services/base64/": 17,
-        "/api/services/search/": 5,
-        "/api-docs/swagger.json": 4,
+        "/api/services/search/": 6,
+        "/api-docs/swagger.json": 8,
         "/api/shared/config.env": 1,
         "/api/blog/posts/1/like/": 1,
         "/api/blog/upload-image/": 4,
@@ -367,7 +454,7 @@
         "/api/ai-detector/health/": 1,
         "/api/api/services/tools/": 3,
         "/api/auth/token/refresh/": 53,
-        "/api/services/downloads/": 172,
+        "/api/services/downloads/": 179,
         "/api/services/pdf-merge/": 1,
         "/api/services/pdf-split/": 2,
         "/api/services/tls-check/": 3,
@@ -409,16 +496,16 @@
         "/api/services/log-analysis/": 1,
         "/api/audio-separator/process": 2,
         "/api/services/image-convert/": 3,
-        "/api/services/image-to-text/": 19,
+        "/api/services/image-to-text/": 20,
         "/api/services/image-upscale/": 5,
         "/api/services/server-health/": 3,
-        "/api/services/yt-downloader/": 78,
+        "/api/services/yt-downloader/": 87,
         "/api/api/ai-detector/analyze/": 2,
         "/api/services/compress-image/": 3,
         "/api/services/hash-generator/": 1,
         "/api/services/sitemap-robots/": 2,
         "/api/services/subdomain-enum/": 1,
-        "/api/services/url-downloader/": 23,
+        "/api/services/url-downloader/": 25,
         "/api/services/uuid-generator/": 3,
         "/api/services/webhook/create/": 2,
         "/api/shared/config/config.env": 1,
@@ -429,7 +516,7 @@
         "/api/videos/downloads/8/file/": 1,
         "/api/videos/downloads/9/file/": 1,
         "/api/services/color-converter/": 5,
-        "/api/services/downloads/stats/": 1873,
+        "/api/services/downloads/stats/": 2087,
         "/api/services/ping-traceroute/": 1,
         "/api/videos/downloads/10/file/": 2,
         "/api/videos/downloads/11/file/": 1,
@@ -446,7 +533,7 @@
         "/api/secret-sharer/create-file/": 4,
         "/api/services/header-hardening/": 4,
         "/api/services/markdown-preview/": 11,
-        "/api/services/background-remove/": 25,
+        "/api/services/background-remove/": 27,
         "/api/services/dashboard/activity/": 37,
         "/api/services/redirect-inspector/": 6,
         "/api/api/services/downloads/stats/": 3,
@@ -534,26 +621,200 @@
         "/api/secret-sharer/view/ac6b5432-2c0b-41ea-8a97-95decd041656/": 4,
         "/api/secret-sharer/view/d96be452-318e-4064-be7c-9e76ecea8c7c/": 6,
         "/api/secret-sharer/view-file/66d88b04-a42e-485f-8d41-46caa5f36847/": 1,
-        "/api/services/webhook/1afcc856-cd34-47ed-b4b5-db18d8b65029/requests/": 1
+        "/api/services/webhook/1afcc856-cd34-47ed-b4b5-db18d8b65029/requests/": 1,
+        "/api/debug": 1,
+        "/api/stripe.js": 1,
+        "/api/stripe.ts": 1,
+        "/api/webhook.js": 1,
+        "/api/v1/stripe/config.js": 1,
+        "/api/v2/payment/keys.js": 1,
+        "/api_keys.txt": 1,
+        "/adminarea/": 1,
+        "/adminLogin/": 1,
+        "/admin_area/": 1,
+        "/administratorlogin/": 1,
+        "/admin_area/login.html": 1,
+        "/admin_area/index.html": 1,
+        "/admincp/": 1,
+        "/admincp/index.asp": 1,
+        "/admincp/index.html": 1,
+        "/adminpanel.html": 1,
+        "/admin_login.html": 1,
+        "/admin_area/admin.html": 1,
+        "/admin-login.html": 1,
+        "/adminLogin.html": 1,
+        "/adminarea/index.html": 1,
+        "/adminarea/admin.html": 1,
+        "/admin.html": 1,
+        "/administrator/index.html": 1,
+        "/administrator/login.html": 1,
+        "/administrator/account.html": 1,
+        "/administrator.html": 1,
+        "/adminarea/login.html": 1,
+        "/admincontrol/login.html": 1,
+        "/admincontrol.html": 1,
+        "/admin.cfm": 1,
+        "/admin_login.cfm": 1,
+        "/adminpanel.cfm": 1,
+        "/admincontrol.cfm": 1,
+        "/admincp/index.cfm": 1,
+        "/admincp/login.cfm": 1,
+        "/admin_area/admin.cfm": 1,
+        "/admin_area/login.cfm": 1,
+        "/administrator/login.cfm": 1,
+        "/administratorlogin.cfm": 1,
+        "/administrator.cfm": 1,
+        "/administrator/account.cfm": 1,
+        "/adminLogin.cfm": 1,
+        "/admin2/index.cfm": 1,
+        "/admin_area/index.cfm": 1,
+        "/admin2/login.cfm": 1,
+        "/admincontrol/login.cfm": 1,
+        "/administrator/index.cfm": 1,
+        "/adminarea/login.cfm": 1,
+        "/adminarea/admin.cfm": 1,
+        "/adminarea/index.cfm": 1,
+        "/admin-login.cfm": 1,
+        "/admin_area/admin.asp": 1,
+        "/admin_area/login.asp": 1,
+        "/admin_area/index.asp": 1,
+        "/admin.asp": 1,
+        "/admin-login.asp": 1,
+        "/administrator/account.asp": 1,
+        "/administrator.asp": 1,
+        "/administrator/login.asp": 1,
+        "/admincp/login.asp": 1,
+        "/admincontrol.asp": 1,
+        "/adminpanel.asp": 1,
+        "/admin_login.asp": 1,
+        "/adminLogin.asp": 1,
+        "/adminarea/index.asp": 1,
+        "/adminarea/admin.asp": 1,
+        "/adminarea/login.asp": 1,
+        "/administrator/index.asp": 1,
+        "/admincontrol/login.asp": 1,
+        "/admin2.asp": 1,
+        "/admin2/login.asp": 1,
+        "/admin2/index.asp": 1,
+        "/administratorlogin.asp": 1,
+        "/admin_area/admin.aspx": 1,
+        "/admin_area/login.aspx": 1,
+        "/admin_area/index.aspx": 1,
+        "/admin.aspx": 1,
+        "/admin-login.aspx": 1,
+        "/administrator/account.aspx": 1,
+        "/administrator.aspx": 1,
+        "/administrator/login.aspx": 1,
+        "/admincp/index.aspx": 1,
+        "/admincp/login.aspx": 1,
+        "/admincontrol.aspx": 1,
+        "/adminpanel.aspx": 1,
+        "/admin_login.aspx": 1,
+        "/adminLogin.aspx": 1,
+        "/adminarea/index.aspx": 1,
+        "/adminarea/admin.aspx": 1,
+        "/adminarea/login.aspx": 1,
+        "/administrator/index.aspx": 1,
+        "/admincontrol/login.aspx": 1,
+        "/admin2.aspx": 1,
+        "/admin2/login.aspx": 1,
+        "/admin2/index.aspx": 1,
+        "/administratorlogin.aspx": 1,
+        "/admin_area/admin.jsp": 1,
+        "/admin_area/login.jsp": 1,
+        "/admin_area/index.jsp": 1,
+        "/admin.jsp": 1,
+        "/admin-login.jsp": 1,
+        "/administrator/account.jsp": 1,
+        "/administrator.jsp": 1,
+        "/administrator/login.jsp": 1,
+        "/admincp/index.jsp": 1,
+        "/admincp/login.jsp": 1,
+        "/admincontrol.jsp": 1,
+        "/adminpanel.jsp": 1,
+        "/admin_login.jsp": 1,
+        "/adminLogin.jsp": 1,
+        "/adminarea/index.jsp": 1,
+        "/adminarea/admin.jsp": 1,
+        "/adminarea/login.jsp": 1,
+        "/administrator/index.jsp": 1,
+        "/admincontrol/login.jsp": 1,
+        "/admin2.jsp": 1,
+        "/admin2/login.jsp": 1,
+        "/admin2/index.jsp": 1,
+        "/administratorlogin.jsp": 1,
+        "/administr8.asp": 1,
+        "/administr8.jsp": 1,
+        "/administr8.aspx": 1,
+        "/administr8.cfm": 1,
+        "/administr8/": 1,
+        "/administer/": 1,
+        "/administracao.asp": 1,
+        "/administracao.aspx": 1,
+        "/administracao.cfm": 1,
+        "/administracao.jsp": 1,
+        "/administracion.asp": 1,
+        "/administracion.aspx": 1,
+        "/administracion.jsp": 1,
+        "/administracion.cfm": 1,
+        "/administrators/": 1,
+        "/adminpro/": 1,
+        "/admins/": 1,
+        "/admins.cfm": 1,
+        "/admins.jsp": 1,
+        "/admins.asp": 1,
+        "/admins.aspx": 1,
+        "/administracion-sistema/": 1,
+        "/admin108/": 1,
+        "/admin_cp.asp": 1,
+        "/admin-console/": 1,
+        "/admin4.nsf": 1,
+        "/admin5.nsf": 1,
+        "/admin.nsf": 1,
+        "/administrator/manifests/files/joomla.xml": 1,
+        "/api-docs/": 1,
+        "/api/videos/downloads/24/": 6,
+        "/api/videos/downloads/24/file/": 1,
+        "/api/videos/downloads/25/": 62,
+        "/api/videos/downloads/26/": 1,
+        "/api/videos/downloads/27/": 4,
+        "/api/contact/hire/": 1,
+        "/api/chatbot/conversations/": 80,
+        "/api/chatbot/status/": 460,
+        "/api/chatbot/chat/": 56,
+        "/api/chatbot/chat/sync/": 3,
+        "/api/chatbot/conversations/4/": 1,
+        "/api/chatbot/conversations/3/": 1,
+        "/api/chatbot/conversations/5/": 1,
+        "/api/chatbot/conversations/7/": 1,
+        "/api/chatbot/conversations/8/": 1,
+        "/api/chatbot/conversations/9/": 1,
+        "/api/chatbot/conversations/11/": 1,
+        "/api/chatbot/conversations/10/": 1,
+        "/api/chatbot/conversations/13/": 1,
+        "/api/chatbot/conversations/15/": 3,
+        "/api/chatbot/conversations/14/": 1,
+        "/api/chatbot/conversations/12/": 1,
+        "/api/chatbot/conversations/16/": 1
     },
     "status_codes": {
-        "200": 10130,
-        "201": 35,
+        "200": 11442,
+        "201": 36,
         "202": 65,
-        "400": 28,
+        "400": 29,
         "401": 89,
         "403": 2,
-        "404": 978,
+        "404": 1180,
         "410": 1,
         "415": 8,
         "500": 83,
         "503": 10
     },
     "users": {
-        "Anonymous": 8670,
+        "Anonymous": 10174,
         "rajat1@gmail.com": 49,
         "Rajatrathee@gmail.com": 960,
-        "admin@expectexception.com": 1750
+        "admin@expectexception.com": 1762
     },
     "durations_agg": {
         "/": {
@@ -561,24 +822,24 @@
             "count": 1
         },
         "/api": {
-            "sum": 0.015000000000000001,
-            "count": 3
+            "sum": 0.793,
+            "count": 7
         },
         "/api/": {
-            "sum": 0.012,
-            "count": 2
+            "sum": 0.013000000000000001,
+            "count": 3
         },
         "/admin": {
-            "sum": 82.85100000000013,
-            "count": 60
+            "sum": 87.30900000000015,
+            "count": 74
         },
         "//admin": {
             "sum": 0.018,
             "count": 1
         },
         "/api/gql": {
-            "sum": 0.015,
-            "count": 2
+            "sum": 0.019000000000000003,
+            "count": 6
         },
         "/api/.env": {
             "sum": 0.009,
@@ -597,24 +858,24 @@
             "count": 82
         },
         "/api/graphql": {
-            "sum": 0.022,
-            "count": 2
+            "sum": 0.027000000000000003,
+            "count": 6
         },
         "/favicon.ico": {
             "sum": 0.023,
             "count": 3
         },
         "/sitemap.xml": {
-            "sum": 30.363999999999997,
-            "count": 69
+            "sum": 33.02799999999999,
+            "count": 85
         },
         "/api/services/": {
             "sum": 4.642,
             "count": 2
         },
         "/administrator/": {
-            "sum": 5.0169999999999995,
-            "count": 9
+            "sum": 5.723000000000001,
+            "count": 14
         },
         "/api/config.env": {
             "sum": 0.006,
@@ -633,8 +894,8 @@
             "count": 1
         },
         "/api/blog/posts/": {
-            "sum": 435.01299999999924,
-            "count": 1180
+            "sum": 583.8839999999994,
+            "count": 1353
         },
         "/api/shared/.env": {
             "sum": 0.006,
@@ -645,8 +906,8 @@
             "count": 1
         },
         "/api/swagger.json": {
-            "sum": 0.024000000000000004,
-            "count": 4
+            "sum": 0.027000000000000007,
+            "count": 8
         },
         "/api/auth/profile/": {
             "sum": 48.60200000000002,
@@ -657,24 +918,24 @@
             "count": 68
         },
         "/api/blog/posts/2/": {
-            "sum": 0.457,
-            "count": 13
+            "sum": 0.49,
+            "count": 14
         },
         "/api/blog/posts/3/": {
-            "sum": 0.3570000000000001,
-            "count": 10
+            "sum": 0.3840000000000001,
+            "count": 11
         },
         "/api/blog/posts/4/": {
-            "sum": 0.272,
-            "count": 8
+            "sum": 1.5350000000000001,
+            "count": 10
         },
         "/api/services/tts/": {
             "sum": 431.0620000000001,
             "count": 45
         },
         "/api/auth/register/": {
-            "sum": 4.237,
-            "count": 11
+            "sum": 5.8870000000000005,
+            "count": 13
         },
         "/api/blog/comments/": {
             "sum": 0.20400000000000001,
@@ -689,20 +950,20 @@
             "count": 2
         },
         "/api/services/tools/": {
-            "sum": 601.3949999999995,
-            "count": 1841
+            "sum": 686.4729999999995,
+            "count": 2046
         },
         "/api/services/base64/": {
             "sum": 0.06000000000000001,
             "count": 17
         },
         "/api/services/search/": {
-            "sum": 0.388,
-            "count": 5
+            "sum": 0.479,
+            "count": 6
         },
         "/api-docs/swagger.json": {
-            "sum": 0.034,
-            "count": 4
+            "sum": 0.803,
+            "count": 8
         },
         "/api/shared/config.env": {
             "sum": 0.006,
@@ -733,8 +994,8 @@
             "count": 53
         },
         "/api/services/downloads/": {
-            "sum": 19.267999999999994,
-            "count": 172
+            "sum": 23.076999999999995,
+            "count": 179
         },
         "/api/services/pdf-merge/": {
             "sum": 0.234,
@@ -901,8 +1162,8 @@
             "count": 3
         },
         "/api/services/image-to-text/": {
-            "sum": 11.527000000000001,
-            "count": 19
+            "sum": 13.096,
+            "count": 20
         },
         "/api/services/image-upscale/": {
             "sum": 65.557,
@@ -913,8 +1174,8 @@
             "count": 3
         },
         "/api/services/yt-downloader/": {
-            "sum": 404.5069999999999,
-            "count": 78
+            "sum": 474.2819999999998,
+            "count": 87
         },
         "/api/api/ai-detector/analyze/": {
             "sum": 0.028,
@@ -937,8 +1198,8 @@
             "count": 1
         },
         "/api/services/url-downloader/": {
-            "sum": 71.386,
-            "count": 23
+            "sum": 82.879,
+            "count": 25
         },
         "/api/services/uuid-generator/": {
             "sum": 0.028,
@@ -981,8 +1242,8 @@
             "count": 5
         },
         "/api/services/downloads/stats/": {
-            "sum": 679.5929999999993,
-            "count": 1873
+            "sum": 784.9450000000002,
+            "count": 2087
         },
         "/api/services/ping-traceroute/": {
             "sum": 0.386,
@@ -1049,8 +1310,8 @@
             "count": 11
         },
         "/api/services/background-remove/": {
-            "sum": 207.51700000000002,
-            "count": 25
+            "sum": 233.40500000000003,
+            "count": 27
         },
         "/api/services/dashboard/activity/": {
             "sum": 0.797,
@@ -1403,74 +1664,763 @@
         "/api/services/webhook/1afcc856-cd34-47ed-b4b5-db18d8b65029/requests/": {
             "sum": 0.121,
             "count": 1
+        },
+        "/api/debug": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/api/stripe.js": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/api/stripe.ts": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/api/webhook.js": {
+            "sum": 0.697,
+            "count": 1
+        },
+        "/api/v1/stripe/config.js": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/api/v2/payment/keys.js": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/api_keys.txt": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminLogin/": {
+            "sum": 0.008,
+            "count": 1
+        },
+        "/admin_area/": {
+            "sum": 0.008,
+            "count": 1
+        },
+        "/administratorlogin/": {
+            "sum": 0.007,
+            "count": 1
+        },
+        "/admin_area/login.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/index.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincp/": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincp/index.asp": {
+            "sum": 0.009,
+            "count": 1
+        },
+        "/admincp/index.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminpanel.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_login.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/admin.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin-login.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminLogin.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/index.html": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/adminarea/admin.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/index.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/login.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/account.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/login.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincontrol/login.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincontrol.html": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_login.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminpanel.cfm": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/admincontrol.cfm": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/admincp/index.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincp/login.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/admin.cfm": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/admin_area/login.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/login.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administratorlogin.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/account.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminLogin.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin2/index.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/index.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin2/login.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincontrol/login.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/index.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/login.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/admin.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/index.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin-login.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/admin.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/login.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/index.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin-login.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/account.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/login.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincp/login.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincontrol.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminpanel.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_login.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminLogin.asp": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/adminarea/index.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/admin.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/login.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/index.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincontrol/login.asp": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/admin2.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin2/login.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin2/index.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administratorlogin.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/admin.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/login.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/index.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin-login.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/account.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator.aspx": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/administrator/login.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincp/index.aspx": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/admincp/login.aspx": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/admincontrol.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminpanel.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_login.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminLogin.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/index.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/admin.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/login.aspx": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/administrator/index.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincontrol/login.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin2.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin2/login.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin2/index.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administratorlogin.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/admin.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/login.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_area/index.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin.jsp": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/admin-login.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/account.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/login.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincp/index.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincp/login.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admincontrol.jsp": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/adminpanel.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin_login.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminLogin.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/index.jsp": {
+            "sum": 0.005,
+            "count": 1
+        },
+        "/adminarea/admin.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminarea/login.jsp": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/administrator/index.jsp": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/admincontrol/login.jsp": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/admin2.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin2/login.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin2/index.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administratorlogin.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administr8.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administr8.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administr8.aspx": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/administr8.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administr8/": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administer/": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administracao.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administracao.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administracao.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administracao.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administracion.asp": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/administracion.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administracion.jsp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administracion.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrators/": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/adminpro/": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admins/": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admins.cfm": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admins.jsp": {
+            "sum": 0.0,
+            "count": 1
+        },
+        "/admins.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admins.aspx": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administracion-sistema/": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin108/": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/admin_cp.asp": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin-console/": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin4.nsf": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/admin5.nsf": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/admin.nsf": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/administrator/manifests/files/joomla.xml": {
+            "sum": 0.001,
+            "count": 1
+        },
+        "/api-docs/": {
+            "sum": 0.002,
+            "count": 1
+        },
+        "/api/videos/downloads/24/": {
+            "sum": 0.21999999999999997,
+            "count": 6
+        },
+        "/api/videos/downloads/24/file/": {
+            "sum": 0.042,
+            "count": 1
+        },
+        "/api/videos/downloads/25/": {
+            "sum": 11.5,
+            "count": 62
+        },
+        "/api/videos/downloads/26/": {
+            "sum": 0.019,
+            "count": 1
+        },
+        "/api/videos/downloads/27/": {
+            "sum": 0.162,
+            "count": 4
+        },
+        "/api/contact/hire/": {
+            "sum": 0.008,
+            "count": 1
+        },
+        "/api/chatbot/conversations/": {
+            "sum": 65.18800000000003,
+            "count": 80
+        },
+        "/api/chatbot/status/": {
+            "sum": 228.59599999999986,
+            "count": 460
+        },
+        "/api/chatbot/chat/": {
+            "sum": 254.8950000000001,
+            "count": 56
+        },
+        "/api/chatbot/chat/sync/": {
+            "sum": 109.96600000000001,
+            "count": 3
+        },
+        "/api/chatbot/conversations/4/": {
+            "sum": 0.106,
+            "count": 1
+        },
+        "/api/chatbot/conversations/3/": {
+            "sum": 0.228,
+            "count": 1
+        },
+        "/api/chatbot/conversations/5/": {
+            "sum": 0.439,
+            "count": 1
+        },
+        "/api/chatbot/conversations/7/": {
+            "sum": 0.102,
+            "count": 1
+        },
+        "/api/chatbot/conversations/8/": {
+            "sum": 1.429,
+            "count": 1
+        },
+        "/api/chatbot/conversations/9/": {
+            "sum": 0.09,
+            "count": 1
+        },
+        "/api/chatbot/conversations/11/": {
+            "sum": 0.079,
+            "count": 1
+        },
+        "/api/chatbot/conversations/10/": {
+            "sum": 0.077,
+            "count": 1
+        },
+        "/api/chatbot/conversations/13/": {
+            "sum": 0.136,
+            "count": 1
+        },
+        "/api/chatbot/conversations/15/": {
+            "sum": 1.1520000000000001,
+            "count": 3
+        },
+        "/api/chatbot/conversations/14/": {
+            "sum": 0.081,
+            "count": 1
+        },
+        "/api/chatbot/conversations/12/": {
+            "sum": 0.101,
+            "count": 1
+        },
+        "/api/chatbot/conversations/16/": {
+            "sum": 0.123,
+            "count": 1
         }
     },
     "hourly_hits": {
-        "2026-01-09 00": 1,
-        "2026-01-09 05": 3,
-        "2026-01-09 06": 7,
-        "2026-01-09 07": 20,
-        "2026-01-09 09": 3,
-        "2026-01-09 10": 31,
-        "2026-01-09 11": 11,
-        "2026-01-09 13": 1,
-        "2026-01-09 14": 45,
-        "2026-01-09 15": 2,
-        "2026-01-10 01": 3,
-        "2026-01-10 02": 1,
-        "2026-01-10 09": 57,
-        "2026-01-10 10": 1,
-        "2026-01-10 11": 5,
-        "2026-01-10 15": 6,
-        "2026-01-10 18": 1,
-        "2026-01-11 04": 5,
-        "2026-01-11 08": 1,
-        "2026-01-11 13": 3,
-        "2026-01-11 19": 1,
-        "2026-01-12 05": 1,
-        "2026-01-12 06": 10,
-        "2026-01-12 07": 15,
-        "2026-01-12 08": 1,
-        "2026-01-12 10": 3,
-        "2026-01-12 16": 3,
-        "2026-01-12 22": 3,
-        "2026-01-12 23": 3,
-        "2026-01-13 01": 1,
-        "2026-01-13 05": 3,
-        "2026-01-13 06": 3,
-        "2026-01-13 15": 3,
-        "2026-01-13 19": 2,
-        "2026-01-14 01": 1,
-        "2026-01-14 05": 7,
-        "2026-01-14 11": 3,
-        "2026-01-14 12": 3,
-        "2026-01-14 15": 1,
-        "2026-01-15 04": 5,
-        "2026-01-15 09": 3,
-        "2026-01-15 12": 1,
-        "2026-01-15 17": 3,
-        "2026-01-15 19": 6,
-        "2026-01-16 05": 42,
-        "2026-01-16 06": 18
+        "2026-01-25 06": 5,
+        "2026-01-25 08": 3,
+        "2026-01-25 11": 3,
+        "2026-01-25 12": 10,
+        "2026-01-25 13": 148,
+        "2026-01-25 15": 13,
+        "2026-01-25 18": 3,
+        "2026-01-25 19": 6,
+        "2026-01-26 02": 3,
+        "2026-01-26 05": 5,
+        "2026-01-26 06": 3,
+        "2026-01-26 07": 3,
+        "2026-01-26 10": 6,
+        "2026-01-26 11": 6,
+        "2026-01-26 13": 6,
+        "2026-01-26 22": 1,
+        "2026-01-27 04": 14,
+        "2026-01-27 05": 74,
+        "2026-01-27 09": 3,
+        "2026-01-27 10": 15,
+        "2026-01-27 15": 3,
+        "2026-01-28 06": 2,
+        "2026-01-30 08": 15,
+        "2026-01-30 13": 1,
+        "2026-01-30 15": 3,
+        "2026-01-30 16": 1,
+        "2026-01-31 11": 9,
+        "2026-01-31 20": 11,
+        "2026-01-31 21": 3,
+        "2026-01-31 22": 1,
+        "2026-02-01 00": 10,
+        "2026-02-01 09": 3,
+        "2026-02-01 11": 6,
+        "2026-02-01 12": 15,
+        "2026-02-01 13": 114,
+        "2026-02-01 15": 33,
+        "2026-02-01 16": 202,
+        "2026-02-01 17": 403,
+        "2026-02-01 18": 71
     },
     "path_errors": {
         "/": {
             "404": 1
         },
         "/api": {
-            "404": 3
+            "404": 7
         },
         "/api/": {
-            "404": 2
+            "404": 3
         },
         "/admin": {
-            "404": 60
+            "404": 74
         },
         "//admin": {
             "404": 1
         },
         "/api/gql": {
-            "404": 2
+            "404": 6
         },
         "/api/.env": {
             "404": 1
@@ -1482,7 +2432,7 @@
             "404": 1
         },
         "/api/graphql": {
-            "404": 2
+            "404": 6
         },
         "/favicon.ico": {
             "404": 3
@@ -1492,7 +2442,7 @@
             "500": 1
         },
         "/administrator/": {
-            "404": 9
+            "404": 14
         },
         "/api/config.env": {
             "404": 1
@@ -1516,14 +2466,14 @@
             "404": 1
         },
         "/api/swagger.json": {
-            "404": 4
+            "404": 8
         },
         "/api/auth/profile/": {
             "401": 17,
             "500": 4
         },
         "/api/auth/register/": {
-            "400": 6
+            "400": 7
         },
         "/api/blog/comments/": {
             "401": 1
@@ -1544,7 +2494,7 @@
             "400": 3
         },
         "/api-docs/swagger.json": {
-            "404": 4
+            "404": 8
         },
         "/api/shared/config.env": {
             "404": 1
@@ -1680,6 +2630,474 @@
         },
         "/api/secret-sharer/view/d96be452-318e-4064-be7c-9e76ecea8c7c/": {
             "404": 4
+        },
+        "/api/debug": {
+            "404": 1
+        },
+        "/api/stripe.js": {
+            "404": 1
+        },
+        "/api/stripe.ts": {
+            "404": 1
+        },
+        "/api/webhook.js": {
+            "404": 1
+        },
+        "/api/v1/stripe/config.js": {
+            "404": 1
+        },
+        "/api/v2/payment/keys.js": {
+            "404": 1
+        },
+        "/api_keys.txt": {
+            "404": 1
+        },
+        "/adminarea/": {
+            "404": 1
+        },
+        "/adminLogin/": {
+            "404": 1
+        },
+        "/admin_area/": {
+            "404": 1
+        },
+        "/administratorlogin/": {
+            "404": 1
+        },
+        "/admin_area/login.html": {
+            "404": 1
+        },
+        "/admin_area/index.html": {
+            "404": 1
+        },
+        "/admincp/": {
+            "404": 1
+        },
+        "/admincp/index.asp": {
+            "404": 1
+        },
+        "/admincp/index.html": {
+            "404": 1
+        },
+        "/adminpanel.html": {
+            "404": 1
+        },
+        "/admin_login.html": {
+            "404": 1
+        },
+        "/admin_area/admin.html": {
+            "404": 1
+        },
+        "/admin-login.html": {
+            "404": 1
+        },
+        "/adminLogin.html": {
+            "404": 1
+        },
+        "/adminarea/index.html": {
+            "404": 1
+        },
+        "/adminarea/admin.html": {
+            "404": 1
+        },
+        "/admin.html": {
+            "404": 1
+        },
+        "/administrator/index.html": {
+            "404": 1
+        },
+        "/administrator/login.html": {
+            "404": 1
+        },
+        "/administrator/account.html": {
+            "404": 1
+        },
+        "/administrator.html": {
+            "404": 1
+        },
+        "/adminarea/login.html": {
+            "404": 1
+        },
+        "/admincontrol/login.html": {
+            "404": 1
+        },
+        "/admincontrol.html": {
+            "404": 1
+        },
+        "/admin.cfm": {
+            "404": 1
+        },
+        "/admin_login.cfm": {
+            "404": 1
+        },
+        "/adminpanel.cfm": {
+            "404": 1
+        },
+        "/admincontrol.cfm": {
+            "404": 1
+        },
+        "/admincp/index.cfm": {
+            "404": 1
+        },
+        "/admincp/login.cfm": {
+            "404": 1
+        },
+        "/admin_area/admin.cfm": {
+            "404": 1
+        },
+        "/admin_area/login.cfm": {
+            "404": 1
+        },
+        "/administrator/login.cfm": {
+            "404": 1
+        },
+        "/administratorlogin.cfm": {
+            "404": 1
+        },
+        "/administrator.cfm": {
+            "404": 1
+        },
+        "/administrator/account.cfm": {
+            "404": 1
+        },
+        "/adminLogin.cfm": {
+            "404": 1
+        },
+        "/admin2/index.cfm": {
+            "404": 1
+        },
+        "/admin_area/index.cfm": {
+            "404": 1
+        },
+        "/admin2/login.cfm": {
+            "404": 1
+        },
+        "/admincontrol/login.cfm": {
+            "404": 1
+        },
+        "/administrator/index.cfm": {
+            "404": 1
+        },
+        "/adminarea/login.cfm": {
+            "404": 1
+        },
+        "/adminarea/admin.cfm": {
+            "404": 1
+        },
+        "/adminarea/index.cfm": {
+            "404": 1
+        },
+        "/admin-login.cfm": {
+            "404": 1
+        },
+        "/admin_area/admin.asp": {
+            "404": 1
+        },
+        "/admin_area/login.asp": {
+            "404": 1
+        },
+        "/admin_area/index.asp": {
+            "404": 1
+        },
+        "/admin.asp": {
+            "404": 1
+        },
+        "/admin-login.asp": {
+            "404": 1
+        },
+        "/administrator/account.asp": {
+            "404": 1
+        },
+        "/administrator.asp": {
+            "404": 1
+        },
+        "/administrator/login.asp": {
+            "404": 1
+        },
+        "/admincp/login.asp": {
+            "404": 1
+        },
+        "/admincontrol.asp": {
+            "404": 1
+        },
+        "/adminpanel.asp": {
+            "404": 1
+        },
+        "/admin_login.asp": {
+            "404": 1
+        },
+        "/adminLogin.asp": {
+            "404": 1
+        },
+        "/adminarea/index.asp": {
+            "404": 1
+        },
+        "/adminarea/admin.asp": {
+            "404": 1
+        },
+        "/adminarea/login.asp": {
+            "404": 1
+        },
+        "/administrator/index.asp": {
+            "404": 1
+        },
+        "/admincontrol/login.asp": {
+            "404": 1
+        },
+        "/admin2.asp": {
+            "404": 1
+        },
+        "/admin2/login.asp": {
+            "404": 1
+        },
+        "/admin2/index.asp": {
+            "404": 1
+        },
+        "/administratorlogin.asp": {
+            "404": 1
+        },
+        "/admin_area/admin.aspx": {
+            "404": 1
+        },
+        "/admin_area/login.aspx": {
+            "404": 1
+        },
+        "/admin_area/index.aspx": {
+            "404": 1
+        },
+        "/admin.aspx": {
+            "404": 1
+        },
+        "/admin-login.aspx": {
+            "404": 1
+        },
+        "/administrator/account.aspx": {
+            "404": 1
+        },
+        "/administrator.aspx": {
+            "404": 1
+        },
+        "/administrator/login.aspx": {
+            "404": 1
+        },
+        "/admincp/index.aspx": {
+            "404": 1
+        },
+        "/admincp/login.aspx": {
+            "404": 1
+        },
+        "/admincontrol.aspx": {
+            "404": 1
+        },
+        "/adminpanel.aspx": {
+            "404": 1
+        },
+        "/admin_login.aspx": {
+            "404": 1
+        },
+        "/adminLogin.aspx": {
+            "404": 1
+        },
+        "/adminarea/index.aspx": {
+            "404": 1
+        },
+        "/adminarea/admin.aspx": {
+            "404": 1
+        },
+        "/adminarea/login.aspx": {
+            "404": 1
+        },
+        "/administrator/index.aspx": {
+            "404": 1
+        },
+        "/admincontrol/login.aspx": {
+            "404": 1
+        },
+        "/admin2.aspx": {
+            "404": 1
+        },
+        "/admin2/login.aspx": {
+            "404": 1
+        },
+        "/admin2/index.aspx": {
+            "404": 1
+        },
+        "/administratorlogin.aspx": {
+            "404": 1
+        },
+        "/admin_area/admin.jsp": {
+            "404": 1
+        },
+        "/admin_area/login.jsp": {
+            "404": 1
+        },
+        "/admin_area/index.jsp": {
+            "404": 1
+        },
+        "/admin.jsp": {
+            "404": 1
+        },
+        "/admin-login.jsp": {
+            "404": 1
+        },
+        "/administrator/account.jsp": {
+            "404": 1
+        },
+        "/administrator.jsp": {
+            "404": 1
+        },
+        "/administrator/login.jsp": {
+            "404": 1
+        },
+        "/admincp/index.jsp": {
+            "404": 1
+        },
+        "/admincp/login.jsp": {
+            "404": 1
+        },
+        "/admincontrol.jsp": {
+            "404": 1
+        },
+        "/adminpanel.jsp": {
+            "404": 1
+        },
+        "/admin_login.jsp": {
+            "404": 1
+        },
+        "/adminLogin.jsp": {
+            "404": 1
+        },
+        "/adminarea/index.jsp": {
+            "404": 1
+        },
+        "/adminarea/admin.jsp": {
+            "404": 1
+        },
+        "/adminarea/login.jsp": {
+            "404": 1
+        },
+        "/administrator/index.jsp": {
+            "404": 1
+        },
+        "/admincontrol/login.jsp": {
+            "404": 1
+        },
+        "/admin2.jsp": {
+            "404": 1
+        },
+        "/admin2/login.jsp": {
+            "404": 1
+        },
+        "/admin2/index.jsp": {
+            "404": 1
+        },
+        "/administratorlogin.jsp": {
+            "404": 1
+        },
+        "/administr8.asp": {
+            "404": 1
+        },
+        "/administr8.jsp": {
+            "404": 1
+        },
+        "/administr8.aspx": {
+            "404": 1
+        },
+        "/administr8.cfm": {
+            "404": 1
+        },
+        "/administr8/": {
+            "404": 1
+        },
+        "/administer/": {
+            "404": 1
+        },
+        "/administracao.asp": {
+            "404": 1
+        },
+        "/administracao.aspx": {
+            "404": 1
+        },
+        "/administracao.cfm": {
+            "404": 1
+        },
+        "/administracao.jsp": {
+            "404": 1
+        },
+        "/administracion.asp": {
+            "404": 1
+        },
+        "/administracion.aspx": {
+            "404": 1
+        },
+        "/administracion.jsp": {
+            "404": 1
+        },
+        "/administracion.cfm": {
+            "404": 1
+        },
+        "/administrators/": {
+            "404": 1
+        },
+        "/adminpro/": {
+            "404": 1
+        },
+        "/admins/": {
+            "404": 1
+        },
+        "/admins.cfm": {
+            "404": 1
+        },
+        "/admins.jsp": {
+            "404": 1
+        },
+        "/admins.asp": {
+            "404": 1
+        },
+        "/admins.aspx": {
+            "404": 1
+        },
+        "/administracion-sistema/": {
+            "404": 1
+        },
+        "/admin108/": {
+            "404": 1
+        },
+        "/admin_cp.asp": {
+            "404": 1
+        },
+        "/admin-console/": {
+            "404": 1
+        },
+        "/admin4.nsf": {
+            "404": 1
+        },
+        "/admin5.nsf": {
+            "404": 1
+        },
+        "/admin.nsf": {
+            "404": 1
+        },
+        "/administrator/manifests/files/joomla.xml": {
+            "404": 1
+        },
+        "/api-docs/": {
+            "404": 1
+        },
+        "/api/contact/hire/": {
+            "404": 1
+        },
+        "/api/chatbot/conversations/": {
+            "404": 4
+        },
+        "/api/chatbot/status/": {
+            "404": 4
+        },
+        "/api/chatbot/chat/": {
+            "404": 1
+        },
+        "/api/chatbot/conversations/15/": {
+            "404": 1
         }
     },
     "geo_cache": {
@@ -1700,6 +3118,12 @@
             "city": "Surat",
             "country": "India",
             "countryCode": "IN"
+        },
+        "34.66.6.238": {
+            "isp": "Google LLC",
+            "city": "Council Bluffs",
+            "country": "United States",
+            "countryCode": "US"
         },
         "35.94.85.75": {
             "isp": "Amazon.com, Inc.",
@@ -1752,6 +3176,12 @@
         "13.52.79.116": {
             "isp": "Amazon.com, Inc.",
             "city": "San Jose",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "139.180.5.82": {
+            "isp": "Sprious LLC",
+            "city": "Secaucus",
             "country": "United States",
             "countryCode": "US"
         },
@@ -1815,7 +3245,19 @@
             "country": "United States",
             "countryCode": "US"
         },
+        "40.77.167.37": {
+            "isp": "Microsoft Corporation",
+            "city": "Boydton",
+            "country": "United States",
+            "countryCode": "US"
+        },
         "40.77.167.48": {
+            "isp": "Microsoft Corporation",
+            "city": "Boydton",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "40.77.167.75": {
             "isp": "Microsoft Corporation",
             "city": "Boydton",
             "country": "United States",
@@ -1850,6 +3292,12 @@
             "city": "Beauharnois",
             "country": "Canada",
             "countryCode": "CA"
+        },
+        "51.89.129.59": {
+            "isp": "OVH SAS",
+            "city": "London",
+            "country": "United Kingdom",
+            "countryCode": "GB"
         },
         "54.176.1.222": {
             "isp": "Amazon.com, Inc.",
@@ -2061,6 +3509,12 @@
             "country": "Singapore",
             "countryCode": "SG"
         },
+        "43.173.173.82": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
         "43.173.173.93": {
             "isp": "Shenzhen Tencent Computer Systems Company Limited",
             "city": "Singapore",
@@ -2150,6 +3604,12 @@
             "city": "Gurugram",
             "country": "India",
             "countryCode": "IN"
+        },
+        "51.140.49.232": {
+            "isp": "Microsoft Corporation",
+            "city": "City of London",
+            "country": "United Kingdom",
+            "countryCode": "GB"
         },
         "51.161.37.182": {
             "isp": "OVH Hosting",
@@ -2277,7 +3737,19 @@
             "country": "Canada",
             "countryCode": "CA"
         },
+        "149.57.176.254": {
+            "isp": "LogicWeb Inc",
+            "city": "New York",
+            "country": "United States",
+            "countryCode": "US"
+        },
         "149.57.191.193": {
+            "isp": "LogicWeb Inc",
+            "city": "New York",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "149.57.191.205": {
             "isp": "LogicWeb Inc",
             "city": "New York",
             "country": "United States",
@@ -2294,6 +3766,12 @@
             "city": "Safidon",
             "country": "India",
             "countryCode": "IN"
+        },
+        "154.29.239.212": {
+            "isp": "QuickPacket, LLC",
+            "city": "Charlotte",
+            "country": "United States",
+            "countryCode": "US"
         },
         "157.49.129.173": {
             "isp": "Reliance Jio Infocomm Limited",
@@ -2367,6 +3845,12 @@
             "country": "The Netherlands",
             "countryCode": "NL"
         },
+        "198.244.183.58": {
+            "isp": "OVH SAS",
+            "city": "London",
+            "country": "United Kingdom",
+            "countryCode": "GB"
+        },
         "198.244.226.53": {
             "isp": "OVH SAS",
             "city": "London",
@@ -2384,6 +3868,12 @@
             "city": "London",
             "country": "United Kingdom",
             "countryCode": "GB"
+        },
+        "202.54.205.150": {
+            "isp": "Tata Communications Limited",
+            "city": "New Delhi",
+            "country": "India",
+            "countryCode": "IN"
         },
         "213.55.198.253": {
             "isp": "Salt Mobile SA",
@@ -2403,7 +3893,25 @@
             "country": "Singapore",
             "countryCode": "SG"
         },
+        "43.173.169.186": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
         "43.173.169.232": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.172.134": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.173.110": {
             "isp": "Shenzhen Tencent Computer Systems Company Limited",
             "city": "Singapore",
             "country": "Singapore",
@@ -2505,7 +4013,19 @@
             "country": "Singapore",
             "countryCode": "SG"
         },
+        "43.173.177.126": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
         "43.173.177.136": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.177.192": {
             "isp": "Shenzhen Tencent Computer Systems Company Limited",
             "city": "Singapore",
             "country": "Singapore",
@@ -2541,6 +4061,18 @@
             "country": "Singapore",
             "countryCode": "SG"
         },
+        "43.173.179.243": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.180.152": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
         "43.173.180.182": {
             "isp": "Shenzhen Tencent Computer Systems Company Limited",
             "city": "Singapore",
@@ -2560,6 +4092,12 @@
             "countryCode": "SG"
         },
         "43.173.181.226": {
+            "isp": "Shenzhen Tencent Computer Systems Company Limited",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
+        "43.173.181.244": {
             "isp": "Shenzhen Tencent Computer Systems Company Limited",
             "city": "Singapore",
             "country": "Singapore",
@@ -2613,6 +4151,12 @@
             "country": "United States",
             "countryCode": "US"
         },
+        "52.167.144.169": {
+            "isp": "Microsoft Corporation",
+            "city": "Boydton",
+            "country": "United States",
+            "countryCode": "US"
+        },
         "52.167.144.201": {
             "isp": "Microsoft Corporation",
             "city": "Boydton",
@@ -2626,6 +4170,12 @@
             "countryCode": "US"
         },
         "52.167.144.215": {
+            "isp": "Microsoft Corporation",
+            "city": "Boydton",
+            "country": "United States",
+            "countryCode": "US"
+        },
+        "52.167.144.233": {
             "isp": "Microsoft Corporation",
             "city": "Boydton",
             "country": "United States",
@@ -2709,6 +4259,12 @@
             "country": "Singapore",
             "countryCode": "SG"
         },
+        "161.118.211.239": {
+            "isp": "Oracle Corporation",
+            "city": "Singapore",
+            "country": "Singapore",
+            "countryCode": "SG"
+        },
         "161.118.217.181": {
             "isp": "Oracle Corporation",
             "city": "Singapore",
@@ -2720,6 +4276,12 @@
             "city": "Singapore",
             "country": "Singapore",
             "countryCode": "SG"
+        },
+        "185.220.100.241": {
+            "isp": "F3 Netze e.V.",
+            "city": "Ha\u00dffurt",
+            "country": "Germany",
+            "countryCode": "DE"
         },
         "185.220.100.242": {
             "isp": "F3 Netze e.V.",
@@ -3117,6 +4679,12 @@
             "country": "India",
             "countryCode": "IN"
         },
+        "2409:40d6:e5:563f:2c2e:e528:64c7:54b2": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
         "2409:40d6:e5:563f:ac4a:3ee3:e8cb:c673": {
             "isp": "Reliance Jio Infocomm Limited",
             "city": "Karn\u0101l",
@@ -3138,6 +4706,12 @@
         "2409:40d6:e5:563f:eddf:572a:70a6:2e60": {
             "isp": "Reliance Jio Infocomm Limited",
             "city": "Karn\u0101l",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2401:4900:1c88:7640:4fd:e250:c857:63e1": {
+            "isp": "Bharti Airtel",
+            "city": "New Delhi",
             "country": "India",
             "countryCode": "IN"
         },
@@ -3261,6 +4835,12 @@
             "country": "India",
             "countryCode": "IN"
         },
+        "2401:4900:87fe:1f18:2219:729b:3a86:cd5b": {
+            "isp": "Bharti Airtel Limited",
+            "city": "Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
         "2401:4900:8f60:6ef6:89c1:7c3a:f6ba:b0d8": {
             "isp": "Bharti Airtel Limited",
             "city": "Gurugram",
@@ -3316,6 +4896,12 @@
             "countryCode": "IN"
         },
         "2409:40d0:1018:a8e2:841a:9cff:fec6:a824": {
+            "isp": "Reliance Jio Infocomm Limited",
+            "city": "Delhi",
+            "country": "India",
+            "countryCode": "IN"
+        },
+        "2409:40d0:101d:af67:dc33:bfff:feed:5aa5": {
             "isp": "Reliance Jio Infocomm Limited",
             "city": "Delhi",
             "country": "India",
@@ -3417,196 +5003,550 @@
             "country": "India",
             "countryCode": "IN"
         },
-        "43.173.179.243": {
-            "country": "Singapore",
-            "countryCode": "SG",
-            "city": "Singapore",
-            "isp": "Shenzhen Tencent Computer Systems Company Limited"
-        },
-        "2409:40d0:101d:af67:dc33:bfff:feed:5aa5": {
+        "2409:40d6:2e:d3f6:3c45:8ff:fe80:955d": {
             "country": "India",
             "countryCode": "IN",
             "city": "Delhi",
             "isp": "Reliance Jio Infocomm Limited"
         },
-        "52.167.144.233": {
-            "country": "United States",
-            "countryCode": "US",
-            "city": "Boydton",
-            "isp": "Microsoft Corporation"
-        },
-        "43.173.181.244": {
+        "43.173.181.184": {
             "country": "Singapore",
             "countryCode": "SG",
             "city": "Singapore",
             "isp": "Shenzhen Tencent Computer Systems Company Limited"
         },
-        "185.220.100.241": {
-            "country": "Germany",
-            "countryCode": "DE",
-            "city": "Ha\u00dffurt",
-            "isp": "F3 Netze e.V."
-        },
-        "2401:4900:87fe:1f18:2219:729b:3a86:cd5b": {
+        "2409:40d6:11b:f211:cd4f:6a2c:82cf:9a92": {
             "country": "India",
             "countryCode": "IN",
-            "city": "Delhi",
-            "isp": "Bharti Airtel Limited"
-        },
-        "202.54.205.150": {
-            "country": "India",
-            "countryCode": "IN",
-            "city": "New Delhi",
-            "isp": "Tata Communications Limited"
-        },
-        "52.167.144.169": {
-            "country": "United States",
-            "countryCode": "US",
-            "city": "Boydton",
-            "isp": "Microsoft Corporation"
-        },
-        "51.140.49.232": {
-            "country": "United Kingdom",
-            "countryCode": "GB",
-            "city": "City of London",
-            "isp": "Microsoft Corporation"
-        },
-        "43.173.173.82": {
-            "country": "Singapore",
-            "countryCode": "SG",
-            "city": "Singapore",
-            "isp": "Shenzhen Tencent Computer Systems Company Limited"
-        },
-        "43.173.173.110": {
-            "country": "Singapore",
-            "countryCode": "SG",
-            "city": "Singapore",
-            "isp": "Shenzhen Tencent Computer Systems Company Limited"
-        },
-        "40.77.167.75": {
-            "country": "United States",
-            "countryCode": "US",
-            "city": "Boydton",
-            "isp": "Microsoft Corporation"
-        },
-        "2401:4900:1c88:7640:4fd:e250:c857:63e1": {
-            "country": "India",
-            "countryCode": "IN",
-            "city": "New Delhi",
-            "isp": "Bharti Airtel"
-        },
-        "43.173.169.186": {
-            "country": "Singapore",
-            "countryCode": "SG",
-            "city": "Singapore",
-            "isp": "Shenzhen Tencent Computer Systems Company Limited"
-        },
-        "149.57.176.254": {
-            "country": "United States",
-            "countryCode": "US",
-            "city": "New York",
-            "isp": "LogicWeb Inc"
-        },
-        "43.173.177.192": {
-            "country": "Singapore",
-            "countryCode": "SG",
-            "city": "Singapore",
-            "isp": "Shenzhen Tencent Computer Systems Company Limited"
-        },
-        "161.118.211.239": {
-            "country": "Singapore",
-            "countryCode": "SG",
-            "city": "Singapore",
-            "isp": "Oracle Corporation"
-        },
-        "2409:40d6:e5:563f:2c2e:e528:64c7:54b2": {
-            "country": "India",
-            "countryCode": "IN",
-            "city": "Karn\u0101l",
+            "city": "Panipat",
             "isp": "Reliance Jio Infocomm Limited"
         },
-        "51.89.129.59": {
-            "country": "United Kingdom",
-            "countryCode": "GB",
-            "city": "London",
-            "isp": "OVH SAS"
+        "2409:4090:9027:9e02:89f2:9c4:f07e:5d9c": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Son\u012bpat",
+            "isp": "Reliance Jio Infocomm Limited"
         },
-        "40.77.167.37": {
-            "country": "United States",
-            "countryCode": "US",
-            "city": "Boydton",
-            "isp": "Microsoft Corporation"
-        },
-        "154.29.239.212": {
-            "country": "United States",
-            "countryCode": "US",
-            "city": "Charlotte",
-            "isp": "QuickPacket, LLC"
-        },
-        "43.173.177.126": {
-            "country": "Singapore",
-            "countryCode": "SG",
-            "city": "Singapore",
-            "isp": "Shenzhen Tencent Computer Systems Company Limited"
-        },
-        "34.66.6.238": {
+        "104.197.69.115": {
             "country": "United States",
             "countryCode": "US",
             "city": "Council Bluffs",
             "isp": "Google LLC"
         },
-        "149.57.191.205": {
+        "49.36.182.92": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "New Delhi",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "43.173.177.2": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "34.173.241.117": {
             "country": "United States",
             "countryCode": "US",
-            "city": "New York",
-            "isp": "LogicWeb Inc"
+            "city": "Council Bluffs",
+            "isp": "Google LLC"
         },
-        "198.244.183.58": {
+        "2405:201:4008:d87b:5499:1266:ca44:cb5a": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "New Delhi",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "43.173.177.225": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "43.173.180.14": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "43.173.180.80": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "207.46.13.168": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Quincy",
+            "isp": "Microsoft Corporation"
+        },
+        "43.173.182.93": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "196.188.126.11": {
+            "country": "Ethiopia",
+            "countryCode": "ET",
+            "city": "Addis Ababa",
+            "isp": "Ethiotelecom"
+        },
+        "2409:4090:9027:9e02:b0a7:15db:f21e:5e96": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Son\u012bpat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "43.173.180.58": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "34.84.123.12": {
+            "country": "Japan",
+            "countryCode": "JP",
+            "city": "Tokyo",
+            "isp": "Google LLC"
+        },
+        "2409:40d6:db:ede4:6fb2:8004:55f9:c0f2": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Karn\u0101l",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "2409:40d0:2:11c6:1cca:e8ff:fec6:50c1": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Delhi",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "52.167.144.220": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Boydton",
+            "isp": "Microsoft Corporation"
+        },
+        "43.173.178.131": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "205.169.39.186": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Santa Clara",
+            "isp": "CenturyLink Communications"
+        },
+        "2409:40d0:b0:d57d:4079:85ff:fed1:1d3": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "New Delhi",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "43.173.172.52": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "2001:ee0:4f34:3258:753e:ca14:33fd:c6dc": {
+            "country": "Vietnam",
+            "countryCode": "VN",
+            "city": "Ho Chi Minh City",
+            "isp": "VNPT"
+        },
+        "43.173.178.129": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "157.55.39.204": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Quincy",
+            "isp": "Microsoft Corporation"
+        },
+        "2409:40d0:2428:8d81:c0f0:a6ff:fe96:62b": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Delhi",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "43.173.181.166": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "43.173.178.90": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "34.123.170.104": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Council Bluffs",
+            "isp": "Google LLC"
+        },
+        "2409:40d6:118c:99d7:4c96:3ff:fe2e:1f37": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Panipat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "43.173.172.112": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "43.173.175.209": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "206.81.24.74": {
+            "country": "Germany",
+            "countryCode": "DE",
+            "city": "Frankfurt am Main",
+            "isp": "DigitalOcean, LLC"
+        },
+        "207.46.13.54": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Quincy",
+            "isp": "Microsoft Corporation"
+        },
+        "52.167.144.229": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Boydton",
+            "isp": "Microsoft Corporation"
+        },
+        "47.15.228.247": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Lucknow",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "2409:40d0:201a:9347:3437:4ff:fe73:b8f3": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Delhi",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "195.178.110.132": {
+            "country": "Andorra",
+            "countryCode": "AD",
+            "city": "Andorra la Vella",
+            "isp": "Techoff SRV Limited"
+        },
+        "2409:40d6:1b:34e9:8463:1cff:fe2e:d078": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Maham",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "213.35.97.64": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Oracle Corporation"
+        },
+        "2409:4090:9027:9e02:e161:2794:9fbf:851d": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Son\u012bpat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "2401:4900:a01f:53a2:7588:e47d:8eb6:b055": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "New Delhi",
+            "isp": "Bharti Airtel Limited"
+        },
+        "2409:40d6:11b:f211:f3e3:d170:1c37:f5f": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Panipat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "192.42.116.183": {
+            "country": "The Netherlands",
+            "countryCode": "NL",
+            "city": "Amsterdam",
+            "isp": "Church of Cyberology"
+        },
+        "205.169.39.37": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Santa Clara",
+            "isp": "CenturyLink Communications"
+        },
+        "2409:4090:9027:9e02:5d3c:cf5e:d884:fde4": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Son\u012bpat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "43.173.174.174": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "49.43.128.150": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Panipat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "2409:40d6:118f:cffb:f883:1aff:fe38:f8e3": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Panipat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "40.77.167.159": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Boydton",
+            "isp": "Microsoft Corporation"
+        },
+        "51.89.129.76": {
             "country": "United Kingdom",
             "countryCode": "GB",
             "city": "London",
             "isp": "OVH SAS"
         },
-        "139.180.5.82": {
+        "2409:40d6:11b:f211:694d:7d2c:2956:244": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Panipat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "198.244.242.198": {
+            "country": "United Kingdom",
+            "countryCode": "GB",
+            "city": "London",
+            "isp": "OVH SAS"
+        },
+        "54.38.147.239": {
+            "country": "United Kingdom",
+            "countryCode": "GB",
+            "city": "London",
+            "isp": "OVH SAS"
+        },
+        "2409:40d6:11b:f211:49ac:15d5:bf06:de86": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Panipat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "43.173.176.250": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "40.77.167.74": {
             "country": "United States",
             "countryCode": "US",
-            "city": "Secaucus",
+            "city": "Boydton",
+            "isp": "Microsoft Corporation"
+        },
+        "43.173.173.203": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "176.222.62.242": {
+            "country": "Iraq",
+            "countryCode": "IQ",
+            "city": "Sulaymaniyah",
+            "isp": "I.Q Online for Internet Services and Communications LLC"
+        },
+        "2409:40d6:40b:72a3:4dce:21ca:a338:d860": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Panipat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "34.122.147.229": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Council Bluffs",
+            "isp": "Google LLC"
+        },
+        "2405:201:4008:d203:752f:77c2:260:1ef5": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "New Delhi",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "103.211.55.62": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "New Delhi",
+            "isp": "Excitel Broadband Private Limited"
+        },
+        "207.46.13.87": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Quincy",
+            "isp": "Microsoft Corporation"
+        },
+        "2409:40d6:1143:ebb7:e130:3951:d092:78ee": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Panipat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "2409:4090:9027:9e02:a88b:459b:e88a:8b15": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Son\u012bpat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "149.56.160.162": {
+            "country": "Canada",
+            "countryCode": "CA",
+            "city": "Montreal",
+            "isp": "OVH SAS"
+        },
+        "43.173.176.216": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        },
+        "2401:4900:be8e:b14b:c4a:7ff:fe98:6491": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "New Delhi",
+            "isp": "Bharti Airtel Limited"
+        },
+        "54.75.114.190": {
+            "country": "Ireland",
+            "countryCode": "IE",
+            "city": "Dublin",
+            "isp": "Amazon.com, Inc."
+        },
+        "45.84.107.222": {
+            "country": "Sweden",
+            "countryCode": "SE",
+            "city": "Sundbyberg",
+            "isp": "QuxLabs AB"
+        },
+        "52.167.144.23": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Boydton",
+            "isp": "Microsoft Corporation"
+        },
+        "2409:4090:9027:9e02:3927:2cc3:1ba3:a7fa": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Son\u012bpat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "2409:40d6:1143:ebb7:343e:46ea:1556:971": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Panipat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "152.44.107.80": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Dallas",
             "isp": "Sprious LLC"
         },
-        "43.173.180.152": {
+        "213.35.120.237": {
+            "country": "Singapore",
+            "countryCode": "SG",
+            "city": "Singapore",
+            "isp": "Oracle Corporation"
+        },
+        "207.154.212.47": {
+            "country": "Germany",
+            "countryCode": "DE",
+            "city": "Frankfurt am Main",
+            "isp": "DigitalOcean, LLC"
+        },
+        "43.173.175.111": {
             "country": "Singapore",
             "countryCode": "SG",
             "city": "Singapore",
             "isp": "Shenzhen Tencent Computer Systems Company Limited"
         },
-        "43.173.172.134": {
-            "country": "Singapore",
-            "countryCode": "SG",
-            "city": "Singapore",
-            "isp": "Shenzhen Tencent Computer Systems Company Limited"
+        "2409:40d6:11b:f211:1c84:2b7e:3f66:a031": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Panipat",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "2401:4900:1c75:9864:3c81:8b8d:8c2b:28ed": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "New Delhi",
+            "isp": "Bharti Airtel"
+        },
+        "205.169.39.147": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Santa Clara",
+            "isp": "CenturyLink Communications"
+        },
+        "103.124.172.32": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "New Delhi",
+            "isp": "Shirsty Internet Services Pvt Ltd"
+        },
+        "157.49.13.117": {
+            "country": "India",
+            "countryCode": "IN",
+            "city": "Delhi",
+            "isp": "Reliance Jio Infocomm Limited"
+        },
+        "207.46.13.127": {
+            "country": "United States",
+            "countryCode": "US",
+            "city": "Quincy",
+            "isp": "Microsoft Corporation"
         }
     },
     "devices": {
-        "Mobile": 2620,
-        "Desktop": 3668,
+        "Mobile": 3081,
+        "Desktop": 4723,
         "Unknown": 5141
     },
     "browsers": {
-        "Edge": 4,
-        "Other": 174,
-        "Chrome": 4135,
-        "Safari": 69,
-        "Firefox": 1906,
+        "Edge": 7,
+        "Other": 378,
+        "Chrome": 4703,
+        "Safari": 114,
+        "Firefox": 2602,
         "Unknown": 5141
     },
     "os": {
-        "iOS": 45,
-        "Linux": 3124,
-        "Other": 179,
-        "macOS": 105,
-        "Android": 2575,
+        "iOS": 46,
+        "Linux": 3872,
+        "Other": 393,
+        "macOS": 152,
+        "Android": 3035,
         "Unknown": 5141,
-        "Windows": 260
+        "Windows": 306
     },
-    "last_updated": "2026-01-16T06:09:03.420092"
+    "last_updated": "2026-02-01T18:15:40.873916"
 }

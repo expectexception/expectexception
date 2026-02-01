@@ -16,21 +16,25 @@ class MessageInline(admin.TabularInline):
 
 @admin.register(Conversation)
 class ConversationAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'user_display', 'model', 'message_count', 'created_at', 'updated_at']
+    list_display = ['id', 'title', 'user_display', 'model', 'system_prompt_preview', 'message_count', 'created_at']
     list_filter = ['model', 'created_at']
-    search_fields = ['title', 'user__username', 'session_id']
+    search_fields = ['title', 'user__username', 'session_id', 'system_prompt']
     readonly_fields = ['created_at', 'updated_at']
     inlines = [MessageInline]
     
     def user_display(self, obj):
         if obj.user:
             return obj.user.username
-        return format_html('<span style="color: #888;">Anonymous</span>')
+        return format_html('<span style="color: #888;">{}</span>', 'Anonymous')
     user_display.short_description = 'User'
     
     def message_count(self, obj):
         return obj.messages.count()
     message_count.short_description = 'Messages'
+
+    def system_prompt_preview(self, obj):
+        return obj.system_prompt[:50] + '...' if obj.system_prompt else '-'
+    system_prompt_preview.short_description = 'System Prompt'
 
 
 @admin.register(Message)

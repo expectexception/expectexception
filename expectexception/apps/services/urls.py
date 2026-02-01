@@ -11,7 +11,9 @@ from .views import (
     UserDashboardViewSet,
     DownloadHistoryViewSet,
     GlobalSearchView,
+    GlobalSearchView,
     PdfToDocView,
+    PdfToDocStatusView,
     # New tools
     DocToPdfView,
     PdfMergerView,
@@ -74,6 +76,7 @@ urlpatterns = [
     
     # Document tools
     path('pdf-to-doc/', PdfToDocView.as_view(), name='pdf-to-doc'),
+    path('pdf-to-doc/status/<str:task_id>/', PdfToDocStatusView.as_view(), name='pdf-to-doc-status'),
     path('doc-to-pdf/', DocToPdfView.as_view(), name='doc-to-pdf'),
     path('pdf-merge/', PdfMergerView.as_view(), name='pdf-merge'),
     path('pdf-split/', PdfSplitterView.as_view(), name='pdf-split'),
