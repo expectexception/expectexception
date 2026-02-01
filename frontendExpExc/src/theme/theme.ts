@@ -114,8 +114,8 @@ export const theme = createTheme({
           fontSize: '0.95rem',
           transition: 'all 0.2s',
           '@media (max-width:600px)': {
-            padding: '9px 16px',
-            fontSize: '0.9rem',
+            padding: '8px 12px',
+            fontSize: '0.85rem',
           },
           '&:hover': {
             transform: 'translateY(-2px)',
@@ -141,6 +141,50 @@ export const theme = createTheme({
           },
         },
       },
+    },
+    MuiToggleButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          padding: '6px 12px',
+          '@media (max-width:600px)': {
+            padding: '6px 10px',
+            fontSize: '0.85rem',
+            minWidth: 'unset',
+          },
+          '&.Mui-selected': {
+            boxShadow: '0 6px 16px rgba(59,130,246,0.12)'
+          }
+        }
+      }
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          padding: 8,
+          '@media (max-width:600px)': {
+            padding: 6,
+          }
+        }
+      }
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          fontWeight: 500,
+          height: 28,
+          '@media (max-width:600px)': {
+            height: 22,
+            fontSize: '0.75rem',
+            paddingLeft: 6,
+            paddingRight: 6,
+          }
+        },
+        sizeSmall: {
+          height: 20,
+          fontSize: '0.7rem'
+        }
+      }
     },
     MuiAppBar: {
       styleOverrides: {
@@ -170,12 +214,6 @@ export const theme = createTheme({
         },
       },
     },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          fontWeight: 500,
-        },
-      },
-    },
+    
   },
 });

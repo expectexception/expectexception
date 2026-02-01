@@ -10,7 +10,6 @@ import AnimatedBackground from './components/layout/AnimatedBackground';
 import { NotificationProvider } from './context/NotificationContext';
 import { AuthProvider } from './context/AuthContext';
 import NotificationPrompt from './components/NotificationPrompt';
-import PWAInstallPrompt from './components/pwa/PWAInstallPrompt';
 import GATracker from './components/analytics/GATracker';
 
 import { HelmetProvider } from 'react-helmet-async';
@@ -65,11 +64,7 @@ function App() {
                             <Layout>
                                 <AnimatedRoutes />
                             </Layout>
-                            <PWAInstallPrompt
-                                deferredPrompt={deferredPrompt}
-                                onInstall={handleInstall}
-                                onDismiss={handleDismiss}
-                            />
+                            {/* PWA install prompt removed to avoid persistent caching on mobile devices */}
                             {/* NotificationPrompt can still exist for non-PWA flows, or be redundant. Use logic inside PWA prompt preferred for onboarding. */}
                             {/* <NotificationPrompt /> */}
                         </Router>

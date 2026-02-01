@@ -227,23 +227,33 @@ const ServicesPage: React.FC = () => {
           </Grid>
           <Grid item xs={12} md={6}>
             <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end">
-              <ToggleButtonGroup
-                value={filter}
-                exclusive
-                onChange={(_, value) => value && setFilter(value)}
-                size="small"
-              >
-                {categories.map((category) => (
-                  <ToggleButton key={category.value} value={category.value}>
-                    {category.label}
-                    <Chip
-                      label={category.count}
-                      size="small"
-                      sx={{ ml: 1, height: 20 }}
-                    />
-                  </ToggleButton>
-                ))}
-              </ToggleButtonGroup>
+              <Box sx={{ display: 'flex', alignItems: 'center', overflowX: { xs: 'auto', md: 'visible' }, px: { xs: 0.5, md: 0 } }}>
+                <ToggleButtonGroup
+                  value={filter}
+                  exclusive
+                  onChange={(_, value) => value && setFilter(value)}
+                  size="small"
+                  sx={{
+                    display: 'inline-flex',
+                    gap: 1,
+                  }}
+                >
+                  {categories.map((category) => (
+                    <ToggleButton
+                      key={category.value}
+                      value={category.value}
+                      sx={{ whiteSpace: 'nowrap', px: 1.25, borderRadius: 2, textTransform: 'none' }}
+                    >
+                      {category.label}
+                      <Chip
+                        label={category.count}
+                        size="small"
+                        sx={{ ml: 1, height: 20, minWidth: 26 }}
+                      />
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              </Box>
 
               <Tooltip title="Sort by">
                 <IconButton>

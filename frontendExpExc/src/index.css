@@ -51,3 +51,55 @@ code {
 a {
   transition: all 0.2s ease-in-out;
 }
+
+/* Responsive enhancements (appended) */
+:root {
+  --max-content-width: 1200px;
+}
+
+/* Constrain very large MUI containers to a comfortable reading width */
+.MuiContainer-maxWidthXl {
+  max-width: var(--max-content-width);
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Fluid / clamped typography so headings scale smoothly across viewports */
+h1 {
+  font-size: clamp(1.8rem, 2.6vw + 1rem, 4.5rem);
+  line-height: 1.05;
+  word-break: keep-all;
+}
+
+h2 {
+  font-size: clamp(1.3rem, 1.8vw + 0.8rem, 2.5rem);
+}
+
+/* Make MUI toolbar wrap on narrow viewports to avoid overlap */
+.MuiToolbar-root {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Ensure hero-like columns do not overflow and have comfortable max widths */
+.hero-container,
+.hero-content {
+  max-width: 720px;
+}
+
+/* Improve card responsiveness inside hero area */
+.hero-stats-card .MuiCard-root,
+.MuiCard-root {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Small screens adjustments */
+@media (max-width: 600px) {
+  h1 { font-size: 2.2rem; }
+  .MuiToolbar-root { justify-content: space-between; }
+}
+
+@media (min-width: 1800px) {
+  :root { --max-content-width: 1500px; }
+}

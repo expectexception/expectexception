@@ -18,37 +18,45 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-// Register service worker for PWA functionality
-const isMobileDevice = () => {
-  const ua = navigator.userAgent || '';
-  const isMobileUA = /Android|iPhone|iPad|iPod/i.test(ua);
-  const hasCoarsePointer = typeof window !== 'undefined' && window.matchMedia
-    ? window.matchMedia('(pointer: coarse)').matches
-    : false;
-  return isMobileUA || hasCoarsePointer;
-};
+// Disable PWA service worker usage and aggressively clear caches/service workers
+// to avoid stale/offline cached content on mobile devices that can interfere
+// with connectivity-limited users. This will unregister any existing service
+// workers and delete caches on load.
+if ('serviceWorker' in navigator && !isReactSnap()) {
+  window.addEventListener('load', async () => {
+    try {
+      // Unregister any active service workers
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) {
+        try {
+          await reg.unregister();
+          console.log('[PWA] Unregistered service worker:', reg.scope);
+        } catch (e) {
+          console.warn('[PWA] Failed to unregister SW:', e);
+        }
+      }
 
-if ('serviceWorker' in navigator && isMobileDevice() && !isReactSnap()) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then((registration) => {
-        console.log('[PWA] Service Worker registered:', registration.scope);
+      // Clear all caches created by this origin
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(async (name) => {
+          try {
+            await caches.delete(name);
+            console.log('[PWA] Deleted cache:', name);
+          } catch (e) {
+            console.warn('[PWA] Failed to delete cache', name, e);
+          }
+        }));
+      }
 
-        // Check for updates periodically
-        setInterval(() => {
-          registration.update();
-        }, 60000); // Check every minute
-      })
-      .catch((error) => {
-        console.log('[PWA] Service Worker registration failed:', error);
-      });
-  });
-} else if ('serviceWorker' in navigator && !isReactSnap()) {
-  // Desktop: ensure no active SW keeps the app installable.
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.getRegistrations().then((regs) => {
-      regs.forEach((reg) => reg.unregister());
-    });
+      // Clear any PWA-related localStorage flags
+      try {
+        localStorage.removeItem('pwaPromptLastDismissed');
+      } catch (e) {
+        // ignore
+      }
+    } catch (err) {
+      console.error('[PWA] Error during SW/cache cleanup:', err);
+    }
   });
 }

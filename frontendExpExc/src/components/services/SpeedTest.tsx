@@ -44,13 +44,21 @@ const SpeedTest: React.FC = () => {
     const [latency, setLatency] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [dataPoints, setDataPoints] = useState<SpeedPoint[]>([]);
+    const dataPointsRef = useRef<SpeedPoint[]>([]);
+
+    // Smoothed values for UI (exponential moving average)
+    const [smoothedDownload, setSmoothedDownload] = useState(0);
+    const [smoothedUpload, setSmoothedUpload] = useState(0);
+    const smoothedDownloadRef = useRef(0);
+    const smoothedUploadRef = useRef(0);
 
     const MAX_SPEED = 1000; // Cap for gauge visual
 
     // Derived active values
     const activeSpeed = phase === 'upload' ? uploadSpeed : downloadSpeed;
     const activeColor = phase === 'upload' ? '#bd00ff' : '#00eeff'; // Purple vs Cyan
-    const progress = Math.min(activeSpeed / MAX_SPEED * 100, 100);
+    const activeSpeedSmoothed = phase === 'upload' ? smoothedUpload : smoothedDownload;
+    const progress = Math.min(activeSpeedSmoothed / MAX_SPEED * 100, 100);
 
     const startTest = async () => {
         setRunning(true);
@@ -60,6 +68,7 @@ const SpeedTest: React.FC = () => {
         setLatency(null);
         setError(null);
         setDataPoints([]);
+        dataPointsRef.current = [];
 
         try {
             await runNdt7();
@@ -72,6 +81,38 @@ const SpeedTest: React.FC = () => {
             setRunning(false);
         }
     };
+
+    // Smooth incoming speed updates with EMA
+    useEffect(() => {
+        const alpha = 0.18;
+        setSmoothedDownload(prev => {
+            const next = prev * (1 - alpha) + downloadSpeed * alpha;
+            smoothedDownloadRef.current = next;
+            return next;
+        });
+    }, [downloadSpeed]);
+
+    useEffect(() => {
+        const alpha = 0.18;
+        setSmoothedUpload(prev => {
+            const next = prev * (1 - alpha) + uploadSpeed * alpha;
+            smoothedUploadRef.current = next;
+            return next;
+        });
+    }, [uploadSpeed]);
+
+    // Feed the graph at a steady rate (uses smoothed refs to avoid rapid re-renders)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = (Date.now() / 1000);
+            const speed = phase === 'upload' ? smoothedUploadRef.current : smoothedDownloadRef.current;
+            const point: SpeedPoint = { time: Math.round(now), speed: Number(speed.toFixed(2)) };
+            dataPointsRef.current = [...dataPointsRef.current.slice(-120), point];
+            setDataPoints([...dataPointsRef.current]);
+        }, 700);
+
+        return () => clearInterval(interval);
+    }, [phase]);
 
     const runNdt7 = async () => {
         return new Promise<void>((resolve, reject) => {
@@ -120,8 +161,6 @@ const SpeedTest: React.FC = () => {
 
                                     if (speed > 0) {
                                         setDownloadSpeed(speed);
-                                        const point = { time: (Date.now() - startTime) / 1000, speed: speed };
-                                        setDataPoints(prev => [...prev.slice(-60), point]);
                                     }
                                 }
                             }
@@ -140,8 +179,6 @@ const SpeedTest: React.FC = () => {
 
                                 if (speed > 0) {
                                     setUploadSpeed(speed);
-                                    const point = { time: (Date.now() - startTime) / 1000, speed: speed };
-                                    setDataPoints(prev => [...prev.slice(-60), point]);
                                 }
                             }
                         },
@@ -313,7 +350,7 @@ const SpeedTest: React.FC = () => {
                                             fontSize: { xs: '3rem', sm: '3.75rem' },
                                             textShadow: `0 0 20px ${activeColor}55`
                                         }}>
-                                            {activeSpeed.toFixed(0)}
+                                            {activeSpeedSmoothed.toFixed(0)}
                                         </Typography>
                                         <Typography variant="body1" sx={{ color: activeColor, fontWeight: 600 }}>
                                             Mbps
@@ -341,13 +378,13 @@ const SpeedTest: React.FC = () => {
                                 <Typography variant="caption" color="text.secondary">PING</Typography>
                                 <Typography variant="h6" sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>{latency !== null ? `${latency} ms` : '-'}</Typography>
                             </Paper>
-                            <Paper sx={{ p: 2, flex: 1, bgcolor: 'rgba(255,255,255,0.03)', borderLeft: '4px solid #00eeff' }}>
+                                <Paper sx={{ p: 2, flex: 1, bgcolor: 'rgba(255,255,255,0.03)', borderLeft: '4px solid #00eeff' }}>
                                 <Typography variant="caption" color="text.secondary">DOWNLOAD</Typography>
-                                <Typography variant="h6" sx={{ fontSize: { xs: '1rem', md: '1.25rem' }, color: '#00eeff' }}>{downloadSpeed > 0 ? downloadSpeed : '-'}</Typography>
+                                <Typography variant="h6" sx={{ fontSize: { xs: '1rem', md: '1.25rem' }, color: '#00eeff' }}>{smoothedDownload > 0 ? smoothedDownload.toFixed(0) : '-'}</Typography>
                             </Paper>
                             <Paper sx={{ p: 2, flex: 1, bgcolor: 'rgba(255,255,255,0.03)', borderLeft: '4px solid #bd00ff' }}>
                                 <Typography variant="caption" color="text.secondary">UPLOAD</Typography>
-                                <Typography variant="h6" sx={{ fontSize: { xs: '1rem', md: '1.25rem' }, color: '#bd00ff' }}>{uploadSpeed > 0 ? uploadSpeed : '-'}</Typography>
+                                <Typography variant="h6" sx={{ fontSize: { xs: '1rem', md: '1.25rem' }, color: '#bd00ff' }}>{smoothedUpload > 0 ? smoothedUpload.toFixed(0) : '-'}</Typography>
                             </Paper>
                         </Stack>
                     </Grid>
@@ -375,6 +412,40 @@ const SpeedTest: React.FC = () => {
                             />
                         </AreaChart>
                     </ResponsiveContainer>
+                </Box>
+
+                {/* Background graph visible on mobile (smaller height) with latest-point pulse */}
+                <Box sx={{ mt: 4, height: { xs: 120, sm: 200 }, opacity: 0.75, display: 'block', position: 'relative' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={dataPoints}>
+                            <defs>
+                                <linearGradient id="gradientGraphMobile" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={activeColor} stopOpacity={0.25} />
+                                    <stop offset="100%" stopColor={activeColor} stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <XAxis hide dataKey="time" />
+                            <YAxis hide domain={[0, 'auto']} />
+                            <Area type="monotone" dataKey="speed" stroke={activeColor} strokeWidth={2} fill="url(#gradientGraphMobile)" isAnimationActive={false} />
+                        </AreaChart>
+                    </ResponsiveContainer>
+
+                    {/* latest-point indicator */}
+                    <Box
+                        sx={(theme) => ({
+                            position: 'absolute',
+                            right: 12,
+                            width: 14,
+                            height: 14,
+                            borderRadius: '50%',
+                            transform: 'translateY(-50%)',
+                            background: activeColor,
+                            boxShadow: `0 0 12px ${activeColor}55, 0 0 24px ${activeColor}33`,
+                            top: `${50 - (Math.min(activeSpeedSmoothed / MAX_SPEED, 1) * 50)}%`,
+                            transition: 'top 400ms ease, box-shadow 400ms',
+                            border: `2px solid ${theme.palette.background.default}`
+                        })}
+                    />
                 </Box>
 
                 {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
