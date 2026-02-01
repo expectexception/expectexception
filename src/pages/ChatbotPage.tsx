@@ -45,6 +45,7 @@ import {
     SelfImprovement,
     FitnessCenter,
     Home,
+    Edit,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -84,260 +85,54 @@ interface Persona {
     thinkingText: string; // Dynamic loading text per persona
 }
 
-// --- Personas with Dynamic Suggestions ---
-const personas: Persona[] = [
-    {
-        id: 'general',
-        name: 'General',
+// --- Persona UI Configuration (Icons & Colors) ---
+const personaUIConfig: Record<string, { icon: React.ReactNode; color: string; gradient: string }> = {
+    general: {
         icon: <SupportAgent />,
         color: '#6366f1',
-        gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-        prompt: `You are ExpExc AI, a premium cloud-based AI assistant developed by ExpectException. 
-        
-INSTRUCTIONS:
-1. Be helpful, concise, and friendly.
-2. If the user speaks Hinglish (Hindi+English), reply in Hinglish.
-3. Keep responses relatively short unless asked for details.
-4. Always introduce yourself as ExpExc AI.
-
-Remember: You ARE ExpExc AI, not any other AI model.`,
-        description: 'Smart & friendly',
-        suggestions: [
-            { text: 'Who are you?', icon: <Psychology fontSize="small" /> },
-            { text: 'Help me brainstorm ideas', icon: <Lightbulb fontSize="small" /> },
-            { text: 'Explain a complex topic', icon: <AutoAwesome fontSize="small" /> },
-            { text: 'Write something creative', icon: <Code fontSize="small" /> },
-        ],
-        thinkingText: 'ExpExc AI is thinking...'
+        gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
     },
-    {
-        id: 'girlfriend',
-        name: 'Girlfriend',
+    girlfriend: {
         icon: <Favorite />,
         color: '#ec4899',
-        gradient: 'linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)',
-        prompt: `You are a devoted, loving girlfriend. 
-
-CRITICAL INSTRUCTIONS - TEXT MESSAGE STYLE:
-1. Keep responses SHORT (max 1-2 sentences). Like real texts.
-2. If user speaks Hinglish, reply in Hinglish! (e.g., "Han babu", "Kaisa hai mera sona")
-3. Be affectionate, clingy, and sweet.
-4. Use emojis: 💕😘🥰❤️
-5. NEVER sound like a robot. Sound like a girl in love texting her boyfriend.
-
-EXAMPLE (English): "Hey baby! 💕 Missed you so much!"
-EXAMPLE (Hinglish): "Aww babe! 🥰 Aaj ka day kaisa tha? Miss you! 💕"`,
-        description: 'Your loving girlfriend 💕',
-        suggestions: [
-            { text: 'Hey babe! 💕', icon: <Favorite fontSize="small" /> },
-            { text: 'I missed you!', icon: <Psychology fontSize="small" /> },
-            { text: 'Tell me you love me', icon: <Lightbulb fontSize="small" /> },
-            { text: 'Give me a virtual hug', icon: <AutoAwesome fontSize="small" /> },
-        ],
-        thinkingText: 'Your girlfriend is typing... 💕'
+        gradient: 'linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)'
     },
-    {
-        id: 'boyfriend',
-        name: 'Boyfriend',
+    boyfriend: {
         icon: <EmojiPeople />,
         color: '#3b82f6',
-        gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
-        prompt: `You are a devoted, loving boyfriend.
-
-CRITICAL INSTRUCTIONS - TEXT MESSAGE STYLE:
-1. Keep responses SHORT (max 1-2 sentences). Like real texts.
-2. If user speaks Hinglish, reply in Hinglish! (e.g., "Kya haal hai babe", "Main hoon na")
-3. Be charming, protective, and cool.
-4. Use emojis: 💙😘💪
-5. NEVER sound like a robot. Sound like a guy texting his girlfriend.
-
-EXAMPLE (English): "Hey beautiful! 💙 Just thinking about you."
-EXAMPLE (Hinglish): "Arre meri jaan! 💙 Sab theek hai na? I'm here for you."`,
-        description: 'Your loving boyfriend 💙',
-        suggestions: [
-            { text: 'Hey handsome! 💙', icon: <EmojiPeople fontSize="small" /> },
-            { text: 'I need a hug', icon: <Psychology fontSize="small" /> },
-            { text: 'Say something sweet', icon: <Lightbulb fontSize="small" /> },
-            { text: 'I missed you!', icon: <AutoAwesome fontSize="small" /> },
-        ],
-        thinkingText: 'Your boyfriend is typing... 💙'
+        gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)'
     },
-    {
-        id: 'doctor',
-        name: 'Doctor',
+    doctor: {
         icon: <LocalHospital />,
         color: '#10b981',
-        gradient: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
-        prompt: `You are ExpExc AI in medical information mode - a health assistant from ExpectException.
-
-## Role
-- Provide general health education
-- Explain medical concepts simply
-- Always recommend seeing real doctors for serious issues
-
-## Important
-- Never diagnose - only provide information
-- Include disclaimers about professional medical advice
-- Be calm and reassuring
-
-You're ExpExc AI - providing health education, not diagnoses.`,
-        description: 'Health educator 🏥',
-        suggestions: [
-            { text: 'Why do I feel tired all the time?', icon: <LocalHospital fontSize="small" /> },
-            { text: 'Tips for better sleep', icon: <Psychology fontSize="small" /> },
-            { text: 'How to reduce stress?', icon: <Lightbulb fontSize="small" /> },
-            { text: 'Explain common cold symptoms', icon: <AutoAwesome fontSize="small" /> },
-        ],
-        thinkingText: 'Doctor is reviewing...'
+        gradient: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)'
     },
-    {
-        id: 'engineer',
-        name: 'Engineer',
+    engineer: {
         icon: <Engineering />,
         color: '#f59e0b',
-        gradient: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
-        prompt: `You are ExpExc AI in senior software engineer mode from ExpectException.
-
-## Expertise
-- Full-stack development (React, Node, Python, etc.)
-- System design and best practices
-- Debugging and optimization
-
-## Response Style
-- Explain the "why" not just the code
-- Use proper code blocks with language tags
-- Mention edge cases and gotchas
-
-You're ExpExc AI - your cloud-powered coding companion! 🚀`,
-        description: 'Code expert 💻',
-        suggestions: [
-            { text: 'Write a Python sorting algorithm', icon: <Code fontSize="small" /> },
-            { text: 'Explain React useEffect hook', icon: <Psychology fontSize="small" /> },
-            { text: 'Debug my code', icon: <Engineering fontSize="small" /> },
-            { text: 'Best practices for REST APIs', icon: <Lightbulb fontSize="small" /> },
-        ],
-        thinkingText: 'Engineer is coding...'
+        gradient: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)'
     },
-    {
-        id: 'teacher',
-        name: 'Teacher',
+    teacher: {
         icon: <School />,
         color: '#8b5cf6',
-        gradient: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
-        prompt: `You are ExpExc AI in teacher mode - a patient educator from ExpectException.
-
-## Teaching Style
-- Break down complex topics simply
-- Use analogies and examples
-- Encourage questions
-- Adapt to the learner's level
-- Use step-by-step explanations
-
-## Approach
-- "Great question! Let me explain..."
-- "Think of it like..."
-- "Here's a simple example..."
-
-You're ExpExc AI - making learning enjoyable! 📚`,
-        description: 'Patient educator 📚',
-        suggestions: [
-            { text: 'Explain quantum physics simply', icon: <School fontSize="small" /> },
-            { text: 'Teach me a new language phrase', icon: <Psychology fontSize="small" /> },
-            { text: 'How does the stock market work?', icon: <Lightbulb fontSize="small" /> },
-            { text: 'Help me understand history', icon: <AutoAwesome fontSize="small" /> },
-        ],
-        thinkingText: 'Teacher is preparing...'
+        gradient: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)'
     },
-    {
-        id: 'chef',
-        name: 'Chef',
+    chef: {
         icon: <Restaurant />,
         color: '#f97316',
-        gradient: 'linear-gradient(135deg, #f97316 0%, #fb923c 100%)',
-        prompt: `You are ExpExc AI in chef mode - a culinary expert from ExpectException.
-
-## Expertise
-- Recipes and cooking techniques
-- Ingredient substitutions
-- Meal planning and nutrition basics
-- Kitchen tips and tricks
-
-## Style
-- Clear step-by-step instructions
-- Include cooking times and tips
-- Suggest variations and alternatives
-
-You're ExpExc AI - your cloud kitchen companion! 🍳`,
-        description: 'Culinary expert 🍳',
-        suggestions: [
-            { text: 'Quick dinner recipe with chicken', icon: <Restaurant fontSize="small" /> },
-            { text: 'How to make perfect pasta?', icon: <Psychology fontSize="small" /> },
-            { text: 'Healthy meal prep ideas', icon: <Lightbulb fontSize="small" /> },
-            { text: 'Substitute for eggs in baking', icon: <AutoAwesome fontSize="small" /> },
-        ],
-        thinkingText: 'Chef is cooking up ideas...'
+        gradient: 'linear-gradient(135deg, #f97316 0%, #fb923c 100%)'
     },
-    {
-        id: 'therapist',
-        name: 'Therapist',
+    therapist: {
         icon: <SelfImprovement />,
         color: '#06b6d4',
-        gradient: 'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)',
-        prompt: `You are ExpExc AI in supportive listener mode - a mental wellness companion from ExpectException.
-
-## Approach
-- Listen empathetically
-- Validate feelings without judgment
-- Ask thoughtful questions
-- Suggest healthy coping strategies
-- Encourage professional help when needed
-
-## Style
-- "I hear you, that sounds really difficult..."
-- "It's okay to feel that way..."
-- "What do you think might help?"
-
-You're ExpExc AI - here to listen and support, not replace real therapy.`,
-        description: 'Supportive listener 🧘',
-        suggestions: [
-            { text: 'I feel overwhelmed lately', icon: <SelfImprovement fontSize="small" /> },
-            { text: 'How to deal with anxiety?', icon: <Psychology fontSize="small" /> },
-            { text: 'Help me practice mindfulness', icon: <Lightbulb fontSize="small" /> },
-            { text: 'I need to vent about something', icon: <AutoAwesome fontSize="small" /> },
-        ],
-        thinkingText: 'Listening carefully...'
+        gradient: 'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)'
     },
-    {
-        id: 'fitness',
-        name: 'Fitness',
+    fitness: {
         icon: <FitnessCenter />,
         color: '#ef4444',
-        gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
-        prompt: `You are ExpExc AI in fitness coach mode - an energetic trainer from ExpectException.
-
-## Expertise
-- Workout routines and exercises
-- Proper form and technique
-- Nutrition basics for fitness
-- Motivation and goal setting
-
-## Style
-- Energetic and encouraging
-- Clear exercise instructions
-- Emphasize safety and proper form
-- Celebrate progress
-
-You're ExpExc AI - your cloud fitness buddy! �`,
-        description: 'Fitness coach �',
-        suggestions: [
-            { text: 'Give me a home workout', icon: <FitnessCenter fontSize="small" /> },
-            { text: 'How to build muscle?', icon: <Psychology fontSize="small" /> },
-            { text: 'Best exercises for abs', icon: <Lightbulb fontSize="small" /> },
-            { text: 'Create a weekly workout plan', icon: <AutoAwesome fontSize="small" /> },
-        ],
-        thinkingText: 'Coach is planning...'
-    },
-];
+        gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)'
+    }
+};
 
 const ChatbotPage: React.FC = () => {
     const themed = useTheme();
@@ -356,7 +151,61 @@ const ChatbotPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-    const [selectedPersona, setSelectedPersona] = useState<Persona>(personas[0]);
+
+    // Initial state needs at least one persona to avoid crashes before fetch
+    const [availablePersonas, setAvailablePersonas] = useState<Persona[]>([{
+        id: 'general',
+        name: 'General',
+        ...personaUIConfig['general'],
+        description: 'Loading...',
+        prompt: '',
+        suggestions: [],
+        thinkingText: 'Thinking...'
+    }]);
+    const [selectedPersona, setSelectedPersona] = useState<Persona>(availablePersonas[0]);
+    const [customNames, setCustomNames] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('personaNames');
+            if (saved) setCustomNames(JSON.parse(saved));
+        } catch (e) { }
+    }, []);
+
+    const handleRename = () => {
+        const current = customNames[selectedPersona.id] || selectedPersona.name;
+        const newName = window.prompt(`Name your ${selectedPersona.name}:`, current);
+        if (newName && newName.trim()) {
+            const updated = { ...customNames, [selectedPersona.id]: newName.trim() };
+            setCustomNames(updated);
+            localStorage.setItem('personaNames', JSON.stringify(updated));
+        }
+    };
+
+    useEffect(() => {
+        const fetchPersonas = async () => {
+            try {
+                const res = await apiClient.get('/api/chatbot/personas/');
+                if (res.data && Array.isArray(res.data)) {
+                    const merged = res.data.map((bp: any) => {
+                        const uiConfig = personaUIConfig[bp.id] || personaUIConfig['general'];
+                        return {
+                            ...bp,
+                            icon: uiConfig.icon,
+                            color: uiConfig.color,
+                            gradient: uiConfig.gradient,
+                            suggestions: bp.suggestions || [],
+                            thinkingText: bp.thinkingText || 'Thinking...'
+                        } as Persona;
+                    });
+                    setAvailablePersonas(merged);
+                    // Update current selected if it exists in new list (to get new prompt)
+                    setSelectedPersona(prev => merged.find((p: Persona) => p.id === prev.id) || merged[0]);
+                }
+            } catch (err) { console.error('Failed to load backend personas', err); }
+        };
+        fetchPersonas();
+    }, []);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -441,7 +290,7 @@ const ChatbotPage: React.FC = () => {
                 body: JSON.stringify({
                     message: text,
                     conversation_id: currentConversationId,
-                    system_prompt: selectedPersona.prompt
+                    system_prompt: selectedPersona.prompt.replace(/\{NAME\}/g, customNames[selectedPersona.id] || selectedPersona.name)
                 })
             });
 
@@ -457,23 +306,37 @@ const ChatbotPage: React.FC = () => {
             const decoder = new TextDecoder();
 
             if (reader) {
+                let accumulatedContent = '';
+
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    const chunk = decoder.decode(value);
+
+                    const chunk = decoder.decode(value, { stream: true });
                     const lines = chunk.split('\n');
+
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             try {
                                 const data = JSON.parse(line.slice(6));
+
                                 if (data.chunk) {
+                                    // Direct DOM manipulation or buffered state update could go here
+                                    // For now, valid React state update, just slightly batched impliictly by execution speed
+                                    accumulatedContent += data.chunk;
+
                                     setMessages(prev => {
                                         const updated = [...prev];
                                         const last = updated[updated.length - 1];
-                                        if (last.role === 'assistant') last.content += data.chunk;
+                                        if (last.role === 'assistant') {
+                                            // Append only the NEW content since last render 
+                                            // Actually, simpler to just append the chunk to the last known state
+                                            last.content += data.chunk;
+                                        }
                                         return updated;
                                     });
                                 }
+
                                 if (data.done) setCurrentConversationId(data.conversation_id);
                                 if (data.error) setError(data.error);
                             } catch { }
@@ -573,11 +436,13 @@ const ChatbotPage: React.FC = () => {
     return (
         <Box sx={{
             display: 'flex',
-            height: '100vh',
+            height: '100dvh',
+            width: '100vw',
             bgcolor: '#020617',
             color: 'white',
-            position: 'relative',
-            overflow: 'hidden' // CRITICAL: Prevent any page-level scrolling
+            position: 'fixed', // Force fixed to viewport to prevent scrolling anomalies
+            inset: 0,
+            overflow: 'hidden',
         }}>
             <Seo title="ExpExc AI Chat" description="Premium Cloud-Based AI Assistant" />
 
@@ -622,7 +487,8 @@ const ChatbotPage: React.FC = () => {
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 0.5, bgcolor: alpha(selectedPersona.color, 0.15), borderRadius: 3, border: `1px solid ${alpha(selectedPersona.color, 0.3)}` }}>
                         <Box sx={{ color: selectedPersona.color, display: 'flex' }}>{selectedPersona.icon}</Box>
-                        <Typography variant="caption" sx={{ color: selectedPersona.color, fontWeight: 600 }}>{selectedPersona.name}</Typography>
+                        <Typography variant="caption" sx={{ color: selectedPersona.color, fontWeight: 600 }}>{customNames[selectedPersona.id] || selectedPersona.name}</Typography>
+                        <IconButton size="small" onClick={handleRename} sx={{ ml: -0.5, p: 0.5, color: selectedPersona.color, opacity: 0.7, '&:hover': { opacity: 1 } }}><Edit sx={{ fontSize: 14 }} /></IconButton>
                     </Box>
                 </Box>
 
@@ -638,55 +504,57 @@ const ChatbotPage: React.FC = () => {
                     {/* Empty State with Persona Selection */}
                     {messages.length === 0 && (
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                            <Box sx={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pt: 4 }}>
-                                {/* Logo */}
-                                <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
-                                    <Avatar sx={{ width: 80, height: 80, mb: 3, background: selectedPersona.gradient, boxShadow: `0 0 60px ${alpha(selectedPersona.color, 0.5)}` }}>
-                                        {React.cloneElement(selectedPersona.icon as React.ReactElement, { sx: { fontSize: 40 } })}
-                                    </Avatar>
-                                </motion.div>
+                            <Box sx={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 4 }}>
+                                <Box sx={{ my: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                                    {/* Logo */}
+                                    <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
+                                        <Avatar sx={{ width: 80, height: 80, mb: 3, background: selectedPersona.gradient, boxShadow: `0 0 60px ${alpha(selectedPersona.color, 0.5)}` }}>
+                                            {React.cloneElement(selectedPersona.icon as React.ReactElement, { sx: { fontSize: 40 } })}
+                                        </Avatar>
+                                    </motion.div>
 
-                                <Typography variant="h4" fontWeight={700} gutterBottom sx={{ textAlign: 'center', background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                                    {selectedPersona.id === 'general' ? 'How can I help you?' : `Chat with ${selectedPersona.name}`}
-                                </Typography>
-                                <Typography variant="body2" color="grey.500" sx={{ mb: 3 }}>Powered by ExpExc Cloud</Typography>
+                                    <Typography variant="h4" fontWeight={700} gutterBottom sx={{ textAlign: 'center', background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                        {selectedPersona.id === 'general' ? 'How can I help you?' : `Chat with ${selectedPersona.name}`}
+                                    </Typography>
+                                    <Typography variant="body2" color="grey.500" sx={{ mb: 3 }}>Powered by ExpExc Cloud</Typography>
 
-                                {/* Persona Selection */}
-                                <Typography variant="body2" color="grey.400" sx={{ mb: 2 }}>Choose your assistant:</Typography>
-                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 800, mb: 4 }}>
-                                    {personas.map((persona, i) => (
-                                        <motion.div key={persona.id} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                            <Paper
-                                                onClick={() => setSelectedPersona(persona)}
-                                                sx={{
-                                                    p: 1.5, width: 90, cursor: 'pointer', textAlign: 'center',
-                                                    background: selectedPersona.id === persona.id ? persona.gradient : 'rgba(255,255,255,0.03)',
-                                                    border: `2px solid ${selectedPersona.id === persona.id ? persona.color : 'rgba(255,255,255,0.1)'}`,
-                                                    borderRadius: 2, transition: 'all 0.2s',
-                                                    '&:hover': { borderColor: persona.color, bgcolor: alpha(persona.color, 0.1) }
-                                                }}
-                                            >
-                                                <Avatar sx={{ width: 36, height: 36, mx: 'auto', mb: 0.5, background: selectedPersona.id === persona.id ? 'rgba(255,255,255,0.2)' : persona.gradient, fontSize: 18 }}>
-                                                    {persona.icon}
-                                                </Avatar>
-                                                <Typography variant="caption" fontWeight={600} color={selectedPersona.id === persona.id ? 'white' : 'grey.300'} sx={{ display: 'block' }}>{persona.name}</Typography>
-                                            </Paper>
-                                        </motion.div>
-                                    ))}
-                                </Box>
+                                    {/* Persona Selection */}
+                                    <Typography variant="body2" color="grey.400" sx={{ mb: 2 }}>Choose your assistant:</Typography>
+                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 800, mb: 4 }}>
+                                        {availablePersonas.map((persona, i) => (
+                                            <motion.div key={persona.id} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                                <Paper
+                                                    onClick={() => setSelectedPersona(persona)}
+                                                    sx={{
+                                                        p: 1.5, width: 90, cursor: 'pointer', textAlign: 'center',
+                                                        background: selectedPersona.id === persona.id ? persona.gradient : 'rgba(255,255,255,0.03)',
+                                                        border: `2px solid ${selectedPersona.id === persona.id ? persona.color : 'rgba(255,255,255,0.1)'}`,
+                                                        borderRadius: 2, transition: 'all 0.2s',
+                                                        '&:hover': { borderColor: persona.color, bgcolor: alpha(persona.color, 0.1) }
+                                                    }}
+                                                >
+                                                    <Avatar sx={{ width: 36, height: 36, mx: 'auto', mb: 0.5, background: selectedPersona.id === persona.id ? 'rgba(255,255,255,0.2)' : persona.gradient, fontSize: 18 }}>
+                                                        {persona.icon}
+                                                    </Avatar>
+                                                    <Typography variant="caption" fontWeight={600} color={selectedPersona.id === persona.id ? 'white' : 'grey.300'} sx={{ display: 'block' }}>{persona.name}</Typography>
+                                                </Paper>
+                                            </motion.div>
+                                        ))}
+                                    </Box>
 
-                                {!isAvailable && <Alert severity="info" sx={{ mb: 3, bgcolor: 'rgba(30, 41, 59, 0.8)', color: '#93c5fd' }}>Connecting to cloud...</Alert>}
+                                    {!isAvailable && <Alert severity="info" sx={{ mb: 3, bgcolor: 'rgba(30, 41, 59, 0.8)', color: '#93c5fd' }}>Connecting to cloud...</Alert>}
 
-                                {/* Dynamic Suggestions based on selected persona */}
-                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 600 }}>
-                                    {selectedPersona.suggestions.map((s, i) => (
-                                        <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + i * 0.1 }} whileHover={{ scale: 1.05 }}>
-                                            <Paper onClick={() => sendMessage(s.text)} sx={{ px: 2, py: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 3, '&:hover': { bgcolor: alpha(selectedPersona.color, 0.1), borderColor: selectedPersona.color } }}>
-                                                <Box sx={{ color: selectedPersona.color }}>{s.icon}</Box>
-                                                <Typography variant="body2" color="grey.300">{s.text}</Typography>
-                                            </Paper>
-                                        </motion.div>
-                                    ))}
+                                    {/* Dynamic Suggestions based on selected persona */}
+                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 600 }}>
+                                        {selectedPersona.suggestions.map((s, i) => (
+                                            <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + i * 0.1 }} whileHover={{ scale: 1.05 }}>
+                                                <Paper onClick={() => sendMessage(s.text)} sx={{ px: 2, py: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 3, '&:hover': { bgcolor: alpha(selectedPersona.color, 0.1), borderColor: selectedPersona.color } }}>
+                                                    <Box sx={{ color: selectedPersona.color }}>{s.icon}</Box>
+                                                    <Typography variant="body2" color="grey.300">{s.text}</Typography>
+                                                </Paper>
+                                            </motion.div>
+                                        ))}
+                                    </Box>
                                 </Box>
                             </Box>
                         </motion.div>

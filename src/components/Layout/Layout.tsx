@@ -351,13 +351,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                     </IconButton>
                                 </Tooltip>
 
-                                <Tooltip title="Notifications">
+                                {/* <Tooltip title="Notifications">
                                     <IconButton onClick={handleNotificationClick}>
                                         <Badge badgeContent={unreadCount} color="error">
                                             <Notifications />
                                         </Badge>
                                     </IconButton>
-                                </Tooltip>
+                                </Tooltip> */}
                                 <Menu
                                     anchorEl={notificationAnchorEl}
                                     open={Boolean(notificationAnchorEl)}
