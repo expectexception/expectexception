@@ -37,23 +37,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="ExpectException" />
-  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-
-  <!-- Desktop PWA install is disabled; keep mobile install enabled. -->
-  <script>
-    (function () {
-      try {
-        var ua = navigator.userAgent || '';
-        var isMobileUA = /Android|iPhone|iPad|iPod/i.test(ua);
-        var hasCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-        var isMobile = isMobileUA || hasCoarsePointer;
-        if (!isMobile) {
-          var link = document.querySelector('link[rel="manifest"]');
-          if (link && link.parentNode) link.parentNode.removeChild(link);
-        }
-      } catch (e) {}
-    })();
-  </script>
+  <!-- manifest removed to disable PWA install and service worker caching -->
 
   <!-- SEO & Social Sharing (Open Graph) -->
   <meta property="og:type" content="website" />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Container,
     Typography,
@@ -27,6 +27,7 @@ const ImageCompressorPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -35,6 +36,20 @@ const ImageCompressorPage: React.FC = () => {
             setError(null);
         }
     };
+
+    useEffect(() => {
+        if (!file) {
+            setEstimatedSize(null);
+            return;
+        }
+
+        const orig = file.size || 0;
+        const baseFactor: Record<string, number> = { WEBP: 0.6, JPEG: 0.9, PNG: 1.2 };
+        const bf = baseFactor[format] ?? 0.9;
+        const factor = Math.max(0.05, bf * (quality / 100));
+        const estimate = Math.round(orig * factor);
+        setEstimatedSize(estimate);
+    }, [file, quality, format]);
 
     const handleCompress = async () => {
         if (!file) {
@@ -157,6 +172,14 @@ const ImageCompressorPage: React.FC = () => {
                             {loading ? 'Compressing...' : 'Compress Image'}
                         </Button>
                     </Box>
+
+                    {file && estimatedSize !== null && (
+                        <Box sx={{ mt: 3, textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary">
+                                Estimated Output: <strong>{formatBytes(estimatedSize)}</strong> — original {formatBytes(file.size)}
+                            </Typography>
+                        </Box>
+                    )}
 
                     {result && (
                         <Box sx={{ mt: 6, p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>

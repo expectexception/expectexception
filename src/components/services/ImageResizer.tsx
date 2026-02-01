@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Container, Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
     TextField, FormControlLabel, Switch, Grid, alpha
@@ -17,6 +17,10 @@ const ImageResizer: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<{ file_url: string; original_size: string; new_size: string } | null>(null);
+    const [originalWidth, setOriginalWidth] = useState<number | null>(null);
+    const [originalHeight, setOriginalHeight] = useState<number | null>(null);
+    const [originalSize, setOriginalSize] = useState<number | null>(null);
+    const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
@@ -25,7 +29,53 @@ const ImageResizer: React.FC = () => {
             setPreview(URL.createObjectURL(f));
             setError(null);
             setResult(null);
+            setOriginalSize(f.size);
+
+            const img = new window.Image();
+            img.onload = () => {
+                setOriginalWidth(img.naturalWidth);
+                setOriginalHeight(img.naturalHeight);
+            };
+            img.src = URL.createObjectURL(f);
         }
+    };
+
+    useEffect(() => {
+        if (!file || !originalWidth || !originalHeight || !originalSize) {
+            setEstimatedSize(null);
+            return;
+        }
+
+        const ow = originalWidth;
+        const oh = originalHeight;
+
+        let nw = width ? Number(width) : ow;
+        let nh = height ? Number(height) : oh;
+
+        if (maintainAspect) {
+            if (width && !height) {
+                nh = Math.round((Number(width) / ow) * oh);
+            } else if (!width && height) {
+                nw = Math.round((Number(height) / oh) * ow);
+            }
+        }
+
+        if (!nw || !nh) {
+            setEstimatedSize(null);
+            return;
+        }
+
+        const scale = (nw * nh) / (ow * oh);
+        const estimate = Math.max(50, Math.round(originalSize * scale));
+        setEstimatedSize(estimate);
+    }, [file, width, height, maintainAspect, originalWidth, originalHeight, originalSize]);
+
+    const formatBytes = (bytes: number) => {
+        if (!bytes) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
     const handleResize = async () => {
@@ -106,6 +156,14 @@ const ImageResizer: React.FC = () => {
                         label="Maintain aspect ratio"
                         sx={{ mt: 2 }}
                     />
+
+                    {file && originalWidth && originalHeight && originalSize && estimatedSize !== null && (
+                        <Box sx={{ mt: 2, mb: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                Original: {originalWidth}×{originalHeight}, {formatBytes(originalSize)} — Estimated: <strong>{formatBytes(estimatedSize)}</strong>
+                            </Typography>
+                        </Box>
+                    )}
 
                     {loading && <LinearProgress sx={{ mt: 2 }} />}
 
