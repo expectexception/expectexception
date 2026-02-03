@@ -135,7 +135,7 @@ class OllamaService:
             "keep_alive": "5m",
             "options": {
                 "num_predict": self.max_tokens,
-                "num_ctx": 8192, # Increased context for better memory
+                "num_ctx": 4096, # Reduced context for speed
                 "temperature": 0.7,
             }
         }
