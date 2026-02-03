@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { theme } from './theme/theme';
 import Layout from './components/Layout/Layout';
 import AnimatedRoutes from './components/layout/AnimatedRoutes';
@@ -17,6 +17,23 @@ import { HelmetProvider } from 'react-helmet-async';
 interface BeforeInstallPromptEvent extends Event {
     prompt(): Promise<void>;
     userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+// Wrapper component to access useLocation
+function AppContent({ deferredPrompt, handleInstall, handleDismiss }: any) {
+    const location = useLocation();
+    const isChatPage = location.pathname.startsWith('/chat');
+
+    return (
+        <>
+            {/* Hide AnimatedBackground on chat page - it has its own StarBackground */}
+            {!isChatPage && <AnimatedBackground />}
+            <GATracker />
+            <Layout>
+                <AnimatedRoutes />
+            </Layout>
+        </>
+    );
 }
 
 function App() {
@@ -55,18 +72,15 @@ function App() {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <AnimatedBackground />
             <HelmetProvider>
                 <AuthProvider>
                     <NotificationProvider>
                         <Router>
-                            <GATracker />
-                            <Layout>
-                                <AnimatedRoutes />
-                            </Layout>
-                            {/* PWA install prompt removed to avoid persistent caching on mobile devices */}
-                            {/* NotificationPrompt can still exist for non-PWA flows, or be redundant. Use logic inside PWA prompt preferred for onboarding. */}
-                            {/* <NotificationPrompt /> */}
+                            <AppContent
+                                deferredPrompt={deferredPrompt}
+                                handleInstall={handleInstall}
+                                handleDismiss={handleDismiss}
+                            />
                         </Router>
                     </NotificationProvider>
                 </AuthProvider>

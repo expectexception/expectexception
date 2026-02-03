@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
     Box,
     Typography,
@@ -20,6 +20,14 @@ import {
     Stack,
     Button,
     Collapse,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+    Chip,
+    Fade,
+    Zoom,
 } from '@mui/material';
 import {
     Send,
@@ -28,10 +36,6 @@ import {
     Person,
     Delete,
     Close,
-    AutoAwesome,
-    Code,
-    Psychology,
-    Lightbulb,
     ContentCopy,
     Check,
     ViewSidebar,
@@ -46,17 +50,25 @@ import {
     FitnessCenter,
     Home,
     Edit,
+    KeyboardArrowDown,
+    Refresh,
+    DeleteSweep,
+    AccessTime,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../components/seo/Seo';
-import apiClient from '../api/config';
+import apiClient, { API_BASE_URL } from '../api/config';
+import CleanStarBackground from '../components/CleanStarBackground';
+
+const apiBaseUrl = API_BASE_URL;
 
 // --- Types ---
 interface Message {
     id?: number;
     role: 'user' | 'assistant' | 'system';
     content: string;
+    timestamp?: string;
 }
 
 interface Conversation {
@@ -82,7 +94,14 @@ interface Persona {
     prompt: string;
     description: string;
     suggestions: Suggestion[];
-    thinkingText: string; // Dynamic loading text per persona
+    thinkingText: string;
+}
+
+interface GroupedConversations {
+    today: Conversation[];
+    yesterday: Conversation[];
+    lastWeek: Conversation[];
+    older: Conversation[];
 }
 
 // --- Persona UI Configuration (Icons & Colors) ---
@@ -134,6 +153,43 @@ const personaUIConfig: Record<string, { icon: React.ReactNode; color: string; gr
     }
 };
 
+// --- Helper Functions ---
+const formatTimestamp = (date: Date): string => {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};
+
+const groupConversationsByDate = (conversations: Conversation[]): GroupedConversations => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today.getTime() - 86400000);
+    const lastWeek = new Date(today.getTime() - 7 * 86400000);
+
+    return conversations.reduce<GroupedConversations>(
+        (groups, conv) => {
+            const convDate = new Date(conv.updated_at);
+            if (convDate >= today) {
+                groups.today.push(conv);
+            } else if (convDate >= yesterday) {
+                groups.yesterday.push(conv);
+            } else if (convDate >= lastWeek) {
+                groups.lastWeek.push(conv);
+            } else {
+                groups.older.push(conv);
+            }
+            return groups;
+        },
+        { today: [], yesterday: [], lastWeek: [], older: [] }
+    );
+};
+
 const ChatbotPage: React.FC = () => {
     const themed = useTheme();
     const isMobile = useMediaQuery(themed.breakpoints.down('md'));
@@ -147,12 +203,22 @@ const ChatbotPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isStreaming, setIsStreaming] = useState(false);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-    const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(false);
     const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
+    const [availableModels, setAvailableModels] = useState<string[]>([]);
+    const [selectedModel, setSelectedModel] = useState<string>('');
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+    const [showScrollButton, setShowScrollButton] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [lastMessageContent, setLastMessageContent] = useState<string>('');
 
-    // Initial state needs at least one persona to avoid crashes before fetch
+    // Dialog states
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [conversationToDelete, setConversationToDelete] = useState<number | null>(null);
+    const [clearAllDialogOpen, setClearAllDialogOpen] = useState(false);
+    const [clearAllConfirmStep, setClearAllConfirmStep] = useState(0);
+
+    // Persona state
     const [availablePersonas, setAvailablePersonas] = useState<Persona[]>([{
         id: 'general',
         name: 'General',
@@ -165,23 +231,23 @@ const ChatbotPage: React.FC = () => {
     const [selectedPersona, setSelectedPersona] = useState<Persona>(availablePersonas[0]);
     const [customNames, setCustomNames] = useState<Record<string, string>>({});
 
+    // Refs
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
+
+    // --- Effects ---
+
+    // Load custom names from localStorage
     useEffect(() => {
         try {
             const saved = localStorage.getItem('personaNames');
             if (saved) setCustomNames(JSON.parse(saved));
-        } catch (e) { }
+        } catch (e) { /* ignore */ }
     }, []);
 
-    const handleRename = () => {
-        const current = customNames[selectedPersona.id] || selectedPersona.name;
-        const newName = window.prompt(`Name your ${selectedPersona.name}:`, current);
-        if (newName && newName.trim()) {
-            const updated = { ...customNames, [selectedPersona.id]: newName.trim() };
-            setCustomNames(updated);
-            localStorage.setItem('personaNames', JSON.stringify(updated));
-        }
-    };
-
+    // Fetch personas from backend
     useEffect(() => {
         const fetchPersonas = async () => {
             try {
@@ -199,7 +265,6 @@ const ChatbotPage: React.FC = () => {
                         } as Persona;
                     });
                     setAvailablePersonas(merged);
-                    // Update current selected if it exists in new list (to get new prompt)
                     setSelectedPersona(prev => merged.find((p: Persona) => p.id === prev.id) || merged[0]);
                 }
             } catch (err) { console.error('Failed to load backend personas', err); }
@@ -207,26 +272,40 @@ const ChatbotPage: React.FC = () => {
         fetchPersonas();
     }, []);
 
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    const scrollToBottom = useCallback(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, []);
-
-    useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
-
-    // Check Status
+    // Check Ollama status - with proper cleanup
     useEffect(() => {
+        let isMounted = true;
+        const controller = new AbortController();
+
         const checkStatus = async () => {
             try {
-                const response = await apiClient.get('/api/chatbot/status/');
-                setIsAvailable(response.data.available);
-            } catch { setIsAvailable(false); }
+                const response = await apiClient.get('/api/chatbot/status/', {
+                    signal: controller.signal
+                });
+                if (isMounted) {
+                    setIsAvailable(response.data.available);
+                    if (response.data.models) {
+                        setAvailableModels(response.data.models);
+                        if (!selectedModel && response.data.current_model) {
+                            setSelectedModel(response.data.current_model);
+                        }
+                    }
+                }
+            } catch (err: any) {
+                if (err.name !== 'CanceledError' && isMounted) {
+                    setIsAvailable(false);
+                }
+            }
         };
+
         checkStatus();
         const interval = setInterval(checkStatus, 30000);
-        return () => clearInterval(interval);
+
+        return () => {
+            isMounted = false;
+            controller.abort();
+            clearInterval(interval);
+        };
     }, []);
 
     // Load Conversations
@@ -240,6 +319,63 @@ const ChatbotPage: React.FC = () => {
         loadConversations();
     }, [currentConversationId]);
 
+    // Scroll handling for showing scroll-to-bottom button
+    useEffect(() => {
+        const container = messagesContainerRef.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+            setShowScrollButton(distanceFromBottom > 200);
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Ctrl+N for new chat
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                startNewConversation();
+            }
+            // Escape to close mobile drawer
+            if (e.key === 'Escape' && mobileDrawerOpen) {
+                setMobileDrawerOpen(false);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [mobileDrawerOpen]);
+
+    // Group conversations by date
+    const groupedConversations = useMemo(() =>
+        groupConversationsByDate(conversations),
+        [conversations]
+    );
+
+    // --- Handlers ---
+
+    const scrollToBottom = useCallback(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, []);
+
+    useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
+
+    const handleRename = () => {
+        const current = customNames[selectedPersona.id] || selectedPersona.name;
+        const newName = window.prompt(`Name your ${selectedPersona.name}:`, current);
+        if (newName && newName.trim()) {
+            const updated = { ...customNames, [selectedPersona.id]: newName.trim() };
+            setCustomNames(updated);
+            localStorage.setItem('personaNames', JSON.stringify(updated));
+        }
+    };
+
     const loadConversation = async (id: number) => {
         try {
             const response = await apiClient.get(`/api/chatbot/conversations/${id}/`);
@@ -250,20 +386,54 @@ const ChatbotPage: React.FC = () => {
     };
 
     const startNewConversation = () => {
+        // Cancel any ongoing stream
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
         setMessages([]);
         setCurrentConversationId(null);
         setError(null);
         setMobileDrawerOpen(false);
+        setLastMessageContent('');
         inputRef.current?.focus();
     };
 
-    const deleteConversation = async (id: number, e: React.MouseEvent) => {
+    const handleDeleteClick = (id: number, e: React.MouseEvent) => {
         e.stopPropagation();
+        setConversationToDelete(id);
+        setDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!conversationToDelete) return;
         try {
-            await apiClient.delete(`/api/chatbot/conversations/${id}/`);
-            setConversations(prev => prev.filter(c => c.id !== id));
-            if (currentConversationId === id) startNewConversation();
+            await apiClient.delete(`/api/chatbot/conversations/${conversationToDelete}/`);
+            setConversations(prev => prev.filter(c => c.id !== conversationToDelete));
+            if (currentConversationId === conversationToDelete) startNewConversation();
         } catch { console.error('Failed to delete'); }
+        setDeleteDialogOpen(false);
+        setConversationToDelete(null);
+    };
+
+    const handleClearAllClick = () => {
+        setClearAllConfirmStep(1);
+        setClearAllDialogOpen(true);
+    };
+
+    const confirmClearAll = async () => {
+        if (clearAllConfirmStep === 1) {
+            setClearAllConfirmStep(2);
+            return;
+        }
+
+        try {
+            await apiClient.delete('/api/chatbot/conversations/clear/');
+            setConversations([]);
+            startNewConversation();
+        } catch { console.error('Failed to clear all'); }
+
+        setClearAllDialogOpen(false);
+        setClearAllConfirmStep(0);
     };
 
     const copyToClipboard = (text: string, index: number) => {
@@ -272,34 +442,77 @@ const ChatbotPage: React.FC = () => {
         setTimeout(() => setCopiedIndex(null), 2000);
     };
 
+    const regenerateResponse = async () => {
+        if (messages.length < 2 || isLoading || isStreaming) return;
+
+        // Get the last user message
+        const lastUserMsgIndex = messages.reduce((lastIdx, msg, idx) =>
+            msg.role === 'user' ? idx : lastIdx, -1);
+
+        if (lastUserMsgIndex === -1) return;
+
+        const lastUserMessage = messages[lastUserMsgIndex].content;
+
+        // Remove the last assistant message if present
+        const newMessages = messages.slice(0, -1);
+        if (newMessages[newMessages.length - 1]?.role === 'user') {
+            // Remove the user message too, we'll resend it
+            newMessages.pop();
+        }
+
+        setMessages(newMessages);
+        await sendMessage(lastUserMessage);
+    };
+
     const sendMessage = async (messageText?: string) => {
         const text = messageText || inputValue.trim();
         if (!text || isLoading || isStreaming) return;
 
-        const userMessage: Message = { role: 'user', content: text };
+        const userMessage: Message = {
+            role: 'user',
+            content: text,
+            timestamp: new Date().toISOString()
+        };
         setMessages(prev => [...prev, userMessage]);
         setInputValue('');
         setIsLoading(true);
         setError(null);
 
+        // Create abort controller for this request
+        abortControllerRef.current = new AbortController();
+
         try {
-            const response = await fetch(`${apiClient.defaults.baseURL}/api/chatbot/chat/`, {
+            const modelToUse = selectedModel || (availableModels.length > 0 ? availableModels[0] : 'qwen3:4b');
+
+            const response = await fetch(`${apiBaseUrl}/api/chatbot/chat/`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                },
                 credentials: 'include',
+                signal: abortControllerRef.current.signal,
                 body: JSON.stringify({
                     message: text,
+                    model: modelToUse,
                     conversation_id: currentConversationId,
                     system_prompt: selectedPersona.prompt.replace(/\{NAME\}/g, customNames[selectedPersona.id] || selectedPersona.name)
                 })
             });
 
-            if (!response.ok) throw new Error('Failed to send message');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to send message');
+            }
 
             setIsLoading(false);
             setIsStreaming(true);
 
-            const assistantMessage: Message = { role: 'assistant', content: '' };
+            const assistantMessage: Message = {
+                role: 'assistant',
+                content: '',
+                timestamp: new Date().toISOString()
+            };
             setMessages(prev => [...prev, assistantMessage]);
 
             const reader = response.body?.getReader();
@@ -307,53 +520,113 @@ const ChatbotPage: React.FC = () => {
 
             if (reader) {
                 let accumulatedContent = '';
+                let buffer = '';
 
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
 
-                    const chunk = decoder.decode(value, { stream: true });
-                    const lines = chunk.split('\n');
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
 
                     for (const line of lines) {
-                        if (line.startsWith('data: ')) {
+                        const trimmedLine = line.trim();
+                        if (trimmedLine.startsWith('data: ')) {
                             try {
-                                const data = JSON.parse(line.slice(6));
+                                const data = JSON.parse(trimmedLine.slice(6));
 
                                 if (data.chunk) {
-                                    // Direct DOM manipulation or buffered state update could go here
-                                    // For now, valid React state update, just slightly batched impliictly by execution speed
                                     accumulatedContent += data.chunk;
-
                                     setMessages(prev => {
                                         const updated = [...prev];
-                                        const last = updated[updated.length - 1];
-                                        if (last.role === 'assistant') {
-                                            // Append only the NEW content since last render 
-                                            // Actually, simpler to just append the chunk to the last known state
-                                            last.content += data.chunk;
+                                        const lastIndex = updated.length - 1;
+                                        if (lastIndex >= 0 && updated[lastIndex].role === 'assistant') {
+                                            updated[lastIndex] = {
+                                                ...updated[lastIndex],
+                                                content: accumulatedContent
+                                            };
                                         }
                                         return updated;
                                     });
                                 }
 
-                                if (data.done) setCurrentConversationId(data.conversation_id);
+                                if (data.done) {
+                                    setCurrentConversationId(data.conversation_id);
+                                    setLastMessageContent(accumulatedContent);
+                                }
                                 if (data.error) setError(data.error);
-                            } catch { }
+                            } catch { /* ignore parse errors */ }
                         }
                     }
                 }
             }
         } catch (err: any) {
-            setError(err.message || 'Failed to send');
+            if (err.name === 'AbortError') {
+                // Request was cancelled, don't show error
+                return;
+            }
+            // Provide clearer error messages
+            let errorMessage = 'Failed to send message';
+            if (err.message === 'Failed to fetch' || err.message.includes('network')) {
+                errorMessage = 'Network error. Please check your connection and try again.';
+            } else if (err.message.includes('401') || err.message.includes('403')) {
+                errorMessage = 'Session expired. Please refresh the page.';
+            } else if (err.message.includes('500') || err.message.includes('503')) {
+                errorMessage = 'AI service is temporarily unavailable. Please try again in a moment.';
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            setError(errorMessage);
             setMessages(prev => prev.slice(0, -1));
         } finally {
             setIsLoading(false);
             setIsStreaming(false);
+            abortControllerRef.current = null;
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if ((e.key === 'Enter' && !e.shiftKey) || (e.key === 'Enter' && (e.ctrlKey || e.metaKey))) {
+            e.preventDefault();
+            sendMessage();
         }
     };
 
     const formatMessage = (content: string) => {
+        // Handle <think> blocks
+        if (content.includes('<think>')) {
+            const parts = content.split(/<think>([\s\S]*?)<\/think>/g);
+            return parts.map((part, i) => {
+                if (i % 2 === 1) { // This is the thinking content
+                    return (
+                        <Paper
+                            key={`think-${i}`}
+                            elevation={0}
+                            sx={{
+                                my: 1.5,
+                                p: 2,
+                                borderRadius: 2,
+                                borderLeft: '3px solid #6366f1',
+                                bgcolor: 'rgba(99, 102, 241, 0.05)',
+                                fontStyle: 'italic',
+                                color: 'grey.400',
+                                fontSize: '0.9rem',
+                            }}
+                        >
+                            <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 600, mb: 0.5, display: 'block', textTransform: 'uppercase', letterSpacing: 1 }}>
+                                Thought Process
+                            </Typography>
+                            {part.trim()}
+                        </Paper>
+                    );
+                }
+                // Regular content - recursively format code blocks
+                if (!part.trim()) return null;
+                return <Box key={i}>{formatMessage(part)}</Box>;
+            });
+        }
+
         const parts = content.split(/(```[\s\S]*?```)/g);
         return parts.map((part, i) => {
             if (part.startsWith('```') && part.endsWith('```')) {
@@ -379,7 +652,52 @@ const ChatbotPage: React.FC = () => {
 
     const drawerWidth = 280;
 
-    // Sidebar content - completely isolated from page scroll
+    // Render conversation group
+    const renderConversationGroup = (title: string, items: Conversation[]) => {
+        if (items.length === 0) return null;
+        return (
+            <Box key={title}>
+                <Typography variant="caption" sx={{ px: 2, py: 1, color: 'grey.600', fontWeight: 600, letterSpacing: 1, display: 'block' }}>
+                    {title}
+                </Typography>
+                {items.map((conv) => (
+                    <ListItem
+                        key={conv.id}
+                        disablePadding
+                        secondaryAction={
+                            <IconButton
+                                size="small"
+                                onClick={(e) => handleDeleteClick(conv.id, e)}
+                                sx={{ color: 'grey.700', '&:hover': { color: '#ef4444' } }}
+                            >
+                                <Delete fontSize="small" />
+                            </IconButton>
+                        }
+                    >
+                        <ListItemButton
+                            selected={currentConversationId === conv.id}
+                            onClick={() => loadConversation(conv.id)}
+                            sx={{
+                                borderRadius: 2,
+                                mb: 0.5,
+                                '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.08)' },
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' }
+                            }}
+                        >
+                            <ListItemText
+                                primary={conv.title}
+                                secondary={`${conv.message_count || 0} messages`}
+                                primaryTypographyProps={{ noWrap: true, fontSize: '0.9rem', color: 'grey.300' }}
+                                secondaryTypographyProps={{ fontSize: '0.7rem', color: 'grey.600' }}
+                            />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </Box>
+        );
+    };
+
+    // Sidebar content
     const sidebarContent = (
         <Box sx={{
             height: '100%',
@@ -388,46 +706,90 @@ const ChatbotPage: React.FC = () => {
             bgcolor: 'rgba(15, 23, 42, 0.98)',
             backdropFilter: 'blur(20px)',
         }}>
-            {/* Header - Fixed */}
+            {/* Header */}
             <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Avatar sx={{ width: 32, height: 32, background: selectedPersona.gradient }}>
                         {selectedPersona.icon}
                     </Avatar>
                     <Typography variant="h6" fontWeight={700} sx={{ background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                        ExpExc AI
+                        ExpectException - AI
                     </Typography>
                 </Box>
                 {isMobile && <IconButton onClick={() => setMobileDrawerOpen(false)} sx={{ color: 'grey.500' }}><Close /></IconButton>}
             </Box>
 
-            {/* New Chat Button & Back Home */}
+            {/* Buttons & Model Select (Mobile) */}
             <Box sx={{ px: 2, pb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {isMobile && availableModels.length > 0 && (
+                    <TextField
+                        select
+                        fullWidth
+                        label="AI Model"
+                        value={selectedModel}
+                        onChange={(e) => setSelectedModel(e.target.value)}
+                        SelectProps={{ native: true }}
+                        sx={{
+                            mb: 1,
+                            '& .MuiOutlinedInput-root': {
+                                color: 'grey.300',
+                                bgcolor: 'rgba(255,255,255,0.03)',
+                                borderRadius: 2,
+                                '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+                            },
+                            '& .MuiInputLabel-root': { color: 'grey.500' }
+                        }}
+                    >
+                        {availableModels.map(m => <option key={m} value={m}>{m}</option>)}
+                    </TextField>
+                )}
                 <Button fullWidth variant="contained" startIcon={<Add />} onClick={startNewConversation} sx={{ bgcolor: 'white', color: 'black', '&:hover': { bgcolor: 'grey.200' }, textTransform: 'none', fontWeight: 600, py: 1 }}>New Chat</Button>
                 <Button fullWidth variant="outlined" startIcon={<Home />} onClick={() => navigate('/')} sx={{ borderColor: 'rgba(255,255,255,0.2)', color: 'grey.400', '&:hover': { borderColor: 'white', color: 'white', bgcolor: 'rgba(255,255,255,0.05)' }, textTransform: 'none' }}>Back to Website</Button>
             </Box>
 
             <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
 
-            {/* History List - ONLY THIS SCROLLS */}
+            {/* History List */}
             <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', px: 1, py: 2 }}>
-                <Typography variant="caption" sx={{ px: 2, color: 'grey.600', fontWeight: 600, letterSpacing: 1 }}>HISTORY</Typography>
-                <List sx={{ mt: 1 }}>
-                    {conversations.map((conv) => (
-                        <ListItem key={conv.id} disablePadding secondaryAction={<IconButton size="small" onClick={(e) => deleteConversation(conv.id, e)} sx={{ color: 'grey.700', '&:hover': { color: '#ef4444' } }}><Delete fontSize="small" /></IconButton>}>
-                            <ListItemButton selected={currentConversationId === conv.id} onClick={() => loadConversation(conv.id)} sx={{ borderRadius: 2, mb: 0.5, '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.08)' }, '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' } }}>
-                                <ListItemText primary={conv.title} primaryTypographyProps={{ noWrap: true, fontSize: '0.9rem', color: 'grey.300' }} />
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
-                </List>
+                {conversations.length === 0 ? (
+                    <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
+                        <Typography variant="body2" color="grey.600">No conversations yet</Typography>
+                        <Typography variant="caption" color="grey.700">Start a new chat to begin</Typography>
+                    </Box>
+                ) : (
+                    <List sx={{ mt: 1 }}>
+                        {renderConversationGroup('TODAY', groupedConversations.today)}
+                        {renderConversationGroup('YESTERDAY', groupedConversations.yesterday)}
+                        {renderConversationGroup('LAST 7 DAYS', groupedConversations.lastWeek)}
+                        {renderConversationGroup('OLDER', groupedConversations.older)}
+                    </List>
+                )}
             </Box>
 
-            {/* Status Footer - Fixed */}
+            {/* Clear All Button */}
+            {conversations.length > 0 && (
+                <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                    <Button
+                        fullWidth
+                        variant="text"
+                        startIcon={<DeleteSweep />}
+                        onClick={handleClearAllClick}
+                        sx={{
+                            color: 'grey.600',
+                            textTransform: 'none',
+                            '&:hover': { color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.1)' }
+                        }}
+                    >
+                        Clear All Chats
+                    </Button>
+                </Box>
+            )}
+
+            {/* Status Footer */}
             <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                     <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: isAvailable ? '#10b981' : '#ef4444', boxShadow: isAvailable ? '0 0 10px #10b981' : 'none' }} />
-                    <Typography variant="caption" color="grey.400">{isAvailable ? 'Cloud Connected' : 'Connecting...'}</Typography>
+                    <Typography variant="caption" color="grey.400">{isAvailable ? 'AI Online' : 'Connecting...'}</Typography>
                 </Stack>
             </Box>
         </Box>
@@ -440,22 +802,59 @@ const ChatbotPage: React.FC = () => {
             width: '100vw',
             bgcolor: '#020617',
             color: 'white',
-            position: 'fixed', // Force fixed to viewport to prevent scrolling anomalies
+            position: 'fixed',
             inset: 0,
             overflow: 'hidden',
         }}>
             <Seo title="ExpExc AI Chat" description="Premium Cloud-Based AI Assistant" />
 
-            {/* Background Effects */}
-            <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
-                <Box sx={{ position: 'absolute', top: '20%', left: '10%', width: 300, height: 300, background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', borderRadius: '50%' }} />
-                <Box sx={{ position: 'absolute', bottom: '20%', right: '10%', width: 400, height: 400, background: 'radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%)', borderRadius: '50%' }} />
-            </Box>
+            {/* Delete Confirmation Dialog */}
+            <Dialog
+                open={deleteDialogOpen}
+                onClose={() => setDeleteDialogOpen(false)}
+                PaperProps={{ sx: { bgcolor: '#1e293b', color: 'white', borderRadius: 3 } }}
+            >
+                <DialogTitle>Delete Conversation?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ color: 'grey.400' }}>
+                        This action cannot be undone. This conversation and all its messages will be permanently deleted.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: 'grey.400' }}>Cancel</Button>
+                    <Button onClick={confirmDelete} variant="contained" color="error">Delete</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Clear All Confirmation Dialog */}
+            <Dialog
+                open={clearAllDialogOpen}
+                onClose={() => { setClearAllDialogOpen(false); setClearAllConfirmStep(0); }}
+                PaperProps={{ sx: { bgcolor: '#1e293b', color: 'white', borderRadius: 3 } }}
+            >
+                <DialogTitle sx={{ color: '#ef4444' }}>
+                    {clearAllConfirmStep === 1 ? '⚠️ Clear All Chats?' : '⚠️ Are you absolutely sure?'}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ color: 'grey.400' }}>
+                        {clearAllConfirmStep === 1
+                            ? `This will permanently delete all ${conversations.length} conversation(s).`
+                            : 'This is your final warning. All chats will be gone forever!'
+                        }
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => { setClearAllDialogOpen(false); setClearAllConfirmStep(0); }} sx={{ color: 'grey.400' }}>Cancel</Button>
+                    <Button onClick={confirmClearAll} variant="contained" color="error">
+                        {clearAllConfirmStep === 1 ? 'Continue' : 'Delete Everything'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Mobile Drawer */}
             <Drawer variant="temporary" open={mobileDrawerOpen} onClose={() => setMobileDrawerOpen(false)} PaperProps={{ sx: { width: drawerWidth, bgcolor: 'transparent', border: 'none' } }}>{sidebarContent}</Drawer>
 
-            {/* Desktop Sidebar - Fixed position, no scroll */}
+            {/* Desktop Sidebar */}
             {!isMobile && (
                 <Collapse orientation="horizontal" in={desktopSidebarOpen}>
                     <Box sx={{
@@ -463,14 +862,14 @@ const ChatbotPage: React.FC = () => {
                         height: '100%',
                         borderRight: '1px solid rgba(255,255,255,0.08)',
                         flexShrink: 0,
-                        overflow: 'hidden' // Prevent sidebar container from scrolling
+                        overflow: 'hidden'
                     }}>
                         {sidebarContent}
                     </Box>
                 </Collapse>
             )}
 
-            {/* Main Chat Area - This is the ONLY scrollable area */}
+            {/* Main Chat Area */}
             <Box sx={{
                 flex: 1,
                 display: 'flex',
@@ -478,33 +877,103 @@ const ChatbotPage: React.FC = () => {
                 position: 'relative',
                 zIndex: 1,
                 overflow: 'hidden',
-                minWidth: 0 // Allow flex item to shrink
+                minWidth: 0
             }}>
-                {/* Header - Fixed */}
-                <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backdropFilter: 'blur(10px)', bgcolor: 'rgba(2, 6, 23, 0.8)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        {isMobile ? <IconButton onClick={() => setMobileDrawerOpen(true)} color="inherit"><MenuIcon /></IconButton> : <IconButton onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)} color="inherit">{desktopSidebarOpen ? <ViewSidebar /> : <ViewSidebar sx={{ transform: 'rotate(180deg)' }} />}</IconButton>}
+                <Box sx={{
+                    p: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backdropFilter: 'blur(10px)',
+                    bgcolor: 'rgba(2, 6, 23, 0.8)',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    position: 'relative',
+                    zIndex: 10
+                }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 }, flex: 1, minWidth: 0 }}>
+                        {isMobile ? (
+                            <IconButton onClick={() => setMobileDrawerOpen(true)} color="inherit"><MenuIcon /></IconButton>
+                        ) : (
+                            <IconButton onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)} color="inherit">
+                                {desktopSidebarOpen ? <ViewSidebar /> : <ViewSidebar sx={{ transform: 'rotate(180deg)' }} />}
+                            </IconButton>
+                        )}
+
+                        {/* Model Selector */}
+                        {/* {!isMobile && availableModels.length > 0 && (
+                            <TextField
+                                select
+                                size="small"
+                                value={selectedModel}
+                                onChange={(e) => setSelectedModel(e.target.value)}
+                                SelectProps={{ native: true }}
+                                sx={{
+                                    width: 180,
+                                    '& .MuiOutlinedInput-root': {
+                                        color: 'grey.300',
+                                        fontSize: '0.8rem',
+                                        bgcolor: 'rgba(255,255,255,0.03)',
+                                        borderRadius: 2,
+                                        '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+                                        '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                                    }
+                                }}
+                            >
+                                {availableModels.map(m => <option key={m} value={m}>{m}</option>)}
+                            </TextField>
+                        )} */}
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 0.5, bgcolor: alpha(selectedPersona.color, 0.15), borderRadius: 3, border: `1px solid ${alpha(selectedPersona.color, 0.3)}` }}>
-                        <Box sx={{ color: selectedPersona.color, display: 'flex' }}>{selectedPersona.icon}</Box>
-                        <Typography variant="caption" sx={{ color: selectedPersona.color, fontWeight: 600 }}>{customNames[selectedPersona.id] || selectedPersona.name}</Typography>
-                        <IconButton size="small" onClick={handleRename} sx={{ ml: -0.5, p: 0.5, color: selectedPersona.color, opacity: 0.7, '&:hover': { opacity: 1 } }}><Edit sx={{ fontSize: 14 }} /></IconButton>
+
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        px: { xs: 1, md: 2 },
+                        py: 0.5,
+                        bgcolor: alpha(selectedPersona.color, 0.15),
+                        borderRadius: 3,
+                        border: `1px solid ${alpha(selectedPersona.color, 0.3)}`,
+                        maxWidth: { xs: '150px', md: 'none' },
+                        overflow: 'hidden'
+                    }}>
+                        <Box sx={{ color: selectedPersona.color, display: 'flex', flexShrink: 0 }}>
+                            {React.cloneElement(selectedPersona.icon as React.ReactElement, { sx: { fontSize: { xs: 16, md: 20 } } })}
+                        </Box>
+                        <Typography variant="caption" sx={{
+                            color: selectedPersona.color,
+                            fontWeight: 600,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            fontSize: { xs: '0.7rem', md: '0.75rem' }
+                        }}>
+                            {customNames[selectedPersona.id] || selectedPersona.name}
+                        </Typography>
+                        <IconButton size="small" onClick={handleRename} sx={{ ml: -0.5, p: 0.2, color: selectedPersona.color, opacity: 0.7, '&:hover': { opacity: 1 } }}>
+                            <Edit sx={{ fontSize: 12 }} />
+                        </IconButton>
                     </Box>
                 </Box>
 
-                {/* Messages Area - THE ONLY SCROLLABLE AREA */}
-                <Box sx={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    overflowX: 'hidden',
-                    p: 3
-                }}>
-                    {error && <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2, bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5' }}>{error}</Alert>}
+                {/* Messages Area with Star Background */}
+                <Box
+                    ref={messagesContainerRef}
+                    sx={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        p: 3,
+                        position: 'relative',
+                    }}
+                >
+                    <CleanStarBackground />
+
+                    {error && <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2, bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5', position: 'relative', zIndex: 1 }}>{error}</Alert>}
 
                     {/* Empty State with Persona Selection */}
                     {messages.length === 0 && (
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                            <Box sx={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 4 }}>
+                            <Box sx={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 4, position: 'relative', zIndex: 1 }}>
                                 <Box sx={{ my: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
                                     {/* Logo */}
                                     <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
@@ -516,7 +985,9 @@ const ChatbotPage: React.FC = () => {
                                     <Typography variant="h4" fontWeight={700} gutterBottom sx={{ textAlign: 'center', background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                                         {selectedPersona.id === 'general' ? 'How can I help you?' : `Chat with ${selectedPersona.name}`}
                                     </Typography>
-                                    <Typography variant="body2" color="grey.500" sx={{ mb: 3 }}>Powered by ExpExc Cloud</Typography>
+                                    <Typography variant="body2" color="grey.500" sx={{ mb: 3 }}>
+                                        Powered by ExpExc Cloud <span style={{ fontSize: '10px', opacity: 0.5 }}>(v3.0.1)</span>
+                                    </Typography>
 
                                     {/* Persona Selection */}
                                     <Typography variant="body2" color="grey.400" sx={{ mb: 2 }}>Choose your assistant:</Typography>
@@ -544,7 +1015,7 @@ const ChatbotPage: React.FC = () => {
 
                                     {!isAvailable && <Alert severity="info" sx={{ mb: 3, bgcolor: 'rgba(30, 41, 59, 0.8)', color: '#93c5fd' }}>Connecting to cloud...</Alert>}
 
-                                    {/* Dynamic Suggestions based on selected persona */}
+                                    {/* Dynamic Suggestions */}
                                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 600 }}>
                                         {selectedPersona.suggestions.map((s, i) => (
                                             <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + i * 0.1 }} whileHover={{ scale: 1.05 }}>
@@ -561,27 +1032,54 @@ const ChatbotPage: React.FC = () => {
                     )}
 
                     {/* Messages List */}
-                    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+                    <Box sx={{ maxWidth: 800, mx: 'auto', position: 'relative', zIndex: 1 }}>
                         <AnimatePresence>
                             {messages.map((msg, idx) => (
                                 <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                                     <Box sx={{ display: 'flex', gap: 2, mb: 4, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
-                                        <Avatar sx={{ width: 36, height: 36, bgcolor: msg.role === 'user' ? 'grey.800' : 'transparent', background: msg.role === 'assistant' ? selectedPersona.gradient : undefined, flexShrink: 0 }}>
+                                        <Avatar sx={{ width: 36, height: 36, bgcolor: msg.role === 'user' ? 'rgba(255,255,255,0.1)' : 'transparent', background: msg.role === 'assistant' ? selectedPersona.gradient : undefined, flexShrink: 0, border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>
                                             {msg.role === 'user' ? <Person fontSize="small" /> : selectedPersona.icon}
                                         </Avatar>
                                         <Box sx={{ maxWidth: '80%' }}>
-                                            <Paper sx={{ p: 2.5, borderRadius: 3, bgcolor: msg.role === 'user' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.02)', border: msg.role === 'assistant' ? '1px solid rgba(255,255,255,0.05)' : 'none', color: 'grey.100' }}>
-                                                <Typography component="div" sx={{ lineHeight: 1.7 }}>{formatMessage(msg.content)}</Typography>
-                                            </Paper>
-                                            {msg.role === 'assistant' && !isStreaming && (
-                                                <Box sx={{ display: 'flex', gap: 1, mt: 1, ml: 1 }}>
-                                                    <Tooltip title={copiedIndex === idx ? 'Copied!' : 'Copy'}>
-                                                        <IconButton size="small" onClick={() => copyToClipboard(msg.content, idx)} sx={{ color: 'grey.600' }}>
-                                                            {copiedIndex === idx ? <Check fontSize="small" color="success" /> : <ContentCopy fontSize="small" />}
-                                                        </IconButton>
+                                            <Box sx={{
+                                                py: 1.5,
+                                                px: msg.role === 'user' ? 0 : 1,
+                                                color: 'grey.100',
+                                                textAlign: msg.role === 'user' ? 'right' : 'left',
+                                            }}>
+                                                <Typography component="div" sx={{
+                                                    lineHeight: 1.8,
+                                                    textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)',
+                                                    fontSize: '0.95rem',
+                                                }}>{formatMessage(msg.content)}</Typography>
+                                            </Box>
+                                            {/* Message footer with timestamp and actions */}
+                                            <Box sx={{ display: 'flex', gap: 1, mt: 1, ml: 1, alignItems: 'center' }}>
+                                                {msg.timestamp && (
+                                                    <Tooltip title={new Date(msg.timestamp).toLocaleString()}>
+                                                        <Typography variant="caption" sx={{ color: 'grey.700', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            <AccessTime sx={{ fontSize: 12 }} />
+                                                            {formatTimestamp(new Date(msg.timestamp))}
+                                                        </Typography>
                                                     </Tooltip>
-                                                </Box>
-                                            )}
+                                                )}
+                                                {msg.role === 'assistant' && !isStreaming && (
+                                                    <>
+                                                        <Tooltip title={copiedIndex === idx ? 'Copied!' : 'Copy'}>
+                                                            <IconButton size="small" onClick={() => copyToClipboard(msg.content, idx)} sx={{ color: 'grey.600' }}>
+                                                                {copiedIndex === idx ? <Check fontSize="small" color="success" /> : <ContentCopy fontSize="small" />}
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        {idx === messages.length - 1 && (
+                                                            <Tooltip title="Regenerate response">
+                                                                <IconButton size="small" onClick={regenerateResponse} sx={{ color: 'grey.600' }}>
+                                                                    <Refresh fontSize="small" />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </Box>
                                         </Box>
                                     </Box>
                                 </motion.div>
@@ -593,7 +1091,7 @@ const ChatbotPage: React.FC = () => {
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
                                     <Avatar sx={{ width: 36, height: 36, background: selectedPersona.gradient, flexShrink: 0 }}>{selectedPersona.icon}</Avatar>
-                                    <Paper sx={{ p: 2, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <Box sx={{ py: 1.5, px: 1 }}>
                                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                                             {[0, 1, 2].map(i => (
                                                 <motion.div key={i} animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}>
@@ -602,15 +1100,34 @@ const ChatbotPage: React.FC = () => {
                                             ))}
                                             <Typography variant="body2" color="grey.500" sx={{ ml: 1 }}>{selectedPersona.thinkingText}</Typography>
                                         </Box>
-                                    </Paper>
+                                    </Box>
                                 </Box>
                             </motion.div>
                         )}
                         <div ref={messagesEndRef} />
                     </Box>
+
+                    {/* Scroll to bottom button */}
+                    <Zoom in={showScrollButton}>
+                        <IconButton
+                            onClick={scrollToBottom}
+                            sx={{
+                                position: 'fixed',
+                                bottom: 100,
+                                right: 24,
+                                bgcolor: 'rgba(30, 41, 59, 0.9)',
+                                color: 'white',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                '&:hover': { bgcolor: 'rgba(30, 41, 59, 1)' },
+                                zIndex: 10,
+                            }}
+                        >
+                            <KeyboardArrowDown />
+                        </IconButton>
+                    </Zoom>
                 </Box>
 
-                {/* Input Area - Fixed at Bottom */}
+                {/* Input Area */}
                 <Box sx={{ p: 2, pb: 1, display: 'flex', justifyContent: 'center', background: 'linear-gradient(to top, #020617 80%, transparent)' }}>
                     <Paper elevation={4} sx={{ p: '4px 8px', display: 'flex', alignItems: 'center', width: '100%', maxWidth: 800, borderRadius: 4, bgcolor: 'rgba(30, 41, 59, 0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.3s', '&:hover, &:focus-within': { bgcolor: 'rgba(30, 41, 59, 0.8)', borderColor: selectedPersona.color } }}>
                         <TextField
@@ -621,11 +1138,17 @@ const ChatbotPage: React.FC = () => {
                             placeholder={`Message ${selectedPersona.name}...`}
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            onKeyPress={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+                            onKeyDown={handleKeyDown}
                             sx={{ ml: 2, flex: 1, '& .MuiInputBase-root': { color: 'white' } }}
                             variant="standard"
                             InputProps={{ disableUnderline: true }}
                         />
+                        {/* Character count */}
+                        {inputValue.length > 0 && (
+                            <Typography variant="caption" sx={{ color: inputValue.length > 4000 ? 'error.main' : 'grey.600', mr: 1 }}>
+                                {inputValue.length}
+                            </Typography>
+                        )}
                         <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                             <IconButton
                                 onClick={() => sendMessage()}

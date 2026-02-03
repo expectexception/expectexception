@@ -3,8 +3,20 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 const isReactSnap = () => typeof navigator !== 'undefined' && navigator.userAgent === 'ReactSnap';
 
 // Get base URL from environment variable or use default
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
-const WS_BASE_URL = process.env.REACT_APP_WS_BASE_URL || 'ws://localhost:8000';
+// Get base URL - support dynamic origin for production while keeping localhost default for dev
+const getBaseUrl = () => {
+    if (process.env.REACT_APP_API_BASE_URL) return process.env.REACT_APP_API_BASE_URL;
+    if (typeof window !== 'undefined') {
+        const origin = window.location.origin;
+        if (!origin.includes('localhost') && !origin.includes('127.0.0.1')) {
+            return origin;
+        }
+    }
+    return 'http://localhost:8000';
+};
+
+const API_BASE_URL = getBaseUrl();
+const WS_BASE_URL = API_BASE_URL.replace('http', 'ws');
 
 // Create axios instance with default config
 const apiClient: AxiosInstance = axios.create({
