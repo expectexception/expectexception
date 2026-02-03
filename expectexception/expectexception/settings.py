@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+from django.utils.translation import gettext_lazy as _
+from django.urls import reverse_lazy
 
 load_dotenv()
 
@@ -12,6 +14,9 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost').split(',') + ['djangobackend', 'ytd.expectexception.com']
 CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',') + ['https://ytd.expectexception.com']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Ensure upload directory exists
+os.makedirs('/tmp/django_uploads', exist_ok=True)
 
 # Session and CSRF cookies - Secure for HTTPS
 SESSION_COOKIE_SECURE = True
@@ -61,14 +66,14 @@ SITE_ID = 1
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.services.middleware.RequestLoggingMiddleware',
-    'apps.services.middleware.PerformanceMonitoringMiddleware',
+    'apps.services.middleware.ProLevelLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'expectexception.urls'
@@ -109,7 +114,11 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR.parent / "frontendExpExc" / "build",
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -128,6 +137,7 @@ REST_FRAMEWORK = {
     ),
     'PAGE_SIZE': 10,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'EXCEPTION_HANDLER': 'apps.services.exceptions.custom_exception_handler',
 }
 
 SIMPLE_JWT = {
@@ -369,8 +379,16 @@ FILE_UPLOAD_TEMP_DIR = '/tmp/django_uploads'
 # Pull model: ollama pull smollm2:1.7b
 
 OLLAMA_BASE_URL = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
-CHATBOT_MODEL = os.getenv('CHATBOT_MODEL', 'dolphin-llama3')
+CHATBOT_MODEL = os.getenv('CHATBOT_MODEL', 'qwen3:4b')
 CHATBOT_MAX_TOKENS = int(os.getenv('CHATBOT_MAX_TOKENS', '2048'))
+
+# =============================================================================
+# GPU Acceleration Settings
+# =============================================================================
+USE_GPU = os.getenv('USE_GPU', 'True') == 'True'
+GPU_DEVICE = os.getenv('GPU_DEVICE', 'cuda:0')  # Default to first GPU
+GPU_MEMORY_FRACTION = float(os.getenv('GPU_MEMORY_FRACTION', '0.8'))  # Reserve 80% VRAM
+CPU_FALLBACK = True  # Fallback to CPU if GPU fails/OOM
 
 # =============================================================================
 # Unfold Admin Configuration
@@ -380,18 +398,102 @@ UNFOLD = {
     "SITE_HEADER": "ExpectException Dashboard",
     "SITE_URL": "/",
     "DASHBOARD_CALLBACK": "apps.dashboard.views.dashboard_callback",
+    "ENVIRONMENT": "apps.services.utils.environment_callback",
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": _("General"),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("Dashboard"),
+                        "icon": "dashboard",
+                        "link": reverse_lazy("admin:index"),
+                    },
+                    {
+                        "title": _("Users"),
+                        "icon": "people",
+                        "link": reverse_lazy("admin:users_user_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Apps"),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("Blog"),
+                        "icon": "article",
+                        "link": reverse_lazy("admin:blog_post_changelist"),
+                    },
+                    {
+                        "title": _("Chatbot"),
+                        "icon": "chat",
+                        "link": reverse_lazy("admin:chatbot_message_changelist"),
+                    },
+                    {
+                        "title": _("Downloads"),
+                        "icon": "download",
+                        "link": reverse_lazy("admin:services_downloadableresource_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("System"),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("Server Health"),
+                        "icon": "monitor_heart",
+                        "link": reverse_lazy("admin:services_serverhealth_changelist"),
+                        "badge": "live",
+                    },
+                    {
+                        "title": _("Log Analysis"),
+                        "icon": "analytics",
+                        "link": reverse_lazy("admin:services_loganalysis_changelist"),
+                    },
+                    {
+                        "title": _("Tool Usage"),
+                        "icon": "build",
+                        "link": reverse_lazy("admin:services_toolusage_changelist"),
+                    },
+                ],
+            },
+        ],
+    },
     "COLORS": {
         "primary": {
-            "50": "239 246 255",
-            "100": "219 234 254",
-            "200": "191 219 254",
-            "300": "147 197 253",
-            "400": "96 165 250",
-            "500": "59 130 246",
-            "600": "37 99 235",
-            "700": "29 78 216",
-            "800": "30 64 175",
-            "900": "30 58 138",
+            "50": "250 245 255",
+            "100": "243 232 255",
+            "200": "233 213 255",
+            "300": "216 180 254",
+            "400": "192 132 252",
+            "500": "168 85 247",
+            "600": "147 51 234",
+            "700": "126 34 206",
+            "800": "107 33 168",
+            "900": "88 28 135",
         },
     },
+    "TABS": [
+        {
+            "models": [
+                "chatbot.message",
+                "chatbot.conversation",
+            ],
+            "items": [
+                {
+                    "title": _("Messages"),
+                    "link": reverse_lazy("admin:chatbot_message_changelist"),
+                },
+                {
+                    "title": _("Conversations"),
+                    "link": reverse_lazy("admin:chatbot_conversation_changelist"),
+                },
+            ],
+        },
+    ],
 }

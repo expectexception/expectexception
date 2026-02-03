@@ -39,36 +39,62 @@ def get_session_id(request):
 def check_status(request):
     """Check if Ollama is available and return status."""
     is_available = ollama_service.is_available()
-    models = ollama_service.get_models() if is_available else []
+    raw_models = ollama_service.get_models() if is_available else []
+    
+    # Extract just the names for the frontend, but can keep others
+    models = [m['name'] for m in raw_models]
+    
+    # Get standard GPU info
+    from apps.services.gpu_utils import get_gpu_info
+    gpu_stats = get_gpu_info()
     
     return Response({
         'available': is_available,
         'models': models,
         'current_model': ollama_service.model,
+        'gpu_stats': gpu_stats,
     })
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def list_conversations(request):
-    """Get list of user's conversations."""
+    """Get list of user's conversations with optimized query."""
     if request.user.is_authenticated:
         conversations = Conversation.objects.filter(user=request.user)
     else:
         session_id = get_session_id(request)
         conversations = Conversation.objects.filter(session_id=session_id)
     
-    serializer = ConversationSerializer(conversations[:20], many=True)
+    # Prefetch related messages for count annotation to avoid N+1 queries
+    conversations = conversations.prefetch_related('messages').order_by('-updated_at')[:20]
+    
+    serializer = ConversationSerializer(conversations, many=True)
     return Response(serializer.data)
+
+
+# Cache for personas to avoid file reads on every request
+_personas_cache = None
+_personas_cache_time = 0
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def list_personas(request):
-    """Get available personas from backend JSON."""
+    """Get available personas from backend JSON with caching."""
+    global _personas_cache, _personas_cache_time
+    
+    # Cache personas for 5 minutes (300 seconds)
+    if _personas_cache is not None and (time.time() - _personas_cache_time) < 300:
+        return Response(_personas_cache)
+    
     try:
         json_path = os.path.join(settings.BASE_DIR, 'apps/chatbot/data/personas.json')
         with open(json_path, 'r') as f:
             personas = json.load(f)
+        
+        _personas_cache = personas
+        _personas_cache_time = time.time()
+        
         return Response(personas)
     except Exception as e:
         logger.error(f"Failed to load personas: {e}")
@@ -94,6 +120,22 @@ def conversation_detail(request, pk):
     
     serializer = ConversationDetailSerializer(conversation)
     return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def clear_conversations(request):
+    """Delete all conversations for the current user/session."""
+    if request.user.is_authenticated:
+        deleted_count, _ = Conversation.objects.filter(user=request.user).delete()
+    else:
+        session_id = get_session_id(request)
+        deleted_count, _ = Conversation.objects.filter(session_id=session_id).delete()
+    
+    return Response({
+        'status': 'success',
+        'deleted_count': deleted_count
+    })
 
 
 # --- Async Helper Functions ---
@@ -256,12 +298,14 @@ def chat_sync(request):
         except Exception:
             pass
     
+    model = serializer.validated_data.get('model')
+    
     # Get response
     messages = conversation.get_messages_for_context()
     start_time = time.time()
     
     full_response = ""
-    for chunk in ollama_service.chat(messages, stream=False):
+    for chunk in ollama_service.chat(messages, stream=False, model=model):
         full_response += chunk
     
     generation_time = time.time() - start_time

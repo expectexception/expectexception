@@ -53,6 +53,7 @@ class ChatRequestSerializer(serializers.Serializer):
     message = serializers.CharField(max_length=10000)
     conversation_id = serializers.IntegerField(required=False, allow_null=True)
     system_prompt = serializers.CharField(max_length=2000, required=False, allow_blank=True, default='')
+    model = serializers.CharField(max_length=100, required=False, allow_blank=True, default='')
     
     def validate_message(self, value):
         return value.strip()

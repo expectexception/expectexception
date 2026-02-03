@@ -139,11 +139,20 @@ def analyze_image(request):
         # AI Detection with ensemble
         logger.info(f"Analyzing image: {filename} (ensemble={use_ensemble})")
         detector = EnsembleDetector()
-        raw_results = detector.detect(tmp_path, use_ensemble=use_ensemble)
+        
+        # Execute detection and metadata extraction in parallel to reduce latency
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future_detection = executor.submit(detector.detect, tmp_path, use_ensemble=use_ensemble)
+            future_context = executor.submit(gather_image_context, tmp_path)
+            
+            # Wait for results
+            raw_results = future_detection.result()
+            metadata, stats, ela_image = future_context.result()
+            
         results = format_results(raw_results)
         
-        # Run heavy metadata/stats/ELA work in parallel to trim latency
-        metadata, stats, ela_image = gather_image_context(tmp_path)
+        # Run heavy metadata/stats/ELA work in parallel to trim latency (Already done above)
         ela_base64 = None
         if ela_image:
             buffered = BytesIO()
@@ -214,9 +223,13 @@ def analyze_image(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     finally:
+        # Ensure temp file cleanup with better error handling
         if tmp_path and os.path.exists(tmp_path):
             try:
                 os.unlink(tmp_path)
+                logger.debug(f"Cleaned up temp file: {tmp_path}")
+            except PermissionError:
+                logger.error(f"Permission denied deleting temp file {tmp_path}")
             except Exception as cleanup_error:
                 logger.warning(f"Failed to cleanup temp file {tmp_path}: {cleanup_error}")
 

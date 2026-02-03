@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django.http import HttpResponse
 from .utils import generate_handwriting_image
 from io import BytesIO
@@ -9,8 +10,8 @@ class GenerateHandwritingView(APIView):
     """
     API View to generate handwriting image from text.
     """
-    authentication_classes = [] # Allow public access if desired, or restrict
-    permission_classes = []
+    permission_classes = [permissions.AllowAny]
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
 
     def post(self, request):
         text = request.data.get('text', '')

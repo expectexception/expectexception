@@ -233,64 +233,96 @@ const HomePage: React.FC = () => {
                   A comprehensive suite of tools for developers, content creators, and power users.
                   Everything you need in one place.
                 </Typography>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 4 }} flexWrap="wrap">
-                  <Button
-                    component={Link}
-                    to="/services"
-                    variant="contained"
-                    size="large"
-                    endIcon={<ArrowForward />}
-                    sx={{
-                      bgcolor: theme.palette.primary.main,
-                      color: 'white',
-                      px: { xs: 3, sm: 4 },
-                      py: { xs: 1.25, sm: 1.5 },
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
-                      '&:hover': {
-                        bgcolor: theme.palette.primary.dark,
-                      },
-                    }}
-                  >
-                    Explore Tools
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="/hire"
-                    variant="contained"
-                    size="large"
-                    sx={{
-                      background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)',
-                      color: 'white',
-                      px: { xs: 3, sm: 4 },
-                      py: { xs: 1.25, sm: 1.5 },
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #6d28d9 0%, #1d4ed8 100%)',
-                      },
-                    }}
-                  >
-                    Hire Developer
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="/downloads"
-                    variant="outlined"
-                    size="large"
-                    sx={{
-                      borderColor: theme.palette.primary.main,
-                      color: theme.palette.primary.main,
-                      px: { xs: 3, sm: 4 },
-                      py: { xs: 1.25, sm: 1.5 },
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
-                      '&:hover': {
-                        borderColor: theme.palette.primary.dark,
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                      },
-                    }}
-                  >
-                    Download Hub
-                  </Button>
-                </Stack>
+                <Grid container spacing={2} sx={{ mt: 4, maxWidth: 600 }}>
+                  <Grid item xs={12} sm={6}>
+                    <Button
+                      component={Link}
+                      to="/chat"
+                      variant="contained"
+                      size="large"
+                      fullWidth
+                      startIcon={<Psychology />}
+                      sx={{
+                        background: 'linear-gradient(135deg, #f43f5e 0%, #fb923c 100%)',
+                        color: 'white',
+                        py: { xs: 1.25, sm: 1.5 },
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        fontWeight: 700,
+                        boxShadow: '0 4px 15px rgba(244, 63, 94, 0.4)',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #e11d48 0%, #f97316 100%)',
+                          boxShadow: '0 6px 20px rgba(244, 63, 94, 0.6)',
+                          transform: 'translateY(-2px)',
+                        },
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      AI Assistant
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Button
+                      component={Link}
+                      to="/services"
+                      variant="contained"
+                      size="large"
+                      fullWidth
+                      endIcon={<ArrowForward />}
+                      sx={{
+                        bgcolor: theme.palette.primary.main,
+                        color: 'white',
+                        py: { xs: 1.25, sm: 1.5 },
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        '&:hover': {
+                          bgcolor: theme.palette.primary.dark,
+                        },
+                      }}
+                    >
+                      Explore Tools
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Button
+                      component={Link}
+                      to="/hire"
+                      variant="contained"
+                      size="large"
+                      fullWidth
+                      sx={{
+                        background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)',
+                        color: 'white',
+                        py: { xs: 1.25, sm: 1.5 },
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #6d28d9 0%, #1d4ed8 100%)',
+                        },
+                      }}
+                    >
+                      Hire Developer
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Button
+                      component={Link}
+                      to="/downloads"
+                      variant="outlined"
+                      size="large"
+                      fullWidth
+                      sx={{
+                        borderColor: theme.palette.primary.main,
+                        color: theme.palette.primary.main,
+                        py: { xs: 1.25, sm: 1.5 },
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        '&:hover': {
+                          borderColor: theme.palette.primary.dark,
+                          bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        },
+                      }}
+                    >
+                      Download Hub
+                    </Button>
+                  </Grid>
+                </Grid>
               </motion.div>
             </Grid>
             <Grid item xs={12} md={6}>

@@ -284,10 +284,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     }}
                 >
                     <Container maxWidth="xl">
-                        <Toolbar sx={{ px: { xs: 1, md: 2 }, minHeight: { xs: 56, sm: 64, md: 70 } }}>
+                        <Toolbar sx={{ px: { xs: 0.5, sm: 1, md: 2 }, minHeight: { xs: 52, sm: 58, md: 64 }, flexWrap: 'nowrap' }}>
                             {/* Logo */}
-                            <Box sx={{ display: 'flex', alignItems: 'center', mr: { xs: 1, md: 4 } }}>
-                                <Dashboard sx={{ color: 'primary.main', fontSize: { xs: 24, md: 32 }, mr: 1 }} />
+                            <Box sx={{ display: 'flex', alignItems: 'center', mr: { xs: 1, md: 4 }, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                <Dashboard sx={{ color: 'primary.main', fontSize: { xs: 20, sm: 24, md: 28 }, mr: 0.5 }} />
                                 <Typography
                                     variant="h6"
                                     component={Link}
@@ -298,8 +298,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                         WebkitBackgroundClip: 'text',
                                         WebkitTextFillColor: 'transparent',
                                         textDecoration: 'none',
-                                        fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
+                                        fontSize: { xs: '0.85rem', sm: '1rem', md: '1.25rem' },
                                         letterSpacing: '-0.02em',
+                                        whiteSpace: 'nowrap',
                                     }}
                                 >
                                     ExpectException
@@ -307,17 +308,26 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             </Box>
 
                             {/* Desktop Navigation */}
-                            <Box sx={{ display: { xs: 'none', md: 'flex' }, flexGrow: 1, gap: 1 }}>
+                            <Box sx={{ display: { xs: 'none', md: 'flex' }, flexGrow: 1, gap: 0.5, ml: 1 }}>
                                 {navItems.map((item) => (
                                     <Button
                                         key={item.label}
                                         component={Link}
                                         to={item.path}
                                         startIcon={item.icon}
+                                        size="small"
                                         sx={{
                                             color: location.pathname === item.path ? 'primary.main' : 'text.secondary',
                                             fontWeight: location.pathname === item.path ? 600 : 400,
+                                            fontSize: '0.85rem',
+                                            px: 1.5,
+                                            py: 0.5,
+                                            minWidth: 'auto',
                                             position: 'relative',
+                                            whiteSpace: 'nowrap',
+                                            '& .MuiButton-startIcon': {
+                                                marginRight: 0.5,
+                                            },
                                             '&::after': {
                                                 content: '""',
                                                 position: 'absolute',
@@ -344,10 +354,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             </Box>
 
                             {/* Right Side Actions */}
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 2 }, ml: 'auto' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.25, sm: 0.5, md: 1 }, ml: 'auto' }}>
                                 <Tooltip title="Search">
-                                    <IconButton onClick={handleSearchOpen}>
-                                        <Search />
+                                    <IconButton onClick={handleSearchOpen} size="small" sx={{ p: { xs: 0.5, sm: 1 } }}>
+                                        <Search sx={{ fontSize: { xs: 20, sm: 24 } }} />
                                     </IconButton>
                                 </Tooltip>
 
@@ -408,11 +418,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                 </Menu>
 
                                 {/* Desktop Auth */}
-                                <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1 }}>
+                                <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: { sm: 0.5, md: 1 } }}>
                                     {isAuthenticated ? (
                                         <>
-                                            <IconButton onClick={handleProfileMenuOpen}>
-                                                <Avatar sx={{ bgcolor: 'secondary.main', width: 40, height: 40 }}>
+                                            <IconButton onClick={handleProfileMenuOpen} size="small">
+                                                <Avatar sx={{ bgcolor: 'secondary.main', width: { sm: 32, md: 36 }, height: { sm: 32, md: 36 }, fontSize: '0.9rem' }}>
                                                     {user?.email?.charAt(0).toUpperCase() || <Person />}
                                                 </Avatar>
                                             </IconButton>
@@ -448,10 +458,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                         </>
                                     ) : (
                                         <>
-                                            <Button component={Link} to="/login" variant="text">
+                                            <Button component={Link} to="/login" variant="text" size="small" sx={{ fontSize: '0.8rem', px: 1.5, minWidth: 'auto', whiteSpace: 'nowrap' }}>
                                                 Sign In
                                             </Button>
-                                            <Button component={Link} to="/register" variant="contained">
+                                            <Button component={Link} to="/register" variant="contained" size="small" sx={{ fontSize: '0.8rem', px: 1.5, minWidth: 'auto', whiteSpace: 'nowrap' }}>
                                                 Register
                                             </Button>
                                         </>

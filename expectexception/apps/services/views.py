@@ -1504,11 +1504,37 @@ class ImageResizerView(APIView):
 
 
 class BackgroundRemoverView(APIView):
-    """Remove background from images using rembg"""
+    """Remove background from images using rembg with GPU acceleration"""
     permission_classes = [AllowAny]
     parser_classes = [MultiPartParser, FormParser]
     
+    # GPU session singleton (initialized on first use)
+    _gpu_session = None
+    _session_initialized = False
+    
+    @classmethod
+    def get_rembg_session(cls):
+        """Get or create a GPU-accelerated rembg session"""
+        if cls._session_initialized:
+            return cls._gpu_session
+        
+        try:
+            from rembg import new_session
+            # Try CUDA provider first, fall back to CPU
+            cls._gpu_session = new_session(
+                "u2net",
+                providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
+            )
+            logger.info("BackgroundRemover: Created GPU session (CUDA)")
+        except Exception as e:
+            logger.warning(f"BackgroundRemover: GPU session failed, using default: {e}")
+            cls._gpu_session = None
+        
+        cls._session_initialized = True
+        return cls._gpu_session
+    
     def post(self, request):
+        started_at = time.time()
         image_file = request.FILES.get('image')
         
         if not image_file:
@@ -1533,7 +1559,12 @@ class BackgroundRemoverView(APIView):
                 # Continue with original data if optimization fails
                 pass
             
-            output_data = remove(input_data)
+            # Use GPU session if available
+            session = self.get_rembg_session()
+            if session:
+                output_data = remove(input_data, session=session)
+            else:
+                output_data = remove(input_data)
             
             output_dir = os.path.join(settings.MEDIA_ROOT, 'nobg')
             os.makedirs(output_dir, exist_ok=True)
@@ -1544,12 +1575,15 @@ class BackgroundRemoverView(APIView):
             with open(output_path, 'wb') as f:
                 f.write(output_data)
             
-            log_activity(request.user, "background_remove", image_file.name, request)
+            processing_time = time.time() - started_at
+            log_activity(request.user, "background_remove", f"{image_file.name} (GPU: {session is not None}, {processing_time:.2f}s)", request)
             
             return Response({
                 'success': True,
                 'file_url': f"{settings.MEDIA_URL}nobg/{filename}",
                 'filename': filename,
+                'processing_time': round(processing_time, 2),
+                'gpu_accelerated': session is not None,
             })
         except ImportError:
             return Response({'error': 'Background removal service not available'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)

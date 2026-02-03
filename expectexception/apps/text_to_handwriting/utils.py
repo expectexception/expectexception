@@ -13,6 +13,15 @@ FONT_MAP = {
     'dancing': 'DancingScript-Regular.ttf',
 }
 
+from functools import lru_cache
+
+@lru_cache(maxsize=10)
+def load_font(font_path, font_size):
+    try:
+        return ImageFont.truetype(font_path, font_size)
+    except OSError:
+        return ImageFont.load_default()
+
 def generate_handwriting_image(text, font_name='caveat', paper_type='plain', ink_color='blue'):
     """
     Generates a handwriting image from text using specified font and paper.
@@ -25,23 +34,16 @@ def generate_handwriting_image(text, font_name='caveat', paper_type='plain', ink
     
     # Configuration
     font_size = 32
+    # ... (rest of config)
     line_height = 40
     margin_left = 50
     margin_top = 50
     page_width = 800
     
-    # Calculate required height
     lines = text.split('\n')
-    # Simple word wrap logic could be added here, currently assumes user handles newlines or we wrap
-    # Let's do basic wrapping
-    
     wrapped_lines = []
     
-    try:
-        font = ImageFont.truetype(font_path, font_size)
-    except OSError:
-        # Fallback if font not found
-        font = ImageFont.load_default()
+    font = load_font(font_path, font_size)
 
     # Wrap text
     dummy_draw = ImageDraw.Draw(Image.new('RGB', (1, 1)))
@@ -123,7 +125,7 @@ def generate_handwriting_image(text, font_name='caveat', paper_type='plain', ink
             char_draw.text((5, 5), char, font=font, fill=fill_color + (255,)) # Add alpha
             
             # Rotate
-            rotated_char = char_img.rotate(angle, expand=1, resample=Image.BICUBIC)
+            rotated_char = char_img.rotate(angle, expand=1, resample=Image.BILINEAR)
             
             # Paste
             paste_x = int(cursor_x)

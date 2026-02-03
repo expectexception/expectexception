@@ -3,26 +3,28 @@ from django.urls import path
 from django.template.response import TemplateResponse
 from django.utils.html import format_html
 from django.conf import settings
-import os
+from unfold.admin import ModelAdmin
+from unfold.decorators import display
 from .models import Service, DownloadableResource, UserActivity, DownloadHistory, FavoriteTool, LogAnalysis, ServerHealth, ToolUsage
 from .log_analyzer import get_log_analysis
 
 @admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
+class ServiceAdmin(ModelAdmin):
     list_display = ('title', 'category', 'popularity', 'is_active', 'view_log_analysis_link', 'view_server_health_link')
     list_filter = ('category', 'is_active')
     search_fields = ('title', 'description')
     ordering = ('-popularity',)
+    list_filter_submit = True
 
+    @display(description='Logs')
     def view_log_analysis_link(self, obj):
         url = "/api/services/analytics-dashboard/"
         return format_html('<a class="button" href="{}" target="_blank">Analytics</a>', url)
-    view_log_analysis_link.short_description = 'Logs'
 
+    @display(description='Server Health')
     def view_server_health_link(self, obj):
         url = "/api/services/server-health/"
         return format_html('<a class="button" href="{}" target="_blank" style="background: #4338ca; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Health</a>', url)
-    view_server_health_link.short_description = 'Server Health'
 
 class LogAnalysisAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):

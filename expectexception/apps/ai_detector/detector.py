@@ -84,21 +84,37 @@ class ModelManager:
                 return
             self._device = 0 if torch.cuda.is_available() else -1
             self._device_name = "cuda" if torch.cuda.is_available() else "cpu"
+            
+            # Configure GPU memory limits for low-VRAM GPUs (e.g., GeForce 940MX 2GB)
+            if torch.cuda.is_available():
+                try:
+                    # Limit memory to 80% to prevent OOM
+                    torch.cuda.set_per_process_memory_fraction(0.8, 0)
+                    
+                    # Log device info
+                    props = torch.cuda.get_device_properties(0)
+                    vram_gb = props.total_memory / (1024**3)
+                    logger.info(f"GPU: {props.name}, VRAM: {vram_gb:.1f}GB, Memory limit: 80%")
+                except Exception as e:
+                    logger.warning(f"Could not configure GPU memory: {e}")
+            
             ModelManager._initialized = True
             logger.info(f"ModelManager initialized on {self._device_name}")
     
     def get_model(self, model_name: str) -> Optional[Any]:
         """Get a model, loading it if necessary"""
+        # Fast path: model already loaded
         if model_name in self._models:
             return self._models[model_name]
         
+        # Slow path: need to load model (properly locked)
         with self._lock:
-            # Double-check after acquiring lock
+            # Double-check after acquiring lock (prevents race condition)
             if model_name in self._models:
                 return self._models[model_name]
             
             self._model_status[model_name] = "loading"
-            logger.info(f"Loading model: {model_name}")
+            logger.info(f"Loading model: {model_name} on device: {self._device_name}")
             
             try:
                 start_time = time.time()
@@ -110,7 +126,11 @@ class ModelManager:
                 self._models[model_name] = pipe
                 self._model_status[model_name] = "ready"
                 load_time = time.time() - start_time
-                logger.info(f"Model {model_name} loaded in {load_time:.2f}s")
+                
+                # Log GPU usage confirmation
+                device_info = f"GPU ({self._device_name})" if self._device >= 0 else "CPU"
+                logger.info(f"✓ Model {model_name} loaded in {load_time:.2f}s on {device_info}")
+                
                 return pipe
             except Exception as e:
                 self._model_status[model_name] = f"error: {str(e)}"
@@ -207,11 +227,26 @@ class EnsembleDetector:
             if max(img.size) > max_size:
                 img.thumbnail((max_size, max_size), Image.LANCZOS)
             
+            # Monitor GPU memory before inference
+            gpu_mem_before = 0
+            if torch.cuda.is_available():
+                gpu_mem_before = torch.cuda.memory_allocated(0) / (1024**2)  # MB
+            
+            start_time = time.time()
             results = pipe(img)
+            inference_time = time.time() - start_time
+            
+            # Monitor GPU memory after inference
+            if torch.cuda.is_available():
+                gpu_mem_after = torch.cuda.memory_allocated(0) / (1024**2)  # MB
+                gpu_mem_used = gpu_mem_after - gpu_mem_before
+                logger.debug(f"Model {model_config.name}: {inference_time:.3f}s, GPU mem: {gpu_mem_used:.1f}MB")
+            
             return {
                 "model": model_config.name,
                 "weight": model_config.weight,
-                "results": results
+                "results": results,
+                "inference_time": inference_time
             }
         except Exception as e:
             logger.error(f"Detection failed for {model_config.name}: {e}")
@@ -254,7 +289,14 @@ class EnsembleDetector:
             if not model_results:
                 return {"error": "All detection models failed"}
             
-            return self._combine_results(model_results)
+            result = self._combine_results(model_results)
+            
+            # Clean up GPU cache after inference to prevent fragmentation
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                logger.debug("GPU cache cleared after inference")
+            
+            return result
             
         except Exception as e:
             logger.error(f"Ensemble detection failed: {e}")
