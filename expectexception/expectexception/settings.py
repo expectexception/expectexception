@@ -377,6 +377,89 @@ FILE_UPLOAD_TEMP_DIR = '/tmp/django_uploads'
 # VAPID_EMAIL = os.getenv('VAPID_EMAIL', 'admin@expectexception.com')
 
 # =============================================================================
+# OCR (Optical Character Recognition) Settings
+# =============================================================================
+
+# Path to tesseract binary (auto-detected if not set)
+TESSERACT_CMD = os.getenv('TESSERACT_CMD', '/usr/bin/tesseract')
+
+# Default OCR language (can be overridden per request)
+OCR_DEFAULT_LANGUAGE = os.getenv('OCR_DEFAULT_LANGUAGE', 'eng')
+
+# Supported OCR languages
+OCR_SUPPORTED_LANGUAGES = ['eng', 'spa', 'fra', 'deu', 'ita', 'por', 'rus', 'chi_sim', 'jpn']
+
+# Cache timeout for language detection (seconds)
+OCR_CACHE_TIMEOUT = int(os.getenv('OCR_CACHE_TIMEOUT', str(24 * 3600)))
+
+# =============================================================================
+# PDF to DOC Conversion Settings
+# =============================================================================
+
+# LibreOffice/soffice binary path for PDF conversions
+SOFFICE_CMD = os.getenv('SOFFICE_CMD', '/usr/bin/soffice')
+
+# Supported output formats for PDF conversion
+PDF_CONVERSION_FORMATS = ['docx', 'doc', 'odt', 'rtf', 'txt', 'pdf']
+
+# Maximum PDF file size for conversion (bytes, default 50MB)
+PDF_MAX_FILE_SIZE = int(os.getenv('PDF_MAX_FILE_SIZE', 50 * 1024 * 1024))
+
+# PDF conversion timeout (seconds)
+PDF_CONVERSION_TIMEOUT = int(os.getenv('PDF_CONVERSION_TIMEOUT', '120'))
+
+# =============================================================================
+# Background Remover Settings
+# =============================================================================
+
+# Background remover model (rembg uses u2net by default)
+BG_REMOVER_MODEL = os.getenv('BG_REMOVER_MODEL', 'u2net')
+
+# Maximum image dimensions for background removal (prevents OOM)
+BG_REMOVER_MAX_SIZE = int(os.getenv('BG_REMOVER_MAX_SIZE', 2048))
+
+# Use GPU for background removal if available
+BG_REMOVER_USE_GPU = os.getenv('BG_REMOVER_USE_GPU', 'True') == 'True'
+
+# =============================================================================
+# Text to Handwriting Settings
+# =============================================================================
+
+# Default font for handwriting generation
+TEXT_TO_HW_DEFAULT_FONT = os.getenv('TEXT_TO_HW_DEFAULT_FONT', 'caveat')
+
+# Available fonts
+TEXT_TO_HW_FONTS = ['caveat', 'indie_flower', 'shadows', 'dancing']
+
+# Default paper type
+TEXT_TO_HW_DEFAULT_PAPER = os.getenv('TEXT_TO_HW_DEFAULT_PAPER', 'plain')
+
+# Available paper types
+TEXT_TO_HW_PAPERS = ['plain', 'lined', 'dark']
+
+# Default ink color
+TEXT_TO_HW_DEFAULT_COLOR = os.getenv('TEXT_TO_HW_DEFAULT_COLOR', 'blue')
+
+# Available ink colors
+TEXT_TO_HW_COLORS = ['blue', 'black', 'red']
+
+# Maximum text length for handwriting generation
+TEXT_TO_HW_MAX_LENGTH = int(os.getenv('TEXT_TO_HW_MAX_LENGTH', 5000))
+
+# =============================================================================
+# GPU Settings
+# =============================================================================
+
+# Enable GPU acceleration where available (NVIDIA CUDA)
+USE_GPU = os.getenv('USE_GPU', 'True') == 'True'
+
+# Fallback to CPU if GPU unavailable
+CPU_FALLBACK = os.getenv('CPU_FALLBACK', 'True') == 'True'
+
+# GPU device to use (0, 1, 2, etc. or 'auto' for first available)
+GPU_DEVICE = os.getenv('GPU_DEVICE', 'auto')
+
+# =============================================================================
 # AI Chatbot Settings (Ollama + SmolLM2)
 # =============================================================================
 # Install Ollama: curl -fsSL https://ollama.com/install.sh | sh

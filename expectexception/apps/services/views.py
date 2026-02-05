@@ -1135,7 +1135,7 @@ class PdfToDocStatusView(APIView):
 
 
 class PdfToDocView(APIView):
-    """Convert PDF files to DOCX format using Celery Task (Async)"""
+    """Convert PDF files to DOCX/DOC/ODT/RTF/TXT formats using Celery (Async) with soffice/pdf2docx"""
     permission_classes = [AllowAny]
     parser_classes = [MultiPartParser, FormParser]
     
@@ -1144,28 +1144,41 @@ class PdfToDocView(APIView):
     MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
     
     def post(self, request):
+        """
+        Convert PDF file to another format.
+        
+        Parameters:
+        - pdf: PDF file (required)
+        - format: Output format (docx, doc, odt, rtf, txt) - default: docx
+        - ocr_enabled: Enable OCR for scanned PDFs (true/false) - default: false
+        - language: OCR language code (eng, spa, fra, etc.) - default: eng
+        """
         pdf_file = request.FILES.get('pdf')
         output_format = request.data.get('format', 'docx').lower()
         ocr_enabled = request.data.get('ocr_enabled', 'false').lower() == 'true'
         ocr_lang = request.data.get('language', 'eng')
         
+        # Validate input
         if not pdf_file:
-            return Response({'error': 'PDF file is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'PDF file is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         # Validate file size
         if pdf_file.size > self.MAX_FILE_SIZE:
-            return Response({'error': f'File too large. Maximum {self.MAX_FILE_SIZE // (1024*1024)}MB'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'error': f'File too large. Maximum {self.MAX_FILE_SIZE // (1024*1024)}MB'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         # Validate output format
         if output_format not in self.SUPPORTED_FORMATS:
-            return Response({'error': 'Unsupported format.'}, status=status.HTTP_400_BAD_REQUEST)
-            
+            return Response({
+                'error': f'Unsupported format. Supported: {", ".join(self.SUPPORTED_FORMATS)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            import tempfile
-            import shutil
-            
-            # Save upload to temp file (Celery worker needs access)
-            # Use MEDIA_ROOT/temp for shared access
+            # Save upload to temp file for Celery worker access
             temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp_uploads')
             os.makedirs(temp_dir, exist_ok=True)
             
@@ -1173,31 +1186,58 @@ class PdfToDocView(APIView):
             input_filename = f"{uuid.uuid4()}_{original_name}"
             input_path = os.path.join(temp_dir, input_filename)
             
+            # Write file
             with open(input_path, 'wb+') as f:
                 for chunk in pdf_file.chunks():
                     f.write(chunk)
             
-            # Enqueue task
+            logger.info(f"Received PDF for conversion: {original_name} ({pdf_file.size} bytes)")
+            
+            # Enqueue async task
             try:
                 from .tasks import convert_pdf_task
-                task = convert_pdf_task.delay(input_path, output_format, ocr_enabled, ocr_lang, original_name)
+                task = convert_pdf_task.delay(
+                    input_path,
+                    output_format,
+                    ocr_enabled,
+                    ocr_lang,
+                    original_name
+                )
                 
                 return Response({
                     'task_id': task.id,
                     'status_url': f"/api/services/pdf-to-doc/status/{task.id}/",
-                    'message': 'Processing started.'
+                    'message': 'PDF conversion started. Check status_url for progress.',
+                    'format': output_format.upper(),
+                    'ocr_enabled': ocr_enabled,
                 }, status=status.HTTP_202_ACCEPTED)
                 
             except Exception as e:
-                # Sync Fallback
-                logger.warning(f"Celery enqueue failed: {e}. Falling back to sync.")
+                # Fallback to sync conversion
+                logger.warning(f"Celery enqueue failed: {e}. Falling back to sync conversion.")
                 from .tasks import convert_pdf_task
-                res = convert_pdf_task.apply(args=[input_path, output_format, ocr_enabled, ocr_lang, original_name])
-                result = res.get()
-                return Response(result)
+                
+                # Run synchronously
+                try:
+                    result = convert_pdf_task(
+                        input_path,
+                        output_format,
+                        ocr_enabled,
+                        ocr_lang,
+                        original_name
+                    )
+                    return Response(result, status=status.HTTP_200_OK)
+                except Exception as sync_err:
+                    logger.exception("Sync PDF conversion failed")
+                    return Response({
+                        'error': f'PDF conversion failed: {str(sync_err)}'
+                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         except Exception as e:
-            logger.exception("PDF Async View Error")
+            logger.exception("PDF upload/processing error")
+            return Response({
+                'error': f'Failed to process PDF: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -1504,13 +1544,21 @@ class ImageResizerView(APIView):
 
 
 class BackgroundRemoverView(APIView):
-    """Remove background from images using rembg with GPU acceleration"""
+    """Remove background from images using rembg with GPU acceleration and quality options"""
     permission_classes = [AllowAny]
     parser_classes = [MultiPartParser, FormParser]
     
     # GPU session singleton (initialized on first use)
     _gpu_session = None
     _session_initialized = False
+    
+    # Quality/performance presets
+    QUALITY_PRESETS = {
+        'fast': {'max_dimension': 1024, 'quality': 75},
+        'balanced': {'max_dimension': 2048, 'quality': 90},
+        'best': {'max_dimension': 4096, 'quality': 95},
+    }
+    DEFAULT_QUALITY = 'balanced'
     
     @classmethod
     def get_rembg_session(cls):
@@ -1521,20 +1569,22 @@ class BackgroundRemoverView(APIView):
         try:
             from django.conf import settings
             from rembg import new_session
-            use_gpu = getattr(settings, 'USE_GPU', False)
+            use_gpu = getattr(settings, 'BG_REMOVER_USE_GPU', getattr(settings, 'USE_GPU', False))
+            model = getattr(settings, 'BG_REMOVER_MODEL', 'u2net')
+            
             if use_gpu:
                 # Try CUDA provider first, fall back to CPU
                 cls._gpu_session = new_session(
-                    "u2net",
+                    model,
                     providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
                 )
-                logger.info("BackgroundRemover: Created GPU session (CUDA)")
+                logger.info(f"BackgroundRemover: Created GPU session ({model})")
             else:
                 cls._gpu_session = new_session(
-                    "u2net",
+                    model,
                     providers=['CPUExecutionProvider']
                 )
-                logger.info("BackgroundRemover: Created CPU session")
+                logger.info(f"BackgroundRemover: Created CPU session ({model})")
         except Exception as e:
             logger.warning(f"BackgroundRemover: GPU session failed, using default: {e}")
             cls._gpu_session = None
@@ -1542,29 +1592,92 @@ class BackgroundRemoverView(APIView):
         cls._session_initialized = True
         return cls._gpu_session
     
+    def _apply_exif_rotation(self, img: Image.Image) -> Image.Image:
+        """Apply EXIF rotation to image if present"""
+        try:
+            from PIL.Image import EXIF, Transpose
+            exif = img.getexif()
+            orientation = exif.get(274)  # Orientation tag
+            
+            if orientation:
+                if orientation == 3:
+                    img = img.rotate(180, expand=True)
+                elif orientation == 6:
+                    img = img.rotate(270, expand=True)
+                elif orientation == 8:
+                    img = img.rotate(90, expand=True)
+                logger.debug(f"Applied EXIF rotation: {orientation}")
+        except Exception as e:
+            logger.debug(f"Could not apply EXIF rotation: {e}")
+        
+        return img
+    
     def post(self, request):
+        """
+        Remove background from image with optional quality control.
+        
+        Parameters:
+        - image: Image file (required, JPEG/PNG/GIF/BMP)
+        - quality: Quality preset (fast/balanced/best) - default: balanced
+        - format: Output format (png, jpg) - default: png (to preserve transparency)
+        """
         started_at = time.time()
         image_file = request.FILES.get('image')
         
         if not image_file:
-            return Response({'error': 'Image file is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'Image file is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         try:
             from rembg import remove
+            
+            # Get quality preset
+            quality_preset = request.data.get('quality', self.DEFAULT_QUALITY).lower()
+            if quality_preset not in self.QUALITY_PRESETS:
+                logger.warning(f"Invalid quality preset: {quality_preset}, using default")
+                quality_preset = self.DEFAULT_QUALITY
+            
+            preset = self.QUALITY_PRESETS[quality_preset]
+            max_dimension = preset['max_dimension']
+            quality = preset['quality']
+            
+            # Get output format
+            output_format = request.data.get('format', 'png').lower()
+            if output_format not in ['png', 'jpg', 'jpeg']:
+                output_format = 'png'
+            
             input_data = image_file.read()
-
-            # Optimize: Downscale if image is too large (prevents OOM and Timeouts)
+            
+            # Open image and apply optimizations
             try:
                 img = Image.open(io.BytesIO(input_data))
-                max_dimension = 2048
+                
+                # Apply EXIF rotation auto-correction
+                img = self._apply_exif_rotation(img)
+                
+                original_size = img.size
+                logger.info(f"Processing image: {original_size}, quality: {quality_preset}")
+                
+                # Optimize: Downscale if image is too large (prevents OOM and timeouts)
                 if img.width > max_dimension or img.height > max_dimension:
-                    img.thumbnail((max_dimension, max_dimension), Image.Resampling.LANCZOS)
-                    buffer = io.BytesIO()
-                    # Save as PNG to preserve transparency if it exists, or just to have a standard input format
-                    img.save(buffer, format="PNG") 
-                    input_data = buffer.getvalue()
+                    ratio_w = max_dimension / img.width
+                    ratio_h = max_dimension / img.height
+                    ratio = min(ratio_w, ratio_h)
+                    
+                    new_width = int(img.width * ratio)
+                    new_height = int(img.height * ratio)
+                    img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                    logger.debug(f"Downscaled to {img.size} for processing")
+                
+                # Save as PNG to preserve transparency
+                buffer = io.BytesIO()
+                img.save(buffer, format="PNG")
+                input_data = buffer.getvalue()
+                
             except Exception as e:
-                logger.warning(f"Failed to optimize image before background removal: {e}")
+                logger.warning(f"Failed to optimize image: {e}. Continuing with original...")
                 # Continue with original data if optimization fails
                 pass
             
@@ -1572,33 +1685,62 @@ class BackgroundRemoverView(APIView):
             session = self.get_rembg_session()
             if session:
                 output_data = remove(input_data, session=session)
+                used_gpu = True
             else:
                 output_data = remove(input_data)
+                used_gpu = False
             
+            # Prepare output
             output_dir = os.path.join(settings.MEDIA_ROOT, 'nobg')
             os.makedirs(output_dir, exist_ok=True)
             
-            filename = f"nobg_{uuid.uuid4().hex[:8]}.png"
+            # Save with appropriate extension
+            if output_format in ['jpg', 'jpeg']:
+                filename = f"nobg_{uuid.uuid4().hex[:8]}.jpg"
+                # Convert RGBA to RGB for JPG
+                output_img = Image.open(io.BytesIO(output_data))
+                if output_img.mode == 'RGBA':
+                    bg = Image.new('RGB', output_img.size, (255, 255, 255))
+                    bg.paste(output_img, mask=output_img.split()[3])
+                    buffer = io.BytesIO()
+                    bg.save(buffer, format='JPEG', quality=quality)
+                    output_data = buffer.getvalue()
+            else:
+                filename = f"nobg_{uuid.uuid4().hex[:8]}.png"
+            
             output_path = os.path.join(output_dir, filename)
             
             with open(output_path, 'wb') as f:
                 f.write(output_data)
             
             processing_time = time.time() - started_at
-            log_activity(request.user, "background_remove", f"{image_file.name} (GPU: {session is not None}, {processing_time:.2f}s)", request)
+            log_activity(
+                request.user,
+                "background_remove",
+                f"{image_file.name} (GPU: {used_gpu}, Quality: {quality_preset}, Time: {processing_time:.2f}s)",
+                request
+            )
             
             return Response({
                 'success': True,
                 'file_url': f"{settings.MEDIA_URL}nobg/{filename}",
                 'filename': filename,
                 'processing_time': round(processing_time, 2),
-                'gpu_accelerated': session is not None,
+                'gpu_accelerated': used_gpu,
+                'quality': quality_preset,
+                'format': output_format.upper(),
             })
         except ImportError:
-            return Response({'error': 'Background removal service not available'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response(
+                {'error': 'Background removal service not available. Install: pip install rembg'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
         except Exception as e:
             logger.exception(f"Background removal error: {e}")
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {'error': f'Background removal failed: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class ImageToTextView(APIView):
@@ -3899,14 +4041,29 @@ class WebsiteDiagnosticsView(APIView):
         return Response(results)
 
 class AudioSeparatorView(APIView):
+    """Audio Separator Service - Separates vocals from music using Demucs"""
     permission_classes = [AllowAny]
     parser_classes = [MultiPartParser, FormParser]
+    
+    # Audio format validation
+    SUPPORTED_FORMATS = ['.mp3', '.wav', '.flac', '.ogg', '.m4a', '.aac']
+    MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
+    DEFAULT_TIMEOUT = 300  # 5 minutes
+    MAX_TIMEOUT = 3600  # 1 hour
 
     def post(self, request):
-        """Accept the upload, save it, enqueue a Celery task to process it, and return a task id to poll."""
+        """
+        Accept audio file, enqueue Celery task for separation, return task_id for polling.
+        
+        Parameters:
+        - audio: Audio file (required, MP3/WAV/FLAC/OGG/M4A/AAC)
+        - model: Separator model (optional, default: mdx)
+        - timeout: Processing timeout in seconds (optional, default: 300)
+        """
         started_at = time.time()
         audio_file = request.FILES.get('audio')
 
+        # Validate file exists
         if not audio_file:
             log_tool_usage(
                 request=request,
@@ -3916,25 +4073,61 @@ class AudioSeparatorView(APIView):
                 started_at=started_at,
                 error=ValueError('Audio file is required'),
             )
-            return Response({'error': 'Audio file is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'Audio file is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
+            # Validate file format
+            file_ext = os.path.splitext(audio_file.name)[1].lower()
+            if file_ext not in self.SUPPORTED_FORMATS:
+                raise ValueError(
+                    f'Unsupported audio format: {file_ext}. '
+                    f'Supported: {", ".join(self.SUPPORTED_FORMATS)}'
+                )
+            
+            # Validate file size
+            if audio_file.size > self.MAX_FILE_SIZE:
+                raise ValueError(
+                    f'File too large ({audio_file.size / (1024*1024):.1f}MB). '
+                    f'Maximum: {self.MAX_FILE_SIZE / (1024*1024):.0f}MB'
+                )
+            
+            # Get optional parameters with validation
+            model = request.data.get('model', getattr(settings, 'AUDIO_SEPARATOR_MODEL', 'mdx')).lower()
+            timeout = int(request.data.get('timeout', self.DEFAULT_TIMEOUT))
+            
+            # Validate timeout
+            if timeout < 10 or timeout > self.MAX_TIMEOUT:
+                logger.warning(f"Timeout {timeout}s outside valid range, using default")
+                timeout = self.DEFAULT_TIMEOUT
+            
+            # Create unique task directory
             unique_id = str(uuid.uuid4())
             base_dir = os.path.join(settings.MEDIA_ROOT, 'audio_separator', unique_id)
             input_dir = os.path.join(base_dir, 'input')
             os.makedirs(input_dir, exist_ok=True)
 
+            # Save uploaded file
             original_name = audio_file.name.replace(' ', '_')
             input_path = os.path.join(input_dir, original_name)
 
             with open(input_path, 'wb+') as f:
                 for chunk in audio_file.chunks():
                     f.write(chunk)
+            
+            logger.info(f"Audio received: {original_name} ({audio_file.size} bytes) → {unique_id}")
 
             # Try to enqueue Celery task
             try:
                 from .tasks import process_audio_separator
-                task = process_audio_separator.delay(input_path, original_name, unique_id, getattr(settings, 'AUDIO_SEPARATOR_TIMEOUT', 300))
+                task = process_audio_separator.delay(
+                    input_path,
+                    original_name,
+                    unique_id,
+                    timeout
+                )
 
                 log_tool_usage(
                     request=request,
@@ -3947,27 +4140,56 @@ class AudioSeparatorView(APIView):
                 return Response({
                     'task_id': task.id,
                     'status_url': f"/api/services/audio-separator/status/{task.id}/",
-                    'message': 'Processing started. Poll the status URL for completion.'
+                    'message': 'Audio processing started. Poll status URL for updates.',
+                    'file_name': original_name,
+                    'timeout_seconds': timeout,
+                    'estimated_completion': timeout,
                 }, status=status.HTTP_202_ACCEPTED)
 
-            except Exception:
-                # Celery not available or failed to enqueue; fall back to synchronous processing
+            except Exception as e:
+                logger.warning(f"Celery enqueue failed: {e}. Falling back to sync processing.")
+                
+                # Fallback to synchronous processing
                 from .tasks import process_audio_separator
-                res = process_audio_separator.apply(args=[input_path, original_name, unique_id, getattr(settings, 'AUDIO_SEPARATOR_TIMEOUT', 300)])
-                result = res.get() if hasattr(res, 'get') else res
+                
+                try:
+                    result = process_audio_separator(
+                        input_path,
+                        original_name,
+                        unique_id,
+                        timeout
+                    )
 
-                log_tool_usage(
-                    request=request,
-                    tool_name='audio-separator',
-                    status_label='success' if result.get('status') == 'success' else 'failed',
-                    http_status=status.HTTP_200_OK if result.get('status') == 'success' else status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    started_at=started_at,
-                )
+                    log_tool_usage(
+                        request=request,
+                        tool_name='audio-separator',
+                        status_label='success' if result.get('status') == 'success' else 'failed',
+                        http_status=status.HTTP_200_OK if result.get('status') == 'success' else status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        started_at=started_at,
+                    )
 
-                return Response(result)
+                    return Response(result)
+                except Exception as sync_err:
+                    logger.exception("Sync audio separation failed")
+                    raise sync_err
 
+        except ValueError as ve:
+            # Input validation errors
+            logger.warning(f"Audio separator validation error: {ve}")
+            log_tool_usage(
+                request=request,
+                tool_name='audio-separator',
+                status_label='failed',
+                http_status=status.HTTP_400_BAD_REQUEST,
+                started_at=started_at,
+                error=ve,
+            )
+            return Response(
+                {'error': str(ve)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            logger.exception("Audio separation enqueue failed")
+            logger.exception("Audio separator error")
             log_tool_usage(
                 request=request,
                 tool_name='audio-separator',
@@ -3976,25 +4198,49 @@ class AudioSeparatorView(APIView):
                 started_at=started_at,
                 error=e,
             )
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {'error': f'Audio processing failed: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class AudioSeparatorStatusView(APIView):
+    """Retrieve audio separation task status and results"""
     permission_classes = [AllowAny]
 
     def get(self, request, task_id):
-        """Return cached result if available, else return task state."""
+        """
+        Get task status and results.
+        Returns cached result if complete, or current task state.
+        """
         cache_key = f"audio_sep_result:{task_id}"
         from django.core.cache import cache
+        
+        # Check cache first (completed tasks)
         result = cache.get(cache_key)
         if result:
             return Response(result)
 
-        # Fallback: check Celery AsyncResult
+        # Fallback: check Celery AsyncResult for in-progress tasks
         try:
             from expectexception.celery import app as celery_app
             async_res = celery_app.AsyncResult(task_id)
             state = async_res.state
-            return Response({'status': state})
-        except Exception:
-            return Response({'status': 'unknown'})
+            
+            response = {'status': state, 'task_id': task_id}
+            
+            # Add progress information for in-progress tasks
+            if state == 'PROGRESS':
+                if hasattr(async_res, 'info') and isinstance(async_res.info, dict):
+                    response.update(async_res.info)
+            elif state == 'FAILURE':
+                response['error'] = str(async_res.info)
+            
+            return Response(response)
+        except Exception as e:
+            logger.warning(f"Failed to get task status for {task_id}: {e}")
+            return Response({
+                'status': 'unknown',
+                'task_id': task_id,
+                'error': 'Could not retrieve task status'
+            }, status=status.HTTP_404_NOT_FOUND)

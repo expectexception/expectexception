@@ -13,6 +13,9 @@ FONT_MAP = {
     'dancing': 'DancingScript-Regular.ttf',
 }
 
+PAPER_TYPES = ['plain', 'lined', 'dark']
+INK_COLORS = ['blue', 'black', 'red']
+
 from functools import lru_cache
 
 @lru_cache(maxsize=10)
@@ -22,10 +25,17 @@ def load_font(font_path, font_size):
     except OSError:
         return ImageFont.load_default()
 
-def generate_handwriting_image(text, font_name='caveat', paper_type='plain', ink_color='blue'):
+def generate_handwriting_image(text, font_name='caveat', paper_type='plain', ink_color='blue', font_size=32):
     """
-    Generates a handwriting image from text using specified font and paper.
-    Adds random perturbations to simulate human writing.
+    Generates a realistic handwriting image from text using specified font and paper.
+    Adds random perturbations to simulate human writing variations.
+    
+    Args:
+        text: Text to convert to handwriting
+        font_name: Font style (caveat, indie_flower, shadows, dancing)
+        paper_type: Paper background (plain, lined, dark)
+        ink_color: Text color (blue, black, red)
+        font_size: Base font size in pixels (default: 32)
     """
     if font_name not in FONT_MAP:
         font_name = 'caveat'
@@ -33,11 +43,10 @@ def generate_handwriting_image(text, font_name='caveat', paper_type='plain', ink
     font_path = os.path.join(FONTS_DIR, FONT_MAP[font_name])
     
     # Configuration
-    font_size = 32
-    # ... (rest of config)
-    line_height = 40
+    line_height = max(int(font_size * 1.4), 40)
     margin_left = 50
     margin_top = 50
+    margin_right = 50
     page_width = 800
     
     lines = text.split('\n')
@@ -45,42 +54,48 @@ def generate_handwriting_image(text, font_name='caveat', paper_type='plain', ink
     
     font = load_font(font_path, font_size)
 
-    # Wrap text
+    # Wrap text to fit page width
     dummy_draw = ImageDraw.Draw(Image.new('RGB', (1, 1)))
     for line in lines:
+        if not line.strip():
+            wrapped_lines.append('')
+            continue
+            
         words = line.split(' ')
         current_line = []
         for word in words:
             test_line = ' '.join(current_line + [word])
             bbox = dummy_draw.textbbox((0, 0), test_line, font=font)
             width = bbox[2] - bbox[0]
-            if width < (page_width - margin_left * 2):
+            if width < (page_width - margin_left - margin_right):
                 current_line.append(word)
             else:
-                wrapped_lines.append(' '.join(current_line))
+                if current_line:
+                    wrapped_lines.append(' '.join(current_line))
                 current_line = [word]
-        wrapped_lines.append(' '.join(current_line))
-            
-    page_height = max(1000, margin_top + len(wrapped_lines) * line_height + 100)
+        if current_line:
+            wrapped_lines.append(' '.join(current_line))
     
-    # Background
+    # Calculate page height based on content
+    page_height = max(1000, margin_top + max(1, len(wrapped_lines)) * line_height + margin_top)
+    
+    # Create background
     if paper_type == 'lined':
         img = Image.new('RGB', (page_width, page_height), (255, 255, 255))
         draw = ImageDraw.Draw(img)
-        # Draw lines
+        # Draw horizontal lines
         for y in range(margin_top, page_height, line_height):
             draw.line([(0, y), (page_width, y)], fill=(200, 200, 255), width=1)
         # Draw margin line
-        draw.line([(margin_left - 10, 0), (margin_left - 10, page_height)], fill=(255, 200, 200), width=1)
+        draw.line([(margin_left - 10, 0), (margin_left - 10, page_height)], fill=(255, 200, 200), width=2)
     elif paper_type == 'dark':
         img = Image.new('RGB', (page_width, page_height), (30, 30, 30))
-    else:
-        # Plain white/crumpled look could be added
-        img = Image.new('RGB', (page_width, page_height), (253, 253, 250)) # Slight off-white
+    else:  # plain
+        img = Image.new('RGB', (page_width, page_height), (253, 253, 250))  # Slight off-white
 
     draw = ImageDraw.Draw(img)
     
-    # Ink Color
+    # Set ink color
     if ink_color == 'blue':
         fill_color = (0, 0, 150)
     elif ink_color == 'black':
@@ -89,52 +104,69 @@ def generate_handwriting_image(text, font_name='caveat', paper_type='plain', ink
         fill_color = (150, 0, 0)
     else:
         fill_color = (20, 20, 20)
-        
+    
+    # Adjust for dark paper
     if paper_type == 'dark':
         fill_color = (220, 220, 220)
 
-    # Drawing Text with Perturbations
+    # Draw text with realistic perturbations
     cursor_y = margin_top
     
-    for line in wrapped_lines:
+    for line_idx, line in enumerate(wrapped_lines):
         cursor_x = margin_left
         
-        # Randomize line slope slightly? simulating page tilt
-        # For now, keep lines straight but jitter characters
+        # Add slight line slope variation (simulate page tilt)
+        line_y_offset = random.uniform(-1, 1)
         
         for char in line:
-            # Random jitter
-            angle = random.uniform(-2, 2)
-            y_offset = random.uniform(-2, 2)
+            if not char.strip():
+                # Handle spaces
+                space_bbox = dummy_draw.textbbox((0, 0), 'a', font=font)
+                space_width = (space_bbox[2] - space_bbox[0]) * 0.5
+                cursor_x += space_width
+                continue
             
-            # Create a separate image for the character to rotate it
-            # We need to know char size
+            # Random character-level perturbations (more realistic)
+            char_angle = random.uniform(-3, 3)  # Slight rotation
+            char_y_offset = random.uniform(-2, 3)  # Vertical jitter
+            char_x_offset = random.uniform(-1, 1)  # Horizontal jitter
+            
+            # Get character bounding box
             bbox = draw.textbbox((0, 0), char, font=font)
             char_w = bbox[2] - bbox[0]
             char_h = bbox[3] - bbox[1]
             
-            if char.strip() == '':
-                cursor_x += char_w if char_w > 0 else 10 # Space width
+            if char_w <= 0 or char_h <= 0:
                 continue
-                
-            # Render char to small image
-            # Add padding to avoid clipping
-            char_img_size = (int(char_w * 1.5) + 10, int(char_h * 1.5) + 10)
+            
+            # Create image for character to apply rotation
+            char_img_size = (int(char_w * 2) + 20, int(char_h * 2) + 20)
             char_img = Image.new('RGBA', char_img_size, (0, 0, 0, 0))
             char_draw = ImageDraw.Draw(char_img)
-            char_draw.text((5, 5), char, font=font, fill=fill_color + (255,)) # Add alpha
             
-            # Rotate
-            rotated_char = char_img.rotate(angle, expand=1, resample=Image.BILINEAR)
+            # Draw character with slight color variation
+            char_draw.text(
+                (10, 10),
+                char,
+                font=font,
+                fill=fill_color + (255,)
+            )
             
-            # Paste
-            paste_x = int(cursor_x)
-            paste_y = int(cursor_y + y_offset - 5) # -5 to align baseline roughly
+            # Rotate character
+            try:
+                rotated_char = char_img.rotate(char_angle, expand=True, resample=Image.Resampling.BILINEAR)
+            except Exception:
+                rotated_char = char_img
+            
+            # Paste character onto main image
+            paste_x = int(cursor_x + char_x_offset)
+            paste_y = int(cursor_y + line_y_offset + char_y_offset)
             
             img.paste(rotated_char, (paste_x, paste_y), rotated_char)
             
-            cursor_x += char_w + random.uniform(-1, 2) # Variable tracking
-            
+            # Move cursor, with variable character spacing
+            cursor_x += char_w + random.uniform(-0.5, 1)
+        
         cursor_y += line_height
 
     return img
