@@ -54,6 +54,7 @@ from .views import (
     WebsiteDiagnosticsView,
     AudioSeparatorView,
     AudioSeparatorStatusView,
+    HealthCheckView,
 )
 from .server_status_view import ServerStatusView, get_metrics_api # Updated import path
 from .admin_views import (
@@ -141,6 +142,7 @@ urlpatterns = [
     path('audio-separator/process', AudioSeparatorView.as_view(), name='audio-separator'),
     path('audio-separator/status/<str:task_id>/', AudioSeparatorStatusView.as_view(), name='audio-separator-status'),
 
+    path('health/', HealthCheckView.as_view(), name='health-check'),
     path('server-health/', ServerStatusView.as_view(), name='server-health'),
     path('server-status-api/', get_metrics_api, name='server-status-api'), # New API
     # Webhook inspector endpoints

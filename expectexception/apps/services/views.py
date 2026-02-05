@@ -4244,3 +4244,182 @@ class AudioSeparatorStatusView(APIView):
                 'task_id': task_id,
                 'error': 'Could not retrieve task status'
             }, status=status.HTTP_404_NOT_FOUND)
+
+
+class HealthCheckView(APIView):
+    """
+    Production health check endpoint.
+    Returns status of all critical services and infrastructure.
+    """
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        """Get health status of system"""
+        health_data = {
+            'status': 'ok',
+            'timestamp': datetime.datetime.now().isoformat(),
+            'version': getattr(settings, 'APP_VERSION', '2.1.0'),
+            'components': {}
+        }
+        
+        # Database check
+        try:
+            from django.db import connections
+            from django.db.utils import OperationalError
+            start = time.time()
+            conn = connections['default']
+            conn.ensure_connection()
+            response_time = (time.time() - start) * 1000
+            health_data['components']['database'] = {
+                'status': 'ok',
+                'response_time_ms': round(response_time, 2)
+            }
+        except Exception as e:
+            health_data['components']['database'] = {
+                'status': 'error',
+                'error': str(e)
+            }
+            health_data['status'] = 'degraded'
+        
+        # Cache/Redis check
+        try:
+            from django.core.cache import cache
+            start = time.time()
+            cache.set('health_check', 'ok', 10)
+            value = cache.get('health_check')
+            response_time = (time.time() - start) * 1000
+            if value == 'ok':
+                health_data['components']['cache'] = {
+                    'status': 'ok',
+                    'response_time_ms': round(response_time, 2)
+                }
+            else:
+                health_data['components']['cache'] = {
+                    'status': 'error',
+                    'error': 'Cache value mismatch'
+                }
+                health_data['status'] = 'degraded'
+        except Exception as e:
+            health_data['components']['cache'] = {
+                'status': 'error',
+                'error': str(e)
+            }
+            health_data['status'] = 'degraded'
+        
+        # Storage check
+        try:
+            media_root = settings.MEDIA_ROOT
+            if os.path.exists(media_root):
+                stat = os.statvfs(media_root)
+                available_gb = (stat.f_bavail * stat.f_frsize) / (1024 ** 3)
+                health_data['components']['storage'] = {
+                    'status': 'ok',
+                    'available_gb': round(available_gb, 2)
+                }
+            else:
+                health_data['components']['storage'] = {
+                    'status': 'warning',
+                    'error': 'Media directory not found'
+                }
+        except Exception as e:
+            health_data['components']['storage'] = {
+                'status': 'error',
+                'error': str(e)
+            }
+        
+        # GPU check
+        try:
+            gpu_available = False
+            try:
+                import torch
+                gpu_available = torch.cuda.is_available()
+                gpu_name = torch.cuda.get_device_name(0) if gpu_available else 'N/A'
+            except:
+                gpu_available = False
+                gpu_name = 'N/A'
+            
+            health_data['components']['gpu'] = {
+                'status': 'available' if gpu_available else 'unavailable',
+                'model': gpu_name if gpu_available else None
+            }
+        except Exception as e:
+            health_data['components']['gpu'] = {
+                'status': 'unknown',
+                'error': str(e)
+            }
+        
+        # Services check
+        services_status = {}
+        service_checks = {
+            'audio_separator': self._check_audio_separator,
+            'pdf_converter': self._check_pdf_converter,
+            'background_remover': self._check_background_remover,
+            'ocr': self._check_ocr,
+            'handwriting': self._check_handwriting,
+            'ai_detector': self._check_ai_detector,
+        }
+        
+        for service_name, check_func in service_checks.items():
+            try:
+                services_status[service_name] = check_func()
+            except Exception as e:
+                services_status[service_name] = 'error'
+        
+        health_data['components']['services'] = services_status
+        
+        return Response(health_data, status=status.HTTP_200_OK)
+    
+    def _check_audio_separator(self) -> str:
+        """Check if audio separator is available"""
+        try:
+            import demucs.separate
+            return 'ok'
+        except:
+            return 'unavailable'
+    
+    def _check_pdf_converter(self) -> str:
+        """Check if PDF converter is available"""
+        try:
+            import pdf2docx
+            soffice_path = getattr(settings, 'SOFFICE_CMD', '/usr/bin/soffice')
+            if os.path.exists(soffice_path):
+                return 'ok'
+            return 'partial'
+        except:
+            return 'unavailable'
+    
+    def _check_background_remover(self) -> str:
+        """Check if background remover is available"""
+        try:
+            import rembg
+            return 'ok'
+        except:
+            return 'unavailable'
+    
+    def _check_ocr(self) -> str:
+        """Check if OCR is available"""
+        try:
+            import pytesseract
+            tesseract_cmd = getattr(settings, 'TESSERACT_CMD', '/usr/bin/tesseract')
+            if os.path.exists(tesseract_cmd):
+                return 'ok'
+            return 'partial'
+        except:
+            return 'unavailable'
+    
+    def _check_handwriting(self) -> str:
+        """Check if text to handwriting is available"""
+        try:
+            from PIL import Image, ImageFont, ImageDraw
+            return 'ok'
+        except:
+            return 'unavailable'
+    
+    def _check_ai_detector(self) -> str:
+        """Check if AI detector is available"""
+        try:
+            # Check if required ML libraries are available
+            import torch
+            return 'ok'
+        except:
+            return 'unavailable'
