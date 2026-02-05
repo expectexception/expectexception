@@ -37,7 +37,8 @@ class AudioSeparatorTestCase(APITestCase):
         """Test uploading without selecting a file"""
         response = self.client.post(self.endpoint, {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
+        data = response.json()
+        self.assertIn('error', data)
 
     def test_upload_valid_audio(self):
         """Test uploading a valid audio file"""
@@ -48,8 +49,9 @@ class AudioSeparatorTestCase(APITestCase):
             format='multipart'
         )
         self.assertIn(response.status_code, [status.HTTP_202_ACCEPTED, status.HTTP_200_OK])
-        self.assertIn('task_id', response.data)
-        self.assertIn('status_url', response.data)
+        data = response.json()
+        self.assertIn('task_id', data)
+        self.assertIn('status_url', data)
 
     def test_upload_invalid_format(self):
         """Test uploading an unsupported file format"""
@@ -75,7 +77,8 @@ class AudioSeparatorTestCase(APITestCase):
             format='multipart'
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
+        data = response.json()
+        self.assertIn('error', data)
 
     def test_status_endpoint(self):
         """Test checking status of a task"""
@@ -105,7 +108,8 @@ class PdfToDocTestCase(APITestCase):
         """Test posting without PDF file"""
         response = self.client.post(self.endpoint, {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
+        data = response.json()
+        self.assertIn('error', data)
 
     def test_upload_pdf_valid(self):
         """Test uploading a valid PDF"""
@@ -122,7 +126,8 @@ class PdfToDocTestCase(APITestCase):
         # Might be async or sync depending on Celery availability
         self.assertIn(response.status_code, [status.HTTP_202_ACCEPTED, status.HTTP_200_OK, status.HTTP_500_INTERNAL_SERVER_ERROR])
         if response.status_code == status.HTTP_202_ACCEPTED:
-            self.assertIn('task_id', response.data)
+            data = response.json()
+            self.assertIn('task_id', data)
 
     def test_upload_non_pdf_file(self):
         """Test uploading a non-PDF file"""
@@ -190,9 +195,10 @@ class ImageToTextTestCase(APITestCase):
         """Test retrieving available OCR languages"""
         response = self.client.get(self.endpoint)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('languages', response.data)
-        self.assertIn('default', response.data)
-        self.assertIsInstance(response.data['languages'], list)
+        data = response.json()
+        self.assertIn('languages', data)
+        self.assertIn('default', data)
+        self.assertIsInstance(data['languages'], list)
 
     def test_extract_text_from_image(self):
         """Test text extraction from image"""

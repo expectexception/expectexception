@@ -4,12 +4,12 @@ Implements security hardening, rate limiting, audit logging, and monitoring
 """
 
 import logging
+import time
 from functools import wraps
 from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import decorator_from_middleware
-from django.middleware.base import BaseMiddleware
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 from rest_framework.throttling import BaseThrottle
@@ -30,6 +30,7 @@ class ServiceRateThrottle(BaseThrottle):
     """
     cache_format = 'service_throttle_%(scope)s_%(ident)s'
     scope = 'service'
+    timer = time.time
 
     def __init__(self):
         super().__init__()
