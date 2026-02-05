@@ -74,6 +74,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.services.middleware.ProLevelLoggingMiddleware',
+    'apps.services.security.SecurityHeadersMiddleware',  # Add security headers
 ]
 
 ROOT_URLCONF = 'expectexception.urls'
@@ -584,3 +585,52 @@ UNFOLD = {
         },
     ],
 }
+
+# =============================================================================
+# Production Security Settings
+# =============================================================================
+
+# Rate limiting for service endpoints
+SERVICE_RATE_LIMIT = os.getenv('SERVICE_RATE_LIMIT', '5/minute')
+
+# Input validation settings
+MAX_UPLOAD_SIZE_MB = int(os.getenv('MAX_UPLOAD_SIZE_MB', 500))
+
+# Security headers
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_SECURITY_POLICY = {
+    'default-src': ("'self'",),
+    'script-src': ("'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"),
+    'style-src': ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"),
+    'img-src': ("'self'", "data:", "https:"),
+    'font-src': ("'self'", "https://fonts.gstatic.com"),
+    'connect-src': ("'self'", "https://api.github.com"),
+    'frame-ancestors': ("'none'",),
+    'base-uri': ("'self'",),
+    'form-action': ("'self'",),
+}
+
+# CORS settings (restrictive for production)
+if not DEBUG:
+    CORS_ALLOWED_ORIGINS = os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        'https://ytd.expectexception.com,https://www.expectexception.com'
+    ).split(',')
+    ALLOWED_HOSTS = os.getenv(
+        'ALLOWED_HOSTS',
+        'ytd.expectexception.com,www.expectexception.com,djangobackend'
+    ).split(',')
+
+# Session security
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Additional security for production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
