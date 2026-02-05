@@ -271,8 +271,20 @@ class AdminDownloadDetailView(APIView):
 # ============ Ollama Model Management ============
 
 class OllamaModelsView(APIView):
-    """List available Ollama models."""
+    """List available Ollama models with active status."""
     permission_classes = [IsAdminUser]
+    
+    def _get_active_model(self):
+        """Read currently active model from config."""
+        try:
+            config_dir = os.path.expanduser('~/.ollama')
+            config_file = os.path.join(config_dir, 'active_model.txt')
+            if os.path.exists(config_file):
+                with open(config_file, 'r') as f:
+                    return f.read().strip()
+        except Exception as e:
+            logger.warning(f"Error reading active model: {e}")
+        return None
 
     def get(self, request):
         try:
@@ -285,20 +297,28 @@ class OllamaModelsView(APIView):
             if result.returncode != 0:
                 return Response({'error': 'Failed to list models', 'details': result.stderr}, status=500)
             
+            active_model = self._get_active_model()
+            
             # Parse output (skip header line)
             lines = result.stdout.strip().split('\n')[1:]
             models = []
             for line in lines:
                 parts = line.split()
                 if len(parts) >= 4:
+                    model_name = parts[0]
                     models.append({
-                        'name': parts[0],
+                        'name': model_name,
                         'id': parts[1],
                         'size': parts[2],
-                        'modified': ' '.join(parts[3:])
+                        'modified': ' '.join(parts[3:]),
+                        'is_active': model_name == active_model
                     })
             
-            return Response({'models': models, 'count': len(models)})
+            return Response({
+                'models': models,
+                'count': len(models),
+                'active_model': active_model
+            })
         except subprocess.TimeoutExpired:
             return Response({'error': 'Ollama command timed out'}, status=500)
         except FileNotFoundError:
@@ -308,8 +328,37 @@ class OllamaModelsView(APIView):
 
 
 class OllamaModelControlView(APIView):
-    """Control Ollama models (pull, delete, set active)."""
+    """Control Ollama models (pull, delete, load, unload, switch)."""
     permission_classes = [IsAdminUser]
+    
+    def _get_config_file(self):
+        """Get path to Ollama config file."""
+        config_dir = os.path.expanduser('~/.ollama')
+        config_file = os.path.join(config_dir, 'active_model.txt')
+        os.makedirs(config_dir, exist_ok=True)
+        return config_file
+    
+    def _get_active_model(self):
+        """Read currently active model from config."""
+        try:
+            config_file = self._get_config_file()
+            if os.path.exists(config_file):
+                with open(config_file, 'r') as f:
+                    return f.read().strip()
+        except Exception as e:
+            logger.warning(f"Error reading active model: {e}")
+        return None
+    
+    def _set_active_model(self, model_name):
+        """Save active model to config."""
+        try:
+            config_file = self._get_config_file()
+            with open(config_file, 'w') as f:
+                f.write(model_name)
+            return True
+        except Exception as e:
+            logger.warning(f"Error saving active model: {e}")
+            return False
 
     def post(self, request):
         action = request.data.get('action')
@@ -324,7 +373,7 @@ class OllamaModelControlView(APIView):
                     return Response({'error': 'Model name required'}, status=400)
                 # Start pull in background (can take long)
                 subprocess.Popen(['ollama', 'pull', model_name])
-                return Response({'message': f'Started pulling {model_name}'})
+                return Response({'message': f'Started pulling {model_name}', 'action': 'pull', 'model': model_name})
             
             elif action == 'delete':
                 if not model_name:
@@ -332,19 +381,68 @@ class OllamaModelControlView(APIView):
                 result = subprocess.run(['ollama', 'rm', model_name], capture_output=True, text=True, timeout=30)
                 if result.returncode != 0:
                     return Response({'error': result.stderr}, status=500)
-                return Response({'message': f'Deleted {model_name}'})
+                # Clear active model if it was deleted
+                if self._get_active_model() == model_name:
+                    self._set_active_model('')
+                return Response({'message': f'Deleted {model_name}', 'action': 'delete', 'model': model_name})
+            
+            elif action == 'load':
+                """Load a model into memory."""
+                if not model_name:
+                    return Response({'error': 'Model name required'}, status=400)
+                try:
+                    # Create a simple test request to load the model
+                    result = subprocess.run(
+                        ['ollama', 'run', model_name, 'echo "model loaded"'],
+                        capture_output=True,
+                        text=True,
+                        timeout=30
+                    )
+                    if result.returncode == 0:
+                        self._set_active_model(model_name)
+                        return Response({
+                            'message': f'Loaded model {model_name}',
+                            'action': 'load',
+                            'model': model_name,
+                            'status': 'loaded'
+                        })
+                    else:
+                        return Response({'error': result.stderr}, status=500)
+                except Exception as e:
+                    return Response({'error': f'Failed to load model: {str(e)}'}, status=500)
+            
+            elif action == 'switch':
+                """Switch to a different model (unload current, load new)."""
+                if not model_name:
+                    return Response({'error': 'Model name required'}, status=400)
+                try:
+                    # Load the new model
+                    result = subprocess.run(
+                        ['ollama', 'run', model_name, 'echo "model switched"'],
+                        capture_output=True,
+                        text=True,
+                        timeout=30
+                    )
+                    if result.returncode == 0:
+                        self._set_active_model(model_name)
+                        return Response({
+                            'message': f'Switched to {model_name}',
+                            'action': 'switch',
+                            'model': model_name,
+                            'status': 'switched'
+                        })
+                    else:
+                        return Response({'error': result.stderr}, status=500)
+                except Exception as e:
+                    return Response({'error': f'Failed to switch model: {str(e)}'}, status=500)
             
             elif action == 'restart':
                 # Restart Ollama service (Linux systemd)
-                subprocess.run(['sudo', 'systemctl', 'restart', 'ollama'], timeout=10)
-                return Response({'message': 'Ollama service restarted'})
-            
-            elif action == 'set_default':
-                # Store the default model in Django settings or a config file
-                if not model_name:
-                    return Response({'error': 'Model name required'}, status=400)
-                # For now, just return success - actual implementation would save to DB/config
-                return Response({'message': f'Default model set to {model_name}'})
+                try:
+                    subprocess.run(['sudo', 'systemctl', 'restart', 'ollama'], timeout=10)
+                    return Response({'message': 'Ollama service restarted', 'action': 'restart'})
+                except Exception as e:
+                    return Response({'error': f'Failed to restart: {str(e)}'}, status=500)
             
             else:
                 return Response({'error': f'Unknown action: {action}'}, status=400)
@@ -352,12 +450,33 @@ class OllamaModelControlView(APIView):
         except subprocess.TimeoutExpired:
             return Response({'error': 'Command timed out'}, status=500)
         except Exception as e:
+            logger.error(f"OllamaModelControl error: {e}")
             return Response({'error': str(e)}, status=500)
+    
+    def get(self, request):
+        """Get current active model."""
+        active = self._get_active_model()
+        return Response({
+            'active_model': active,
+            'has_active': bool(active)
+        })
 
 
 class OllamaStatusView(APIView):
     """Check if Ollama is running and get current status."""
     permission_classes = [IsAdminUser]
+    
+    def _get_active_model(self):
+        """Read currently active model from config."""
+        try:
+            config_dir = os.path.expanduser('~/.ollama')
+            config_file = os.path.join(config_dir, 'active_model.txt')
+            if os.path.exists(config_file):
+                with open(config_file, 'r') as f:
+                    return f.read().strip()
+        except Exception as e:
+            logger.warning(f"Error reading active model: {e}")
+        return None
 
     def get(self, request):
         try:
@@ -385,16 +504,24 @@ class OllamaStatusView(APIView):
                 for line in lines:
                     parts = line.split()
                     if parts:
-                        running_models.append({'name': parts[0]})
+                        running_models.append({
+                            'name': parts[0],
+                            'is_active': parts[0] == self._get_active_model()
+                        })
+            
+            active_model = self._get_active_model()
             
             return Response({
                 'running': running,
+                'active_model': active_model,
                 'active_models': running_models,
                 'version': 'unknown'  # Could parse from ollama --version
             })
         except Exception as e:
+            logger.error(f"OllamaStatus error: {e}")
             return Response({
                 'running': False,
                 'error': str(e),
-                'active_models': []
+                'active_models': [],
+                'active_model': None
             })

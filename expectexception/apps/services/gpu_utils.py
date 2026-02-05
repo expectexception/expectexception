@@ -1,26 +1,71 @@
 """
 GPU Utilities - Monitor and manage GPU resources for backend services.
 Supports NVIDIA GPUs via PyTorch CUDA.
+
+IMPORTANT: This module is designed to be fork-safe and handle CUDA errors gracefully.
+For Django deployments with multiprocessing, ensure you:
+1. Use 'spawn' instead of 'fork' if using multiprocessing with CUDA
+2. Avoid calling torch.cuda functions before spawning processes
 """
 import logging
+import os
 from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
+
+# Flag to track if CUDA has already been initialized in this process
+_cuda_initialized = False
+_cuda_error = None
+
+
+def _check_cuda_safe():
+    """
+    Safely check CUDA availability and cache the result.
+    Handles RuntimeError from fork-related CUDA reinitialization.
+    """
+    global _cuda_initialized, _cuda_error
+    
+    if _cuda_initialized or _cuda_error:
+        return _cuda_error is None
+    
+    try:
+        import torch
+        # Try to access CUDA to see if it's available
+        torch.cuda.is_available()
+        _cuda_initialized = True
+        return True
+    except RuntimeError as e:
+        # Common error: "Cannot re-initialize CUDA in forked subprocess"
+        if "Cannot re-initialize CUDA" in str(e) or "forked subprocess" in str(e):
+            _cuda_error = e
+            logger.warning(f"CUDA unavailable due to fork: {e}")
+            return False
+        raise
+    except Exception as e:
+        _cuda_error = e
+        return False
 
 
 def is_gpu_available() -> bool:
     """Check if GPU is available for compute tasks."""
     try:
+        if not _check_cuda_safe():
+            return False
         import torch
         return torch.cuda.is_available()
     except ImportError:
         return False
+    except Exception as e:
+        logger.debug(f"Error checking GPU availability: {e}")
+        return False
+
 
 
 def get_device() -> str:
     """
     Get the optimal device for inference (cuda or cpu).
     Respects settings.USE_GPU and handles errors by falling back to CPU.
+    Safe for use in multiprocessing environments.
     """
     from django.conf import settings
     import torch
@@ -29,23 +74,40 @@ def get_device() -> str:
         return "cpu"
 
     try:
+        if not _check_cuda_safe():
+            if settings.CPU_FALLBACK:
+                logger.warning("Falling back to CPU device due to CUDA unavailability")
+                return "cpu"
+            raise RuntimeError("GPU requested but CUDA not available, and CPU fallback disabled.")
+        
         if torch.cuda.is_available():
             device_name = torch.cuda.get_device_name(0)
             logger.info(f"✓ Using GPU: {device_name} ({settings.GPU_DEVICE})")
             return settings.GPU_DEVICE
     except Exception as e:
         logger.warning(f"Error checking GPU availability: {e}")
-    
-    if settings.CPU_FALLBACK:
-        logger.warning("Falling back to CPU device due to error or unavailability")
-        return "cpu"
+        if settings.CPU_FALLBACK:
+            logger.warning("Falling back to CPU device due to error")
+            return "cpu"
     
     raise RuntimeError("GPU requested but not available, and CPU fallback disabled.")
 
 
 def get_gpu_info() -> Dict[str, Any]:
-    """Get comprehensive GPU status and memory usage."""
+    """
+    Get comprehensive GPU status and memory usage.
+    
+    Returns sensible defaults if CUDA is unavailable (e.g., after fork).
+    Safe for use in multiprocessing environments and after Django fork.
+    """
     try:
+        if not _check_cuda_safe():
+            return {
+                "available": False, 
+                "device": "cpu",
+                "reason": "CUDA not available (fork or no GPU)"
+            }
+        
         import torch
         
         if not torch.cuda.is_available():
@@ -55,36 +117,40 @@ def get_gpu_info() -> Dict[str, Any]:
                 "reason": "CUDA not available (Driver or Hardware issue)"
             }
         
-        # Select first device
-        device_idx = 0
-        device_name = torch.cuda.get_device_name(device_idx)
-        
-        # Real-time memory stats
-        # torch.cuda.memory_stats provides detailed metrics
-        total_memory = torch.cuda.get_device_properties(device_idx).total_memory
-        
-        # Clear cache before measuring for higher accuracy if needed, 
-        # but maybe not every 2 seconds to avoid perf hit.
-        # torch.cuda.empty_cache() 
-        
-        allocated = torch.cuda.memory_allocated(device_idx)
-        reserved = torch.cuda.memory_reserved(device_idx)
-        free_inside_reserved = reserved - allocated
-        
-        # Utilization % based on total memory
-        utilization = (allocated / total_memory * 100) if total_memory > 0 else 0
-        
-        return {
-            "available": True,
-            "device": device_name,
-            "total_memory_mb": round(total_memory / 1024**2, 1),
-            "allocated_mb": round(allocated / 1024**2, 1),
-            "reserved_mb": round(reserved / 1024**2, 1),
-            "free_mb": round((total_memory - allocated) / 1024**2, 1),
-            "utilization_pct": round(utilization, 1),
-            "temperature": "N/A", # Torch doesn't provide temp easily without pynvml
-            "capability": torch.cuda.get_device_capability(device_idx)
-        }
+        try:
+            # Select first device
+            device_idx = 0
+            device_name = torch.cuda.get_device_name(device_idx)
+            
+            # Real-time memory stats
+            total_memory = torch.cuda.get_device_properties(device_idx).total_memory
+            allocated = torch.cuda.memory_allocated(device_idx)
+            reserved = torch.cuda.memory_reserved(device_idx)
+            
+            # Utilization % based on total memory
+            utilization = (allocated / total_memory * 100) if total_memory > 0 else 0
+            
+            return {
+                "available": True,
+                "device": device_name,
+                "total_memory_mb": round(total_memory / 1024**2, 1),
+                "allocated_mb": round(allocated / 1024**2, 1),
+                "reserved_mb": round(reserved / 1024**2, 1),
+                "free_mb": round((total_memory - allocated) / 1024**2, 1),
+                "utilization_pct": round(utilization, 1),
+                "temperature": "N/A",
+                "capability": torch.cuda.get_device_capability(device_idx)
+            }
+        except RuntimeError as e:
+            if "Cannot re-initialize CUDA" in str(e) or "forked subprocess" in str(e):
+                logger.warning(f"CUDA reinitialization error (likely fork-related): {e}")
+                return {
+                    "available": False,
+                    "device": "cpu",
+                    "reason": "CUDA fork error - use 'spawn' instead of 'fork' for multiprocessing"
+                }
+            raise
+            
     except ImportError:
         return {"available": False, "device": "cpu", "reason": "PyTorch not installed"}
     except Exception as e:
