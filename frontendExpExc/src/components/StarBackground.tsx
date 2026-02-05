@@ -1,15 +1,18 @@
 import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import { Box, useTheme, useMediaQuery } from '@mui/material';
+import { keyframes } from '@mui/system';
 
+// --- Types ---
 interface Star {
     id: number;
     x: number;
     y: number;
     size: number;
     opacity: number;
-    layer: number; // 1, 2, or 3 for parallax
     animationDuration: number;
     animationDelay: number;
+    color: string;
+    glow: number;
 }
 
 interface ShootingStar {
@@ -17,131 +20,40 @@ interface ShootingStar {
     x: number;
     y: number;
     angle: number;
-    duration: number;
-    delay: number;
-    width: number;
+    scale: number;
+    speed: number;
 }
 
 interface StarBackgroundProps {
     density?: 'subtle' | 'medium' | 'dense';
     showShootingStars?: boolean;
+    enableNebula?: boolean;
     disabled?: boolean;
+    fixed?: boolean;
 }
 
-// Global Clean Keyframes
-const starStyles = `
-@keyframes shootingStarSimple {
-    0% {
-        transform: translateX(0) translateY(0);
-        opacity: 0;
-        width: 0;
-    }
-    10% {
-        opacity: 1;
-        width: 150px;
-    }
-    90% {
-        opacity: 1;
-        width: 150px;
-    }
-    100% {
-        transform: translateX(400px) translateY(150px);
-        opacity: 0;
-        width: 0;
-    }
-}
-
-@keyframes twinkle {
+// --- Keyframes ---
+const twinkle = keyframes`
     0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.3; transform: scale(0.8); }
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
+    50% { opacity: 0.4; transform: scale(0.8); }
 `;
 
-const StarBackground: React.FC<StarBackgroundProps> = ({
-    density = 'medium',
-    showShootingStars = true,
-    disabled = false,
-}) => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+const shoot = keyframes`
+    0% { transform: translateX(0) scale(1); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateX(800px) scale(0); opacity: 0; }
+`;
 
-    // State for dynamic shooting stars
-    const [shootingStars, setShootingStars] = useState<ShootingStar[]>([]);
-    const shootingStarIdRef = useRef(0);
+// --- Utility: Noise Texture for "Film Grain" feel ---
+// A tiny transparent noise pattern encoded in base64 to avoid external assets
+const NOISE_SVG_DATA_URI = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`;
 
-    // Static Stars
-    const stars = useMemo<Star[]>(() => {
-        if (disabled) return [];
-        const densityMap = { subtle: 40, medium: 80, dense: 150 };
-        const count = isMobile ? densityMap[density] * 0.6 : densityMap[density];
-
-        return Array.from({ length: count }, (_, i) => ({
-            id: i,
-            x: Math.random() * 100,
-            y: Math.random() * 100,
-            size: Math.random() * 2 + 0.5,
-            opacity: Math.random() * 0.6 + 0.2,
-            layer: Math.floor(Math.random() * 3) + 1,
-            animationDuration: Math.random() * 4 + 3,
-            animationDelay: Math.random() * 5,
-        }));
-    }, [density, isMobile, disabled]);
-
-    // Spawner
-    const createShootingStar = useCallback(() => {
-        const id = shootingStarIdRef.current++;
-        const newStar: ShootingStar = {
-            id,
-            x: Math.random() * 100,
-            y: Math.random() * 40, // Top 40% only for more dramatic fall
-            angle: 20 + Math.random() * 40, // 20 to 60 degrees
-            duration: 1.5 + Math.random() * 2,
-            delay: 0,
-            width: 100 + Math.random() * 100,
-        };
-
-        setShootingStars(prev => [...prev, newStar]);
-
-        // Cleanup
-        setTimeout(() => {
-            setShootingStars(prev => prev.filter(s => s.id !== id));
-        }, (newStar.duration * 1000) + 100);
-    }, []);
-
-    useEffect(() => {
-        if (disabled || !showShootingStars) return;
-
-        let timeoutId: ReturnType<typeof setTimeout>;
-
-        const loop = () => {
-            createShootingStar();
-            const nextTime = 3000 + Math.random() * 7000; // 3s to 10s
-            timeoutId = setTimeout(loop, nextTime);
-        };
-
-        timeoutId = setTimeout(loop, 2000);
-        return () => clearTimeout(timeoutId);
-    }, [disabled, showShootingStars, createShootingStar]);
-
-    if (disabled) return null;
-
+// --- Sub-component: Static Stars ---
+// Memoized to prevent re-rendering when shooting stars animate
+const StaticStars = React.memo(({ stars }: { stars: Star[] }) => {
     return (
-        <Box sx={{
-            position: 'absolute',
-            inset: 0,
-            overflow: 'hidden',
-            pointerEvents: 'none',
-            zIndex: 0,
-            background: 'radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%)',
-        }}>
-            <style>{starStyles}</style>
-
-            {/* Static Stars with Parallax feel */}
+        <Box sx={{ position: 'absolute', inset: 0, zIndex: 1 }}>
             {stars.map((star) => (
                 <Box
                     key={`star-${star.id}`}
@@ -152,17 +64,148 @@ const StarBackground: React.FC<StarBackgroundProps> = ({
                         width: star.size,
                         height: star.size,
                         borderRadius: '50%',
-                        bgcolor: star.layer === 1 ? '#fff' : star.layer === 2 ? '#94a3b8' : '#64748b',
+                        backgroundColor: star.color,
+                        boxShadow: `0 0 ${star.glow}px ${star.color}`,
                         opacity: star.opacity,
-                        animation: `twinkle ${star.animationDuration}s ease-in-out infinite`,
+                        animation: `${twinkle} ${star.animationDuration}s ease-in-out infinite`,
                         animationDelay: `${star.animationDelay}s`,
-                        boxShadow: star.layer === 1 ? `0 0 ${star.size * 3}px white` : 'none',
-                        zIndex: star.layer,
+                        willChange: 'opacity, transform',
                     }}
                 />
             ))}
+        </Box>
+    );
+});
 
-            {/* Shooting Stars */}
+const StarBackground: React.FC<StarBackgroundProps> = ({
+    density = 'medium',
+    showShootingStars = true,
+    enableNebula = true,
+    disabled = false,
+    fixed = false,
+}) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const [shootingStars, setShootingStars] = useState<ShootingStar[]>([]);
+    const shootingStarIdRef = useRef(0);
+
+    // --- 1. Generate Static Stars ---
+    const stars = useMemo<Star[]>(() => {
+        if (disabled) return [];
+        const densityMap = { subtle: 50, medium: 100, dense: 200 };
+        const count = isMobile ? densityMap[density] * 0.5 : densityMap[density];
+
+        return Array.from({ length: count }, (_, i) => {
+            const isBlueStar = Math.random() > 0.9; // 10% chance of a blue/hot star
+            const size = Math.random() * 2 + 0.5;
+
+            return {
+                id: i,
+                x: Math.random() * 100,
+                y: Math.random() * 100,
+                size: size,
+                opacity: Math.random() * 0.7 + 0.3,
+                animationDuration: Math.random() * 3 + 2, // 2s to 5s
+                animationDelay: Math.random() * 5,
+                color: isBlueStar ? '#a5f3fc' : '#fff', // Cyan-ish or White
+                glow: isBlueStar ? 4 : 2,
+            };
+        });
+    }, [density, isMobile, disabled]);
+
+    // --- 2. Spawner Logic ---
+    const createShootingStar = useCallback(() => {
+        const id = shootingStarIdRef.current++;
+        // Start from top-leftish area mostly, but vary it
+        const startX = Math.random() * 100;
+        const startY = Math.random() * 50;
+
+        const newStar: ShootingStar = {
+            id,
+            x: startX,
+            y: startY,
+            angle: 35 + Math.random() * 20, // 35 to 55 degrees downwards
+            scale: 0.8 + Math.random() * 0.7, // Random size variation
+            speed: 2 + Math.random() * 1.5, // 2s to 3.5s duration
+        };
+
+        setShootingStars(prev => [...prev, newStar]);
+
+        setTimeout(() => {
+            setShootingStars(prev => prev.filter(s => s.id !== id));
+        }, newStar.speed * 1000 + 100);
+    }, []);
+
+    useEffect(() => {
+        if (disabled || !showShootingStars) return;
+
+        let timeoutId: ReturnType<typeof setTimeout>;
+
+        const scheduleNext = () => {
+            const delay = 2000 + Math.random() * 5000; // Random interval between 2s and 7s
+            timeoutId = setTimeout(() => {
+                createShootingStar();
+                scheduleNext();
+            }, delay);
+        };
+
+        scheduleNext();
+        return () => clearTimeout(timeoutId);
+    }, [disabled, showShootingStars, createShootingStar]);
+
+    if (disabled) return null;
+
+    return (
+        <Box sx={{
+            position: fixed ? 'fixed' : 'absolute',
+            inset: 0,
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            zIndex: 0,
+            bgcolor: '#020617', // Very dark slate/black base
+        }}>
+            {/* Layer 1: Nebula Effects (CSS Gradients) */}
+            {enableNebula && (
+                <>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: '-20%',
+                        left: '-10%',
+                        width: '60%',
+                        height: '60%',
+                        background: 'radial-gradient(circle, rgba(76, 29, 149, 0.15) 0%, rgba(0,0,0,0) 70%)',
+                        filter: 'blur(60px)',
+                        zIndex: 0,
+                        animation: `${twinkle} 15s ease-in-out infinite alternate`,
+                    }} />
+                    <Box sx={{
+                        position: 'absolute',
+                        bottom: '-10%',
+                        right: '-10%',
+                        width: '50%',
+                        height: '50%',
+                        background: 'radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, rgba(0,0,0,0) 70%)',
+                        filter: 'blur(50px)',
+                        zIndex: 0,
+                        animation: `${twinkle} 20s ease-in-out infinite alternate-reverse`,
+                    }} />
+                </>
+            )}
+
+            {/* Layer 2: Noise Texture (Film Grain) */}
+            <Box sx={{
+                position: 'absolute',
+                inset: 0,
+                backgroundImage: NOISE_SVG_DATA_URI,
+                opacity: 0.4,
+                zIndex: 0,
+                mixBlendMode: 'overlay',
+            }} />
+
+            {/* Layer 3: Static Stars (Memoized) */}
+            <StaticStars stars={stars} />
+
+            {/* Layer 4: Shooting Stars */}
             {shootingStars.map((star) => (
                 <Box
                     key={`shooting-${star.id}`}
@@ -171,31 +214,40 @@ const StarBackground: React.FC<StarBackgroundProps> = ({
                         left: `${star.x}%`,
                         top: `${star.y}%`,
                         transform: `rotate(${star.angle}deg)`,
-                        width: star.width,
-                        height: 2,
+                        zIndex: 2,
                     }}
                 >
-                    <Box
-                        sx={{
-                            width: '100%',
-                            height: '100%',
-                            background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 70%, rgba(255,255,255,0) 100%)',
-                            animation: `shootingStarSimple ${star.duration}s linear forwards`,
-                            borderRadius: '100px',
-                            boxShadow: '0 0 15px rgba(255,255,255,0.4)',
-                        }}
-                    />
+                    {/* The Falling Animation Wrapper */}
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        // We animate the translateX here
+                        animation: `${shoot} ${star.speed}s linear forwards`,
+                        willChange: 'transform, opacity',
+                    }}>
+                        {/* The Head (Glowing Ball) */}
+                        <Box sx={{
+                            width: `${4 * star.scale}px`,
+                            height: `${4 * star.scale}px`,
+                            borderRadius: '50%',
+                            background: '#fff',
+                            boxShadow: '0 0 10px 2px rgba(255, 255, 255, 0.8), 0 0 20px 4px rgba(139, 92, 246, 0.3)',
+                            zIndex: 2,
+                        }} />
+
+                        {/* The Tail (Gradient Trail) */}
+                        <Box sx={{
+                            width: `${250 * star.scale}px`,
+                            height: `${2 * star.scale}px`,
+                            background: 'linear-gradient(90deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%)',
+                            // Negative margin pulls the tail behind the head seamlessly
+                            marginLeft: '-2px',
+                            transform: 'translateX(-1px)',
+                            borderRadius: '100%',
+                        }} />
+                    </Box>
                 </Box>
             ))}
-
-            {/* Nebula effect overlay */}
-            {/* <Box sx={{
-                position: 'absolute',
-                inset: 0,
-                background: 'radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.05) 0%, transparent 50%)',
-                filter: 'blur(60px)',
-                zIndex: 0,
-            }} /> */}
         </Box>
     );
 };

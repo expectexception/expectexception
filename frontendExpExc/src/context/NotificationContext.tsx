@@ -54,9 +54,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     useEffect(() => {
         if (token) {
-            fetchNotifications();
-            const interval = setInterval(fetchNotifications, 30000); // poll every 30s
-            return () => clearInterval(interval);
+            // Notifications disabled temporarily to prevent 404s
+            // fetchNotifications();
+            // const interval = setInterval(fetchNotifications, 30000); // poll every 30s
+            // return () => clearInterval(interval);
         }
     }, [fetchNotifications, token]);
 

@@ -37,8 +37,12 @@ class OllamaService:
         try:
             # Handle both http and https, skip verification for local common cases if needed
             response = requests.get(f"{self.base_url}/api/tags", timeout=5, verify=False)
-            return response.status_code == 200
-        except requests.RequestException:
+            is_ok = response.status_code == 200
+            if is_ok:
+                logger.info(f"✓ Ollama available at {self.base_url}")
+            return is_ok
+        except requests.RequestException as e:
+            logger.warning(f"✗ Ollama unavailable at {self.base_url}: {e}")
             return False
     
     def get_models(self) -> List[Dict[str, Any]]:
@@ -135,7 +139,7 @@ class OllamaService:
             "keep_alive": "5m",
             "options": {
                 "num_predict": self.max_tokens,
-                "num_ctx": 4096, # Reduced context for speed
+                "num_ctx": 4096,
                 "temperature": 0.7,
             }
         }
@@ -143,7 +147,7 @@ class OllamaService:
         client = self.get_async_client()
         
         try:
-            async with client.stream("POST", url, json=payload) as response:
+            async with client.stream("POST", url, json=payload, timeout=300.0) as response:
                 if response.status_code != 200:
                     error_text = await response.aread()
                     logger.error(f"Ollama async error {response.status_code}: {error_text}")
@@ -155,17 +159,20 @@ class OllamaService:
                         try:
                             data = json.loads(line)
                             if 'message' in data and 'content' in data['message']:
-                                yield data['message']['content']
+                                chunk = data['message']['content']
+                                if chunk:
+                                    yield chunk
                             if data.get('done', False):
                                 break
-                        except json.JSONDecodeError:
+                        except json.JSONDecodeError as e:
+                            logger.debug(f"JSON parse error in stream: {e}")
                             continue
                                 
         except httpx.TimeoutException:
             logger.error("Ollama async chat timeout")
             yield "Error: Model took too long to respond. It might be large or busy."
         except Exception as e:
-            logger.error(f"Ollama async chat error: {e}")
+            logger.error(f"Ollama async chat error: {e}", exc_info=True)
             yield f"Error: Connection to AI failed ({type(e).__name__})."
 
     def generate_title(self, first_message: str) -> str:

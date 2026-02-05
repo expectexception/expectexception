@@ -1519,13 +1519,22 @@ class BackgroundRemoverView(APIView):
             return cls._gpu_session
         
         try:
+            from django.conf import settings
             from rembg import new_session
-            # Try CUDA provider first, fall back to CPU
-            cls._gpu_session = new_session(
-                "u2net",
-                providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
-            )
-            logger.info("BackgroundRemover: Created GPU session (CUDA)")
+            use_gpu = getattr(settings, 'USE_GPU', False)
+            if use_gpu:
+                # Try CUDA provider first, fall back to CPU
+                cls._gpu_session = new_session(
+                    "u2net",
+                    providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
+                )
+                logger.info("BackgroundRemover: Created GPU session (CUDA)")
+            else:
+                cls._gpu_session = new_session(
+                    "u2net",
+                    providers=['CPUExecutionProvider']
+                )
+                logger.info("BackgroundRemover: Created CPU session")
         except Exception as e:
             logger.warning(f"BackgroundRemover: GPU session failed, using default: {e}")
             cls._gpu_session = None

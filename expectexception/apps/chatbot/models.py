@@ -43,7 +43,7 @@ class Conversation(models.Model):
         verbose_name_plural = 'Conversations'
     
     def __str__(self):
-        user_str = self.user.username if self.user else f'Anonymous ({self.session_id[:8]}...)'
+        user_str = self.user.email if self.user else f'Anonymous ({self.session_id[:8]}...)'
         return f"{self.title} - {user_str}"
     
     def get_messages_for_context(self, limit=20):

@@ -223,24 +223,32 @@ async def chat(request):
     async def event_generator():
         full_response = ""
         start_time = time.time()
+        chunk_count = 0
         
         try:
             async for chunk in ollama_service.chat_async(messages):
-                full_response += chunk
-                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                if chunk:
+                    full_response += chunk
+                    chunk_count += 1
+                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
             
             generation_time = time.time() - start_time
+            logger.info(f"Generated response in {generation_time:.2f}s with {chunk_count} chunks")
             
             # Save assistant message
             assistant_msg = await save_message_async(conversation, 'assistant', full_response, generation_time)
             
-            yield f"data: {json.dumps({'done': True, 'message_id': assistant_msg.id, 'conversation_id': conversation.id, 'title': conversation.title})}\n\n"
+            # Always send final payload with complete response
+            yield f"data: {json.dumps({'done': True, 'message_id': assistant_msg.id, 'conversation_id': conversation.id, 'title': conversation.title, 'final': full_response})}\n\n"
             
         except Exception as e:
-            logger.error(f"Async Stream Error: {e}")
+            logger.error(f"Async Stream Error: {e}", exc_info=True)
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
-    return StreamingHttpResponse(event_generator(), content_type='text/event-stream')
+    response = StreamingHttpResponse(event_generator(), content_type='text/event-stream')
+    response['X-Accel-Buffering'] = 'no'
+    response['Cache-Control'] = 'no-cache'
+    return response
 
 
 @api_view(['POST'])

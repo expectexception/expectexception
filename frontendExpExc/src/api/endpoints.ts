@@ -155,6 +155,23 @@ export const endpoints = {
         health: '/api/ai-detector/health/',
         models: '/api/ai-detector/models/',
     },
+
+    // Admin Dashboard
+    admin: {
+        users: '/api/services/admin/users/',
+        userDetail: (id: number) => `/api/services/admin/users/${id}/`,
+        blogs: '/api/services/admin/blogs/',
+        blogDetail: (id: number) => `/api/services/admin/blogs/${id}/`,
+        downloads: '/api/services/admin/downloads/',
+        downloadDetail: (id: number) => `/api/services/admin/downloads/${id}/`,
+        logs: '/api/services/admin/logs/',
+        metrics: '/api/services/server-status-api/',
+        ollama: {
+            models: '/api/services/admin/ollama/models/',
+            control: '/api/services/admin/ollama/control/',
+            status: '/api/services/admin/ollama/status/',
+        },
+    },
 };
 
 export default endpoints;

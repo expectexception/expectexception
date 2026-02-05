@@ -118,6 +118,7 @@ def analyze_image_task(
             try:
                 from .models import ImageAnalysis
                 from django.contrib.auth import get_user_model
+                from django.core.files.base import ContentFile
                 
                 User = get_user_model()
                 user = None
@@ -148,6 +149,11 @@ def analyze_image_task(
                         'ela_base64': ela_base64,
                     }
                 )
+                
+                # Create ContentFile from the decoded image bytes
+                content_file = ContentFile(image_bytes, name=filename)
+                analysis.image.save(filename, content_file, save=True)
+                
                 response_data['analysis_id'] = analysis.id
                 
             except Exception as db_error:

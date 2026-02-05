@@ -24,7 +24,7 @@ class ConversationAdmin(admin.ModelAdmin):
     
     def user_display(self, obj):
         if obj.user:
-            return obj.user.username
+            return obj.user.email
         return format_html('<span style="color: #888;">{}</span>', 'Anonymous')
     user_display.short_description = 'User'
     

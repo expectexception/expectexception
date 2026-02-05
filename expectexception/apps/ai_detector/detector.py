@@ -82,11 +82,18 @@ class ModelManager:
         with ModelManager._lock:
             if ModelManager._initialized:
                 return
-            self._device = 0 if torch.cuda.is_available() else -1
-            self._device_name = "cuda" if torch.cuda.is_available() else "cpu"
+            try:
+                from django.conf import settings
+                use_gpu = getattr(settings, 'USE_GPU', False)
+            except Exception:
+                use_gpu = False
+
+            cuda_available = torch.cuda.is_available()
+            self._device = 0 if (use_gpu and cuda_available) else -1
+            self._device_name = "cuda" if self._device >= 0 else "cpu"
             
             # Configure GPU memory limits for low-VRAM GPUs (e.g., GeForce 940MX 2GB)
-            if torch.cuda.is_available():
+            if self._device >= 0:
                 try:
                     # Limit memory to 80% to prevent OOM
                     torch.cuda.set_per_process_memory_fraction(0.8, 0)

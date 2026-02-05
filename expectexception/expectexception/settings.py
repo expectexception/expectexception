@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'apps.profiles',
     'apps.notifications',
     'apps.dashboard',
-    # 'apps.ai_detector',
+    'apps.ai_detector',
     'apps.text_to_handwriting',
     'apps.secret_sharer',
     'apps.contact',
@@ -118,7 +118,8 @@ STATICFILES_DIRS = [
     BASE_DIR.parent / "frontendExpExc" / "build",
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -293,7 +294,7 @@ SPECTACULAR_SETTINGS = {
 
 # Audio separator defaults
 # model options depend on installed demucs versions (e.g., 'htdemucs', 'mdx_extra')
-AUDIO_SEPARATOR_MODEL = os.getenv('AUDIO_SEPARATOR_MODEL', 'mdx_extra')
+AUDIO_SEPARATOR_MODEL = os.getenv('AUDIO_SEPARATOR_MODEL', 'mdx')
 # Per-task timeout in seconds
 AUDIO_SEPARATOR_TIMEOUT = int(os.getenv('AUDIO_SEPARATOR_TIMEOUT', '300'))
 # Cache timeout for task results (seconds)
@@ -338,10 +339,13 @@ CELERY_TASK_ANNOTATIONS = {
 # Using Redis (same as Celery broker)
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/1'),
         'KEY_PREFIX': 'expexc',
         'TIMEOUT': 60 * 60 * 24,  # 24 hours default
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
     }
 }
 
@@ -379,13 +383,13 @@ FILE_UPLOAD_TEMP_DIR = '/tmp/django_uploads'
 # Pull model: ollama pull smollm2:1.7b
 
 OLLAMA_BASE_URL = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
-CHATBOT_MODEL = os.getenv('CHATBOT_MODEL', 'qwen3:4b')
+CHATBOT_MODEL = os.getenv('CHATBOT_MODEL', 'smollm2:1.7b')
 CHATBOT_MAX_TOKENS = int(os.getenv('CHATBOT_MAX_TOKENS', '2048'))
 
 # =============================================================================
 # GPU Acceleration Settings
 # =============================================================================
-USE_GPU = os.getenv('USE_GPU', 'True') == 'True'
+USE_GPU = os.getenv('USE_GPU', 'False') == 'True'
 GPU_DEVICE = os.getenv('GPU_DEVICE', 'cuda:0')  # Default to first GPU
 GPU_MEMORY_FRACTION = float(os.getenv('GPU_MEMORY_FRACTION', '0.8'))  # Reserve 80% VRAM
 CPU_FALLBACK = True  # Fallback to CPU if GPU fails/OOM
