@@ -36,6 +36,7 @@ import {
     AppRegistration,
     ImageSearch,
     SmartToy,
+    AdminPanelSettings,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -163,6 +164,43 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         />
                     </ListItem>
                 ))}
+
+                {/* Admin Dashboard - Only visible for admin users in mobile drawer */}
+                {isAuthenticated && user?.is_staff && (
+                    <ListItem
+                        component={Link}
+                        to="/admin/dashboard"
+                        onClick={handleDrawerToggle}
+                        sx={{
+                            borderRadius: 3,
+                            mb: 1,
+                            py: 1.5,
+                            bgcolor: location.pathname === '/admin/dashboard' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                            color: location.pathname === '/admin/dashboard' ? 'primary.main' : 'text.secondary',
+                            border: '1px solid',
+                            borderColor: location.pathname === '/admin/dashboard' ? alpha(theme.palette.primary.main, 0.2) : 'transparent',
+                            '&:hover': {
+                                bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                color: 'primary.main',
+                            },
+                            transition: 'all 0.2s',
+                        }}
+                    >
+                        <ListItemIcon sx={{
+                            color: location.pathname === '/admin/dashboard' ? 'primary.main' : 'text.secondary',
+                            minWidth: 40
+                        }}>
+                            <AdminPanelSettings />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Admin"
+                            primaryTypographyProps={{
+                                fontWeight: location.pathname === '/admin/dashboard' ? 700 : 500,
+                                fontSize: '0.95rem'
+                            }}
+                        />
+                    </ListItem>
+                )}
             </List>
 
             {/* Mobile Auth Section */}
@@ -264,7 +302,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     </Stack>
                 )}
             </Box>
-        </Box>
+        </Box >
     );
 
     return (
@@ -351,6 +389,49 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                         {item.label}
                                     </Button>
                                 ))}
+
+                                {/* Admin Dashboard - Only visible for admin users */}
+                                {isAuthenticated && user?.is_staff && (
+                                    <Button
+                                        component={Link}
+                                        to="/admin/dashboard"
+                                        startIcon={<AdminPanelSettings />}
+                                        size="small"
+                                        sx={{
+                                            color: location.pathname === '/admin/dashboard' ? 'primary.main' : 'text.secondary',
+                                            fontWeight: location.pathname === '/admin/dashboard' ? 600 : 400,
+                                            fontSize: '0.85rem',
+                                            px: 1.5,
+                                            py: 0.5,
+                                            minWidth: 'auto',
+                                            position: 'relative',
+                                            whiteSpace: 'nowrap',
+                                            '& .MuiButton-startIcon': {
+                                                marginRight: 0.5,
+                                            },
+                                            '&::after': {
+                                                content: '""',
+                                                position: 'absolute',
+                                                bottom: 4,
+                                                left: '50%',
+                                                transform: 'translateX(-50%)',
+                                                width: location.pathname === '/admin/dashboard' ? '60%' : '0%',
+                                                height: '2px',
+                                                bgcolor: 'primary.main',
+                                                transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            },
+                                            '&:hover': {
+                                                color: 'primary.light',
+                                                bgcolor: 'transparent',
+                                                '&::after': {
+                                                    width: '60%',
+                                                },
+                                            },
+                                        }}
+                                    >
+                                        Admin
+                                    </Button>
+                                )}
                             </Box>
 
                             {/* Right Side Actions */}

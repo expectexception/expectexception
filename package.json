@@ -42,6 +42,10 @@
     "axios": "^1.6.8",
     "file-saver": "^2.0.5",
     "framer-motion": "^11.0.20",
+    "@react-three/fiber": "^8.15.19",
+    "@react-three/drei": "^9.88.13",
+    "@react-three/postprocessing": "^2.15.11",
+    "three": "^0.158.0",
     "html2canvas": "^1.4.1",
     "prismjs": "^1.30.0",
     "qrcode.react": "^3.1.0",
@@ -88,6 +92,7 @@
   },
   "devDependencies": {
     "@types/react-dropzone": "^5.1.0",
+    "@types/three": "^0.158.0",
     "ajv": "^8.17.1",
     "react-snap": "^1.23.0",
     "source-map-explorer": "^2.5.3"
@@ -120,7 +125,6 @@
     "qs": "^6.11.0",
     "path-to-regexp": "^0.1.12",
     "postcss": "^8.4.31",
-    "webpack-dev-server": "^5.2.0",
     "send": "^0.19.0",
     "serve-static": "^1.16.2",
     "minimist": "^1.2.6",

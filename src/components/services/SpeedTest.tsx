@@ -436,9 +436,9 @@ const SpeedTest: React.FC = () => {
                     position: 'relative',
                     overflow: 'hidden'
                 }}>
-                    <Typography variant="caption" sx={{ position: 'absolute', top: 0, left: 16, opacity: 0.5, fontWeight: 600, display: { xs: 'none', md: 'block' } }}>
+                    {/* <Typography variant="caption" sx={{ position: 'absolute', top: 0, left: 16, opacity: 0.5, fontWeight: 600, display: { xs: 'none', md: 'block' } }}>
                         REAL-TIME THROUGHPUT (Mbps)
-                    </Typography>
+                    </Typography> */}
 
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={dataPoints}>

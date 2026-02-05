@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Box, CircularProgress } from '@mui/material';
 import PageTransition from './PageTransition';
+import AdminGuard from '../guards/AdminGuard';
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -32,6 +33,7 @@ const ImageCompressorPage = lazy(() => import('../../pages/ImageCompressorPage')
 const AIDetectorPage = lazy(() => import('../../pages/AIDetectorPage'));
 const CreateBlogPage = lazy(() => import('../../pages/admin/CreateBlogPage'));
 const UploadResourcePage = lazy(() => import('../../pages/admin/UploadResourcePage'));
+const AdminDashboardPage = lazy(() => import('../../pages/admin/AdminDashboardPage'));
 const PrivacyPolicy = lazy(() => import('../../pages/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('../../pages/legal/TermsOfService'));
 const ContactPage = lazy(() => import('../../pages/ContactPage'));
@@ -145,8 +147,9 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/downloads" element={<PageTransition><DownloadHubPage /></PageTransition>} />
 
                     {/* Admin */}
-                    <Route path="/admin/create-blog" element={<PageTransition><CreateBlogPage /></PageTransition>} />
-                    <Route path="/admin/upload-resource" element={<PageTransition><UploadResourcePage /></PageTransition>} />
+                    <Route path="/admin/dashboard" element={<AdminGuard><PageTransition><AdminDashboardPage /></PageTransition></AdminGuard>} />
+                    <Route path="/admin/create-blog" element={<AdminGuard><PageTransition><CreateBlogPage /></PageTransition></AdminGuard>} />
+                    <Route path="/admin/upload-resource" element={<AdminGuard><PageTransition><UploadResourcePage /></PageTransition></AdminGuard>} />
 
                     {/* Legal */}
                     <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />

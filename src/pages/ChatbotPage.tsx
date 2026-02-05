@@ -153,6 +153,55 @@ const personaUIConfig: Record<string, { icon: React.ReactNode; color: string; gr
     }
 };
 
+// --- Custom Components ---
+const ThinkingIndicator: React.FC<{ persona: Persona; isLoading: boolean }> = ({ persona, isLoading }) => {
+    const [currentTextIndex, setCurrentTextIndex] = useState(0);
+
+    const messages = useMemo(() => {
+        if (persona.id === 'girlfriend' || persona.id === 'boyfriend') {
+            const suffix = persona.id === 'girlfriend' ? ' 💕' : ' 💙';
+            const subject = persona.id === 'girlfriend' ? 'Girlfriend' : 'Boyfriend';
+            return [
+                `Your ${subject} is thinking...${suffix}`,
+                `Your ${subject} is typing...${suffix}`,
+                `Your ${subject} is writing...${suffix}`,
+                `Your ${subject} is hold on...${suffix}`
+            ];
+        }
+        return [persona.thinkingText || 'Thinking...'];
+    }, [persona]);
+
+    useEffect(() => {
+        if (!isLoading || messages.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentTextIndex(prev => (prev + 1) % messages.length);
+        }, 2500);
+        return () => clearInterval(interval);
+    }, [isLoading, messages]);
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+                <Avatar sx={{ width: 36, height: 36, background: persona.gradient, flexShrink: 0 }}>
+                    {persona.icon}
+                </Avatar>
+                <Box sx={{ py: 1.5, px: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        {[0, 1, 2].map(i => (
+                            <motion.div key={i} animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}>
+                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: persona.color }} />
+                            </motion.div>
+                        ))}
+                        <Typography variant="body2" color="grey.500" sx={{ ml: 1 }}>
+                            {messages[currentTextIndex]}
+                        </Typography>
+                    </Box>
+                </Box>
+            </Box>
+        </motion.div>
+    );
+};
+
 // --- Helper Functions ---
 const formatTimestamp = (date: Date): string => {
     const now = new Date();
@@ -236,6 +285,8 @@ const ChatbotPage: React.FC = () => {
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+    const lastRenderTimeRef = useRef<number>(0);
+    const accumulatedContentRef = useRef<string>('');
 
     // --- Effects ---
 
@@ -314,10 +365,37 @@ const ChatbotPage: React.FC = () => {
             try {
                 const response = await apiClient.get('/api/chatbot/conversations/');
                 setConversations(response.data);
-            } catch { console.error('Failed to load conversations'); }
+                // Sync to localStorage
+                localStorage.setItem('chat_conversations', JSON.stringify(response.data));
+            } catch (err) {
+                console.error('Failed to load conversations from API, trying localStorage', err);
+                const saved = localStorage.getItem('chat_conversations');
+                if (saved) setConversations(JSON.parse(saved));
+            }
         };
         loadConversations();
     }, [currentConversationId]);
+
+    // Save/Restore messages to local storage for persistence
+    useEffect(() => {
+        if (currentConversationId) {
+            localStorage.setItem(`chat_messages_${currentConversationId}`, JSON.stringify(messages));
+        }
+    }, [messages, currentConversationId]);
+
+    // Load messages from localStorage if API fails or for quicker initial load
+    const restoreMessagesFromLocalStorage = useCallback((id: number) => {
+        const saved = localStorage.getItem(`chat_messages_${id}`);
+        if (saved) {
+            try {
+                setMessages(JSON.parse(saved));
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+        return false;
+    }, []);
 
     // Scroll handling for showing scroll-to-bottom button
     useEffect(() => {
@@ -377,12 +455,23 @@ const ChatbotPage: React.FC = () => {
     };
 
     const loadConversation = async (id: number) => {
+        // Try local storage first for speed
+        restoreMessagesFromLocalStorage(id);
+
         try {
             const response = await apiClient.get(`/api/chatbot/conversations/${id}/`);
             setMessages(response.data.messages || []);
             setCurrentConversationId(id);
             setMobileDrawerOpen(false);
-        } catch { setError('Failed to load conversation'); }
+            // Update local storage with fresh data
+            localStorage.setItem(`chat_messages_${id}`, JSON.stringify(response.data.messages || []));
+        } catch {
+            setError('Failed to load conversation from server');
+            // If restoreMessagesFromLocalStorage failed too
+            if (!localStorage.getItem(`chat_messages_${id}`)) {
+                setError('Failed to load conversation');
+            }
+        }
     };
 
     const startNewConversation = () => {
@@ -464,6 +553,13 @@ const ChatbotPage: React.FC = () => {
         await sendMessage(lastUserMessage);
     };
 
+    const handleTextKeyDown = (e: React.KeyboardEvent) => {
+        if ((e.key === 'Enter' && !e.shiftKey) || (e.key === 'Enter' && (e.ctrlKey || e.metaKey))) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
     const sendMessage = async (messageText?: string) => {
         const text = messageText || inputValue.trim();
         if (!text || isLoading || isStreaming) return;
@@ -477,12 +573,29 @@ const ChatbotPage: React.FC = () => {
         setInputValue('');
         setIsLoading(true);
         setError(null);
+        accumulatedContentRef.current = '';
 
-        // Create abort controller for this request
+        const updateAssistantMessageContent = (content: string, forceUpdate = false) => {
+            const now = Date.now();
+            if (!forceUpdate && now - lastRenderTimeRef.current <= 16) return;
+            setMessages(prev => {
+                const updated = [...prev];
+                const lastIndex = updated.length - 1;
+                if (lastIndex >= 0 && updated[lastIndex].role === 'assistant') {
+                    updated[lastIndex] = {
+                        ...updated[lastIndex],
+                        content
+                    };
+                }
+                return updated;
+            });
+            lastRenderTimeRef.current = now;
+        };
+
         abortControllerRef.current = new AbortController();
 
         try {
-            const modelToUse = selectedModel || (availableModels.length > 0 ? availableModels[0] : 'qwen3:4b');
+            const modelToUse = selectedModel || (availableModels.length > 0 ? availableModels[0] : 'qwen2:1.5b');
 
             const response = await fetch(`${apiBaseUrl}/api/chatbot/chat/`, {
                 method: 'POST',
@@ -519,7 +632,6 @@ const ChatbotPage: React.FC = () => {
             const decoder = new TextDecoder();
 
             if (reader) {
-                let accumulatedContent = '';
                 let buffer = '';
 
                 while (true) {
@@ -532,48 +644,42 @@ const ChatbotPage: React.FC = () => {
 
                     for (const line of lines) {
                         const trimmedLine = line.trim();
-                        if (trimmedLine.startsWith('data: ')) {
-                            try {
-                                const data = JSON.parse(trimmedLine.slice(6));
+                        if (!trimmedLine.startsWith('data: ')) continue;
 
-                                if (data.chunk) {
-                                    accumulatedContent += data.chunk;
-                                    setMessages(prev => {
-                                        const updated = [...prev];
-                                        const lastIndex = updated.length - 1;
-                                        if (lastIndex >= 0 && updated[lastIndex].role === 'assistant') {
-                                            updated[lastIndex] = {
-                                                ...updated[lastIndex],
-                                                content: accumulatedContent
-                                            };
-                                        }
-                                        return updated;
-                                    });
-                                }
+                        try {
+                            const data = JSON.parse(trimmedLine.slice(6));
 
-                                if (data.done) {
-                                    setCurrentConversationId(data.conversation_id);
-                                    setLastMessageContent(accumulatedContent);
-                                }
-                                if (data.error) setError(data.error);
-                            } catch { /* ignore parse errors */ }
-                        }
+                            if (data.chunk) {
+                                accumulatedContentRef.current += data.chunk;
+                                updateAssistantMessageContent(accumulatedContentRef.current);
+                            }
+
+                            if (data.final) {
+                                accumulatedContentRef.current = data.final;
+                                updateAssistantMessageContent(accumulatedContentRef.current, true);
+                            }
+
+                            if (data.done) {
+                                const finalContent = data.final ?? accumulatedContentRef.current;
+                                accumulatedContentRef.current = finalContent;
+                                updateAssistantMessageContent(finalContent, true);
+                                setCurrentConversationId(data.conversation_id);
+                                setLastMessageContent(finalContent);
+                            }
+
+                            if (data.error) {
+                                setError(data.error);
+                                setMessages(prev => prev.slice(0, -1));
+                            }
+                        } catch { /* ignore parse errors */ }
                     }
                 }
             }
         } catch (err: any) {
-            if (err.name === 'AbortError') {
-                // Request was cancelled, don't show error
-                return;
-            }
-            // Provide clearer error messages
+            if (err.name === 'AbortError') return;
             let errorMessage = 'Failed to send message';
             if (err.message === 'Failed to fetch' || err.message.includes('network')) {
-                errorMessage = 'Network error. Please check your connection and try again.';
-            } else if (err.message.includes('401') || err.message.includes('403')) {
-                errorMessage = 'Session expired. Please refresh the page.';
-            } else if (err.message.includes('500') || err.message.includes('503')) {
-                errorMessage = 'AI service is temporarily unavailable. Please try again in a moment.';
+                errorMessage = 'Network error. Please check your connection.';
             } else if (err.message) {
                 errorMessage = err.message;
             }
@@ -586,11 +692,49 @@ const ChatbotPage: React.FC = () => {
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if ((e.key === 'Enter' && !e.shiftKey) || (e.key === 'Enter' && (e.ctrlKey || e.metaKey))) {
-            e.preventDefault();
-            sendMessage();
-        }
+    // Render conversation group
+    const renderConversationGroup = (title: string, items: Conversation[]) => {
+        if (items.length === 0) return null;
+        return (
+            <Box key={title}>
+                <Typography variant="caption" sx={{ px: 2, py: 1, color: 'grey.600', fontWeight: 600, letterSpacing: 1, display: 'block' }}>
+                    {title}
+                </Typography>
+                {items.map((conv) => (
+                    <ListItem
+                        key={conv.id}
+                        disablePadding
+                        secondaryAction={
+                            <IconButton
+                                size="small"
+                                onClick={(e) => handleDeleteClick(conv.id, e)}
+                                sx={{ color: 'grey.700', '&:hover': { color: '#ef4444' } }}
+                            >
+                                <Delete fontSize="small" />
+                            </IconButton>
+                        }
+                    >
+                        <ListItemButton
+                            selected={currentConversationId === conv.id}
+                            onClick={() => loadConversation(conv.id)}
+                            sx={{
+                                borderRadius: 2,
+                                mb: 0.5,
+                                '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.08)' },
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' }
+                            }}
+                        >
+                            <ListItemText
+                                primary={conv.title}
+                                secondary={`${conv.message_count || 0} messages`}
+                                primaryTypographyProps={{ noWrap: true, fontSize: '0.9rem', color: 'grey.300' }}
+                                secondaryTypographyProps={{ fontSize: '0.7rem', color: 'grey.600' }}
+                            />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </Box>
+        );
     };
 
     const formatMessage = (content: string) => {
@@ -652,51 +796,6 @@ const ChatbotPage: React.FC = () => {
 
     const drawerWidth = 280;
 
-    // Render conversation group
-    const renderConversationGroup = (title: string, items: Conversation[]) => {
-        if (items.length === 0) return null;
-        return (
-            <Box key={title}>
-                <Typography variant="caption" sx={{ px: 2, py: 1, color: 'grey.600', fontWeight: 600, letterSpacing: 1, display: 'block' }}>
-                    {title}
-                </Typography>
-                {items.map((conv) => (
-                    <ListItem
-                        key={conv.id}
-                        disablePadding
-                        secondaryAction={
-                            <IconButton
-                                size="small"
-                                onClick={(e) => handleDeleteClick(conv.id, e)}
-                                sx={{ color: 'grey.700', '&:hover': { color: '#ef4444' } }}
-                            >
-                                <Delete fontSize="small" />
-                            </IconButton>
-                        }
-                    >
-                        <ListItemButton
-                            selected={currentConversationId === conv.id}
-                            onClick={() => loadConversation(conv.id)}
-                            sx={{
-                                borderRadius: 2,
-                                mb: 0.5,
-                                '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.08)' },
-                                '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' }
-                            }}
-                        >
-                            <ListItemText
-                                primary={conv.title}
-                                secondary={`${conv.message_count || 0} messages`}
-                                primaryTypographyProps={{ noWrap: true, fontSize: '0.9rem', color: 'grey.300' }}
-                                secondaryTypographyProps={{ fontSize: '0.7rem', color: 'grey.600' }}
-                            />
-                        </ListItemButton>
-                    </ListItem>
-                ))}
-            </Box>
-        );
-    };
-
     // Sidebar content
     const sidebarContent = (
         <Box sx={{
@@ -721,28 +820,7 @@ const ChatbotPage: React.FC = () => {
 
             {/* Buttons & Model Select (Mobile) */}
             <Box sx={{ px: 2, pb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {isMobile && availableModels.length > 0 && (
-                    <TextField
-                        select
-                        fullWidth
-                        label="AI Model"
-                        value={selectedModel}
-                        onChange={(e) => setSelectedModel(e.target.value)}
-                        SelectProps={{ native: true }}
-                        sx={{
-                            mb: 1,
-                            '& .MuiOutlinedInput-root': {
-                                color: 'grey.300',
-                                bgcolor: 'rgba(255,255,255,0.03)',
-                                borderRadius: 2,
-                                '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                            },
-                            '& .MuiInputLabel-root': { color: 'grey.500' }
-                        }}
-                    >
-                        {availableModels.map(m => <option key={m} value={m}>{m}</option>)}
-                    </TextField>
-                )}
+
                 <Button fullWidth variant="contained" startIcon={<Add />} onClick={startNewConversation} sx={{ bgcolor: 'white', color: 'black', '&:hover': { bgcolor: 'grey.200' }, textTransform: 'none', fontWeight: 600, py: 1 }}>New Chat</Button>
                 <Button fullWidth variant="outlined" startIcon={<Home />} onClick={() => navigate('/')} sx={{ borderColor: 'rgba(255,255,255,0.2)', color: 'grey.400', '&:hover': { borderColor: 'white', color: 'white', bgcolor: 'rgba(255,255,255,0.05)' }, textTransform: 'none' }}>Back to Website</Button>
             </Box>
@@ -806,6 +884,7 @@ const ChatbotPage: React.FC = () => {
             inset: 0,
             overflow: 'hidden',
         }}>
+            <CleanStarBackground withNebula={true} />
             <Seo title="ExpExc AI Chat" description="Premium Cloud-Based AI Assistant" />
 
             {/* Delete Confirmation Dialog */}
@@ -879,80 +958,60 @@ const ChatbotPage: React.FC = () => {
                 overflow: 'hidden',
                 minWidth: 0
             }}>
+                {/* Floating Menu Button (Top Left) */}
+                <Box sx={{ position: 'absolute', top: { xs: 16, md: 24 }, left: { xs: 16, md: 24 }, zIndex: 50 }}>
+                    {isMobile ? (
+                        <IconButton
+                            onClick={() => setMobileDrawerOpen(true)}
+                            sx={{
+                                color: 'rgba(255,255,255,0.7)',
+                                bgcolor: 'rgba(255,255,255,0.05)',
+                                backdropFilter: 'blur(8px)',
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', color: 'white' }
+                            }}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    ) : (
+                        <IconButton
+                            onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
+                            sx={{
+                                color: 'rgba(255,255,255,0.7)',
+                                bgcolor: 'rgba(255,255,255,0.05)',
+                                backdropFilter: 'blur(8px)',
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', color: 'white' }
+                            }}
+                        >
+                            {desktopSidebarOpen ? <ViewSidebar /> : <ViewSidebar sx={{ transform: 'rotate(180deg)' }} />}
+                        </IconButton>
+                    )}
+                </Box>
+
+                {/* Floating Persona Indicator (Top Right) */}
                 <Box sx={{
-                    p: 2,
+                    position: 'absolute',
+                    top: { xs: 16, md: 24 },
+                    right: { xs: 16, md: 24 },
+                    zIndex: 50,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    backdropFilter: 'blur(10px)',
-                    bgcolor: 'rgba(2, 6, 23, 0.8)',
-                    borderBottom: '1px solid rgba(255,255,255,0.05)',
-                    position: 'relative',
-                    zIndex: 10
-                }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 }, flex: 1, minWidth: 0 }}>
-                        {isMobile ? (
-                            <IconButton onClick={() => setMobileDrawerOpen(true)} color="inherit"><MenuIcon /></IconButton>
-                        ) : (
-                            <IconButton onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)} color="inherit">
-                                {desktopSidebarOpen ? <ViewSidebar /> : <ViewSidebar sx={{ transform: 'rotate(180deg)' }} />}
-                            </IconButton>
-                        )}
-
-                        {/* Model Selector */}
-                        {/* {!isMobile && availableModels.length > 0 && (
-                            <TextField
-                                select
-                                size="small"
-                                value={selectedModel}
-                                onChange={(e) => setSelectedModel(e.target.value)}
-                                SelectProps={{ native: true }}
-                                sx={{
-                                    width: 180,
-                                    '& .MuiOutlinedInput-root': {
-                                        color: 'grey.300',
-                                        fontSize: '0.8rem',
-                                        bgcolor: 'rgba(255,255,255,0.03)',
-                                        borderRadius: 2,
-                                        '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                                        '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
-                                    }
-                                }}
-                            >
-                                {availableModels.map(m => <option key={m} value={m}>{m}</option>)}
-                            </TextField>
-                        )} */}
-                    </Box>
-
-                    <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        px: { xs: 1, md: 2 },
-                        py: 0.5,
-                        bgcolor: alpha(selectedPersona.color, 0.15),
-                        borderRadius: 3,
-                        border: `1px solid ${alpha(selectedPersona.color, 0.3)}`,
-                        maxWidth: { xs: '150px', md: 'none' },
-                        overflow: 'hidden'
-                    }}>
-                        <Box sx={{ color: selectedPersona.color, display: 'flex', flexShrink: 0 }}>
-                            {React.cloneElement(selectedPersona.icon as React.ReactElement, { sx: { fontSize: { xs: 16, md: 20 } } })}
-                        </Box>
-                        <Typography variant="caption" sx={{
-                            color: selectedPersona.color,
-                            fontWeight: 600,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            fontSize: { xs: '0.7rem', md: '0.75rem' }
-                        }}>
-                            {customNames[selectedPersona.id] || selectedPersona.name}
-                        </Typography>
-                        <IconButton size="small" onClick={handleRename} sx={{ ml: -0.5, p: 0.2, color: selectedPersona.color, opacity: 0.7, '&:hover': { opacity: 1 } }}>
-                            <Edit sx={{ fontSize: 12 }} />
-                        </IconButton>
-                    </Box>
+                    gap: 1.5,
+                    bgcolor: 'rgba(255,255,255,0.03)',
+                    backdropFilter: 'blur(8px)',
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: 3,
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    transition: 'all 0.3s',
+                    cursor: 'pointer',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.1)' }
+                }} onClick={handleRename}>
+                    <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem', bgcolor: 'transparent', color: selectedPersona.color, border: `1px solid ${alpha(selectedPersona.color, 0.5)}` }}>
+                        {selectedPersona.icon}
+                    </Avatar>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600, letterSpacing: 0.5 }}>
+                        {customNames[selectedPersona.id] || selectedPersona.name}
+                    </Typography>
                 </Box>
 
                 {/* Messages Area with Star Background */}
@@ -962,11 +1021,12 @@ const ChatbotPage: React.FC = () => {
                         flex: 1,
                         overflowY: 'auto',
                         overflowX: 'hidden',
-                        p: 3,
+                        p: { xs: 2, md: 3 },
+                        pt: { xs: 10, md: 10 },
                         position: 'relative',
+                        zIndex: 1,
                     }}
                 >
-                    <CleanStarBackground />
 
                     {error && <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2, bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5', position: 'relative', zIndex: 1 }}>{error}</Alert>}
 
@@ -1036,29 +1096,39 @@ const ChatbotPage: React.FC = () => {
                         <AnimatePresence>
                             {messages.map((msg, idx) => (
                                 <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                                    <Box sx={{ display: 'flex', gap: 2, mb: 4, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
-                                        <Avatar sx={{ width: 36, height: 36, bgcolor: msg.role === 'user' ? 'rgba(255,255,255,0.1)' : 'transparent', background: msg.role === 'assistant' ? selectedPersona.gradient : undefined, flexShrink: 0, border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>
-                                            {msg.role === 'user' ? <Person fontSize="small" /> : selectedPersona.icon}
+                                    <Box sx={{ display: 'flex', gap: { xs: 1.5, md: 2.5 }, mb: { xs: 3, md: 4 }, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
+                                        <Avatar sx={{
+                                            width: { xs: 28, md: 36 },
+                                            height: { xs: 28, md: 36 },
+                                            bgcolor: msg.role === 'user' ? 'rgba(255,255,255,0.1)' : 'transparent',
+                                            background: msg.role === 'assistant' ? selectedPersona.gradient : undefined,
+                                            flexShrink: 0,
+                                            border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                                            mt: 0.5
+                                        }}>
+                                            {msg.role === 'user' ? <Person sx={{ fontSize: { xs: 16, md: 20 } }} /> : React.cloneElement(selectedPersona.icon as React.ReactElement, { sx: { fontSize: { xs: 16, md: 20 } } })}
                                         </Avatar>
-                                        <Box sx={{ maxWidth: '80%' }}>
-                                            <Box sx={{
-                                                py: 1.5,
-                                                px: msg.role === 'user' ? 0 : 1,
+                                        <Box sx={{ maxWidth: { xs: '85%', sm: '80%', md: '75%' } }}>
+                                            <Paper elevation={0} sx={{
+                                                py: { xs: 1.5, md: 2 },
+                                                px: { xs: 2, md: 2.5 },
+                                                bgcolor: msg.role === 'user' ? 'rgba(255,255,255,0.08)' : 'transparent',
+                                                borderRadius: 3,
+                                                borderTopRightRadius: msg.role === 'user' ? 1 : 12,
+                                                borderTopLeftRadius: msg.role === 'assistant' ? 1 : 12,
                                                 color: 'grey.100',
-                                                textAlign: msg.role === 'user' ? 'right' : 'left',
                                             }}>
                                                 <Typography component="div" sx={{
-                                                    lineHeight: 1.8,
+                                                    lineHeight: 1.7,
                                                     textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)',
-                                                    fontSize: '0.95rem',
+                                                    fontSize: { xs: '0.925rem', md: '1rem' },
                                                 }}>{formatMessage(msg.content)}</Typography>
-                                            </Box>
+                                            </Paper>
                                             {/* Message footer with timestamp and actions */}
-                                            <Box sx={{ display: 'flex', gap: 1, mt: 1, ml: 1, alignItems: 'center' }}>
+                                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, ml: 1, alignItems: 'center', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', opacity: 0.7 }}>
                                                 {msg.timestamp && (
                                                     <Tooltip title={new Date(msg.timestamp).toLocaleString()}>
-                                                        <Typography variant="caption" sx={{ color: 'grey.700', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                            <AccessTime sx={{ fontSize: 12 }} />
+                                                        <Typography variant="caption" sx={{ color: 'grey.500', display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.7rem' }}>
                                                             {formatTimestamp(new Date(msg.timestamp))}
                                                         </Typography>
                                                     </Tooltip>
@@ -1066,8 +1136,8 @@ const ChatbotPage: React.FC = () => {
                                                 {msg.role === 'assistant' && !isStreaming && (
                                                     <>
                                                         <Tooltip title={copiedIndex === idx ? 'Copied!' : 'Copy'}>
-                                                            <IconButton size="small" onClick={() => copyToClipboard(msg.content, idx)} sx={{ color: 'grey.600' }}>
-                                                                {copiedIndex === idx ? <Check fontSize="small" color="success" /> : <ContentCopy fontSize="small" />}
+                                                            <IconButton size="small" onClick={() => copyToClipboard(msg.content, idx)} sx={{ color: 'grey.600', padding: 0.5 }}>
+                                                                {copiedIndex === idx ? <Check fontSize="small" sx={{ fontSize: 14 }} color="success" /> : <ContentCopy fontSize="small" sx={{ fontSize: 14 }} />}
                                                             </IconButton>
                                                         </Tooltip>
                                                         {idx === messages.length - 1 && (
@@ -1087,23 +1157,7 @@ const ChatbotPage: React.FC = () => {
                         </AnimatePresence>
 
                         {/* Loading Animation */}
-                        {isLoading && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <Avatar sx={{ width: 36, height: 36, background: selectedPersona.gradient, flexShrink: 0 }}>{selectedPersona.icon}</Avatar>
-                                    <Box sx={{ py: 1.5, px: 1 }}>
-                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                            {[0, 1, 2].map(i => (
-                                                <motion.div key={i} animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}>
-                                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: selectedPersona.color }} />
-                                                </motion.div>
-                                            ))}
-                                            <Typography variant="body2" color="grey.500" sx={{ ml: 1 }}>{selectedPersona.thinkingText}</Typography>
-                                        </Box>
-                                    </Box>
-                                </Box>
-                            </motion.div>
-                        )}
+                        {isLoading && <ThinkingIndicator persona={selectedPersona} isLoading={isLoading} />}
                         <div ref={messagesEndRef} />
                     </Box>
 
@@ -1128,7 +1182,7 @@ const ChatbotPage: React.FC = () => {
                 </Box>
 
                 {/* Input Area */}
-                <Box sx={{ p: 2, pb: 1, display: 'flex', justifyContent: 'center', background: 'linear-gradient(to top, #020617 80%, transparent)' }}>
+                <Box sx={{ p: 2, pb: 1, display: 'flex', justifyContent: 'center', background: 'linear-gradient(to top, rgba(2, 6, 23, 1) 80%, transparent)' }}>
                     <Paper elevation={4} sx={{ p: '4px 8px', display: 'flex', alignItems: 'center', width: '100%', maxWidth: 800, borderRadius: 4, bgcolor: 'rgba(30, 41, 59, 0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.3s', '&:hover, &:focus-within': { bgcolor: 'rgba(30, 41, 59, 0.8)', borderColor: selectedPersona.color } }}>
                         <TextField
                             inputRef={inputRef}
@@ -1138,7 +1192,7 @@ const ChatbotPage: React.FC = () => {
                             placeholder={`Message ${selectedPersona.name}...`}
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            onKeyDown={handleKeyDown}
+                            onKeyDown={handleTextKeyDown}
                             sx={{ ml: 2, flex: 1, '& .MuiInputBase-root': { color: 'white' } }}
                             variant="standard"
                             InputProps={{ disableUnderline: true }}
@@ -1161,7 +1215,7 @@ const ChatbotPage: React.FC = () => {
                     </Paper>
                 </Box>
             </Box>
-        </Box>
+        </Box >
     );
 };
 

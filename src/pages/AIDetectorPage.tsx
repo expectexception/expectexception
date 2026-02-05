@@ -218,6 +218,16 @@ const AIDetectorPage: React.FC = () => {
         }
     }, [isAuthenticated]);
 
+    const getErrorMessage = (err: any) => {
+        const data = err?.response?.data;
+        const raw = data?.error || data?.detail || data?.message || data?.error?.details;
+        const message = typeof raw === 'string' ? raw : 'Failed to analyze image. Please try again.';
+        if (message.includes('ai_detector.analyze_image')) {
+            return 'AI detector service is unavailable right now. Please try again in a moment.';
+        }
+        return message;
+    };
+
     const handleAnalyze = async () => {
         if (!selectedFile) return;
 
@@ -231,7 +241,7 @@ const AIDetectorPage: React.FC = () => {
         formData.append('image', selectedFile);
 
         try {
-            // Use async endpoint (default)
+            // Try async endpoint first
             const response = await apiClient.post(endpoints.aiDetector.analyze, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -260,9 +270,21 @@ const AIDetectorPage: React.FC = () => {
                 if (isAuthenticated) fetchHistory();
             }
         } catch (err: any) {
-            console.error('Analysis error:', err);
-            setError(err.response?.data?.error || 'Failed to analyze image. Please try again.');
-            setLoading(false);
+            console.error('Async analysis error, falling back to sync:', err);
+            try {
+                const syncResponse = await apiClient.post(endpoints.aiDetector.analyzeSync, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                setResult(syncResponse.data);
+                setLoading(false);
+                if (isAuthenticated) fetchHistory();
+            } catch (syncErr: any) {
+                console.error('Sync analysis error:', syncErr);
+                setError(getErrorMessage(syncErr));
+                setLoading(false);
+            }
         }
     };
 

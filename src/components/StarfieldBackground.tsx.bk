@@ -1,0 +1,98 @@
+import React, { useRef, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Points, PointsMaterial } from '@react-three/drei';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
+import * as THREE from 'three';
+
+const STAR_COUNT = 8000;          // adjust: 4000–15000 depending on perf
+const FIELD_SIZE = 2000;          // how spread out in 3D space
+const DRIFT_SPEED = 0.4;          // how fast we move "forward"
+
+function Stars() {
+  const pointsRef = useRef<THREE.Points>(null!);
+
+  // Generate random 3D positions once
+  const positions = useMemo(() => {
+    const pos = new Float32Array(STAR_COUNT * 3);
+    for (let i = 0; i < STAR_COUNT; i++) {
+      // uniform distribution in a cube
+      pos[i * 3]     = (Math.random() - 0.5) * FIELD_SIZE;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * FIELD_SIZE;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * FIELD_SIZE;
+    }
+    return pos;
+  }, []);
+
+  useFrame((state, delta) => {
+    if (!pointsRef.current) return;
+
+    // Gentle forward drift → stars come toward camera then wrap around
+    pointsRef.current.position.z += DRIFT_SPEED * delta * 60; // normalize frame rate roughly
+
+    // Reset stars that passed the camera (infinite tunnel feel)
+    const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const z = positions[i * 3 + 2];
+      if (z > state.camera.position.z + FIELD_SIZE / 2) {
+        positions[i * 3]     = (Math.random() - 0.5) * FIELD_SIZE;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * FIELD_SIZE;
+        positions[i * 3 + 2] -= FIELD_SIZE; // respawn far behind
+      }
+    }
+
+    pointsRef.current.geometry.attributes.position.needsUpdate = true;
+  });
+
+  return (
+    <group>
+      <Points ref={pointsRef} positions={positions} stride={3}>
+        <PointsMaterial
+          color="#ffffff"
+          size={1.8}                  // pixel size – adjust for density
+          transparent
+          opacity={0.9}
+          sizeAttenuation={false}     // constant screen size (classic star look)
+          depthWrite={false}
+          blending={THREE.AdditiveBlending} // important for glow + bloom
+        />
+      </Points>
+    </group>
+  );
+}
+
+const StarfieldBackground = () => {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: -1,
+        pointerEvents: 'none',
+        background: '#000814', // deep space black
+      }}
+    >
+      <Canvas
+        camera={{ position: [0, 0, 0], fov: 75 }}
+        gl={{ antialias: true, alpha: false }}
+        style={{ width: '100%', height: '100%' }}
+      >
+        <color attach="background" args={['#000814']} />
+
+        <Stars />
+
+        {/* Post-processing */}
+        <EffectComposer multisampling={0}> {/* 0 = better perf, still smooth */}
+          <Bloom
+            intensity={1.2}             // strength of glow
+            luminanceThreshold={0.9}    // only very bright pixels bloom
+            luminanceSmoothing={0.85}   // softer transition
+            mipmapBlur                  // nicer quality on modern devices
+            radius={0.7}                // spread of bloom
+          />
+        </EffectComposer>
+      </Canvas>
+    </div>
+  );
+};
+
+export default StarfieldBackground;
