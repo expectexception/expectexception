@@ -176,17 +176,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://expectexception.com/blogs/4</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://expectexception.com/blogs/3</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://expectexception.com/blogs/2</loc>
+    <loc>https://expectexception.com/services/uptime-robot</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

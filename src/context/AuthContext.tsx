@@ -9,6 +9,7 @@ interface AuthContextType {
     user: User | null;
     token: string | null;
     login: (access: string, refresh: string) => void;
+    loginWithGoogle: (credential: string) => Promise<void>;
     logout: () => void;
     checkAuth: () => Promise<void>;
 }
@@ -28,7 +29,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const storedToken = localStorage.getItem('accessToken');
         if (storedToken) {
             setIsAuthenticated(true);
-            setToken(storedToken);
             setToken(storedToken);
             try {
                 const response = await apiClient.get(endpoints.auth.profile);
@@ -56,6 +56,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (e) { console.error(e) }
     };
 
+    const loginWithGoogle = async (credential: string) => {
+        const response = await apiClient.post(endpoints.auth.google, { credential });
+        const { access, refresh } = response.data;
+        localStorage.setItem('accessToken', access);
+        localStorage.setItem('refreshToken', refresh);
+        setIsAuthenticated(true);
+        setToken(access);
+        // The response already contains user data
+        setUser({
+            id: response.data.id,
+            email: response.data.email,
+            username: response.data.username || response.data.email,
+            first_name: response.data.first_name,
+            last_name: response.data.last_name,
+            is_staff: response.data.is_staff,
+            avatar_url: response.data.avatar_url,
+            auth_provider: response.data.auth_provider,
+        });
+    };
+
     const logout = () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
@@ -65,7 +85,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, token, login, logout, checkAuth }}>
+        <AuthContext.Provider value={{ isAuthenticated, user, token, login, loginWithGoogle, logout, checkAuth }}>
             {children}
         </AuthContext.Provider>
     );

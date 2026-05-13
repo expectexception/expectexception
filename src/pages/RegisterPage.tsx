@@ -18,6 +18,8 @@ import { Visibility, VisibilityOff, AppRegistration, Person, Email } from '@mui/
 import { motion } from 'framer-motion';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
+import { useAuth } from '../context/AuthContext';
+import GoogleSignInButton from '../components/auth/GoogleSignInButton';
 
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
@@ -31,6 +33,9 @@ const RegisterPage: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [googleLoading, setGoogleLoading] = useState(false);
+
+    const { loginWithGoogle } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -64,6 +69,23 @@ const RegisterPage: React.FC = () => {
             );
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleGoogleSuccess = async (credential: string) => {
+        setGoogleLoading(true);
+        setError(null);
+        try {
+            await loginWithGoogle(credential);
+            navigate('/');
+        } catch (err: any) {
+            console.error('Google sign-up error:', err);
+            setError(
+                err.response?.data?.detail ||
+                'Google sign-up failed. Please try again.'
+            );
+        } finally {
+            setGoogleLoading(false);
         }
     };
 
@@ -109,6 +131,20 @@ const RegisterPage: React.FC = () => {
                                 <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
                                     {error}
                                 </Alert>
+                            )}
+
+                            {/* Google Sign-Up (same endpoint — auto-creates account) */}
+                            {googleLoading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                                    <CircularProgress size={32} />
+                                </Box>
+                            ) : (
+                                <GoogleSignInButton
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={(err) => setError(err)}
+                                    text="signup_with"
+                                    context="signup"
+                                />
                             )}
 
                             <Box component="form" onSubmit={handleSubmit}>
