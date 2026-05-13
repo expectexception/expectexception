@@ -11,6 +11,7 @@ export const endpoints = {
         logout: '/api/auth/logout/',
         refreshToken: '/api/auth/refresh/',
         profile: '/api/auth/profile/',
+        google: '/api/auth/google/',
     },
 
     // Blog Posts
@@ -113,6 +114,9 @@ export const endpoints = {
         webhookReplay: (endpointId: string, requestId: string) => `/api/services/webhook/${endpointId}/replay/${requestId}/`,
         jwtVerify: '/api/services/jwt-verify/',
         websiteDiagnostics: '/api/services/website-diagnostics/',
+        uptimeRobot: '/api/services/uptime-robot/',
+        uptimeTriggers: '/api/services/uptime-robot/triggers/',
+        uptimeTriggerDetail: (id: string) => `/api/services/uptime-robot/triggers/${id}/`,
         speedTest: '/services/speed-test',
         audioSeparator: '/api/audio-separator/process',
 
@@ -136,6 +140,8 @@ export const endpoints = {
             toggleFavorite: '/api/services/dashboard/toggle_favorite/',
         },
         search: '/api/services/search/',
+        toolAccess: '/api/services/tool-access/',
+        toolAccessToggle: '/api/services/tool-access/toggle/',
         textToHandwriting: '/api/text-to-handwriting/generate/',
         secretSharer: {
             create: '/api/secret-sharer/create/',

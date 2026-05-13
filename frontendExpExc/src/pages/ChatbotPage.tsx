@@ -39,11 +39,9 @@ import {
     ContentCopy,
     Check,
     ViewSidebar,
-    Favorite,
     LocalHospital,
     Engineering,
     SupportAgent,
-    EmojiPeople,
     School,
     Restaurant,
     SelfImprovement,
@@ -54,6 +52,7 @@ import {
     Refresh,
     DeleteSweep,
     AccessTime,
+    Gavel,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -111,16 +110,6 @@ const personaUIConfig: Record<string, { icon: React.ReactNode; color: string; gr
         color: '#6366f1',
         gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
     },
-    girlfriend: {
-        icon: <Favorite />,
-        color: '#ec4899',
-        gradient: 'linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)'
-    },
-    boyfriend: {
-        icon: <EmojiPeople />,
-        color: '#3b82f6',
-        gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)'
-    },
     doctor: {
         icon: <LocalHospital />,
         color: '#10b981',
@@ -150,6 +139,11 @@ const personaUIConfig: Record<string, { icon: React.ReactNode; color: string; gr
         icon: <FitnessCenter />,
         color: '#ef4444',
         gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)'
+    },
+    advocate: {
+        icon: <Gavel />,
+        color: '#475569',
+        gradient: 'linear-gradient(135deg, #475569 0%, #1e293b 100%)'
     }
 };
 
@@ -158,16 +152,6 @@ const ThinkingIndicator: React.FC<{ persona: Persona; isLoading: boolean }> = ({
     const [currentTextIndex, setCurrentTextIndex] = useState(0);
 
     const messages = useMemo(() => {
-        if (persona.id === 'girlfriend' || persona.id === 'boyfriend') {
-            const suffix = persona.id === 'girlfriend' ? ' 💕' : ' 💙';
-            const subject = persona.id === 'girlfriend' ? 'Girlfriend' : 'Boyfriend';
-            return [
-                `Your ${subject} is thinking...${suffix}`,
-                `Your ${subject} is typing...${suffix}`,
-                `Your ${subject} is writing...${suffix}`,
-                `Your ${subject} is hold on...${suffix}`
-            ];
-        }
         return [persona.thinkingText || 'Thinking...'];
     }, [persona]);
 
@@ -790,7 +774,52 @@ const ChatbotPage: React.FC = () => {
                     </Paper>
                 );
             }
-            return <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{part}</span>;
+            // Parse inline markdown for the text part
+            return (
+                <span key={i} style={{ whiteSpace: 'pre-wrap', display: 'block', wordBreak: 'break-word' }}>
+                    {part.split('\n').map((line, lineIndex) => {
+                        let renderLine: React.ReactNode = line;
+                        
+                        // Bold
+                        if (line.includes('**')) {
+                            const boldParts = line.split(/(\*\*.*?\*\*)/g);
+                            renderLine = boldParts.map((bp, bpi) => 
+                                bp.startsWith('**') && bp.endsWith('**') 
+                                    ? <strong key={`b-${bpi}`} style={{ color: 'white' }}>{bp.slice(2, -2)}</strong> 
+                                    : bp
+                            );
+                        }
+
+                        // Blockquotes (Legal / Formal notice blocks)
+                        if (line.startsWith('> ')) {
+                            return (
+                                <Box key={`l-${lineIndex}`} sx={{
+                                    borderLeft: '4px solid #94a3b8',
+                                    bgcolor: 'rgba(255,255,255,0.03)',
+                                    pl: 2, py: 0.5, my: 1,
+                                    color: 'grey.300',
+                                    fontStyle: 'italic',
+                                    borderRadius: '0 4px 4px 0'
+                                }}>
+                                    {line.slice(2)}
+                                </Box>
+                            );
+                        }
+
+                        // Lists
+                        if (line.trim().startsWith('- ') || line.trim().match(/^\d+\.\s/)) {
+                            return (
+                                <Box key={`l-${lineIndex}`} sx={{ display: 'flex', pl: 2, mb: 0.5 }}>
+                                    <Box sx={{ mr: 1, color: 'grey.400' }}>•</Box>
+                                    <Box>{renderLine}</Box>
+                                </Box>
+                            );
+                        }
+
+                        return <React.Fragment key={`l-${lineIndex}`}>{renderLine}{lineIndex < part.split('\n').length - 1 && <br/>}</React.Fragment>;
+                    })}
+                </span>
+            );
         });
     };
 
@@ -1076,12 +1105,42 @@ const ChatbotPage: React.FC = () => {
                                     {!isAvailable && <Alert severity="info" sx={{ mb: 3, bgcolor: 'rgba(30, 41, 59, 0.8)', color: '#93c5fd' }}>Connecting to cloud...</Alert>}
 
                                     {/* Dynamic Suggestions */}
-                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 600 }}>
+                                    <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 650 }}>
                                         {selectedPersona.suggestions.map((s, i) => (
-                                            <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + i * 0.1 }} whileHover={{ scale: 1.05 }}>
-                                                <Paper onClick={() => sendMessage(s.text)} sx={{ px: 2, py: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 3, '&:hover': { bgcolor: alpha(selectedPersona.color, 0.1), borderColor: selectedPersona.color } }}>
-                                                    <Box sx={{ color: selectedPersona.color }}>{s.icon}</Box>
-                                                    <Typography variant="body2" color="grey.300">{s.text}</Typography>
+                                            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                                                <Paper
+                                                    onClick={() => sendMessage(s.text)}
+                                                    elevation={2}
+                                                    sx={{
+                                                        px: 2.5, py: 1.5,
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 1.5,
+                                                        bgcolor: 'rgba(30, 41, 59, 0.4)',
+                                                        backdropFilter: 'blur(8px)',
+                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                        borderRadius: 4,
+                                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                        '&:hover': {
+                                                            bgcolor: alpha(selectedPersona.color, 0.12),
+                                                            borderColor: alpha(selectedPersona.color, 0.5),
+                                                            transform: 'translateY(-2px)',
+                                                            boxShadow: `0 8px 24px ${alpha(selectedPersona.color, 0.2)}`
+                                                        }
+                                                    }}
+                                                >
+                                                    <Box sx={{
+                                                        color: selectedPersona.color,
+                                                        display: 'flex',
+                                                        bgcolor: alpha(selectedPersona.color, 0.1),
+                                                        p: 0.5,
+                                                        borderRadius: 2
+                                                    }}>
+                                                        {s.icon || React.cloneElement(selectedPersona.icon as React.ReactElement, { sx: { fontSize: 20 } })}
+                                                    </Box>
+                                                    <Typography variant="body2" fontWeight={500} color="grey.200">{s.text}</Typography>
                                                 </Paper>
                                             </motion.div>
                                         ))}
@@ -1109,18 +1168,21 @@ const ChatbotPage: React.FC = () => {
                                             {msg.role === 'user' ? <Person sx={{ fontSize: { xs: 16, md: 20 } }} /> : React.cloneElement(selectedPersona.icon as React.ReactElement, { sx: { fontSize: { xs: 16, md: 20 } } })}
                                         </Avatar>
                                         <Box sx={{ maxWidth: { xs: '85%', sm: '80%', md: '75%' } }}>
-                                            <Paper elevation={0} sx={{
+                                            <Paper elevation={msg.role === 'user' ? 0 : 2} sx={{
                                                 py: { xs: 1.5, md: 2 },
                                                 px: { xs: 2, md: 2.5 },
-                                                bgcolor: msg.role === 'user' ? 'rgba(255,255,255,0.08)' : 'transparent',
+                                                bgcolor: msg.role === 'user' ? 'rgba(30, 41, 59, 0.6)' : 'rgba(15, 23, 42, 0.7)',
+                                                backdropFilter: 'blur(10px)',
                                                 borderRadius: 3,
+                                                border: '1px solid',
+                                                borderColor: msg.role === 'user' ? 'rgba(255,255,255,0.1)' : alpha(selectedPersona.color, 0.2),
                                                 borderTopRightRadius: msg.role === 'user' ? 1 : 12,
                                                 borderTopLeftRadius: msg.role === 'assistant' ? 1 : 12,
                                                 color: 'grey.100',
+                                                boxShadow: msg.role === 'assistant' ? `0 4px 20px ${alpha(selectedPersona.color, 0.05)}` : 'none',
                                             }}>
                                                 <Typography component="div" sx={{
                                                     lineHeight: 1.7,
-                                                    textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)',
                                                     fontSize: { xs: '0.925rem', md: '1rem' },
                                                 }}>{formatMessage(msg.content)}</Typography>
                                             </Paper>

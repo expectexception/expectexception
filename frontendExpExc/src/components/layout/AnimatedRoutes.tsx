@@ -1,9 +1,12 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Box, CircularProgress } from '@mui/material';
 import PageTransition from './PageTransition';
 import AdminGuard from '../guards/AdminGuard';
+import AuthGuard from '../guards/AuthGuard';
+import apiClient from '../../api/config';
+import { endpoints } from '../../api/endpoints';
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -71,13 +74,46 @@ const DnsLookup = lazy(() => import('../services/DnsLookup'));
 const WebsiteDiagnostics = lazy(() => import('../services/WebsiteDiagnostics'));
 const SpeedTest = lazy(() => import('../services/SpeedTest'));
 const AudioSeparator = lazy(() => import('../services/AudioSeparator'));
+const UptimeRobot = lazy(() => import('../services/UptimeRobot'));
 
 
+
+/**
+ * Helper: wraps a component with AuthGuard if the path requires login.
+ */
+const withAuthGuard = (
+    element: React.ReactNode,
+    path: string,
+    toolAccess: Record<string, boolean>,
+    toolName?: string,
+): React.ReactNode => {
+    if (toolAccess[path]) {
+        return <AuthGuard toolName={toolName}>{element}</AuthGuard>;
+    }
+    return element;
+};
 
 
 const AnimatedRoutes: React.FC = () => {
     const location = useLocation();
     const isYtd = window.location.hostname.startsWith('ytd.');
+
+    // Fetch tool access configuration
+    const [toolAccess, setToolAccess] = useState<Record<string, boolean>>({});
+
+    useEffect(() => {
+        const fetchToolAccess = async () => {
+            try {
+                const response = await apiClient.get(endpoints.services.toolAccess);
+                if (response.data?.tools) {
+                    setToolAccess(response.data.tools);
+                }
+            } catch (err) {
+                console.error('Failed to fetch tool access config:', err);
+            }
+        };
+        fetchToolAccess();
+    }, []);
 
     return (
         <Suspense fallback={<LoadingFallback />}>
@@ -91,45 +127,47 @@ const AnimatedRoutes: React.FC = () => {
 
                     {/* Services */}
                     <Route path="/services" element={<PageTransition><ServicesPage /></PageTransition>} />
-                    <Route path="/services/qr-generator" element={<PageTransition><QrGenerator /></PageTransition>} />
-                    <Route path="/services/json-formatter" element={<PageTransition><JsonFormatter /></PageTransition>} />
-                    <Route path="/services/url-downloader" element={<PageTransition><UrlDownloader /></PageTransition>} />
-                    <Route path="/services/yt-downloader" element={<PageTransition><YtDownloader /></PageTransition>} />
-                    <Route path="/services/text-to-speech" element={<PageTransition><TextToSpeechPage /></PageTransition>} />
-                    <Route path="/services/image-compressor" element={<PageTransition><ImageCompressorPage /></PageTransition>} />
-                    <Route path="/services/ai-detector" element={<PageTransition><AIDetectorPage /></PageTransition>} />
+                    <Route path="/services/qr-generator" element={<PageTransition>{withAuthGuard(<QrGenerator />, '/services/qr-generator', toolAccess, 'QR Generator')}</PageTransition>} />
+                    <Route path="/services/json-formatter" element={<PageTransition>{withAuthGuard(<JsonFormatter />, '/services/json-formatter', toolAccess, 'JSON Formatter')}</PageTransition>} />
+                    <Route path="/services/url-downloader" element={<PageTransition>{withAuthGuard(<UrlDownloader />, '/services/url-downloader', toolAccess, 'URL Downloader')}</PageTransition>} />
+                    <Route path="/services/yt-downloader" element={<PageTransition>{withAuthGuard(<YtDownloader />, '/services/yt-downloader', toolAccess, 'YouTube Downloader')}</PageTransition>} />
+                    <Route path="/services/text-to-speech" element={<PageTransition>{withAuthGuard(<TextToSpeechPage />, '/services/text-to-speech', toolAccess, 'Text to Speech')}</PageTransition>} />
+                    <Route path="/services/image-compressor" element={<PageTransition>{withAuthGuard(<ImageCompressorPage />, '/services/image-compressor', toolAccess, 'Image Compressor')}</PageTransition>} />
+                    <Route path="/services/ai-detector" element={<PageTransition>{withAuthGuard(<AIDetectorPage />, '/services/ai-detector', toolAccess, 'AI Detector')}</PageTransition>} />
 
                     {/* Document Tools */}
-                    <Route path="/services/pdf-to-doc" element={<PageTransition><PdfToDoc /></PageTransition>} />
-                    <Route path="/services/doc-to-pdf" element={<PageTransition><DocToPdf /></PageTransition>} />
-                    <Route path="/services/pdf-merger" element={<PageTransition><PdfMerger /></PageTransition>} />
-                    <Route path="/services/pdf-splitter" element={<PageTransition><PdfSplitter /></PageTransition>} />
-                    <Route path="/services/image-to-pdf" element={<PageTransition><ImageToPdf /></PageTransition>} />
+                    <Route path="/services/pdf-to-doc" element={<PageTransition>{withAuthGuard(<PdfToDoc />, '/services/pdf-to-doc', toolAccess, 'PDF to Doc')}</PageTransition>} />
+                    <Route path="/services/doc-to-pdf" element={<PageTransition>{withAuthGuard(<DocToPdf />, '/services/doc-to-pdf', toolAccess, 'Doc to PDF')}</PageTransition>} />
+                    <Route path="/services/pdf-merger" element={<PageTransition>{withAuthGuard(<PdfMerger />, '/services/pdf-merger', toolAccess, 'PDF Merger')}</PageTransition>} />
+                    <Route path="/services/pdf-splitter" element={<PageTransition>{withAuthGuard(<PdfSplitter />, '/services/pdf-splitter', toolAccess, 'PDF Splitter')}</PageTransition>} />
+                    <Route path="/services/image-to-pdf" element={<PageTransition>{withAuthGuard(<ImageToPdf />, '/services/image-to-pdf', toolAccess, 'Image to PDF')}</PageTransition>} />
 
                     {/* Image Tools */}
-                    <Route path="/services/image-resizer" element={<PageTransition><ImageResizer /></PageTransition>} />
-                    <Route path="/services/background-remover" element={<PageTransition><BackgroundRemover /></PageTransition>} />
-                    <Route path="/services/image-to-text" element={<PageTransition><ImageToText /></PageTransition>} />
-                    <Route path="/services/image-converter" element={<PageTransition><ImageConverter /></PageTransition>} />
-                    <Route path="/services/image-upscale" element={<PageTransition><ImageUpscaler /></PageTransition>} />
+                    <Route path="/services/image-resizer" element={<PageTransition>{withAuthGuard(<ImageResizer />, '/services/image-resizer', toolAccess, 'Image Resizer')}</PageTransition>} />
+                    <Route path="/services/background-remover" element={<PageTransition>{withAuthGuard(<BackgroundRemover />, '/services/background-remover', toolAccess, 'Background Remover')}</PageTransition>} />
+                    <Route path="/services/image-to-text" element={<PageTransition>{withAuthGuard(<ImageToText />, '/services/image-to-text', toolAccess, 'Image to Text')}</PageTransition>} />
+                    <Route path="/services/image-converter" element={<PageTransition>{withAuthGuard(<ImageConverter />, '/services/image-converter', toolAccess, 'Image Converter')}</PageTransition>} />
+                    <Route path="/services/image-upscale" element={<PageTransition>{withAuthGuard(<ImageUpscaler />, '/services/image-upscale', toolAccess, 'Image Upscaler')}</PageTransition>} />
 
                     {/* Developer Tools */}
-                    <Route path="/services/base64" element={<PageTransition><Base64Tool /></PageTransition>} />
-                    <Route path="/services/hash-generator" element={<PageTransition><HashGenerator /></PageTransition>} />
-                    <Route path="/services/uuid-generator" element={<PageTransition><UuidGenerator /></PageTransition>} />
-                    <Route path="/services/color-converter" element={<PageTransition><ColorConverter /></PageTransition>} />
-                    <Route path="/services/markdown-preview" element={<PageTransition><MarkdownPreview /></PageTransition>} />
-                    <Route path="/services/regex-tester" element={<PageTransition><RegexTester /></PageTransition>} />
-                    <Route path="/services/keypair-generator" element={<PageTransition><KeypairGenerator /></PageTransition>} />
-                    <Route path="/services/redirect-inspector" element={<PageTransition><RedirectInspector /></PageTransition>} />
-                    <Route path="/services/dns-lookup" element={<PageTransition><DnsLookup /></PageTransition>} />
-                    <Route path="/services/website-diagnostics" element={<PageTransition><WebsiteDiagnostics /></PageTransition>} />
-                    <Route path="/services/speed-test" element={<PageTransition><SpeedTest /></PageTransition>} />
-                    <Route path="/services/audio-separator" element={<PageTransition><AudioSeparator /></PageTransition>} />
+                    <Route path="/services/base64" element={<PageTransition>{withAuthGuard(<Base64Tool />, '/services/base64', toolAccess, 'Base64 Tool')}</PageTransition>} />
+                    <Route path="/services/hash-generator" element={<PageTransition>{withAuthGuard(<HashGenerator />, '/services/hash-generator', toolAccess, 'Hash Generator')}</PageTransition>} />
+                    <Route path="/services/uuid-generator" element={<PageTransition>{withAuthGuard(<UuidGenerator />, '/services/uuid-generator', toolAccess, 'UUID Generator')}</PageTransition>} />
+                    <Route path="/services/color-converter" element={<PageTransition>{withAuthGuard(<ColorConverter />, '/services/color-converter', toolAccess, 'Color Converter')}</PageTransition>} />
+                    <Route path="/services/markdown-preview" element={<PageTransition>{withAuthGuard(<MarkdownPreview />, '/services/markdown-preview', toolAccess, 'Markdown Preview')}</PageTransition>} />
+                    <Route path="/services/regex-tester" element={<PageTransition>{withAuthGuard(<RegexTester />, '/services/regex-tester', toolAccess, 'Regex Tester')}</PageTransition>} />
+                    <Route path="/services/keypair-generator" element={<PageTransition>{withAuthGuard(<KeypairGenerator />, '/services/keypair-generator', toolAccess, 'Keypair Generator')}</PageTransition>} />
+                    <Route path="/services/redirect-inspector" element={<PageTransition>{withAuthGuard(<RedirectInspector />, '/services/redirect-inspector', toolAccess, 'Redirect Inspector')}</PageTransition>} />
+                    <Route path="/services/dns-lookup" element={<PageTransition>{withAuthGuard(<DnsLookup />, '/services/dns-lookup', toolAccess, 'DNS Lookup')}</PageTransition>} />
+                    <Route path="/services/website-diagnostics" element={<PageTransition>{withAuthGuard(<WebsiteDiagnostics />, '/services/website-diagnostics', toolAccess, 'Website Diagnostics')}</PageTransition>} />
+                    <Route path="/services/speed-test" element={<PageTransition>{withAuthGuard(<SpeedTest />, '/services/speed-test', toolAccess, 'Speed Test')}</PageTransition>} />
+                    <Route path="/services/audio-separator" element={<PageTransition>{withAuthGuard(<AudioSeparator />, '/services/audio-separator', toolAccess, 'Audio Separator')}</PageTransition>} />
+                    <Route path="/services/uptime-robot" element={<PageTransition>{withAuthGuard(<UptimeRobot />, '/services/uptime-robot', toolAccess, 'Uptime Robot')}</PageTransition>} />
+
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
-                    <Route path="/services/text-to-handwriting" element={<PageTransition><TextToHandwritingPage /></PageTransition>} />
-                    <Route path="/services/secret-sharer" element={<PageTransition><SecretSharerPage /></PageTransition>} />
+                    <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />
+                    <Route path="/services/secret-sharer" element={<PageTransition>{withAuthGuard(<SecretSharerPage />, '/services/secret-sharer', toolAccess, 'Secret Sharer')}</PageTransition>} />
                     <Route path="/services/secret-sharer/:id" element={<PageTransition><SecretSharerPage /></PageTransition>} />
 
                     {/* Blog */}

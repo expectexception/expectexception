@@ -28,6 +28,7 @@ import {
   Compress,
   Movie,
   Psychology,
+  NetworkCheck,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -111,6 +112,7 @@ const HomePage: React.FC = () => {
       case 'Compress': return <Compress fontSize="large" />;
       case 'Psychology': return <Psychology fontSize="large" />;
       case 'RocketLaunch': return <RocketLaunch fontSize="large" />;
+      case 'NetworkCheck': return <NetworkCheck fontSize="large" />;
       default: return <Code fontSize="large" />;
     }
   };

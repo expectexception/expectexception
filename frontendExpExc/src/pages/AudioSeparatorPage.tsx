@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+
 import {
   Container,
   Card,
@@ -76,7 +78,7 @@ const AudioSeparatorPage: React.FC = () => {
 
     const pollStatus = async () => {
       try {
-        const response = await apiClient.get(`${endpoints.audio.separator}/status/${taskId}/`);
+        const response = await apiClient.get(`${endpoints.services.audioSeparator}/status/${taskId}/`);
         setTaskStatus(response.data);
 
         if (
@@ -158,7 +160,7 @@ const AudioSeparatorPage: React.FC = () => {
       formData.append('audio', file);
 
       const response = await apiClient.post(
-        endpoints.audio.separator,
+        endpoints.services.audioSeparator,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },

@@ -10,8 +10,9 @@ from .log_analyzer import get_log_analysis
 
 @admin.register(Service)
 class ServiceAdmin(ModelAdmin):
-    list_display = ('title', 'category', 'popularity', 'is_active', 'view_log_analysis_link', 'view_server_health_link')
-    list_filter = ('category', 'is_active')
+    list_display = ('title', 'category', 'popularity', 'is_active', 'requires_login', 'view_log_analysis_link', 'view_server_health_link')
+    list_filter = ('category', 'is_active', 'requires_login')
+    list_editable = ('is_active', 'requires_login')
     search_fields = ('title', 'description')
     ordering = ('-popularity',)
     list_filter_submit = True

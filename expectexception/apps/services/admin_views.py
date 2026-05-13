@@ -27,7 +27,8 @@ class AdminUserListView(APIView):
         data = [{
             'id': u.id,
             'email': u.email,
-            'username': u.username,
+            'first_name': u.first_name,
+            'last_name': u.last_name,
             'is_staff': u.is_staff,
             'is_active': u.is_active,
             'date_joined': u.date_joined.isoformat(),
@@ -38,30 +39,30 @@ class AdminUserListView(APIView):
     def post(self, request):
         """Create a new user."""
         email = request.data.get('email')
-        username = request.data.get('username')
         password = request.data.get('password')
+        first_name = request.data.get('first_name', '')
+        last_name = request.data.get('last_name', '')
         
-        if not email or not username or not password:
-            return Response({'error': 'Email, username, and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not email or not password:
+            return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
         
         if User.objects.filter(email=email).exists():
             return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
             
-        if User.objects.filter(username=username).exists():
-            return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
-            
         try:
             user = User.objects.create_user(
                 email=email,
-                username=username,
                 password=password,
+                first_name=first_name,
+                last_name=last_name,
                 is_active=request.data.get('is_active', True),
                 is_staff=request.data.get('is_staff', False)
             )
             return Response({
                 'id': user.id,
                 'email': user.email,
-                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
                 'is_staff': user.is_staff,
                 'is_active': user.is_active,
                 'date_joined': user.date_joined.isoformat(),
@@ -103,8 +104,10 @@ class AdminUserDetailView(APIView):
 
             if 'email' in request.data:
                 user.email = request.data['email']
-            if 'username' in request.data:
-                user.username = request.data['username']
+            if 'first_name' in request.data:
+                user.first_name = request.data['first_name']
+            if 'last_name' in request.data:
+                user.last_name = request.data['last_name']
             if 'is_active' in request.data:
                 user.is_active = request.data['is_active']
             if 'is_staff' in request.data:
@@ -116,7 +119,8 @@ class AdminUserDetailView(APIView):
             return Response({
                 'id': user.id,
                 'email': user.email,
-                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
                 'is_staff': user.is_staff,
                 'is_active': user.is_active,
             })
@@ -288,42 +292,39 @@ class OllamaModelsView(APIView):
 
     def get(self, request):
         try:
-            result = subprocess.run(
-                ['ollama', 'list'],
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
-            if result.returncode != 0:
-                return Response({'error': 'Failed to list models', 'details': result.stderr}, status=500)
+            from apps.chatbot.services import ollama_service
+            if not ollama_service.is_available():
+                return Response({'error': 'Ollama service is not reachable', 'details': 'Ollama server is offline or base URL is incorrect.'}, status=503)
             
+            raw_models = ollama_service.get_models()
             active_model = self._get_active_model()
             
-            # Parse output (skip header line)
-            lines = result.stdout.strip().split('\n')[1:]
             models = []
-            for line in lines:
-                parts = line.split()
-                if len(parts) >= 4:
-                    model_name = parts[0]
-                    models.append({
-                        'name': model_name,
-                        'id': parts[1],
-                        'size': parts[2],
-                        'modified': ' '.join(parts[3:]),
-                        'is_active': model_name == active_model
-                    })
+            for m in raw_models:
+                name = m.get('name', 'unknown')
+                size_bytes = m.get('size', 0)
+                if size_bytes >= 1024**3:
+                    size_str = f"{size_bytes / (1024**3):.1f} GB"
+                elif size_bytes >= 1024**2:
+                    size_str = f"{size_bytes / (1024**2):.1f} MB"
+                else:
+                    size_str = f"{size_bytes / 1024:.1f} KB"
+                
+                models.append({
+                    'name': name,
+                    'id': m.get('digest', 'unknown')[:12],
+                    'size': size_str,
+                    'modified': m.get('modified_at', ''),
+                    'is_active': name == active_model or name.split(':')[0] == active_model
+                })
             
             return Response({
                 'models': models,
                 'count': len(models),
                 'active_model': active_model
             })
-        except subprocess.TimeoutExpired:
-            return Response({'error': 'Ollama command timed out'}, status=500)
-        except FileNotFoundError:
-            return Response({'error': 'Ollama not installed or not in PATH'}, status=500)
         except Exception as e:
+            logger.error(f"Ollama list error: {e}")
             return Response({'error': str(e)}, status=500)
 
 
@@ -366,89 +367,83 @@ class OllamaModelControlView(APIView):
         
         if not action:
             return Response({'error': 'Action required'}, status=400)
+            
+        from apps.chatbot.services import ollama_service
+        import requests
         
         try:
             if action == 'pull':
                 if not model_name:
                     return Response({'error': 'Model name required'}, status=400)
-                # Start pull in background (can take long)
-                subprocess.Popen(['ollama', 'pull', model_name])
-                return Response({'message': f'Started pulling {model_name}', 'action': 'pull', 'model': model_name})
+                
+                # Start pull in background thread to avoid blocking Gunicorn worker
+                import threading
+                def pull_bg():
+                    try:
+                        ollama_service.pull_model(model_name)
+                    except Exception as pull_err:
+                        logger.error(f"Background pull model {model_name} failed: {pull_err}")
+                
+                threading.Thread(target=pull_bg, daemon=True).start()
+                return Response({'message': f'Started pulling {model_name} in background', 'action': 'pull', 'model': model_name})
             
             elif action == 'delete':
                 if not model_name:
                     return Response({'error': 'Model name required'}, status=400)
-                result = subprocess.run(['ollama', 'rm', model_name], capture_output=True, text=True, timeout=30)
-                if result.returncode != 0:
-                    return Response({'error': result.stderr}, status=500)
+                
+                res = ollama_service.delete_model(model_name)
+                if res.get('status') == 'error':
+                    return Response({'error': res.get('error')}, status=500)
+                    
                 # Clear active model if it was deleted
                 if self._get_active_model() == model_name:
                     self._set_active_model('')
                 return Response({'message': f'Deleted {model_name}', 'action': 'delete', 'model': model_name})
             
-            elif action == 'load':
-                """Load a model into memory."""
+            elif action == 'load' or action == 'switch':
+                """Load/switch a model into memory."""
                 if not model_name:
                     return Response({'error': 'Model name required'}, status=400)
+                
                 try:
-                    # Create a simple test request to load the model
-                    result = subprocess.run(
-                        ['ollama', 'run', model_name, 'echo "model loaded"'],
-                        capture_output=True,
-                        text=True,
-                        timeout=30
+                    # Load model using the official Ollama HTTP generate API (empty prompt)
+                    response = requests.post(
+                        f"{ollama_service.base_url}/api/generate",
+                        json={"model": model_name},
+                        timeout=45,
+                        verify=False
                     )
-                    if result.returncode == 0:
+                    if response.status_code == 200:
                         self._set_active_model(model_name)
                         return Response({
-                            'message': f'Loaded model {model_name}',
-                            'action': 'load',
+                            'message': f'Successfully switched/loaded model {model_name}',
+                            'action': action,
                             'model': model_name,
                             'status': 'loaded'
                         })
                     else:
-                        return Response({'error': result.stderr}, status=500)
+                        return Response({'error': f'Ollama server returned HTTP {response.status_code}'}, status=500)
                 except Exception as e:
-                    return Response({'error': f'Failed to load model: {str(e)}'}, status=500)
-            
-            elif action == 'switch':
-                """Switch to a different model (unload current, load new)."""
-                if not model_name:
-                    return Response({'error': 'Model name required'}, status=400)
-                try:
-                    # Load the new model
-                    result = subprocess.run(
-                        ['ollama', 'run', model_name, 'echo "model switched"'],
-                        capture_output=True,
-                        text=True,
-                        timeout=30
-                    )
-                    if result.returncode == 0:
-                        self._set_active_model(model_name)
-                        return Response({
-                            'message': f'Switched to {model_name}',
-                            'action': 'switch',
-                            'model': model_name,
-                            'status': 'switched'
-                        })
-                    else:
-                        return Response({'error': result.stderr}, status=500)
-                except Exception as e:
-                    return Response({'error': f'Failed to switch model: {str(e)}'}, status=500)
+                    return Response({'error': f'Failed to load model {model_name}: {str(e)}'}, status=500)
             
             elif action == 'restart':
-                # Restart Ollama service (Linux systemd)
+                # Return a informative error if running in container, else try systemctl
                 try:
+                    # In a dockerized environment, we shouldn't reboot system services directly from inside container
+                    if os.path.exists('/.dockerenv'):
+                        return Response({
+                            'error': 'Cannot restart host services from inside a Docker container.',
+                            'details': 'Ollama is running externally (e.g. host systemd). Please restart it on the host machine using: sudo systemctl restart ollama.'
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                    
                     subprocess.run(['sudo', 'systemctl', 'restart', 'ollama'], timeout=10)
-                    return Response({'message': 'Ollama service restarted', 'action': 'restart'})
+                    return Response({'message': 'Ollama service restarted successfully', 'action': 'restart'})
                 except Exception as e:
                     return Response({'error': f'Failed to restart: {str(e)}'}, status=500)
             
             else:
                 return Response({'error': f'Unknown action: {action}'}, status=400)
                 
-        except subprocess.TimeoutExpired:
-            return Response({'error': 'Command timed out'}, status=500)
         except Exception as e:
             logger.error(f"OllamaModelControl error: {e}")
             return Response({'error': str(e)}, status=500)
@@ -480,34 +475,18 @@ class OllamaStatusView(APIView):
 
     def get(self, request):
         try:
-            # Check if ollama is running by listing models (quick check)
-            result = subprocess.run(
-                ['ollama', 'list'],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-            
-            running = result.returncode == 0
-            
-            # Get running models (ps)
-            ps_result = subprocess.run(
-                ['ollama', 'ps'],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
+            from apps.chatbot.services import ollama_service
+            running = ollama_service.is_available()
             
             running_models = []
-            if ps_result.returncode == 0:
-                lines = ps_result.stdout.strip().split('\n')[1:]  # Skip header
-                for line in lines:
-                    parts = line.split()
-                    if parts:
-                        running_models.append({
-                            'name': parts[0],
-                            'is_active': parts[0] == self._get_active_model()
-                        })
+            if running:
+                raw_running = ollama_service.get_running_models()
+                for rm in raw_running:
+                    name = rm.get('name')
+                    running_models.append({
+                        'name': name,
+                        'is_active': name == self._get_active_model()
+                    })
             
             active_model = self._get_active_model()
             
@@ -515,7 +494,7 @@ class OllamaStatusView(APIView):
                 'running': running,
                 'active_model': active_model,
                 'active_models': running_models,
-                'version': 'unknown'  # Could parse from ollama --version
+                'version': 'unknown'
             })
         except Exception as e:
             logger.error(f"OllamaStatus error: {e}")
@@ -525,3 +504,4 @@ class OllamaStatusView(APIView):
                 'active_models': [],
                 'active_model': None
             })
+

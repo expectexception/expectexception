@@ -6,12 +6,16 @@ from django.shortcuts import get_object_or_404
 from .models import User
 from apps.profiles.models import Profile
 from .serializers import RegisterSerializer, UserSerializer, TokenPairSerializer, ProfileSerializer
+from .google_auth import verify_google_token, get_or_create_google_user
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MeView(APIView):
@@ -121,3 +125,47 @@ class FollowToggleView(APIView):
             return Response({'status': 'unfollowed'})
         profile.followers.add(request.user.profile)
         return Response({'status': 'followed'})
+
+
+class GoogleAuthView(APIView):
+    """Authenticate via Google Sign-In.
+
+    Accepts the ID token returned by Google Identity Services (GSI)
+    on the frontend, verifies it server-side, and returns JWT tokens.
+    If the user doesn't exist yet, a new account is created automatically.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        credential = request.data.get('credential')
+        if not credential:
+            return Response(
+                {'detail': 'Google credential token is required.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verify the Google ID token
+        google_data = verify_google_token(credential)
+        if google_data is None:
+            return Response(
+                {'detail': 'Invalid or expired Google token.'},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        # Get or create the user
+        try:
+            user = get_or_create_google_user(google_data)
+        except Exception as e:
+            logger.error("Google auth user creation failed: %s", e, exc_info=True)
+            return Response(
+                {'detail': 'Failed to create user account.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # Issue JWT tokens
+        tokens = TokenPairSerializer.for_user(user)
+        data = UserSerializer(user).data
+        data.update(tokens)
+
+        logger.info("Google login successful for: %s", user.email)
+        return Response(data, status=status.HTTP_200_OK)

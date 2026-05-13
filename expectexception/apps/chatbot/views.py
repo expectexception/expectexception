@@ -248,6 +248,101 @@ async def chat(request):
     response = StreamingHttpResponse(event_generator(), content_type='text/event-stream')
     response['X-Accel-Buffering'] = 'no'
     response['Cache-Control'] = 'no-cache'
+    # allow any origin for the widget
+    response['Access-Control-Allow-Origin'] = '*'
+    return response
+
+@api_view(['OPTIONS'])
+@csrf_exempt
+def widget_chat_options(request):
+    response = JsonResponse({})
+    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+    response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Widget-Session'
+    return response
+
+@csrf_exempt
+async def widget_chat(request):
+    """
+    Public Endpoint for Embeddable Widget.
+    Bypasses cookie sessions and uses a client-provided X-Widget-Session header to track the conversation.
+    """
+    if request.method == 'OPTIONS':
+        return JsonResponse({'status': 'ok'})
+        
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    user_message = data.get('message')
+    conversation_id = data.get('conversation_id')
+    persona_id = data.get('persona', 'advocate') # Default to Advocate for widget
+    
+    # Optional logic to fetch persona prompt dynamically
+    system_prompt = data.get('system_prompt', '')
+    if not system_prompt:
+        try:
+            json_path = os.path.join(settings.BASE_DIR, 'apps/chatbot/data/personas.json')
+            import aiofiles
+            async with aiofiles.open(json_path, 'r') as f:
+                content = await f.read()
+                personas = json.loads(content)
+                p = next((x for x in personas if x['id'] == persona_id), None)
+                if p:
+                    system_prompt = p['prompt'].replace('{NAME}', p['name'])
+        except Exception as e:
+            logger.error(f"Failed to fetch persona for widget: {str(e)}")
+
+    if not user_message:
+        return JsonResponse({'error': 'Message is required'}, status=400)
+
+    widget_session = request.headers.get('X-Widget-Session', '')
+    if not widget_session:
+        widget_session = f"widget_{uuid.uuid4().hex}"
+
+    try:
+        if conversation_id:
+            # Bypass request user, use widget session
+            conversation = await sync_to_async(Conversation.objects.get)(pk=conversation_id, session_id=widget_session)
+        else:
+            conversation = await create_conversation_async(None, widget_session)
+    except Conversation.DoesNotExist:
+        # Client passed an invalid conversation ID, start fresh
+        conversation = await create_conversation_async(None, widget_session)
+        
+    await save_message_async(conversation, 'user', user_message)
+
+    messages = await get_context_async(conversation)
+    if system_prompt:
+        messages = [{'role': 'system', 'content': system_prompt}] + messages
+
+    async def event_generator():
+        full_response = ""
+        start_time = time.time()
+        chunk_count = 0
+        try:
+            async for chunk in ollama_service.chat_async(messages):
+                if chunk:
+                    full_response += chunk
+                    chunk_count += 1
+                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+            
+            generation_time = time.time() - start_time
+            assistant_msg = await save_message_async(conversation, 'assistant', full_response, generation_time)
+            
+            yield f"data: {json.dumps({'done': True, 'message_id': assistant_msg.id, 'conversation_id': conversation.id, 'widget_session': widget_session, 'final': full_response})}\n\n"
+        except Exception as e:
+            logger.error(f"Widget Stream Error: {e}", exc_info=True)
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    response = StreamingHttpResponse(event_generator(), content_type='text/event-stream')
+    response['X-Accel-Buffering'] = 'no'
+    response['Cache-Control'] = 'no-cache'
+    response['Access-Control-Allow-Origin'] = '*'
     return response
 
 

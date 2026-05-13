@@ -7,6 +7,8 @@ from .views import (
     UrlDownloaderView, 
     YtDownloaderView,
     ServiceViewSet,
+    ToolAccessView,
+    ToolAccessToggleView,
     DownloadableResourceViewSet,
     UserDashboardViewSet,
     DownloadHistoryViewSet,
@@ -55,6 +57,9 @@ from .views import (
     AudioSeparatorView,
     AudioSeparatorStatusView,
     HealthCheckView,
+    UptimeRobotView,
+    UptimeTriggersView,
+    UptimeTriggerDetailView,
 )
 from .server_status_view import ServerStatusView, get_metrics_api # Updated import path
 from .admin_views import (
@@ -137,12 +142,17 @@ urlpatterns = [
     path('subdomain-enum/', SubdomainEnumView.as_view(), name='subdomain-enum'),
     path('jwt-verify/', JwtVerifyView.as_view(), name='jwt-verify'),
     path('website-diagnostics/', WebsiteDiagnosticsView.as_view(), name='website-diagnostics'),
+    path('uptime-robot/', UptimeRobotView.as_view(), name='uptime-robot'),
+    path('uptime-robot/triggers/', UptimeTriggersView.as_view(), name='uptime-triggers'),
+    path('uptime-robot/triggers/<str:trigger_id>/', UptimeTriggerDetailView.as_view(), name='uptime-trigger-detail'),
 
     # Audio tools
     path('audio-separator/process', AudioSeparatorView.as_view(), name='audio-separator'),
     path('audio-separator/status/<str:task_id>/', AudioSeparatorStatusView.as_view(), name='audio-separator-status'),
 
     path('health/', HealthCheckView.as_view(), name='health-check'),
+    path('tool-access/', ToolAccessView.as_view(), name='tool-access'),
+    path('tool-access/toggle/', ToolAccessToggleView.as_view(), name='tool-access-toggle'),
     path('server-health/', ServerStatusView.as_view(), name='server-health'),
     path('server-status-api/', get_metrics_api, name='server-status-api'), # New API
     # Webhook inspector endpoints

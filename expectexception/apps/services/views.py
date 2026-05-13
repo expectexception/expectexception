@@ -835,6 +835,57 @@ class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
     pagination_class = None  # Show all tools (no pagination)
 
+
+class ToolAccessView(APIView):
+    """Return tool access configuration — which tools require login.
+
+    GET /api/services/tool-access/
+    Returns: { "tools": { "/services/pdf-to-doc": true, ... } }
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        services = Service.objects.filter(is_active=True).values('path', 'requires_login')
+        tools = {s['path']: s['requires_login'] for s in services}
+        return Response({'tools': tools})
+
+
+class ToolAccessToggleView(APIView):
+    """Admin-only endpoint to toggle requires_login on a tool.
+
+    POST /api/services/tool-access/toggle/
+    Body: { "service_id": 5, "requires_login": true }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not request.user.is_staff:
+            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
+        service_id = request.data.get('service_id')
+        requires_login = request.data.get('requires_login')
+
+        if service_id is None or requires_login is None:
+            return Response(
+                {'error': 'service_id and requires_login are required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            service = Service.objects.get(pk=service_id)
+        except Service.DoesNotExist:
+            return Response({'error': 'Service not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        service.requires_login = bool(requires_login)
+        service.save(update_fields=['requires_login'])
+
+        return Response({
+            'id': service.id,
+            'title': service.title,
+            'requires_login': service.requires_login,
+        })
+
+
 class DownloadableResourceViewSet(viewsets.ModelViewSet):
     queryset = DownloadableResource.objects.all().order_by('-downloads')
     serializer_class = DownloadableResourceSerializer
@@ -1213,25 +1264,46 @@ class PdfToDocView(APIView):
                 }, status=status.HTTP_202_ACCEPTED)
                 
             except Exception as e:
-                # Fallback to sync conversion
+                # Fallback to sync conversion (Celery broker unavailable)
                 logger.warning(f"Celery enqueue failed: {e}. Falling back to sync conversion.")
-                from .tasks import convert_pdf_task
-                
-                # Run synchronously
                 try:
-                    result = convert_pdf_task(
-                        input_path,
-                        output_format,
-                        ocr_enabled,
-                        ocr_lang,
-                        original_name
+                    import uuid as _uuid
+                    from .pdf_utils import smart_convert_pdf, PDFConversionError
+
+                    converted_dir = os.path.join(settings.MEDIA_ROOT, 'converted')
+                    os.makedirs(converted_dir, exist_ok=True)
+                    base_name = os.path.splitext(original_name)[0]
+                    safe_base = "".join(c if c.isalnum() or c in ('_', '-') else '_' for c in base_name)
+                    final_filename = f"{safe_base}_{_uuid.uuid4().hex[:8]}.{output_format}"
+                    final_path = os.path.join(converted_dir, final_filename)
+
+                    info = smart_convert_pdf(
+                        input_pdf=input_path,
+                        output_format=output_format,
+                        output_path=final_path,
+                        ocr_enabled=ocr_enabled,
+                        ocr_lang=ocr_lang,
                     )
-                    return Response(result, status=status.HTTP_200_OK)
+                    file_url = f"{settings.MEDIA_URL}converted/{final_filename}"
+                    return Response({
+                        'status': 'success',
+                        'success': True,
+                        'file_url': file_url,
+                        'filename': final_filename,
+                        'original_name': original_name,
+                        'format': output_format.upper(),
+                        'original_size': info.get('original_size', 0),
+                        'converted_size': info.get('converted_size', 0),
+                        'ocr_used': info.get('ocr_used', False),
+                        'engine_used': info.get('engine_used', 'unknown'),
+                    }, status=status.HTTP_200_OK)
+
                 except Exception as sync_err:
                     logger.exception("Sync PDF conversion failed")
                     return Response({
                         'error': f'PDF conversion failed: {str(sync_err)}'
                     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
         except Exception as e:
             logger.exception("PDF upload/processing error")
@@ -4423,3 +4495,336 @@ class HealthCheckView(APIView):
             return 'ok'
         except:
             return 'unavailable'
+
+
+class UptimeRobotView(APIView):
+    """
+    Simulation & live testing of UptimeRobot monitoring checks.
+    Provides diagnostic capabilities for different monitor types.
+    """
+    permission_classes = [AllowAny]
+    parser_classes = [JSONParser]
+
+    def post(self, request):
+        import time
+        import socket
+        import ssl
+        import requests
+        from urllib.parse import urlparse
+
+        started_at = time.time()
+        
+        target = (request.data.get('target') or '').strip()
+        monitor_type = (request.data.get('type') or 'http').lower()
+        keyword = (request.data.get('keyword') or '').strip()
+        port = request.data.get('port')
+        
+        if not target and monitor_type != 'heartbeat':
+            return Response({'error': 'Target domain or URL is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Normalize target
+        parsed_url = None
+        hostname = target
+        if target:
+            if '://' in target:
+                try:
+                    parsed_url = urlparse(target)
+                    hostname = parsed_url.hostname or target
+                except Exception:
+                    pass
+            else:
+                # If no protocol, default to http:// to allow URL checks
+                target_with_proto = f"http://{target}"
+                try:
+                    parsed_url = urlparse(target_with_proto)
+                    hostname = parsed_url.hostname or target
+                except Exception:
+                    pass
+
+        result = {
+            'monitor_type': monitor_type,
+            'target': target or 'Simulated Heartbeat Listener',
+            'status': 'down',
+            'response_time_ms': 0,
+            'logs': [],
+            'details': {}
+        }
+
+        try:
+            if monitor_type in ('http', 'https', 'keyword'):
+                url = target if '://' in target else f"https://{target}"
+                result['logs'].append(f"Initializing request to {url}")
+                
+                start_time = time.time()
+                # Validate URL is public
+                try:
+                    url = _validate_public_http_url(url)
+                except Exception as e:
+                    return Response({'error': f"Unresolvable or private URL: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Perform HTTP/HTTPS request
+                headers = {'User-Agent': 'UptimeRobot/2.0 (compatible; ExpectException Monitor)'}
+                response = requests.get(url, headers=headers, timeout=10, verify=False)
+                resp_time = int((time.time() - start_time) * 1000)
+                result['response_time_ms'] = resp_time
+                
+                result['logs'].append(f"Received HTTP {response.status_code} in {resp_time} ms")
+                result['details']['status_code'] = response.status_code
+                
+                if monitor_type == 'keyword':
+                    if not keyword:
+                        return Response({'error': 'Keyword parameter is required for keyword monitors'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    found = keyword.lower() in response.text.lower()
+                    result['details']['keyword_found'] = found
+                    result['details']['keyword'] = keyword
+                    
+                    if found:
+                        result['status'] = 'up'
+                        result['logs'].append(f"Keyword '{keyword}' successfully found in page source.")
+                    else:
+                        result['status'] = 'down'
+                        result['logs'].append(f"CRITICAL: Keyword '{keyword}' was not found in the page response.")
+                else:
+                    if 200 <= response.status_code < 400:
+                        result['status'] = 'up'
+                        result['logs'].append("Service is up. HTTP status is within acceptable range (2xx/3xx).")
+                    else:
+                        result['status'] = 'down'
+                        result['logs'].append(f"CRITICAL: HTTP status {response.status_code} represents an outage.")
+                        
+            elif monitor_type == 'ping':
+                result['logs'].append(f"Pinging host {hostname}")
+                try:
+                    host = _validate_public_hostname(hostname, 443)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                
+                start_time = time.time()
+                # Perform standard socket connection to check ping response time
+                sock = socket.create_connection((host, 443), timeout=5)
+                resp_time = int((time.time() - start_time) * 1000)
+                sock.close()
+                
+                result['status'] = 'up'
+                result['response_time_ms'] = resp_time
+                result['logs'].append(f"Ping successful. Connection to port 443 established in {resp_time} ms.")
+                
+            elif monitor_type == 'port':
+                if not port:
+                    port = 80
+                else:
+                    try:
+                        port = int(port)
+                    except ValueError:
+                        return Response({'error': 'Invalid port number'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                result['logs'].append(f"Checking port {port} on host {hostname}")
+                try:
+                    host = _validate_public_hostname(hostname, port)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                
+                start_time = time.time()
+                sock = socket.create_connection((host, port), timeout=5)
+                resp_time = int((time.time() - start_time) * 1000)
+                sock.close()
+                
+                result['status'] = 'up'
+                result['response_time_ms'] = resp_time
+                result['logs'].append(f"Port {port} is OPEN. Connection established in {resp_time} ms.")
+                
+            elif monitor_type == 'ssl':
+                result['logs'].append(f"Retrieving SSL Certificate for {hostname}")
+                try:
+                    host = _validate_public_hostname(hostname, 443)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                
+                start_time = time.time()
+                context = ssl.create_default_context()
+                with socket.create_connection((host, 443), timeout=5) as sock:
+                    with context.wrap_socket(sock, server_hostname=host) as ssock:
+                        cert = ssock.getpeercert()
+                resp_time = int((time.time() - start_time) * 1000)
+                
+                result['response_time_ms'] = resp_time
+                if cert:
+                    result['status'] = 'up'
+                    result['logs'].append("SSL handshake completed successfully.")
+                    
+                    import datetime
+                    # Parse notAfter e.g. 'Jan 28 12:00:00 2026 GMT'
+                    expiry_str = cert.get('notAfter')
+                    if expiry_str:
+                        expiry_dt = datetime.datetime.strptime(expiry_str, '%b %d %H:%M:%S %Y %Z')
+                        days_left = (expiry_dt - datetime.datetime.utcnow()).days
+                        result['details']['expiry_date'] = expiry_str
+                        result['details']['days_remaining'] = days_left
+                        result['details']['issuer'] = dict(x[0] for x in cert.get('issuer', []))
+                        result['details']['subject'] = dict(x[0] for x in cert.get('subject', []))
+                        
+                        result['logs'].append(f"Certificate issuer: {result['details']['issuer'].get('organizationName', 'Unknown')}")
+                        result['logs'].append(f"Certificate expires in {days_left} days on {expiry_str}")
+                else:
+                    result['status'] = 'down'
+                    result['logs'].append("CRITICAL: Certificate could not be retrieved.")
+
+            elif monitor_type == 'heartbeat':
+                import uuid
+                hb_id = request.data.get('heartbeat_id') or str(uuid.uuid4())[:8]
+                result['status'] = 'up'
+                result['response_time_ms'] = 8
+                result['logs'].append("Initializing simulated Cron Job / Heartbeat listener...")
+                result['logs'].append(f"Assigned Unique Endpoint ID: {hb_id}")
+                result['logs'].append(f"Mock webhook heartbeat endpoint is active at https://expectexception.com/api/services/uptime-robot/heartbeat/{hb_id}/")
+                result['logs'].append("Listener status: [ACTIVE] Waiting for periodic incoming HTTP requests (recommended interval: 5 minutes)...")
+                result['details'] = {
+                    'heartbeat_id': hb_id,
+                    'heartbeat_url': f"https://expectexception.com/api/services/uptime-robot/heartbeat/{hb_id}/",
+                    'interval_minutes': 5
+                }
+            
+            else:
+                return Response({'error': f"Unsupported monitor type: {monitor_type}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            result['status'] = 'down'
+            result['logs'].append(f"ERROR: {str(e)}")
+            result['details']['error'] = str(e)
+
+        # Populate multi-region check simulation
+        if result['status'] == 'up':
+            base_latency = result['response_time_ms'] or 40
+            result['regions'] = [
+                {"id": "us-east", "name": "New York, USA", "status": "up", "latency_ms": base_latency, "icon": "🇺🇸"},
+                {"id": "eu-central", "name": "Frankfurt, Germany", "status": "up", "latency_ms": int(base_latency * 1.5 + 35), "icon": "🇩🇪"},
+                {"id": "ap-northeast", "name": "Tokyo, Japan", "status": "up", "latency_ms": int(base_latency * 2.1 + 85), "icon": "🇯🇵"},
+                {"id": "uk-london", "name": "London, United Kingdom", "status": "up", "latency_ms": int(base_latency * 1.3 + 12), "icon": "🇬🇧"}
+            ]
+        else:
+            result['regions'] = [
+                {"id": "us-east", "name": "New York, USA", "status": "down", "latency_ms": 0, "icon": "🇺🇸"},
+                {"id": "eu-central", "name": "Frankfurt, Germany", "status": "down", "latency_ms": 0, "icon": "🇩🇪"},
+                {"id": "ap-northeast", "name": "Tokyo, Japan", "status": "down", "latency_ms": 0, "icon": "🇯🇵"},
+                {"id": "uk-london", "name": "London, United Kingdom", "status": "down", "latency_ms": 0, "icon": "🇬🇧"}
+            ]
+
+        # Log tool usage metrics
+        log_tool_usage(
+            request=request,
+            tool_name='uptime-robot',
+            status_label='success' if result['status'] == 'up' else 'failed',
+            http_status=status.HTTP_200_OK,
+            started_at=started_at,
+            extra={'type': monitor_type}
+        )
+        return Response(result)
+
+
+from .scheduler import get_triggers, save_triggers
+import datetime
+
+class UptimeTriggersView(APIView):
+    permission_classes = [AllowAny]
+    parser_classes = [JSONParser]
+
+    def get(self, request):
+        # Watchdog heartbeat check to guarantee background scheduler is running inside Celery
+        from django.core.cache import cache
+        is_running = cache.get("last_celery_uptime_run")
+        if not is_running:
+            try:
+                from .tasks import run_uptime_scheduler_task
+                run_uptime_scheduler_task.delay()
+            except Exception:
+                pass
+
+        triggers = get_triggers()
+        return Response(triggers)
+
+    def post(self, request):
+        import uuid
+        name = (request.data.get('name') or '').strip()
+        target = (request.data.get('target') or '').strip()
+        interval = request.data.get('interval_minutes') or 5
+        
+        if not name or not target:
+            return Response({'error': 'Name and Target URL/Host are required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            interval = int(interval)
+            if interval < 1:
+                interval = 1
+        except ValueError:
+            return Response({'error': 'Interval must be a positive integer'}, status=status.HTTP_400_BAD_REQUEST)
+
+        triggers = get_triggers()
+        new_trigger = {
+            'id': f"trg-{uuid.uuid4().hex[:8]}",
+            'name': name,
+            'target': target,
+            'interval_minutes': interval,
+            'status': 'active',
+            'last_run': None,
+            'last_status': 'never',
+            'last_latency': 0,
+            'logs': [f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Auto-trigger keep-alive monitor registered successfully."]
+        }
+        triggers.append(new_trigger)
+        save_triggers(triggers)
+        return Response(new_trigger, status=status.HTTP_201_CREATED)
+
+class UptimeTriggerDetailView(APIView):
+    permission_classes = [AllowAny]
+    parser_classes = [JSONParser]
+
+    def post(self, request, trigger_id):
+        action = request.data.get('action') or 'toggle'
+        triggers = get_triggers()
+        found = False
+        for trigger in triggers:
+            if trigger.get('id') == trigger_id:
+                found = True
+                if action == 'toggle':
+                    trigger['status'] = 'paused' if trigger.get('status') == 'active' else 'active'
+                elif action == 'run_now':
+                    import time, requests
+                    url = trigger.get('target', '')
+                    url = url if '://' in url else f"https://{url}"
+                    start_time = time.time()
+                    now = datetime.datetime.now()
+                    try:
+                        headers = {'User-Agent': 'UptimeRobot/2.0 (compatible; ExpectException Auto-Trigger Keep-Alive)'}
+                        res = requests.get(url, headers=headers, timeout=12, verify=False)
+                        latency = int((time.time() - start_time) * 1000)
+                        status_str = "up" if 200 <= res.status_code < 400 else "down"
+                        log_msg = f"On-demand: HTTP {res.status_code} in {latency}ms."
+                    except Exception as e:
+                        latency = 0
+                        status_str = "down"
+                        log_msg = f"On-demand connection failed: {str(e)}"
+                    
+                    trigger['last_run'] = now.strftime("%Y-%m-%d %H:%M:%S")
+                    trigger['last_status'] = status_str
+                    trigger['last_latency'] = latency
+                    
+                    logs = trigger.get('logs', [])
+                    logs.insert(0, f"[{now.strftime('%H:%M:%S')}] {log_msg}")
+                    trigger['logs'] = logs[:30]
+                
+                break
+        
+        if not found:
+            return Response({'error': 'Trigger not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        save_triggers(triggers)
+        return Response(triggers)
+
+    def delete(self, request, trigger_id):
+        triggers = get_triggers()
+        remaining = [t for t in triggers if t.get('id') != trigger_id]
+        save_triggers(remaining)
+        return Response(remaining)
+
+

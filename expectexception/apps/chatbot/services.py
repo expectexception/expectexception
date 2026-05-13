@@ -56,7 +56,80 @@ class OllamaService:
         except requests.RequestException as e:
             logger.error(f"Failed to get models: {e}")
             return []
-    
+
+    def get_running_models(self) -> List[Dict[str, Any]]:
+        """Get list of currently loaded/running models."""
+        try:
+            response = requests.get(f"{self.base_url}/api/ps", timeout=10, verify=False)
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('models', [])
+            return []
+        except requests.RequestException as e:
+            logger.error(f"Failed to get running models: {e}")
+            return []
+
+    def model_info(self, model_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        """Get detailed info about a specific model (size, parameters, quantization)."""
+        model_name = model_name or self.model
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/show",
+                json={"name": model_name},
+                timeout=15,
+                verify=False,
+            )
+            if response.status_code == 200:
+                return response.json()
+            return None
+        except requests.RequestException as e:
+            logger.error(f"Failed to get model info for {model_name}: {e}")
+            return None
+
+    def pull_model(self, model_name: str) -> Dict[str, Any]:
+        """Pull/download a model from Ollama Hub.
+
+        Returns a status dict with 'status' key.
+        Note: This is a blocking call and can take minutes for large models.
+        """
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/pull",
+                json={"name": model_name, "stream": False},
+                timeout=600,  # 10 min timeout for large models
+                verify=False,
+            )
+            if response.status_code == 200:
+                logger.info(f"Successfully pulled model: {model_name}")
+                return {"status": "success", "model": model_name}
+            else:
+                error = response.text
+                logger.error(f"Failed to pull model {model_name}: {error}")
+                return {"status": "error", "error": error}
+        except requests.RequestException as e:
+            logger.error(f"Pull model request failed for {model_name}: {e}")
+            return {"status": "error", "error": str(e)}
+
+    def delete_model(self, model_name: str) -> Dict[str, Any]:
+        """Delete a model from Ollama."""
+        try:
+            response = requests.delete(
+                f"{self.base_url}/api/delete",
+                json={"name": model_name},
+                timeout=30,
+                verify=False,
+            )
+            if response.status_code == 200:
+                logger.info(f"Deleted model: {model_name}")
+                return {"status": "success", "model": model_name}
+            else:
+                error = response.text
+                logger.error(f"Failed to delete model {model_name}: {error}")
+                return {"status": "error", "error": error}
+        except requests.RequestException as e:
+            logger.error(f"Delete model request failed for {model_name}: {e}")
+            return {"status": "error", "error": str(e)}
+
     def chat(
         self,
         messages: List[Dict[str, str]],
@@ -128,6 +201,7 @@ class OllamaService:
         """
         Send async chat request to Ollama and yield streaming response.
         Uses httpx with SSL verification disabled for flexibility.
+        Implements exponential backoff retry.
         """
         model = model or self.model
         url = f"{self.base_url}/api/chat"
@@ -144,36 +218,57 @@ class OllamaService:
             }
         }
         
-        client = self.get_async_client()
-        
-        try:
-            async with client.stream("POST", url, json=payload, timeout=300.0) as response:
-                if response.status_code != 200:
-                    error_text = await response.aread()
-                    logger.error(f"Ollama async error {response.status_code}: {error_text}")
-                    yield "Error: AI model failed to respond."
-                    return
+        max_retries = 3
+        import asyncio
 
-                async for line in response.aiter_lines():
-                    if line:
-                        try:
-                            data = json.loads(line)
-                            if 'message' in data and 'content' in data['message']:
-                                chunk = data['message']['content']
-                                if chunk:
-                                    yield chunk
-                            if data.get('done', False):
-                                break
-                        except json.JSONDecodeError as e:
-                            logger.debug(f"JSON parse error in stream: {e}")
+        for attempt in range(max_retries):
+            client = self.get_async_client()
+
+            try:
+                async with client.stream("POST", url, json=payload, timeout=300.0) as response:
+                    if response.status_code != 200:
+                        error_text = await response.aread()
+                        logger.error(f"Ollama async error {response.status_code}: {error_text}")
+                        if attempt < max_retries - 1:
+                            wait = 2 ** attempt
+                            logger.info(f"Retrying Ollama chat in {wait}s (attempt {attempt + 1}/{max_retries})")
+                            await asyncio.sleep(wait)
                             continue
-                                
-        except httpx.TimeoutException:
-            logger.error("Ollama async chat timeout")
-            yield "Error: Model took too long to respond. It might be large or busy."
-        except Exception as e:
-            logger.error(f"Ollama async chat error: {e}", exc_info=True)
-            yield f"Error: Connection to AI failed ({type(e).__name__})."
+                        yield "Error: AI model failed to respond."
+                        return
+
+                    async for line in response.aiter_lines():
+                        if line:
+                            try:
+                                data = json.loads(line)
+                                if 'message' in data and 'content' in data['message']:
+                                    chunk = data['message']['content']
+                                    if chunk:
+                                        yield chunk
+                                if data.get('done', False):
+                                    break
+                            except json.JSONDecodeError as e:
+                                logger.debug(f"JSON parse error in stream: {e}")
+                                continue
+                    return  # Success — exit retry loop
+
+            except httpx.TimeoutException:
+                if attempt < max_retries - 1:
+                    wait = 2 ** attempt
+                    logger.warning(f"Ollama timeout, retrying in {wait}s (attempt {attempt + 1}/{max_retries})")
+                    await asyncio.sleep(wait)
+                else:
+                    logger.error("Ollama async chat timeout after all retries")
+                    yield "Error: Model took too long to respond. It might be large or busy."
+
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    wait = 2 ** attempt
+                    logger.warning(f"Ollama error: {e}, retrying in {wait}s (attempt {attempt + 1}/{max_retries})")
+                    await asyncio.sleep(wait)
+                else:
+                    logger.error(f"Ollama async chat error: {e}", exc_info=True)
+                    yield f"Error: Connection to AI failed ({type(e).__name__})."
 
     def generate_title(self, first_message: str) -> str:
         """Generate a conversation title from the first message."""
@@ -207,3 +302,4 @@ class OllamaService:
 
 # Singleton instance
 ollama_service = OllamaService()
+

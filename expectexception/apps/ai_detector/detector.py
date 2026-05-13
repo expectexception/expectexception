@@ -1,9 +1,26 @@
 """
 AI Image Detector Module - Enhanced with Ensemble Detection
 Supports multiple models for improved accuracy and performance optimization.
+
+This module guards optional heavyweight imports (`transformers`, `torch`) so
+the Django app can still start if those packages are not installed. If the
+packages are missing, the detector will log warnings and endpoints will report
+the detector as unavailable rather than causing import-time failures.
 """
-from transformers import pipeline
-import torch
+try:
+    from transformers import pipeline
+    _HAS_TRANSFORMERS = True
+except Exception:
+    pipeline = None
+    _HAS_TRANSFORMERS = False
+
+try:
+    import torch
+    _HAS_TORCH = True
+except Exception:
+    torch = None
+    _HAS_TORCH = False
+
 from PIL import Image
 import os
 import logging
@@ -88,9 +105,15 @@ class ModelManager:
             except Exception:
                 use_gpu = False
 
-            cuda_available = torch.cuda.is_available()
-            self._device = 0 if (use_gpu and cuda_available) else -1
-            self._device_name = "cuda" if self._device >= 0 else "cpu"
+            # If torch is unavailable, force CPU mode and report accordingly
+            if not _HAS_TORCH:
+                cuda_available = False
+                self._device = -1
+                self._device_name = "cpu"
+            else:
+                cuda_available = torch.cuda.is_available()
+                self._device = 0 if (use_gpu and cuda_available) else -1
+                self._device_name = "cuda" if self._device >= 0 else "cpu"
             
             # Configure GPU memory limits for low-VRAM GPUs (e.g., GeForce 940MX 2GB)
             if self._device >= 0:
@@ -123,6 +146,11 @@ class ModelManager:
             self._model_status[model_name] = "loading"
             logger.info(f"Loading model: {model_name} on device: {self._device_name}")
             
+            if not _HAS_TRANSFORMERS:
+                self._model_status[model_name] = "error: transformers not installed"
+                logger.warning("Cannot load detection models: `transformers` package is missing")
+                return None
+
             try:
                 start_time = time.time()
                 pipe = pipeline(
@@ -133,11 +161,11 @@ class ModelManager:
                 self._models[model_name] = pipe
                 self._model_status[model_name] = "ready"
                 load_time = time.time() - start_time
-                
+
                 # Log GPU usage confirmation
                 device_info = f"GPU ({self._device_name})" if self._device >= 0 else "CPU"
                 logger.info(f"✓ Model {model_name} loaded in {load_time:.2f}s on {device_info}")
-                
+
                 return pipe
             except Exception as e:
                 self._model_status[model_name] = f"error: {str(e)}"

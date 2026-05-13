@@ -20,12 +20,25 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    AUTH_PROVIDER_CHOICES = [
+        ('email', 'Email'),
+        ('google', 'Google'),
+    ]
+
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
+
+    # Google OAuth fields
+    google_id = models.CharField(max_length=255, unique=True, null=True, blank=True,
+                                  help_text="Google 'sub' claim — unique Google account ID")
+    avatar_url = models.URLField(max_length=500, blank=True, default='',
+                                  help_text="Profile picture URL (from Google or uploaded)")
+    auth_provider = models.CharField(max_length=20, choices=AUTH_PROVIDER_CHOICES,
+                                      default='email', help_text="How the user registered")
 
     objects = UserManager()
 

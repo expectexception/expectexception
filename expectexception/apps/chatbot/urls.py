@@ -10,4 +10,5 @@ urlpatterns = [
     path('conversations/clear/', views.clear_conversations, name='chatbot_clear_conversations'),
     path('conversations/<int:pk>/', views.conversation_detail, name='chatbot_conversation_detail'),
     path('personas/', views.list_personas, name='chatbot_personas'),
+    path('widget/chat/', views.widget_chat, name='chatbot_widget_chat'),
 ]

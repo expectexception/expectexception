@@ -18,7 +18,7 @@ class MessageInline(admin.TabularInline):
 class ConversationAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'user_display', 'model', 'system_prompt_preview', 'message_count', 'created_at']
     list_filter = ['model', 'created_at']
-    search_fields = ['title', 'user__username', 'session_id', 'system_prompt']
+    search_fields = ['title', 'user__email', 'session_id', 'system_prompt']
     readonly_fields = ['created_at', 'updated_at']
     inlines = [MessageInline]
     

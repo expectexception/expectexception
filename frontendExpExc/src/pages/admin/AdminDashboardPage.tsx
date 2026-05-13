@@ -65,6 +65,8 @@ import {
     Settings,
     Edit,
     Add,
+    Lock,
+    LockOpen,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '../../api/config';
@@ -117,6 +119,15 @@ interface OllamaModel {
     id: string;
     size: string;
     modified: string;
+}
+
+interface ToolService {
+    id: number;
+    title: string;
+    path: string;
+    category: string;
+    requires_login: boolean;
+    is_active: boolean;
 }
 
 // ============ Tab Panel Component ============
@@ -220,6 +231,8 @@ const AdminDashboardPage: React.FC = () => {
     const [logs, setLogs] = useState<string[]>([]);
     const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
     const [ollamaStatus, setOllamaStatus] = useState<{ running: boolean; active_models: any[] }>({ running: false, active_models: [] });
+    const [toolServices, setToolServices] = useState<ToolService[]>([]);
+    const [toolAccessLoading, setToolAccessLoading] = useState<Record<number, boolean>>({});
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -300,6 +313,16 @@ const AdminDashboardPage: React.FC = () => {
         }
     }, []);
 
+    const fetchToolServices = useCallback(async () => {
+        try {
+            const response = await apiClient.get(endpoints.services.tools);
+            const list = response.data?.results ?? response.data ?? [];
+            setToolServices(list);
+        } catch (e) {
+            console.error('Failed to fetch tool services:', e);
+        }
+    }, []);
+
     // Initial load
     useEffect(() => {
         const loadData = async () => {
@@ -311,11 +334,12 @@ const AdminDashboardPage: React.FC = () => {
                 fetchDownloads(),
                 fetchOllamaModels(),
                 fetchOllamaStatus(),
+                fetchToolServices(),
             ]);
             setLoading(false);
         };
         loadData();
-    }, [fetchMetrics, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus]);
+    }, [fetchMetrics, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus, fetchToolServices]);
 
     // Real-time metrics polling
     useEffect(() => {
@@ -386,6 +410,23 @@ const AdminDashboardPage: React.FC = () => {
             await fetchOllamaModels();
         } catch (e) {
             setError(`Failed to ${action} model`);
+        }
+    };
+
+    const handleToolAccessToggle = async (serviceId: number, currentValue: boolean) => {
+        setToolAccessLoading(prev => ({ ...prev, [serviceId]: true }));
+        try {
+            await apiClient.post(endpoints.services.toolAccessToggle, {
+                service_id: serviceId,
+                requires_login: !currentValue,
+            });
+            setToolServices(prev =>
+                prev.map(s => s.id === serviceId ? { ...s, requires_login: !currentValue } : s)
+            );
+        } catch (e) {
+            setError('Failed to update tool access');
+        } finally {
+            setToolAccessLoading(prev => ({ ...prev, [serviceId]: false }));
         }
     };
 
@@ -462,6 +503,7 @@ const AdminDashboardPage: React.FC = () => {
         { label: 'Downloads', icon: <Download /> },
         { label: 'Logs', icon: <Terminal /> },
         { label: 'Ollama', icon: <Psychology /> },
+        { label: 'Tool Access', icon: <Lock /> },
     ];
 
     // ============ Render ============
@@ -1089,6 +1131,93 @@ const AdminDashboardPage: React.FC = () => {
                                         </Card>
                                     </Grid>
                                 </Grid>
+                            </TabPanel>
+
+                            {/* ============ TOOL ACCESS TAB ============ */}
+                            <TabPanel value={activeTab} index={6}>
+                                <Box sx={{ mb: 3 }}>
+                                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 700, mb: 1 }}>
+                                        Tool Access Control
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'grey.400' }}>
+                                        Toggle which tools require users to be logged in. Changes take effect immediately.
+                                    </Typography>
+                                </Box>
+
+                                <TableContainer component={Paper} sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3 }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Tool</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Category</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Path</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }} align="center">Login Required</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {toolServices.map((tool) => (
+                                                <TableRow key={tool.id} hover sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                            {tool.requires_login ? (
+                                                                <Lock sx={{ fontSize: 18, color: '#f59e0b' }} />
+                                                            ) : (
+                                                                <LockOpen sx={{ fontSize: 18, color: '#10b981' }} />
+                                                            )}
+                                                            <Typography sx={{ color: 'white', fontWeight: 500 }}>
+                                                                {tool.title}
+                                                            </Typography>
+                                                        </Box>
+                                                    </TableCell>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Chip
+                                                            label={tool.category}
+                                                            size="small"
+                                                            sx={{
+                                                                bgcolor: 'rgba(99, 102, 241, 0.15)',
+                                                                color: '#a5b4fc',
+                                                                textTransform: 'capitalize',
+                                                            }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell sx={{ color: 'grey.500', borderColor: 'rgba(255,255,255,0.06)', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                                                        {tool.path}
+                                                    </TableCell>
+                                                    <TableCell align="center" sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        {toolAccessLoading[tool.id] ? (
+                                                            <CircularProgress size={20} sx={{ color: '#6366f1' }} />
+                                                        ) : (
+                                                            <Switch
+                                                                checked={tool.requires_login}
+                                                                onChange={() => handleToolAccessToggle(tool.id, tool.requires_login)}
+                                                                size="small"
+                                                                sx={{
+                                                                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#f59e0b' },
+                                                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#f59e0b' },
+                                                                    '& .MuiSwitch-track': { bgcolor: 'rgba(255,255,255,0.1)' },
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+
+                                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Typography variant="caption" sx={{ color: 'grey.600' }}>
+                                        {toolServices.filter(t => t.requires_login).length} of {toolServices.length} tools require login
+                                    </Typography>
+                                    <Button
+                                        size="small"
+                                        startIcon={<Refresh />}
+                                        onClick={fetchToolServices}
+                                        sx={{ color: 'grey.400', textTransform: 'none' }}
+                                    >
+                                        Refresh
+                                    </Button>
+                                </Box>
                             </TabPanel>
                         </motion.div>
                     </AnimatePresence>

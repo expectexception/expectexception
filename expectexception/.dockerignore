@@ -1,0 +1,9 @@
+.venv
+.git
+__pycache__
+*.pyc
+logs/
+media/
+staticfiles/
+frontendExpExc/
+node_modules/

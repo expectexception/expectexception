@@ -11,6 +11,10 @@ class Service(models.Model):
     tags = models.JSONField(default=list)
     color = models.CharField(max_length=20, default='primary', help_text="MUI Color palette name")
     is_active = models.BooleanField(default=True)
+    requires_login = models.BooleanField(
+        default=False,
+        help_text="If checked, only authenticated users can use this tool"
+    )
 
     def __str__(self):
         return self.title

@@ -111,95 +111,166 @@ def process_audio_separator(self, input_path: str, original_name: str, unique_id
 @shared_task(bind=True)
 def convert_pdf_task(self, input_path: str, output_format: str, ocr_enabled: bool, ocr_lang: str, original_name: str):
     """
-    Convert PDF to Doc/Docx asynchronously using pdf_utils.
-    Handles DOCX via pdf2docx (faster, layout-preserving),
-    other formats via soffice (LibreOffice).
+    Convert PDF to Doc/Docx/ODT/RTF/TXT asynchronously.
+
+    Engine strategy (handled by smart_convert_pdf):
+      DOCX → pdf2docx (layout-preserving) with soffice fallback
+      other formats → soffice with isolated user profile
+      OCR → pytesseract pipeline then convert
     """
     import logging
-    from .pdf_utils import (
-        convert_pdf_with_pdf2docx,
-        convert_pdf_with_soffice,
-        perform_ocr_on_pdf,
-        PDFConversionError,
-    )
-    
+    from .pdf_utils import smart_convert_pdf, PDFConversionError
+
     logger = logging.getLogger(__name__)
     unique_id = self.request.id
     cache_key = f"pdf_convert_result:{unique_id}"
-    
+
     try:
-        logger.info(f"Starting PDF conversion: {original_name} → {output_format}")
-        
-        # Prepare output directory
+        logger.info(f"PDF conversion task started: {original_name} → {output_format} (ocr={ocr_enabled})")
+
+        # Prepare output path
         converted_dir = os.path.join(settings.MEDIA_ROOT, 'converted')
         os.makedirs(converted_dir, exist_ok=True)
-        
-        # Generate output filename
+
         base_name = os.path.splitext(original_name)[0]
-        final_filename = f"{base_name}_{uuid.uuid4().hex[:8]}.{output_format.lower()}"
+        # Replace spaces/special chars for safe filenames
+        safe_base = "".join(c if c.isalnum() or c in ('_', '-') else '_' for c in base_name)
+        final_filename = f"{safe_base}_{uuid.uuid4().hex[:8]}.{output_format.lower()}"
         final_path = os.path.join(converted_dir, final_filename)
-        
-        # Step 1: Perform OCR if requested (creates intermediate searchable PDF)
-        working_pdf = input_path
-        if ocr_enabled:
-            try:
-                logger.info(f"Performing OCR with language: {ocr_lang}")
-                ocr_pdf = os.path.join(converted_dir, f"{base_name}_ocr_temp.pdf")
-                working_pdf = perform_ocr_on_pdf(input_path, ocr_pdf, ocr_lang)
-            except PDFConversionError as e:
-                logger.warning(f"OCR failed, continuing without OCR: {e}")
-                # Continue with original PDF if OCR fails
-                working_pdf = input_path
-        
-        # Step 2: Convert to target format
-        if output_format.lower() == 'docx':
-            # Use pdf2docx for DOCX (faster and layout-preserving)
-            final_path = convert_pdf_with_pdf2docx(working_pdf, final_path)
-        else:
-            # Use soffice for other formats
-            final_path = convert_pdf_with_soffice(working_pdf, output_format, final_path)
-        
-        # Step 3: Prepare result
-        file_size = os.path.getsize(final_path)
+
+        # Run multi-engine smart conversion
+        conversion_info = smart_convert_pdf(
+            input_pdf=input_path,
+            output_format=output_format,
+            output_path=final_path,
+            ocr_enabled=ocr_enabled,
+            ocr_lang=ocr_lang,
+        )
+
         file_url = f"{settings.MEDIA_URL}converted/{final_filename}"
-        
+
         result = {
             'status': 'success',
             'file_url': file_url,
             'filename': final_filename,
             'original_name': original_name,
             'format': output_format.upper(),
-            'converted_size': file_size,
-            'ocr_used': ocr_enabled,
+            'original_size': conversion_info.get('original_size', 0),
+            'converted_size': conversion_info.get('converted_size', 0),
+            'ocr_used': conversion_info.get('ocr_used', False),
+            'engine_used': conversion_info.get('engine_used', 'unknown'),
         }
-        
-        logger.info(f"PDF conversion successful: {final_filename} ({file_size} bytes)")
+
+        logger.info(
+            f"PDF conversion done: {final_filename} "
+            f"({result['converted_size']} bytes, engine={result['engine_used']})"
+        )
         cache.set(cache_key, result, timeout=3600)
         return result
-        
+
     except PDFConversionError as exc:
         logger.error(f"PDF conversion failed: {exc}")
-        error_result = {
-            'status': 'failed',
-            'error': str(exc),
-            'error_type': 'conversion_error',
-        }
+        error_result = {'status': 'failed', 'error': str(exc), 'error_type': 'conversion_error'}
         cache.set(cache_key, error_result, timeout=3600)
         raise
+
     except Exception as exc:
         logger.exception(f"Unexpected error during PDF conversion: {exc}")
-        error_result = {
-            'status': 'failed',
-            'error': str(exc),
-            'error_type': 'unexpected_error',
-        }
+        error_result = {'status': 'failed', 'error': str(exc), 'error_type': 'unexpected_error'}
         cache.set(cache_key, error_result, timeout=3600)
         raise
+
     finally:
-        # Clean up temporary files
+        # Clean up uploaded temp file
         try:
-            if os.path.exists(input_path) and input_path.startswith(settings.MEDIA_ROOT):
+            if os.path.exists(input_path) and 'temp_uploads' in input_path:
                 os.remove(input_path)
-                logger.debug(f"Cleaned up input file: {input_path}")
+                logger.debug(f"Cleaned up temp input: {input_path}")
         except Exception as e:
             logger.warning(f"Failed to clean up input file: {e}")
+
+
+@shared_task(name='apps.services.tasks.run_uptime_scheduler_task')
+def run_uptime_scheduler_task():
+    """Recurring Celery background worker loop that runs keep-alive triggers."""
+    lock_key = "celery_uptime_scheduler_lock"
+    # Atomic cache check
+    if cache.get(lock_key):
+        return "Skipping: another worker is currently executing."
+
+    cache.set(lock_key, "running", timeout=120)
+    # Set watchdog heartbeat
+    cache.set("last_celery_uptime_run", "active", timeout=45)
+
+    try:
+        from .scheduler import get_triggers, save_triggers
+        import datetime
+        import requests
+        import time
+
+        triggers = get_triggers()
+        modified = False
+        now = datetime.datetime.now()
+
+        for trigger in triggers:
+            if trigger.get('status') != 'active':
+                continue
+
+            last_run_str = trigger.get('last_run')
+            interval = int(trigger.get('interval_minutes', 5))
+            
+            should_run = False
+            if not last_run_str:
+                should_run = True
+            else:
+                try:
+                    last_run_dt = datetime.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
+                    if now >= last_run_dt + datetime.timedelta(minutes=interval):
+                        should_run = True
+                except Exception:
+                    should_run = True
+
+            if should_run:
+                target = trigger.get('target', '')
+                if not target:
+                    continue
+                
+                url = target if '://' in target else f"https://{target}"
+                
+                start_time = time.time()
+                try:
+                    headers = {
+                        'User-Agent': 'UptimeRobot/2.0 (compatible; ExpectException Auto-Trigger Keep-Alive)'
+                    }
+                    res = requests.get(url, headers=headers, timeout=12, verify=False)
+                    latency = int((time.time() - start_time) * 1000)
+                    status = "up" if 200 <= res.status_code < 400 else "down"
+                    log_msg = f"Auto-trigger: HTTP {res.status_code} received in {latency}ms."
+                except Exception as e:
+                    latency = 0
+                    status = "down"
+                    log_msg = f"Auto-trigger connection failed: {str(e)}"
+
+                trigger['last_run'] = now.strftime("%Y-%m-%d %H:%M:%S")
+                trigger['last_status'] = status
+                trigger['last_latency'] = latency
+                
+                logs = trigger.get('logs', [])
+                logs.insert(0, f"[{now.strftime('%H:%M:%S')}] {log_msg}")
+                trigger['logs'] = logs[:30]
+
+                modified = True
+
+        if modified:
+            save_triggers(triggers)
+
+    except Exception:
+        pass
+    finally:
+        cache.delete(lock_key)
+
+    # Schedule next run in 15 seconds
+    run_uptime_scheduler_task.apply_async(countdown=15)
+    return "Keep-alive ping completed. Scheduled next in 15s."
+
+

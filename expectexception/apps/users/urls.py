@@ -8,7 +8,7 @@ from .views import (
     PasswordResetConfirmView,
     VerifyEmailView,
     MeView,
-
+    GoogleAuthView,
 )
 
 urlpatterns = [
@@ -23,5 +23,5 @@ urlpatterns = [
     path('profiles/<str:username>/', ProfileView.as_view(), name='profile-detail'),
     path('profiles/<str:username>/follow/', FollowToggleView.as_view(), name='profile-follow'),
     path('profile/', MeView.as_view(), name='current-user-profile'),
-
+    path('google/', GoogleAuthView.as_view(), name='google-auth'),
 ]

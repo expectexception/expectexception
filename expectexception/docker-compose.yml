@@ -1,20 +1,48 @@
 version: '3.8'
-services:
-  web:
-    build: .
-    ports:
-      - '8000:8000'
-    volumes:
-      - .:/app
-    command: gunicorn expectexception.wsgi:application -b 0.0.0.0:8000
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
 
-  worker:
+# ============================================================================
+# ExpectException - Docker Compose
+#
+# Architecture:
+#   Cloudflare Tunnel
+#     → localhost:8080 (system nginx - already running as systemd service)
+#     → localhost:8000 (this Gunicorn container - host network)
+#
+# The system nginx (/etc/nginx/sites-enabled/...) handles:
+#   - SSL/TLS via Cloudflare tunnel
+#   - Static file serving from /home/rjt/expexcV2/frontendExpExc/build
+#   - Proxying /api/* → http://127.0.0.1:8000
+#
+# This compose file ONLY runs the Django/Gunicorn backend.
+# No Docker nginx is needed because the system nginx is already running.
+# ============================================================================
+
+services:
+
+  # --------------------------------------------------------------------------
+  # Django / Gunicorn Backend
+  # Binds to 0.0.0.0:8000 on host network (system nginx proxies to it)
+  # --------------------------------------------------------------------------
+  backend:
     build: .
-    command: celery -A expectexception worker --loglevel=info --concurrency=1
-    depends_on:
-      - redis
+    container_name: expectexception-backend
+    network_mode: "host"
+    environment:
+      - DJANGO_SETTINGS_MODULE=expectexception.settings
+    env_file:
+      - .env
     volumes:
-      - .:/app
+      - ./apps:/app/apps                  # Backend Python source — changes apply without rebuild
+      - ./expectexception:/app/expectexception  # Django settings & URLs
+      - ./media:/app/media
+      - ./logs:/app/logs
+      - ./staticfiles:/app/staticfiles
+      - ../frontendExpExc/build:/frontendExpExc/build
+    restart: unless-stopped
+    healthcheck:
+      # start_period is long because AI models are downloaded on cold start
+      test: ["CMD", "curl", "-f", "-H", "X-Forwarded-Proto: https", "http://127.0.0.1:8000/api/schema/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 600s

@@ -48,6 +48,8 @@ interface ConversionResult {
     format: string;
     original_size: number;
     converted_size: number;
+    engine_used?: string;
+    ocr_used?: boolean;
 }
 
 const PdfToDoc: React.FC = () => {
@@ -55,15 +57,28 @@ const PdfToDoc: React.FC = () => {
     const [outputFormat, setOutputFormat] = useState('docx');
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [progressLabel, setProgressLabel] = useState('Converting...');
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<ConversionResult | null>(null);
     const [dragActive, setDragActive] = useState(false);
 
-    // New Advanced Features
+    // Advanced options
     const [ocrEnabled, setOcrEnabled] = useState(false);
+    const [ocrLanguage, setOcrLanguage] = useState('eng');
     const [showAdvanced, setShowAdvanced] = useState(false);
 
     const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+    const ocrLanguages = [
+        { value: 'eng', label: 'English' },
+        { value: 'ara', label: 'Arabic' },
+        { value: 'fra', label: 'French' },
+        { value: 'deu', label: 'German' },
+        { value: 'spa', label: 'Spanish' },
+        { value: 'hin', label: 'Hindi' },
+        { value: 'chi_sim', label: 'Chinese (Simplified)' },
+        { value: 'jpn', label: 'Japanese' },
+    ];
 
     const formatBytes = (bytes: number): string => {
         if (bytes === 0) return '0 Bytes';
@@ -84,13 +99,11 @@ const PdfToDoc: React.FC = () => {
         setError(null);
         setResult(null);
 
-        // Check file type
         if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
             setError('Please upload a valid PDF file.');
             return;
         }
 
-        // Check file size
         if (file.size > MAX_FILE_SIZE) {
             setError(`File too large. Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`);
             return;
@@ -120,35 +133,43 @@ const PdfToDoc: React.FC = () => {
     }, []);
 
     const pollStatus = async (taskId: string) => {
+        let attempts = 0;
+        const maxAttempts = 120; // 4 minutes at 2s intervals
         const interval = setInterval(async () => {
+            attempts++;
             try {
                 const res = await apiClient.get(`${endpoints.services.pdfToDoc}/status/${taskId}/`);
-                const status = res.data.status;
-                const resultData = res.data;
+                const { status: taskStatus, ...resultData } = res.data;
 
-                if (status === 'success') {
+                // Update progress label based on state
+                if (attempts < 5) setProgressLabel('Uploading & queuing...');
+                else if (ocrEnabled && attempts < 20) setProgressLabel('Running OCR (this may take a while)...');
+                else setProgressLabel('Converting document...');
+
+                if (taskStatus === 'success') {
                     clearInterval(interval);
                     setProgress(100);
-                    if (resultData.file_url && !resultData.file_url.startsWith('http')) {
-                        resultData.file_url = `${API_BASE_URL}${resultData.file_url}`;
-                    }
-                    setResult(resultData);
+                    setProgressLabel('Done!');
+                    const fileUrl = resultData.file_url && !resultData.file_url.startsWith('http')
+                        ? `${API_BASE_URL}${resultData.file_url}`
+                        : resultData.file_url;
+                    setResult({ ...resultData, file_url: fileUrl });
                     setLoading(false);
-                } else if (status === 'failed') {
+                } else if (taskStatus === 'failed') {
                     clearInterval(interval);
                     setError(resultData.error || 'Conversion process failed.');
                     setLoading(false);
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(interval);
+                    setError('Conversion timed out. Please try again with a smaller file.');
+                    setLoading(false);
                 } else {
-                    // Still processing
-                    // status usually 'PENDING', 'STARTED', 'queued'
-                    // Slowly increment progress fake visualization
-                    setProgress((prev) => Math.min(prev + 2, 95));
+                    setProgress((prev) => Math.min(prev + (ocrEnabled ? 0.8 : 1.5), 90));
                 }
             } catch (err) {
-                console.error("Polling error", err);
-                // Allow a few fails? For now, stop on error
+                console.error('Polling error', err);
                 clearInterval(interval);
-                setError('Lost connection to server status.');
+                setError('Lost connection while waiting for conversion result.');
                 setLoading(false);
             }
         }, 2000);
@@ -161,27 +182,31 @@ const PdfToDoc: React.FC = () => {
         setError(null);
         setResult(null);
         setProgress(5);
+        setProgressLabel(ocrEnabled ? 'Uploading & starting OCR...' : 'Uploading & converting...');
 
         const formData = new FormData();
         formData.append('pdf', selectedFile);
         formData.append('format', outputFormat);
         formData.append('ocr_enabled', ocrEnabled.toString());
+        formData.append('language', ocrLanguage);
 
         try {
             const response = await apiClient.post(endpoints.services.pdfToDoc, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
-                timeout: 10000, // Short timeout for enqueue call
+                timeout: 30000, // 30s for upload
             });
 
             const data = response.data;
 
             if (response.status === 202 && data.task_id) {
-                // Async path
+                // Async path — poll for completion
                 setProgress(20);
+                setProgressLabel('Queued, converting...');
                 pollStatus(data.task_id);
             } else {
-                // Sync path (fallback)
+                // Sync path (Celery not available)
                 setProgress(100);
+                setProgressLabel('Done!');
                 if (data.file_url && !data.file_url.startsWith('http')) {
                     data.file_url = `${API_BASE_URL}${data.file_url}`;
                 }
@@ -191,7 +216,9 @@ const PdfToDoc: React.FC = () => {
 
         } catch (err: any) {
             console.error('Conversion request error:', err);
-            setError(err.response?.data?.error || 'Failed to start conversion.');
+            const errMsg = err.response?.data?.error ||
+                (err.code === 'ECONNABORTED' ? 'Upload timed out — try a smaller file' : 'Failed to start conversion.');
+            setError(errMsg);
             setLoading(false);
         }
     };
@@ -207,7 +234,9 @@ const PdfToDoc: React.FC = () => {
         setResult(null);
         setError(null);
         setProgress(0);
+        setProgressLabel('Converting...');
         setOcrEnabled(false);
+        setOcrLanguage('eng');
     };
 
     const outputFormats = [
@@ -342,13 +371,11 @@ const PdfToDoc: React.FC = () => {
                                         sx={{
                                             height: 8,
                                             borderRadius: 4,
-                                            '& .MuiLinearProgress-bar': {
-                                                borderRadius: 4,
-                                            }
+                                            '& .MuiLinearProgress-bar': { borderRadius: 4 }
                                         }}
                                     />
                                     <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
-                                        {ocrEnabled ? 'Processing OCR & Converting...' : 'Converting...'} {progress}%
+                                        {progressLabel} {Math.round(progress)}%
                                     </Typography>
                                 </Box>
                             )}
@@ -434,16 +461,32 @@ const PdfToDoc: React.FC = () => {
                                             label={
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                                     <Typography variant="body2">Enable OCR (Scanned Docs)</Typography>
-                                                    <Tooltip title="Use this for scanned documents or images converted to PDF. It takes longer but extracts text from images.">
+                                                    <Tooltip title="Use for scanned documents (images as PDF). Runs pytesseract to extract text before converting. Slower but needed for image-only PDFs.">
                                                         <Info fontSize="small" color="action" sx={{ fontSize: 16 }} />
                                                     </Tooltip>
                                                 </Box>
                                             }
                                         />
                                         {ocrEnabled && (
-                                            <Alert severity="info" sx={{ mt: 1, py: 0 }}>
-                                                OCR implementation is slower but more accurate for images.
-                                            </Alert>
+                                            <Box sx={{ mt: 2 }}>
+                                                <FormControl fullWidth size="small">
+                                                    <InputLabel>OCR Language</InputLabel>
+                                                    <Select
+                                                        value={ocrLanguage}
+                                                        label="OCR Language"
+                                                        onChange={(e) => setOcrLanguage(e.target.value)}
+                                                    >
+                                                        {ocrLanguages.map(lang => (
+                                                            <MenuItem key={lang.value} value={lang.value}>
+                                                                {lang.label}
+                                                            </MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                                <Alert severity="info" sx={{ mt: 1.5, py: 0.5 }}>
+                                                    OCR adds ~1-3 min but makes scanned text fully editable.
+                                                </Alert>
+                                            </Box>
                                         )}
                                     </Box>
                                 </Collapse>
@@ -455,10 +498,12 @@ const PdfToDoc: React.FC = () => {
                                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                                         Conversion Details
                                     </Typography>
-                                    <Stack spacing={2} sx={{ mt: 2 }}>
+                                    <Stack spacing={1.5} sx={{ mt: 2 }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <Typography variant="body2" color="text.secondary">Original Size</Typography>
-                                            <Typography variant="body2" fontWeight={600}>{formatBytes(result.original_size)}</Typography>
+                                            <Typography variant="body2" fontWeight={600}>
+                                                {result.original_size ? formatBytes(result.original_size) : formatBytes(selectedFile?.size || 0)}
+                                            </Typography>
                                         </Box>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <Typography variant="body2" color="text.secondary">Converted Size</Typography>
@@ -468,6 +513,20 @@ const PdfToDoc: React.FC = () => {
                                             <Typography variant="body2" color="text.secondary">Output Format</Typography>
                                             <Chip label={result.format} size="small" color="primary" />
                                         </Box>
+                                        {result.engine_used && (
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <Typography variant="body2" color="text.secondary">Engine</Typography>
+                                                <Chip
+                                                    label={result.engine_used === 'pdf2docx' ? 'pdf2docx (high quality)' : result.engine_used}
+                                                    size="small"
+                                                    color={result.engine_used === 'pdf2docx' ? 'success' : 'default'}
+                                                    variant="outlined"
+                                                />
+                                            </Box>
+                                        )}
+                                        {result.ocr_used && (
+                                            <Chip label="OCR applied" size="small" color="info" sx={{ alignSelf: 'flex-start' }} />
+                                        )}
                                     </Stack>
 
                                     <Button

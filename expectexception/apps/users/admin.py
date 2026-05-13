@@ -7,11 +7,14 @@ from apps.profiles.models import Profile
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
     model = User
-    list_display = ('email', 'is_staff', 'is_superuser')
+    list_display = ('email', 'auth_provider', 'is_staff', 'is_superuser')
+    list_filter = ('auth_provider', 'is_staff', 'is_superuser', 'is_active')
     ordering = ('email',)
-    search_fields = ('email',)
+    search_fields = ('email', 'first_name', 'last_name', 'google_id')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
+        ('Personal Info', {'fields': ('first_name', 'last_name', 'avatar_url')}),
+        ('Google OAuth', {'fields': ('google_id', 'auth_provider')}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser', 'groups')}),
     )
     add_fieldsets = (

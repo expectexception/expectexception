@@ -7,8 +7,12 @@ export interface User {
     id: number;
     email: string;
     username: string;
+    first_name?: string;
+    last_name?: string;
     is_staff: boolean;
     profile_image?: string;
+    avatar_url?: string;
+    auth_provider?: 'email' | 'google';
 }
 
 export interface Post {
@@ -51,6 +55,7 @@ export interface Service {
     popularity: number;
     tags: string[];
     color: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
+    requires_login?: boolean;
 }
 
 export interface DownloadableResource {

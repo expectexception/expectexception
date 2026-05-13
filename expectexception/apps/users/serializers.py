@@ -14,10 +14,16 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
+    username = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'first_name', 'last_name', 'profile', 'is_staff')
+        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'profile', 'is_staff',
+                  'avatar_url', 'auth_provider')
+
+    def get_username(self, obj):
+        """Return email prefix as username since model uses email as identifier."""
+        return obj.email.split('@')[0] if obj.email else ''
 
 
 class RegisterSerializer(serializers.ModelSerializer):

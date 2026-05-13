@@ -11,8 +11,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost').split(',') + ['djangobackend', 'ytd.expectexception.com']
-CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',') + ['https://ytd.expectexception.com']
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') + ['djangobackend', 'ytd.expectexception.com', 'expectexception.com', 'www.expectexception.com']
+CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost,http://127.0.0.1').split(',') + ['https://ytd.expectexception.com', 'https://expectexception.com', 'https://www.expectexception.com']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Ensure upload directory exists
@@ -471,6 +471,14 @@ CHATBOT_MODEL = os.getenv('CHATBOT_MODEL', 'smollm2:1.7b')
 CHATBOT_MAX_TOKENS = int(os.getenv('CHATBOT_MAX_TOKENS', '2048'))
 
 # =============================================================================
+# Google OAuth Settings
+# =============================================================================
+# Get credentials from Google Cloud Console:
+# https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
+
+# =============================================================================
 # GPU Acceleration Settings
 # =============================================================================
 USE_GPU = os.getenv('USE_GPU', 'False') == 'True'
@@ -512,14 +520,14 @@ UNFOLD = {
                 "separator": True,
                 "items": [
                     {
-                        "title": _("Blog"),
+                        "title": _("Blog Posts"),
                         "icon": "article",
                         "link": reverse_lazy("admin:blog_post_changelist"),
                     },
                     {
-                        "title": _("Chatbot"),
+                        "title": _("Chatbot Conversations"),
                         "icon": "chat",
-                        "link": reverse_lazy("admin:chatbot_message_changelist"),
+                        "link": reverse_lazy("admin:chatbot_conversation_changelist"),
                     },
                     {
                         "title": _("Downloads"),
@@ -614,11 +622,11 @@ SECURE_CONTENT_SECURITY_POLICY = {
 if not DEBUG:
     CORS_ALLOWED_ORIGINS = os.getenv(
         'CORS_ALLOWED_ORIGINS',
-        'https://ytd.expectexception.com,https://www.expectexception.com'
+        'https://ytd.expectexception.com,https://www.expectexception.com,https://expectexception.com'
     ).split(',')
     ALLOWED_HOSTS = os.getenv(
         'ALLOWED_HOSTS',
-        'ytd.expectexception.com,www.expectexception.com,djangobackend'
+        'ytd.expectexception.com,www.expectexception.com,expectexception.com,djangobackend,localhost,127.0.0.1'
     ).split(',')
 
 # Session security

@@ -12,6 +12,12 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import decorator_from_middleware
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
+try:
+    from django.middleware.base import BaseMiddleware
+except Exception:
+    # Fallback for Django versions where BaseMiddleware isn't available
+    # Use MiddlewareMixin as a compatible base in older Django versions
+    from django.utils.deprecation import MiddlewareMixin as BaseMiddleware
 from rest_framework.throttling import BaseThrottle
 from rest_framework.response import Response
 from rest_framework import status

@@ -45,6 +45,7 @@ import {
   Dns,
   Speed,
   Mic,
+  NetworkCheck,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -59,6 +60,7 @@ const ServicesPage: React.FC = () => {
   const [services, setServices] = useState<any[]>(() => {
     return [...staticServices].sort((a, b) => b.popularity - a.popularity);
   });
+  const [toolAccess, setToolAccess] = useState<Record<string, boolean>>({});
 
   const [stats, setStats] = useState(staticStats);
 
@@ -104,6 +106,19 @@ const ServicesPage: React.FC = () => {
       }
     };
     fetchServicesAndStats();
+
+    // Fetch tool access config
+    const fetchToolAccess = async () => {
+      try {
+        const response = await apiClient.get(endpoints.services.toolAccess);
+        if (response.data?.tools) {
+          setToolAccess(response.data.tools);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tool access:', err);
+      }
+    };
+    fetchToolAccess();
   }, []);
 
   // ... (rest of the component)
@@ -143,6 +158,7 @@ const ServicesPage: React.FC = () => {
       case 'Dns': return <Dns fontSize="large" />;
       case 'Mic': return <Mic fontSize="large" />;
       case 'Speed': return <Speed fontSize="large" />;
+      case 'NetworkCheck': return <NetworkCheck fontSize="large" />;
       default: return <Code fontSize="large" />;
     }
   };
@@ -344,9 +360,18 @@ const ServicesPage: React.FC = () => {
                       >
                         Open Tool
                       </Button>
-                      <Typography variant="caption" color="text.secondary">
-                        Free to use
-                      </Typography>
+                      {toolAccess[service.path] ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Lock sx={{ fontSize: 14, color: 'warning.main' }} />
+                          <Typography variant="caption" color="warning.main" fontWeight={600}>
+                            Login Required
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">
+                          Free to use
+                        </Typography>
+                      )}
                     </Box>
                   </CardContent>
                 </Card>
