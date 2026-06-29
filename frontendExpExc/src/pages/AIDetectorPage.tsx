@@ -324,7 +324,7 @@ const AIDetectorPage: React.FC = () => {
                 case 'processing':
                     if (taskStatus.step === 'detection') return 'Running AI detection models...';
                     if (taskStatus.step === 'metadata') return 'Extracting metadata...';
-                    if (taskStatus.step === 'ela') return 'Performing forensic analysis...';
+                    if (taskStatus.step === 'ela') return 'Performing forensic ELA analysis...';
                     if (taskStatus.step === 'saving') return 'Saving results...';
                     return 'Processing...';
                 default:
@@ -333,10 +333,10 @@ const AIDetectorPage: React.FC = () => {
         };
 
         return (
-            <Box sx={{ mt: 3 }}>
+            <Box sx={{ mt: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <HourglassEmpty sx={{ mr: 1, color: 'primary.main', animation: 'spin 2s linear infinite' }} />
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    <HourglassEmpty sx={{ mr: 1.5, color: 'primary.main', animation: 'spin 2s linear infinite' }} />
+                    <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary' }}>
                         {getStatusMessage()}
                     </Typography>
                 </Box>
@@ -346,22 +346,22 @@ const AIDetectorPage: React.FC = () => {
                     sx={{
                         height: 8,
                         borderRadius: 4,
-                        bgcolor: 'rgba(59, 130, 246, 0.1)',
+                        bgcolor: 'rgba(255, 255, 255, 0.05)',
                         '& .MuiLinearProgress-bar': {
                             borderRadius: 4,
-                            background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                            background: 'linear-gradient(90deg, #3dfc55, #00eeff)',
                         }
                     }}
                 />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                    <Typography variant="caption" color="text.secondary">
-                        {taskStatus.step || 'Initializing'}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        {taskStatus.step?.toUpperCase() || 'INITIALIZING'}
                     </Typography>
                     <Button
                         size="small"
                         color="error"
                         onClick={cancelAnalysis}
-                        sx={{ minWidth: 'auto', py: 0 }}
+                        sx={{ minWidth: 'auto', py: 0, fontWeight: 700 }}
                     >
                         Cancel
                     </Button>
@@ -378,47 +378,47 @@ const AIDetectorPage: React.FC = () => {
                 <Button
                     onClick={() => setShowEnsembleDetails(!showEnsembleDetails)}
                     endIcon={showEnsembleDetails ? <ExpandLess /> : <ExpandMore />}
-                    sx={{ mb: 2 }}
+                    sx={{ mb: 2, borderRadius: '8px' }}
                     size="small"
                     variant="outlined"
                 >
                     {showEnsembleDetails ? 'Hide' : 'Show'} Model Details ({result.models_used} models)
                 </Button>
                 <Collapse in={showEnsembleDetails}>
-                    <Stack spacing={2}>
+                    <Stack spacing={2} sx={{ mt: 1 }}>
                         {result.ensemble_results.map((model, idx) => (
                             <Paper
                                 key={idx}
                                 elevation={0}
                                 sx={{
                                     p: 2,
-                                    border: '1px solid',
-                                    borderColor: 'divider',
-                                    borderRadius: 2,
-                                    bgcolor: 'action.hover'
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    borderRadius: '12px',
+                                    bgcolor: 'rgba(0, 0, 0, 0.2)'
                                 }}
                             >
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', color: '#ffffff' }}>
                                         <Memory sx={{ mr: 1, fontSize: 18, color: 'primary.main' }} />
                                         {model.model.split('/').pop()}
                                     </Typography>
                                     <Chip
                                         label={`Weight: ${model.weight}`}
                                         size="small"
-                                        sx={{ fontSize: '0.7rem' }}
+                                        sx={{ fontSize: '0.7rem', fontWeight: 700, bgcolor: 'rgba(255,255,255,0.05)' }}
                                     />
                                 </Box>
                                 <Grid container spacing={2}>
                                     <Grid item xs={6}>
                                         <Box sx={{
                                             p: 1.5,
-                                            bgcolor: 'rgba(239, 83, 80, 0.1)',
-                                            borderRadius: 1,
+                                            bgcolor: 'rgba(244, 67, 54, 0.05)',
+                                            border: '1px solid rgba(244, 67, 54, 0.1)',
+                                            borderRadius: '8px',
                                             textAlign: 'center'
                                         }}>
-                                            <Typography variant="caption" color="error.main">AI Score</Typography>
-                                            <Typography variant="h6" sx={{ fontWeight: 700, color: 'error.main' }}>
+                                            <Typography variant="caption" color="error.main" sx={{ fontWeight: 600 }}>AI Score</Typography>
+                                            <Typography variant="h6" sx={{ fontWeight: 800, color: 'error.main' }}>
                                                 {model.ai_score.toFixed(1)}%
                                             </Typography>
                                         </Box>
@@ -426,12 +426,13 @@ const AIDetectorPage: React.FC = () => {
                                     <Grid item xs={6}>
                                         <Box sx={{
                                             p: 1.5,
-                                            bgcolor: 'rgba(102, 187, 106, 0.1)',
-                                            borderRadius: 1,
+                                            bgcolor: 'rgba(61, 252, 85, 0.05)',
+                                            border: '1px solid rgba(61, 252, 85, 0.1)',
+                                            borderRadius: '8px',
                                             textAlign: 'center'
                                         }}>
-                                            <Typography variant="caption" color="success.main">Real Score</Typography>
-                                            <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.main' }}>
+                                            <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600 }}>Real Score</Typography>
+                                            <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main' }}>
                                                 {model.real_score.toFixed(1)}%
                                             </Typography>
                                         </Box>
@@ -449,9 +450,9 @@ const AIDetectorPage: React.FC = () => {
         if (!result) return null;
 
         const isAI = result.is_ai_generated;
-        const bgColor = isAI ? 'rgba(239, 83, 80, 0.05)' : 'rgba(102, 187, 106, 0.05)';
-        const borderColor = isAI ? '#ef5350' : '#66bb6a';
-        const textColor = isAI ? '#d32f2f' : '#2e7d32';
+        const bgColor = isAI ? 'rgba(244, 67, 54, 0.03)' : 'rgba(61, 252, 85, 0.03)';
+        const borderColor = isAI ? 'rgba(244, 67, 54, 0.4)' : 'rgba(61, 252, 85, 0.4)';
+        const textColor = isAI ? '#f44336' : '#3dfc55';
 
         return (
             <motion.div
@@ -461,37 +462,38 @@ const AIDetectorPage: React.FC = () => {
             >
                 <Card
                     sx={{
-                        background: (theme) => `linear-gradient(135deg, ${bgColor} 0%, ${theme.palette.background.paper} 100%)`,
-                        border: `2px solid ${borderColor}`,
-                        borderRadius: 4,
+                        background: `linear-gradient(135deg, ${bgColor} 0%, rgba(13, 14, 18, 0.6) 100%)`,
+                        border: `1px solid ${borderColor}`,
+                        borderRadius: '20px',
+                        backdropFilter: 'blur(20px)',
                         overflow: 'hidden',
-                        mb: 3,
-                        boxShadow: `0 8px 32px 0 ${isAI ? 'rgba(239, 83, 80, 0.1)' : 'rgba(102, 187, 106, 0.1)'}`,
+                        mb: 4,
+                        boxShadow: isAI ? '0 10px 30px rgba(244, 67, 54, 0.15)' : '0 10px 30px rgba(61, 252, 85, 0.15)',
                     }}
                 >
                     <CardContent sx={{ p: 4, textAlign: 'center' }}>
                         {/* Cache indicator */}
                         {result.from_cache && (
                             <Chip
-                                icon={<Speed sx={{ fontSize: 16 }} />}
+                                icon={<Speed sx={{ fontSize: 16, color: '#00eeff !important' }} />}
                                 label="Cached Result"
                                 size="small"
-                                color="info"
-                                sx={{ mb: 2 }}
+                                sx={{ mb: 3, fontWeight: 700, bgcolor: 'rgba(0, 238, 255, 0.1)', color: '#00eeff' }}
                             />
                         )}
 
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
                             <Box
                                 sx={{
                                     width: 80,
                                     height: 80,
                                     borderRadius: '50%',
-                                    bgcolor: isAI ? 'rgba(239, 83, 80, 0.1)' : 'rgba(102, 187, 106, 0.1)',
+                                    bgcolor: isAI ? 'rgba(244, 67, 54, 0.1)' : 'rgba(61, 252, 85, 0.1)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    mr: 3,
+                                    border: `1px solid ${textColor}`,
+                                    boxShadow: `0 0 15px ${isAI ? 'rgba(244, 67, 54, 0.2)' : 'rgba(61, 252, 85, 0.2)'}`
                                 }}
                             >
                                 {isAI ? (
@@ -501,11 +503,11 @@ const AIDetectorPage: React.FC = () => {
                                 )}
                             </Box>
                             <Box sx={{ textAlign: 'left' }}>
-                                <Typography variant="h3" sx={{ fontWeight: 900, color: textColor, lineHeight: 1 }}>
+                                <Typography variant="h3" sx={{ fontWeight: 900, color: textColor, lineHeight: 1, letterSpacing: '-0.02em' }}>
                                     {isAI ? 'AI GENERATED' : 'LIKELY REAL'}
                                 </Typography>
-                                <Typography variant="h5" sx={{ fontWeight: 500, color: 'text.secondary', mt: 1 }}>
-                                    Confidence: <span style={{ color: textColor, fontWeight: 700 }}>{result.confidence.toFixed(2)}%</span>
+                                <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.secondary', mt: 1 }}>
+                                    Confidence: <span style={{ color: textColor, fontWeight: 800 }}>{result.confidence.toFixed(2)}%</span>
                                 </Typography>
                                 {result.models_used && result.models_used > 1 && (
                                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -515,25 +517,25 @@ const AIDetectorPage: React.FC = () => {
                             </Box>
                         </Box>
 
-                        <Divider sx={{ my: 3 }} />
+                        <Divider sx={{ my: 3, borderColor: 'rgba(255,255,255,0.05)' }} />
 
                         {/* Probability bars for ensemble results */}
                         {result.ai_probability !== undefined && result.real_probability !== undefined && (
-                            <Box sx={{ maxWidth: 400, mx: 'auto', mb: 3 }}>
+                            <Box sx={{ maxWidth: 400, mx: 'auto', mb: 1 }}>
                                 <Grid container spacing={2}>
                                     <Grid item xs={6}>
-                                        <Typography variant="caption" color="error.main" sx={{ fontWeight: 600 }}>
+                                        <Typography variant="caption" color="error.main" sx={{ fontWeight: 700 }}>
                                             AI Probability
                                         </Typography>
-                                        <Typography variant="h5" sx={{ fontWeight: 700, color: 'error.main' }}>
+                                        <Typography variant="h5" sx={{ fontWeight: 800, color: 'error.main' }}>
                                             {result.ai_probability.toFixed(1)}%
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={6}>
-                                        <Typography variant="caption" color="success.main" sx={{ fontWeight: 600 }}>
+                                        <Typography variant="caption" color="primary.main" sx={{ fontWeight: 700 }}>
                                             Real Probability
                                         </Typography>
-                                        <Typography variant="h5" sx={{ fontWeight: 700, color: 'success.main' }}>
+                                        <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
                                             {result.real_probability.toFixed(1)}%
                                         </Typography>
                                     </Grid>
@@ -544,23 +546,23 @@ const AIDetectorPage: React.FC = () => {
                         {/* Legacy all_scores display */}
                         {result.all_scores && result.all_scores.length > 0 && !result.ensemble_results && (
                             <Box sx={{ maxWidth: 400, mx: 'auto' }}>
-                                <Typography variant="subtitle2" color="text.secondary" gutterBottom align="left">
+                                <Typography variant="subtitle2" color="text.secondary" gutterBottom align="left" sx={{ fontWeight: 700, mb: 1.5 }}>
                                     Detailed Scores
                                 </Typography>
                                 {result.all_scores.map((score, idx) => (
                                     <Box key={idx} sx={{ mb: 2 }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{score.label}</Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 700, color: textColor }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 700 }}>{score.label}</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 800, color: textColor }}>
                                                 {(score.score * 100).toFixed(2)}%
                                             </Typography>
                                         </Box>
                                         <Box
                                             sx={{
                                                 width: '100%',
-                                                height: 10,
-                                                bgcolor: 'rgba(0,0,0,0.05)',
-                                                borderRadius: 5,
+                                                height: 8,
+                                                bgcolor: 'rgba(255,255,255,0.05)',
+                                                borderRadius: 4,
                                                 overflow: 'hidden',
                                             }}
                                         >
@@ -570,8 +572,8 @@ const AIDetectorPage: React.FC = () => {
                                                 transition={{ duration: 1, ease: 'easeOut' }}
                                                 style={{
                                                     height: '100%',
-                                                    background: isAI ? 'linear-gradient(90deg, #ef5350, #d32f2f)' : 'linear-gradient(90deg, #66bb6a, #2e7d32)',
-                                                    borderRadius: 5,
+                                                    background: isAI ? 'linear-gradient(90deg, #f44336, #d32f2f)' : 'linear-gradient(90deg, #3dfc55, #2e7d32)',
+                                                    borderRadius: 4,
                                                 }}
                                             />
                                         </Box>
@@ -599,8 +601,19 @@ const AIDetectorPage: React.FC = () => {
                     variant="scrollable"
                     scrollButtons="auto"
                     sx={{
-                        mb: 3,
-                        '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' }
+                        mb: 4,
+                        '& .MuiTabs-indicator': {
+                            backgroundColor: '#3dfc55',
+                            height: 3,
+                            borderRadius: '3px 3px 0 0'
+                        },
+                        '& .MuiTab-root': {
+                            fontWeight: 700,
+                            color: 'text.secondary',
+                            '&.Mui-selected': {
+                                color: '#3dfc55'
+                            }
+                        }
                     }}
                 >
                     <Tab icon={<ImageSearch />} label="Properties" iconPosition="start" />
@@ -621,27 +634,27 @@ const AIDetectorPage: React.FC = () => {
                         {tabValue === 0 && (
                             <Grid container spacing={3}>
                                 <Grid item xs={12} sm={6}>
-                                    <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
-                                        <Typography variant="caption" color="text.secondary">Filename</Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 600, wordBreak: 'break-all' }}>{result.filename}</Typography>
+                                    <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Filename</Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 700, wordBreak: 'break-all' }}>{result.filename}</Typography>
                                     </Box>
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
-                                    <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
-                                        <Typography variant="caption" color="text.secondary">Format</Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>{result.format || 'N/A'}</Typography>
+                                    <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Format</Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 700 }}>{result.format || 'N/A'}</Typography>
                                     </Box>
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
-                                    <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
-                                        <Typography variant="caption" color="text.secondary">Dimensions</Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>{result.dimensions || 'N/A'}</Typography>
+                                    <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Dimensions</Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 700 }}>{result.dimensions || 'N/A'}</Typography>
                                     </Box>
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
-                                    <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
-                                        <Typography variant="caption" color="text.secondary">File Size</Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                    <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>File Size</Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 700 }}>
                                             {result.size_bytes ? `${(result.size_bytes / 1024).toFixed(2)} KB` : 'N/A'}
                                         </Typography>
                                     </Box>
@@ -649,17 +662,17 @@ const AIDetectorPage: React.FC = () => {
                                 {result.image_stats && (
                                     <>
                                         <Grid item xs={12} sm={6}>
-                                            <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
-                                                <Typography variant="caption" color="text.secondary">Average Brightness</Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                            <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                                                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Average Brightness</Typography>
+                                                <Typography variant="body1" sx={{ fontWeight: 700 }}>
                                                     {result.image_stats['Average Brightness'] || 'N/A'}
                                                 </Typography>
                                             </Box>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
-                                                <Typography variant="caption" color="text.secondary">Entropy</Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                            <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                                                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Entropy</Typography>
+                                                <Typography variant="body1" sx={{ fontWeight: 700 }}>
                                                     {result.image_stats['Entropy'] || 'N/A'}
                                                 </Typography>
                                             </Box>
@@ -673,26 +686,26 @@ const AIDetectorPage: React.FC = () => {
                         {tabValue === 1 && (
                             <Box>
                                 {result.exif_data && Object.keys(result.exif_data).length > 0 ? (
-                                    <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 400, border: '1px solid', borderColor: 'divider' }}>
+                                    <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 400, border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', bgcolor: 'rgba(0,0,0,0.2)' }}>
                                         <Table stickyHeader size="small">
                                             <TableHead>
                                                 <TableRow>
-                                                    <TableCell sx={{ fontWeight: 700, bgcolor: 'background.default' }}>Meta Tag</TableCell>
-                                                    <TableCell sx={{ fontWeight: 700, bgcolor: 'background.default' }}>Value</TableCell>
+                                                    <TableCell sx={{ fontWeight: 800, bgcolor: '#0d0e12', color: '#ffffff', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Meta Tag</TableCell>
+                                                    <TableCell sx={{ fontWeight: 800, bgcolor: '#0d0e12', color: '#ffffff', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Value</TableCell>
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
                                                 {Object.entries(result.exif_data).map(([key, value]) => (
-                                                    <TableRow key={key} hover>
-                                                        <TableCell sx={{ fontWeight: 500 }}>{key}</TableCell>
-                                                        <TableCell color="text.secondary">{String(value)}</TableCell>
+                                                    <TableRow key={key} hover sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02) !important' } }}>
+                                                        <TableCell sx={{ fontWeight: 600, color: 'text.primary', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{key}</TableCell>
+                                                        <TableCell sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{String(value)}</TableCell>
                                                     </TableRow>
                                                 ))}
                                             </TableBody>
                                         </Table>
                                     </TableContainer>
                                 ) : (
-                                    <Alert severity="warning" variant="outlined" icon={<Visibility />}>
+                                    <Alert severity="warning" variant="outlined" icon={<Visibility />} sx={{ borderRadius: '12px' }}>
                                         No EXIF metadata found. This is common in AI-generated images or images stripped of metadata for privacy.
                                     </Alert>
                                 )}
@@ -705,30 +718,30 @@ const AIDetectorPage: React.FC = () => {
                                 <Grid container spacing={2} sx={{ mb: 4 }}>
                                     {['Mean R', 'Mean G', 'Mean B'].map((stat) => (
                                         <Grid item xs={4} key={stat}>
-                                            <Box sx={{ p: 2, textAlign: 'center', border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                                                <Typography variant="caption" color="text.secondary">{stat}</Typography>
-                                                <Typography variant="h6" sx={{ fontWeight: 700 }}>{result.image_stats[stat]}</Typography>
+                                            <Box sx={{ p: 2, textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)', bgcolor: 'rgba(255, 255, 255, 0.02)', borderRadius: '12px' }}>
+                                                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>{stat}</Typography>
+                                                <Typography variant="h6" sx={{ fontWeight: 800 }}>{result.image_stats[stat]}</Typography>
                                             </Box>
                                         </Grid>
                                     ))}
                                 </Grid>
 
-                                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700 }}>Dominant Colors Palette</Typography>
+                                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 800 }}>Dominant Colors Palette</Typography>
                                 {result.image_stats['Top Colors'] && (
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                                         {result.image_stats['Top Colors'].map((item: any, idx: number) => {
                                             const [count, color] = item;
                                             const hexColor = Array.isArray(color)
                                                 ? `#${color.slice(0, 3).map((c: number) => c.toString(16).padStart(2, '0')).join('')}`
                                                 : `#${color.toString(16).padStart(6, '0')}`;
                                             return (
-                                                <Box key={idx} sx={{ display: 'flex', alignItems: 'center', p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                                                    <Box sx={{ width: 48, height: 24, bgcolor: hexColor, borderRadius: 1, border: '1px solid rgba(0,0,0,0.1)', mr: 2 }} />
+                                                <Box key={idx} sx={{ display: 'flex', alignItems: 'center', p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                                                    <Box sx={{ width: 48, height: 28, bgcolor: hexColor, borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', mr: 2 }} />
                                                     <Box sx={{ flexGrow: 1 }}>
-                                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{hexColor.toUpperCase()}</Typography>
+                                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{hexColor.toUpperCase()}</Typography>
                                                         <Typography variant="caption" color="text.secondary">{count.toLocaleString()} pixels</Typography>
                                                     </Box>
-                                                    <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 800, color: 'primary.main' }}>
                                                         {((count / (parseInt(result.dimensions?.split('x')[0] || '1') * parseInt(result.dimensions?.split('x')[1] || '1'))) * 100).toFixed(1)}%
                                                     </Typography>
                                                 </Box>
@@ -748,16 +761,16 @@ const AIDetectorPage: React.FC = () => {
                                             <b>Error Level Analysis (ELA)</b> highlights differences in compression levels.
                                             Uniform textures should have uniform ELA results. High contrast areas might indicate post-processing.
                                         </Typography>
-                                        <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                                        <Box sx={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.05)', bgcolor: '#000000' }}>
                                             <img
                                                 src={`data:image/png;base64,${result.ela_base64}`}
                                                 alt="ELA Analysis"
-                                                style={{ width: '100%', display: 'block' }}
+                                                style={{ width: '100%', display: 'block', maxHeight: 450, objectFit: 'contain' }}
                                             />
                                         </Box>
                                     </>
                                 ) : (
-                                    <Alert severity="info" variant="outlined">ELA analysis is not available for this image format/size.</Alert>
+                                    <Alert severity="info" variant="outlined" sx={{ borderRadius: '12px' }}>ELA analysis is not available for this image format/size.</Alert>
                                 )}
                             </Box>
                         )}
@@ -780,7 +793,7 @@ const AIDetectorPage: React.FC = () => {
             return (
                 <Box sx={{ textAlign: 'center', py: 8 }}>
                     <History sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary">No analysis history found</Typography>
+                    <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 700 }}>No analysis history found</Typography>
                     <Typography variant="body2" color="text.secondary">Your past analyses will appear here once you're logged in.</Typography>
                 </Box>
             );
@@ -790,24 +803,36 @@ const AIDetectorPage: React.FC = () => {
             <Grid container spacing={2}>
                 {historyItems.map((item) => (
                     <Grid item xs={12} key={item.id}>
-                        <Card sx={{ display: 'flex', alignItems: 'center', hover: { bgcolor: 'action.hover' }, p: 1 }}>
+                        <Card sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            p: 1.5,
+                            borderRadius: '12px',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            background: 'rgba(13, 14, 18, 0.4)',
+                            transition: 'all 0.2s',
+                            '&:hover': {
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                bgcolor: 'rgba(255,255,255,0.02)'
+                            }
+                        }}>
                             <Avatar
                                 variant="rounded"
                                 src={item.image_url || ''}
-                                sx={{ width: 60, height: 60, mr: 2, bgcolor: 'action.hover' }}
+                                sx={{ width: 60, height: 60, mr: 2, bgcolor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)' }}
                             >
                                 <ImageSearch />
                             </Avatar>
                             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700 }}>{item.filename}</Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                                <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800 }}>{item.filename}</Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 0.5 }}>
                                     <Chip
                                         label={item.is_ai_generated ? 'AI' : 'REAL'}
                                         size="small"
                                         color={item.is_ai_generated ? 'error' : 'success'}
-                                        sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800 }}
+                                        sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800, borderRadius: '4px' }}
                                     />
-                                    <Typography variant="caption" color="text.secondary">
+                                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                                         {item.confidence.toFixed(1)}% • {new Date(item.created_at || '').toLocaleDateString()}
                                     </Typography>
                                 </Box>
@@ -832,22 +857,23 @@ const AIDetectorPage: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="lg" sx={{ py: { xs: 3, sm: 6 }, px: { xs: 1, sm: 2 } }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 8 }, px: { xs: 2, sm: 3 } }}>
             <Seo
                 title="AI Image Detector - Forensic AI Generation Check"
                 toolId={3}
             />
-            <Box sx={{ mb: { xs: 3, sm: 6 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ mb: { xs: 5, sm: 8 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
                 <Box>
                     <Typography
                         variant="h2"
+                        component="h1"
                         sx={{
                             fontWeight: 900,
-                            letterSpacing: '-0.02em',
-                            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                            letterSpacing: '-0.03em',
+                            background: 'linear-gradient(135deg, #ffffff 30%, #3dfc55 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
-                            mb: 1,
+                            mb: 1.5,
                             fontSize: { xs: '2.5rem', sm: '3.75rem' }
                         }}
                     >
@@ -858,12 +884,13 @@ const AIDetectorPage: React.FC = () => {
                     </Typography>
                 </Box>
                 {isAuthenticated && (
-                    <Box sx={{ display: 'flex', gap: 1, bgcolor: 'action.hover', p: 0.5, borderRadius: 3 }}>
+                    <Box sx={{ display: 'flex', gap: 1, bgcolor: 'rgba(0, 0, 0, 0.2)', border: '1px solid rgba(255,255,255,0.05)', p: 0.5, borderRadius: '12px' }}>
                         <Button
                             variant={viewMode === 'upload' ? 'contained' : 'text'}
                             onClick={() => setViewMode('upload')}
                             startIcon={<CloudUpload />}
                             size="small"
+                            sx={{ borderRadius: '8px', fontWeight: 700 }}
                         >
                             Analyze
                         </Button>
@@ -872,6 +899,7 @@ const AIDetectorPage: React.FC = () => {
                             onClick={() => setViewMode('history')}
                             startIcon={<History />}
                             size="small"
+                            sx={{ borderRadius: '8px', fontWeight: 700 }}
                         >
                             History
                         </Button>
@@ -881,7 +909,7 @@ const AIDetectorPage: React.FC = () => {
 
             {error && (
                 <Fade in={!!error}>
-                    <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }} onClose={() => setError('')}>
+                    <Alert severity="error" variant="filled" sx={{ mb: 4, borderRadius: '12px' }} onClose={() => setError('')}>
                         {error}
                     </Alert>
                 </Fade>
@@ -897,15 +925,22 @@ const AIDetectorPage: React.FC = () => {
                     >
                         <Grid container spacing={4}>
                             <Grid item xs={12} md={result ? 5 : 12}>
-                                <Card sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', transition: 'all 0.3s' }}>
+                                <Card sx={{
+                                    borderRadius: '20px',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    background: 'rgba(13, 14, 18, 0.4)',
+                                    backdropFilter: 'blur(20px)',
+                                    boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                                    transition: 'all 0.3s'
+                                }}>
                                     <CardContent sx={{ p: 4 }}>
-                                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+                                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, display: 'flex', alignItems: 'center' }}>
                                             {result && selectedFile === null ? (
-                                                <IconButton onClick={() => { setResult(null); setPreview(''); setSelectedFile(null); }} sx={{ mr: 1 }}>
+                                                <IconButton onClick={() => { setResult(null); setPreview(''); setSelectedFile(null); }} sx={{ mr: 1.5, color: 'text.primary' }}>
                                                     <ArrowBack />
                                                 </IconButton>
                                             ) : (
-                                                <CloudUpload sx={{ mr: 1, color: 'primary.main' }} />
+                                                <CloudUpload sx={{ mr: 1.5, color: 'primary.main' }} />
                                             )}
                                             {result && selectedFile === null ? 'Analysis View' : 'Upload for Analysis'}
                                         </Typography>
@@ -915,18 +950,18 @@ const AIDetectorPage: React.FC = () => {
                                                 onDrop={handleDrop}
                                                 onDragOver={(e) => e.preventDefault()}
                                                 sx={{
-                                                    border: '2px dashed',
-                                                    borderColor: 'primary.light',
-                                                    borderRadius: 4,
-                                                    p: { xs: 3, sm: 6 },
+                                                    border: '2px dashed rgba(255, 255, 255, 0.1)',
+                                                    borderRadius: '16px',
+                                                    p: { xs: 4, sm: 6 },
                                                     textAlign: 'center',
                                                     cursor: 'pointer',
-                                                    bgcolor: 'rgba(59, 130, 246, 0.02)',
-                                                    transition: 'all 0.2s',
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                                                    transition: 'all 0.3s ease',
                                                     '&:hover': {
-                                                        bgcolor: 'rgba(59, 130, 246, 0.05)',
-                                                        borderColor: 'primary.main',
-                                                        transform: 'scale(1.01)',
+                                                        borderColor: '#3dfc55',
+                                                        backgroundColor: 'rgba(61, 252, 85, 0.02)',
+                                                        boxShadow: '0 0 20px rgba(61, 252, 85, 0.05)',
+                                                        transform: 'scale(1.005)',
                                                     },
                                                 }}
                                             >
@@ -939,8 +974,8 @@ const AIDetectorPage: React.FC = () => {
                                                 />
                                                 <label htmlFor="file-upload" style={{ width: '100%', cursor: 'pointer' }}>
                                                     <Box sx={{ cursor: 'pointer' }}>
-                                                        <CloudUpload sx={{ fontSize: { xs: 48, sm: 72 }, color: 'primary.main', mb: 2, opacity: 0.8 }} />
-                                                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                                                        <CloudUpload sx={{ fontSize: { xs: 54, sm: 72 }, color: 'primary.main', mb: 2, opacity: 0.9 }} />
+                                                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
                                                             Drop your image here
                                                         </Typography>
                                                         <Typography variant="body2" color="text.secondary">
@@ -949,7 +984,7 @@ const AIDetectorPage: React.FC = () => {
                                                         <Button
                                                             variant="outlined"
                                                             component="span"
-                                                            sx={{ mt: 3, borderRadius: 2 }}
+                                                            sx={{ mt: 3, borderRadius: '8px', fontWeight: 700 }}
                                                         >
                                                             Browse Files
                                                         </Button>
@@ -960,12 +995,12 @@ const AIDetectorPage: React.FC = () => {
 
                                         {preview && (
                                             <Box sx={{ mt: 4 }}>
-                                                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700 }}>Image Source</Typography>
-                                                <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+                                                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 800 }}>Image Source</Typography>
+                                                <Box sx={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
                                                     <img
                                                         src={preview}
                                                         alt="Preview"
-                                                        style={{ width: '100%', display: 'block', maxHeight: 400, objectFit: 'contain', background: '#f8fafc' }}
+                                                        style={{ width: '100%', display: 'block', maxHeight: 400, objectFit: 'contain', background: '#0d0e12' }}
                                                     />
                                                 </Box>
                                                 {selectedFile && !loading && (
@@ -976,7 +1011,7 @@ const AIDetectorPage: React.FC = () => {
                                                         onClick={handleAnalyze}
                                                         disabled={loading}
                                                         startIcon={<ImageSearch />}
-                                                        sx={{ mt: 3, py: 2, borderRadius: 3, fontWeight: 700, fontSize: '1.1rem', boxShadow: '0 8px 16px rgba(59, 130, 246, 0.2)' }}
+                                                        sx={{ mt: 4, py: 1.5, borderRadius: '10px', fontWeight: 700, fontSize: '1.05rem' }}
                                                     >
                                                         Run Forensic Analysis
                                                     </Button>
@@ -991,8 +1026,14 @@ const AIDetectorPage: React.FC = () => {
                             {result && (
                                 <Grid item xs={12} md={7}>
                                     {renderResultCard()}
-                                    <Card sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
-                                        <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
+                                    <Card sx={{
+                                        borderRadius: '20px',
+                                        border: '1px solid rgba(255,255,255,0.05)',
+                                        background: 'rgba(13, 14, 18, 0.4)',
+                                        backdropFilter: 'blur(20px)',
+                                        boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)'
+                                    }}>
+                                        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
                                             {renderMetadata()}
                                         </CardContent>
                                     </Card>
@@ -1007,11 +1048,17 @@ const AIDetectorPage: React.FC = () => {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                     >
-                        <Card sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
-                            <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
+                        <Card sx={{
+                            borderRadius: '20px',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            background: 'rgba(13, 14, 18, 0.4)',
+                            backdropFilter: 'blur(20px)',
+                            boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)'
+                        }}>
+                            <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                                     <Typography variant="h5" sx={{ fontWeight: 800 }}>Analysis History</Typography>
-                                    <Button startIcon={<Refresh />} onClick={fetchHistory} size="small">Refresh</Button>
+                                    <Button startIcon={<Refresh />} onClick={fetchHistory} size="small" sx={{ fontWeight: 700 }}>Refresh</Button>
                                 </Box>
                                 {renderHistory()}
                             </CardContent>

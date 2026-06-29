@@ -20,6 +20,7 @@ gTTS>=2.5.1
 qrcode
 requests
 httpx[http2]
+aiofiles
 edge-tts
 deep-translator
 asgiref

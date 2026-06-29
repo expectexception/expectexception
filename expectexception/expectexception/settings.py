@@ -147,7 +147,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOW_CREDENTIALS = True
 
 # =============================================================================
@@ -479,14 +479,6 @@ GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
 
 # =============================================================================
-# GPU Acceleration Settings
-# =============================================================================
-USE_GPU = os.getenv('USE_GPU', 'False') == 'True'
-GPU_DEVICE = os.getenv('GPU_DEVICE', 'cuda:0')  # Default to first GPU
-GPU_MEMORY_FRACTION = float(os.getenv('GPU_MEMORY_FRACTION', '0.8'))  # Reserve 80% VRAM
-CPU_FALLBACK = True  # Fallback to CPU if GPU fails/OOM
-
-# =============================================================================
 # Unfold Admin Configuration
 # =============================================================================
 UNFOLD = {
@@ -623,10 +615,6 @@ if not DEBUG:
     CORS_ALLOWED_ORIGINS = os.getenv(
         'CORS_ALLOWED_ORIGINS',
         'https://ytd.expectexception.com,https://www.expectexception.com,https://expectexception.com'
-    ).split(',')
-    ALLOWED_HOSTS = os.getenv(
-        'ALLOWED_HOSTS',
-        'ytd.expectexception.com,www.expectexception.com,expectexception.com,djangobackend,localhost,127.0.0.1'
     ).split(',')
 
 # Session security

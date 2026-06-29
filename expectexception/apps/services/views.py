@@ -50,6 +50,7 @@ from apps.videos.models import VideoDownload
 from apps.videos.tasks import download_video_async
 from apps.blog.models import Post
 from .log_analyzer import get_log_analysis
+from .utils import generate_qr_image
 
 # Set up loggers
 logger = logging.getLogger('apps.services')
@@ -357,28 +358,8 @@ class QrGeneratorView(APIView):
             )
             return Response({'error': 'Data is required'}, status=status.HTTP_400_BAD_REQUEST)
             
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_H,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(data)
-        qr.make(fit=True)
+        qr_url = generate_qr_image(data, fg_color, bg_color)
 
-        img = qr.make_image(fill_color=fg_color, back_color=bg_color)
-        
-        buffer = io.BytesIO()
-        img.save(buffer, format="PNG")
-        buffer.seek(0)
-        
-        filename = f"qr_{uuid.uuid4()}.png"
-        file_path = os.path.join(settings.MEDIA_ROOT, 'qr')
-        os.makedirs(file_path, exist_ok=True)
-        
-        with open(os.path.join(file_path, filename), 'wb') as f:
-            f.write(buffer.getvalue())
-            
         log_activity(request.user, "generate_qr", f"Data: {data[:50]}...")
 
         log_tool_usage(
@@ -391,7 +372,7 @@ class QrGeneratorView(APIView):
         )
 
         return Response({
-            'qr_url': f"{settings.MEDIA_URL}qr/{filename}"
+            'qr_url': qr_url
         })
 
 class JsonFormatterView(APIView):

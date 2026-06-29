@@ -55,6 +55,7 @@ interface ServiceItem {
 
 const HirePage: React.FC = () => {
     const theme = useTheme();
+    const primaryColor = theme.palette.primary.main;
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -105,7 +106,7 @@ const HirePage: React.FC = () => {
             icon: <Web sx={{ fontSize: 40 }} />,
             desc: 'Modern, responsive web interfaces built with React, Next.js, Vue, or Angular. Pixel-perfect designs with smooth animations.',
             features: ['React/Next.js', 'TypeScript', 'Responsive Design', 'Performance Optimized'],
-            color: '#3b82f6',
+            color: primaryColor,
         },
         {
             title: 'Backend Development',
@@ -119,7 +120,7 @@ const HirePage: React.FC = () => {
             icon: <Code sx={{ fontSize: 40 }} />,
             desc: 'End-to-end web applications from concept to deployment. Complete solutions with modern tech stacks.',
             features: ['Complete Apps', 'Database Design', 'API Integration', 'DevOps & CI/CD'],
-            color: '#8b5cf6',
+            color: '#00e5ff',
         },
         {
             title: 'AI Chatbot Development',
@@ -140,14 +141,14 @@ const HirePage: React.FC = () => {
             icon: <SmartToy sx={{ fontSize: 40 }} />,
             desc: 'Intelligent automation, data processing pipelines, and AI-powered business tools.',
             features: ['Python Automation', 'Data Processing', 'Workflow Optimization', 'Custom Tools'],
-            color: '#06b6d4',
+            color: '#a855f7',
         },
         {
             title: 'Mobile App Development',
             icon: <PhoneAndroid sx={{ fontSize: 40 }} />,
             desc: 'Cross-platform mobile apps with React Native or Flutter. Native-like performance on iOS and Android.',
             features: ['React Native', 'Flutter', 'iOS & Android', 'App Store Deployment'],
-            color: '#a855f7',
+            color: '#ec4899',
         },
         {
             title: 'Cloud & DevOps',
@@ -155,34 +156,6 @@ const HirePage: React.FC = () => {
             desc: 'Cloud infrastructure setup, CI/CD pipelines, containerization, and Kubernetes deployment.',
             features: ['AWS/GCP/Azure', 'Docker/K8s', 'CI/CD Pipelines', 'Infrastructure as Code'],
             color: '#0ea5e9',
-        },
-        {
-            title: 'Data Analytics & BI',
-            icon: <Analytics sx={{ fontSize: 40 }} />,
-            desc: 'Data visualization dashboards, business intelligence solutions, and reporting systems.',
-            features: ['Dashboards', 'ETL Pipelines', 'Data Visualization', 'Custom Reports'],
-            color: '#14b8a6',
-        },
-        {
-            title: 'API Development & Integration',
-            icon: <IntegrationInstructions sx={{ fontSize: 40 }} />,
-            desc: 'RESTful and GraphQL API development, third-party integrations, and microservices architecture.',
-            features: ['REST/GraphQL', 'Microservices', 'API Gateway', 'Webhook Systems'],
-            color: '#f97316',
-        },
-        {
-            title: 'Security & Penetration Testing',
-            icon: <Security sx={{ fontSize: 40 }} />,
-            desc: 'Security audits, vulnerability assessments, and secure coding practices implementation.',
-            features: ['Security Audits', 'Pen Testing', 'Code Review', 'Compliance'],
-            color: '#dc2626',
-        },
-        {
-            title: 'UI/UX Design',
-            icon: <DesignServices sx={{ fontSize: 40 }} />,
-            desc: 'User interface and experience design with Figma. Wireframes, prototypes, and design systems.',
-            features: ['Figma Design', 'Prototyping', 'Design Systems', 'User Research'],
-            color: '#ec4899',
         },
     ];
 
@@ -214,7 +187,7 @@ const HirePage: React.FC = () => {
     ];
 
     return (
-        <Box sx={{ minHeight: '100vh', pb: 8 }}>
+        <Box sx={{ minHeight: '100vh', pb: 8, bgcolor: '#050505' }}>
             <Seo
                 title="Hire a Developer - Expert ML, Python & Full-Stack Engineers"
                 description="Hire experienced developers for frontend, backend, full-stack, mobile apps, AI chatbots, ML model training, and cloud solutions. Fast delivery, transparent pricing, professional results."
@@ -224,15 +197,28 @@ const HirePage: React.FC = () => {
             {/* Hero Section */}
             <Box
                 sx={{
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-                    py: { xs: 6, md: 10 },
+                    background: `linear-gradient(135deg, ${alpha(primaryColor, 0.08)} 0%, transparent 100%)`,
+                    py: { xs: 8, md: 12 },
                     position: 'relative',
                     overflow: 'hidden',
                 }}
             >
-                <Container maxWidth="lg">
-                    <Grid container spacing={4} alignItems="center">
-                        <Grid item xs={12} md={7}>
+                {/* Ambient glow */}
+                <Box sx={{
+                    position: 'absolute',
+                    top: '-10%',
+                    right: '-10%',
+                    width: '400px',
+                    height: '400px',
+                    borderRadius: '50%',
+                    background: `radial-gradient(circle, ${alpha(primaryColor, 0.08)} 0%, transparent 70%)`,
+                    filter: 'blur(40px)',
+                    pointerEvents: 'none',
+                }} />
+
+                <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+                    <Grid container spacing={6} alignItems="center">
+                        <Grid item xs={12} md={7.5}>
                             <motion.div
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -241,23 +227,27 @@ const HirePage: React.FC = () => {
                                 <Chip
                                     label="🚀 Available for Projects"
                                     sx={{
-                                        bgcolor: alpha(theme.palette.success.main, 0.15),
-                                        color: theme.palette.success.main,
-                                        fontWeight: 600,
-                                        mb: 2,
+                                        bgcolor: alpha(primaryColor, 0.1),
+                                        color: primaryColor,
+                                        borderColor: alpha(primaryColor, 0.2),
+                                        borderWidth: 1,
+                                        borderStyle: 'solid',
+                                        fontWeight: 700,
+                                        mb: 3,
                                     }}
                                 />
                                 <Typography
                                     variant="h2"
                                     component="h1"
                                     gutterBottom
-                                    fontWeight="bold"
+                                    fontWeight="900"
                                     sx={{
-                                        background: 'linear-gradient(45deg, #2563eb, #7c3aed)',
+                                        background: `linear-gradient(135deg, #ffffff 30%, ${primaryColor} 100%)`,
                                         WebkitBackgroundClip: 'text',
                                         WebkitTextFillColor: 'transparent',
-                                        fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem' },
-                                        lineHeight: 1.2,
+                                        fontSize: { xs: '2.2rem', sm: '3rem', md: '4rem' },
+                                        lineHeight: 1.1,
+                                        letterSpacing: '-0.02em',
                                     }}
                                 >
                                     Hire Expert Developers
@@ -265,9 +255,9 @@ const HirePage: React.FC = () => {
                                 <Typography
                                     variant="h5"
                                     color="text.secondary"
-                                    sx={{ mb: 4, fontSize: { xs: '1rem', sm: '1.25rem' } }}
+                                    sx={{ mb: 5, fontSize: { xs: '1.05rem', sm: '1.25rem' }, fontWeight: 400, lineHeight: 1.6 }}
                                 >
-                                    From stunning frontends to powerful AI solutions — we build production-ready software that scales.
+                                    From stunning interactive frontends to robust full-stack applications and custom AI systems—we build software engineered to scale.
                                 </Typography>
                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                     <Button
@@ -277,10 +267,16 @@ const HirePage: React.FC = () => {
                                         href="#contact"
                                         sx={{
                                             px: 4,
-                                            py: 1.5,
-                                            borderRadius: 3,
-                                            fontWeight: 700,
-                                            fontSize: { xs: '0.9rem', sm: '1rem' },
+                                            py: 1.75,
+                                            borderRadius: '30px',
+                                            fontWeight: 800,
+                                            fontSize: '0.95rem',
+                                            background: primaryColor,
+                                            color: '#000000',
+                                            '&:hover': {
+                                                background: alpha(primaryColor, 0.9),
+                                                boxShadow: `0 8px 25px ${alpha(primaryColor, 0.4)}`,
+                                            }
                                         }}
                                     >
                                         Get a Free Quote
@@ -292,31 +288,39 @@ const HirePage: React.FC = () => {
                                         to="/services"
                                         sx={{
                                             px: 4,
-                                            py: 1.5,
-                                            borderRadius: 3,
-                                            fontSize: { xs: '0.9rem', sm: '1rem' },
+                                            py: 1.75,
+                                            borderRadius: '30px',
+                                            fontSize: '0.95rem',
+                                            borderColor: 'rgba(255, 255, 255, 0.15)',
+                                            color: '#ffffff',
+                                            '&:hover': {
+                                                borderColor: primaryColor,
+                                                color: primaryColor,
+                                                bgcolor: alpha(primaryColor, 0.03),
+                                            }
                                         }}
                                     >
                                         View Our Tools
                                     </Button>
                                 </Stack>
-                            </motion.div>
+                              </motion.div>
                         </Grid>
-                        <Grid item xs={12} md={5}>
+                        <Grid item xs={12} md={4.5}>
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
+                                initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.6, delay: 0.2 }}
                             >
                                 <Card
                                     sx={{
-                                        background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%)',
-                                        backdropFilter: 'blur(20px)',
-                                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                                        p: 3,
+                                        background: 'linear-gradient(135deg, rgba(13, 14, 18, 0.6) 0%, rgba(13, 14, 18, 0.2) 100%)',
+                                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                                        p: 4,
+                                        borderRadius: 4,
+                                        boxShadow: '0 15px 35px rgba(0, 0, 0, 0.4)',
                                     }}
                                 >
-                                    <Stack spacing={2}>
+                                    <Stack spacing={3}>
                                         {[
                                             { label: 'Projects Delivered', value: '50+' },
                                             { label: 'Client Satisfaction', value: '100%' },
@@ -324,8 +328,8 @@ const HirePage: React.FC = () => {
                                             { label: 'Technologies', value: '25+' },
                                         ].map((stat, idx) => (
                                             <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <Typography variant="body1" color="text.secondary">{stat.label}</Typography>
-                                                <Typography variant="h5" fontWeight={700} color="primary.main">{stat.value}</Typography>
+                                                <Typography variant="body1" color="text.secondary" fontWeight="550">{stat.label}</Typography>
+                                                <Typography variant="h5" fontWeight={800} color="primary.main">{stat.value}</Typography>
                                             </Box>
                                         ))}
                                     </Stack>
@@ -337,68 +341,67 @@ const HirePage: React.FC = () => {
             </Box>
 
             {/* Services Section */}
-            <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
-                <Box sx={{ textAlign: 'center', mb: 6 }}>
-                    <Typography variant="h3" fontWeight={800} gutterBottom sx={{ fontSize: { xs: '1.75rem', sm: '2.5rem' } }}>
-                        Our Services
+            <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }}>
+                <Box sx={{ textAlign: 'center', mb: 8 }}>
+                    <Typography variant="h3" fontWeight={900} gutterBottom sx={{ fontSize: { xs: '2rem', sm: '2.75rem' }, letterSpacing: '-0.02em' }}>
+                        Our Development Services
                     </Typography>
-                    <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto', fontSize: { xs: '0.95rem', sm: '1.25rem' } }}>
-                        Expert development services tailored to your business needs
+                    <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto', fontSize: { xs: '1rem', sm: '1.2rem' }, fontWeight: 400 }}>
+                        Expert development capabilities customized for your project goals.
                     </Typography>
                 </Box>
 
-                <Grid container spacing={3}>
+                <Grid container spacing={3.5}>
                     {services.map((service, index) => (
-                        <Grid item xs={6} sm={6} md={4} lg={3} key={service.title}>
+                        <Grid item xs={12} sm={6} md={3} key={service.title}>
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: index * 0.05 }}
-                                whileHover={{ y: -8 }}
+                                whileHover={{ y: -6 }}
                             >
                                 <Card
                                     sx={{
                                         height: '100%',
-                                        minHeight: { xs: 260, sm: 300 },
-                                        background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(30, 41, 59, 0.3) 100%)',
-                                        backdropFilter: 'blur(16px)',
-                                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                                        minHeight: 280,
+                                        background: 'linear-gradient(135deg, rgba(13, 14, 18, 0.5) 0%, rgba(13, 14, 18, 0.2) 100%)',
+                                        border: '1px solid rgba(255, 255, 255, 0.05)',
                                         transition: 'all 0.3s ease',
                                         '&:hover': {
-                                            borderColor: alpha(service.color, 0.4),
-                                            boxShadow: `0 16px 48px -12px ${alpha(service.color, 0.3)}`,
+                                            borderColor: alpha(service.color, 0.35),
+                                            boxShadow: `0 16px 40px -12px ${alpha(service.color, 0.2)}`,
                                         },
                                     }}
                                 >
-                                    <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
+                                    <CardContent sx={{ p: 3 }}>
                                         <Box
                                             sx={{
-                                                width: { xs: 48, sm: 60 },
-                                                height: { xs: 48, sm: 60 },
+                                                width: 52,
+                                                height: 52,
                                                 borderRadius: 2,
-                                                background: alpha(service.color, 0.15),
+                                                background: alpha(service.color, 0.1),
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 color: service.color,
-                                                mb: 2,
+                                                mb: 3,
                                                 '& svg': {
-                                                    fontSize: { xs: 28, sm: 36 },
+                                                    fontSize: 32,
                                                 },
                                             }}
                                         >
                                             {service.icon}
                                         </Box>
-                                        <Typography variant="h6" fontWeight={700} gutterBottom sx={{ fontSize: { xs: '0.9rem', sm: '1.1rem' } }}>
+                                        <Typography variant="h6" fontWeight="800" gutterBottom sx={{ fontSize: '1.1rem' }}>
                                             {service.title}
                                         </Typography>
                                         <Typography
                                             variant="body2"
                                             color="text.secondary"
                                             sx={{
-                                                mb: 2,
-                                                fontSize: { xs: '0.75rem', sm: '0.8rem' },
-                                                lineHeight: 1.5,
+                                                mb: 3,
+                                                fontSize: '0.825rem',
+                                                lineHeight: 1.6,
                                                 display: '-webkit-box',
                                                 WebkitLineClamp: 3,
                                                 WebkitBoxOrient: 'vertical',
@@ -407,17 +410,18 @@ const HirePage: React.FC = () => {
                                         >
                                             {service.desc}
                                         </Typography>
-                                        <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5}>
-                                            {service.features.slice(0, 3).map((feature) => (
+                                        <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.75}>
+                                            {service.features.slice(0, 2).map((feature) => (
                                                 <Chip
                                                     key={feature}
                                                     label={feature}
                                                     size="small"
                                                     sx={{
-                                                        bgcolor: alpha(service.color, 0.1),
+                                                        bgcolor: alpha(service.color, 0.08),
                                                         color: service.color,
-                                                        fontSize: { xs: '0.6rem', sm: '0.7rem' },
-                                                        height: { xs: 20, sm: 24 },
+                                                        fontSize: '0.68rem',
+                                                        fontWeight: 600,
+                                                        height: 22,
                                                     }}
                                                 />
                                             ))}
@@ -431,20 +435,20 @@ const HirePage: React.FC = () => {
             </Container>
 
             {/* Process Section */}
-            <Box sx={{ bgcolor: alpha(theme.palette.primary.main, 0.03), py: { xs: 6, md: 10 } }}>
+            <Box sx={{ bgcolor: '#08090d', py: { xs: 8, md: 12 }, borderTop: '1px solid rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                 <Container maxWidth="lg">
-                    <Box sx={{ textAlign: 'center', mb: 6 }}>
-                        <Typography variant="h3" fontWeight={800} gutterBottom sx={{ fontSize: { xs: '1.75rem', sm: '2.5rem' } }}>
+                    <Box sx={{ textAlign: 'center', mb: 8 }}>
+                        <Typography variant="h3" fontWeight={900} gutterBottom sx={{ fontSize: { xs: '2rem', sm: '2.75rem' }, letterSpacing: '-0.02em' }}>
                             How We Work
                         </Typography>
-                        <Typography variant="h6" color="text.secondary" sx={{ fontSize: { xs: '0.95rem', sm: '1.25rem' } }}>
-                            A streamlined process for delivering exceptional results
+                        <Typography variant="h6" color="text.secondary" sx={{ fontSize: { xs: '1rem', sm: '1.2rem' }, fontWeight: 400 }}>
+                            A streamlined, collaborative process for delivering exceptional results.
                         </Typography>
                     </Box>
 
-                    <Grid container spacing={3}>
+                    <Grid container spacing={4}>
                         {processSteps.map((step, index) => (
-                            <Grid item xs={6} md={3} key={step.step}>
+                            <Grid item xs={12} sm={6} md={3} key={step.step}>
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -453,30 +457,30 @@ const HirePage: React.FC = () => {
                                     <Card
                                         sx={{
                                             height: '100%',
-                                            minHeight: { xs: 180, sm: 220 },
+                                            minHeight: 200,
                                             textAlign: 'center',
-                                            p: { xs: 2, sm: 3 },
-                                            background: 'transparent',
+                                            p: 3.5,
+                                            background: 'rgba(13, 14, 18, 0.3)',
                                             border: '1px dashed',
-                                            borderColor: alpha(theme.palette.primary.main, 0.3),
+                                            borderColor: alpha(primaryColor, 0.2),
                                         }}
                                     >
                                         <Typography
-                                            variant="h3"
+                                            variant="h2"
                                             sx={{
-                                                color: alpha(theme.palette.primary.main, 0.2),
+                                                color: alpha(primaryColor, 0.2),
                                                 fontWeight: 900,
-                                                mb: 1,
-                                                fontSize: { xs: '2rem', sm: '3rem' },
+                                                mb: 1.5,
+                                                fontSize: '3rem',
                                             }}
                                         >
                                             {step.step}
                                         </Typography>
-                                        <Box sx={{ color: 'primary.main', mb: 1 }}>{step.icon}</Box>
-                                        <Typography variant="h6" fontWeight={700} gutterBottom sx={{ fontSize: { xs: '0.9rem', sm: '1.1rem' } }}>
+                                        <Box sx={{ color: 'primary.main', mb: 1.5, display: 'flex', justifyContent: 'center' }}>{step.icon}</Box>
+                                        <Typography variant="h6" fontWeight="800" gutterBottom sx={{ fontSize: '1.05rem' }}>
                                             {step.title}
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.825rem', lineHeight: 1.5 }}>
                                             {step.desc}
                                         </Typography>
                                     </Card>
@@ -488,34 +492,34 @@ const HirePage: React.FC = () => {
             </Box>
 
             {/* Contact Form Section */}
-            <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }} id="contact">
-                <Grid container spacing={4} alignItems="center">
+            <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }} id="contact">
+                <Grid container spacing={6} alignItems="center">
                     <Grid item xs={12} md={5}>
-                        <Typography variant="h3" fontWeight={800} gutterBottom sx={{ fontSize: { xs: '1.75rem', sm: '2.5rem' } }}>
+                        <Typography variant="h3" fontWeight={900} gutterBottom sx={{ fontSize: { xs: '2rem', sm: '2.75rem' }, letterSpacing: '-0.02em' }}>
                             Ready to Start?
                         </Typography>
-                        <Typography variant="h6" color="text.secondary" sx={{ mb: 3, fontSize: { xs: '0.95rem', sm: '1.1rem' } }}>
-                            Tell us about your project and get a free quote within 24 hours.
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 4, fontSize: { xs: '1rem', sm: '1.15rem' }, fontWeight: 400, lineHeight: 1.6 }}>
+                            Tell us about your project and receive a comprehensive proposal within 24 hours.
                         </Typography>
-                        <Stack spacing={2}>
-                            {[
-                                'No upfront payment required',
-                                'Free project consultation',
-                                'Transparent pricing',
-                                'Satisfaction guaranteed'
-                            ].map((item) => (
-                                <Box key={item} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <CheckCircle sx={{ color: 'success.main', fontSize: 20 }} />
-                                    <Typography variant="body1">{item}</Typography>
-                                </Box>
-                            ))}
+                        <Stack spacing={2.5}>
+                          {[
+                              'No upfront payment required',
+                              'Free project consultation & scoping call',
+                              'Transparent milestone-based pricing',
+                              'Clean code and satisfaction guaranteed'
+                          ].map((item) => (
+                              <Box key={item} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                  <CheckCircle sx={{ color: 'primary.main', fontSize: 20 }} />
+                                  <Typography variant="body1" fontWeight="600" color="#ffffff">{item}</Typography>
+                              </Box>
+                          ))}
                         </Stack>
 
-                        <Divider sx={{ my: 3 }} />
+                        <Divider sx={{ my: 4, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
 
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Email sx={{ color: 'primary.main' }} />
-                            <Typography variant="body1">contact@expectexception.com</Typography>
+                            <Typography variant="body1" fontWeight="500">contact@expectexception.com</Typography>
                         </Box>
                     </Grid>
 
@@ -523,15 +527,14 @@ const HirePage: React.FC = () => {
                         <Paper
                             elevation={0}
                             sx={{
-                                p: { xs: 3, sm: 4 },
-                                borderRadius: 3,
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.3) 0%, rgba(30, 41, 59, 0.1) 100%)',
+                                p: { xs: 3, md: 5 },
+                                borderRadius: 4,
+                                border: '1px solid rgba(255, 255, 255, 0.05)',
+                                background: 'linear-gradient(135deg, rgba(13, 14, 18, 0.6) 0%, rgba(13, 14, 18, 0.2) 100%)',
                             }}
                         >
                             <form onSubmit={handleSubmit}>
-                                <Grid container spacing={2}>
+                                <Grid container spacing={3}>
                                     <Grid item xs={12} sm={6}>
                                         <TextField
                                             required
@@ -574,7 +577,7 @@ const HirePage: React.FC = () => {
                                             fullWidth
                                             label="Budget Range"
                                             name="budget"
-                                            placeholder="e.g., $500-$1000"
+                                            placeholder="e.g., $1000-$5000"
                                             value={formData.budget}
                                             onChange={handleChange}
                                             variant="outlined"
@@ -586,7 +589,7 @@ const HirePage: React.FC = () => {
                                             required
                                             fullWidth
                                             multiline
-                                            rows={4}
+                                            rows={5}
                                             label="Project Details"
                                             name="message"
                                             placeholder="Describe your project requirements..."
@@ -605,10 +608,16 @@ const HirePage: React.FC = () => {
                                             disabled={isSubmitting}
                                             endIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <Send />}
                                             sx={{
-                                                py: 1.5,
-                                                borderRadius: 2,
-                                                fontWeight: 700,
-                                                fontSize: { xs: '0.9rem', sm: '1rem' },
+                                                py: 1.75,
+                                                borderRadius: '30px',
+                                                background: primaryColor,
+                                                color: '#000000',
+                                                fontWeight: 800,
+                                                fontSize: '0.95rem',
+                                                '&:hover': {
+                                                    background: theme.palette.primary.light,
+                                                    boxShadow: `0 8px 25px ${alpha(primaryColor, 0.4)}`,
+                                                }
                                             }}
                                         >
                                             {isSubmitting ? 'Sending...' : 'Send Project Inquiry'}

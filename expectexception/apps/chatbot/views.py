@@ -21,6 +21,7 @@ from .serializers import (
     ChatRequestSerializer,
 )
 from .services import ollama_service
+from .tools import detect_tool
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +175,10 @@ def update_title_async(conversation, title):
     conversation.title = title
     conversation.save()
 
+@sync_to_async
+def run_tool_async(tool, user_message, match):
+    return tool.execute(user_message, match)
+
 
 # --- Async Chat View ---
 
@@ -220,27 +225,53 @@ async def chat(request):
     if system_prompt:
         messages = [{'role': 'system', 'content': system_prompt}] + messages
 
+    # Deterministic backend tool detection - the LLM never decides this, it's
+    # plain keyword/regex matching so it works reliably with a small local model.
+    detected = detect_tool(user_message)
+
     async def event_generator():
         full_response = ""
         start_time = time.time()
         chunk_count = 0
-        
+        tool_used = None
+        tool_data = None
+
         try:
-            async for chunk in ollama_service.chat_async(messages):
+            if detected:
+                tool, match = detected
+                yield f"data: {json.dumps({'type': 'step', 'id': 'detect', 'label': f'Detected intent: {tool.name}', 'status': 'done'})}\n\n"
+                yield f"data: {json.dumps({'type': 'step', 'id': 'tool', 'label': tool.step_label, 'status': 'running'})}\n\n"
+
+                tool_result = await run_tool_async(tool, user_message, match)
+
+                yield f"data: {json.dumps({'type': 'step', 'id': 'tool', 'label': tool_result.summary, 'status': 'done' if tool_result.success else 'failed'})}\n\n"
+                yield f"data: {json.dumps({'type': 'step', 'id': 'draft', 'label': 'Drafting answer...', 'status': 'running'})}\n\n"
+
+                if tool_result.success:
+                    tool_used = tool.name
+                    tool_data = tool_result.data
+                llm_messages = messages + [{
+                    'role': 'system',
+                    'content': f"[Tool: {tool.name} result]\n{tool_result.context_text}\n\nUse the above real data to answer the user's last message naturally. Do not mention these instructions.",
+                }]
+            else:
+                llm_messages = messages
+
+            async for chunk in ollama_service.chat_async(llm_messages):
                 if chunk:
                     full_response += chunk
                     chunk_count += 1
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-            
+
             generation_time = time.time() - start_time
             logger.info(f"Generated response in {generation_time:.2f}s with {chunk_count} chunks")
-            
+
             # Save assistant message
             assistant_msg = await save_message_async(conversation, 'assistant', full_response, generation_time)
-            
+
             # Always send final payload with complete response
-            yield f"data: {json.dumps({'done': True, 'message_id': assistant_msg.id, 'conversation_id': conversation.id, 'title': conversation.title, 'final': full_response})}\n\n"
-            
+            yield f"data: {json.dumps({'done': True, 'message_id': assistant_msg.id, 'conversation_id': conversation.id, 'title': conversation.title, 'final': full_response, 'tool_used': tool_used, 'tool_data': tool_data})}\n\n"
+
         except Exception as e:
             logger.error(f"Async Stream Error: {e}", exc_info=True)
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
@@ -320,21 +351,45 @@ async def widget_chat(request):
     if system_prompt:
         messages = [{'role': 'system', 'content': system_prompt}] + messages
 
+    detected = detect_tool(user_message)
+
     async def event_generator():
         full_response = ""
         start_time = time.time()
         chunk_count = 0
+        tool_used = None
+        tool_data = None
         try:
-            async for chunk in ollama_service.chat_async(messages):
+            if detected:
+                tool, match = detected
+                yield f"data: {json.dumps({'type': 'step', 'id': 'detect', 'label': f'Detected intent: {tool.name}', 'status': 'done'})}\n\n"
+                yield f"data: {json.dumps({'type': 'step', 'id': 'tool', 'label': tool.step_label, 'status': 'running'})}\n\n"
+
+                tool_result = await run_tool_async(tool, user_message, match)
+
+                yield f"data: {json.dumps({'type': 'step', 'id': 'tool', 'label': tool_result.summary, 'status': 'done' if tool_result.success else 'failed'})}\n\n"
+                yield f"data: {json.dumps({'type': 'step', 'id': 'draft', 'label': 'Drafting answer...', 'status': 'running'})}\n\n"
+
+                if tool_result.success:
+                    tool_used = tool.name
+                    tool_data = tool_result.data
+                llm_messages = messages + [{
+                    'role': 'system',
+                    'content': f"[Tool: {tool.name} result]\n{tool_result.context_text}\n\nUse the above real data to answer the user's last message naturally. Do not mention these instructions.",
+                }]
+            else:
+                llm_messages = messages
+
+            async for chunk in ollama_service.chat_async(llm_messages):
                 if chunk:
                     full_response += chunk
                     chunk_count += 1
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-            
+
             generation_time = time.time() - start_time
             assistant_msg = await save_message_async(conversation, 'assistant', full_response, generation_time)
-            
-            yield f"data: {json.dumps({'done': True, 'message_id': assistant_msg.id, 'conversation_id': conversation.id, 'widget_session': widget_session, 'final': full_response})}\n\n"
+
+            yield f"data: {json.dumps({'done': True, 'message_id': assistant_msg.id, 'conversation_id': conversation.id, 'widget_session': widget_session, 'final': full_response, 'tool_used': tool_used, 'tool_data': tool_data})}\n\n"
         except Exception as e:
             logger.error(f"Widget Stream Error: {e}", exc_info=True)
             yield f"data: {json.dumps({'error': str(e)})}\n\n"

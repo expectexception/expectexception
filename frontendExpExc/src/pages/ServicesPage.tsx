@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Grid,
@@ -16,6 +16,10 @@ import {
   IconButton,
   Tooltip,
   alpha,
+  useTheme,
+  Slider,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import {
   Search,
@@ -54,19 +58,102 @@ import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { staticServices, staticStats } from '../data/StaticData';
 
+// --- Reusable Border Beam Effect ---
+interface BorderBeamProps {
+  duration?: number;
+  size?: number;
+  activeColor?: string;
+}
+
+const BorderBeam: React.FC<BorderBeamProps> = ({ duration = 8, size = 150, activeColor }) => {
+  const theme = useTheme();
+  const baseColor = activeColor || theme.palette.primary.main;
+  return (
+    <Box
+      className="border-beam"
+      sx={{
+        position: 'absolute',
+        inset: 0,
+        borderRadius: 'inherit',
+        pointerEvents: 'none',
+        border: '1px solid transparent',
+        background: `linear-gradient(90deg, transparent, ${baseColor}, transparent) border-box`,
+        mask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
+        maskComposite: 'exclude',
+        WebkitMaskComposite: 'xor',
+        backgroundSize: `${size}px 100%`,
+        backgroundRepeat: 'no-repeat',
+        animation: `border-beam-move ${duration}s linear infinite`,
+        opacity: 0.3,
+        '@keyframes border-beam-move': {
+          '0%': { backgroundPosition: '0% 0' },
+          '100%': { backgroundPosition: '200% 0' }
+        }
+      }}
+    />
+  );
+};
+
 const ServicesPage: React.FC = () => {
+  const theme = useTheme();
+  const primaryColor = theme.palette.primary.main;
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [services, setServices] = useState<any[]>(() => {
     return [...staticServices].sort((a, b) => b.popularity - a.popularity);
   });
   const [toolAccess, setToolAccess] = useState<Record<string, boolean>>({});
-
   const [stats, setStats] = useState(staticStats);
 
-  React.useEffect(() => {
+  // --- Cost Estimator State ---
+  const [pages, setPages] = useState(3);
+  const [complexity, setComplexity] = useState('standard');
+  const [includeAi, setIncludeAi] = useState(false);
+  const [timeline, setTimeline] = useState('standard');
+  const [estimatedCost, setEstimatedCost] = useState(0);
+  const [estimatedDays, setEstimatedDays] = useState(0);
+
+  useEffect(() => {
+    let basePrice = 500;
+    let baseDays = 5;
+
+    // Pages multiplier
+    basePrice += pages * 150;
+    baseDays += pages * 1.5;
+
+    // Complexity
+    if (complexity === 'simple') {
+      basePrice += 0;
+      baseDays += 0;
+    } else if (complexity === 'standard') {
+      basePrice += 400;
+      baseDays += 4;
+    } else if (complexity === 'advanced') {
+      basePrice += 1200;
+      baseDays += 10;
+    }
+
+    // AI Feature
+    if (includeAi) {
+      basePrice += 800;
+      baseDays += 5;
+    }
+
+    // Timeline factor
+    if (timeline === 'relaxed') {
+      basePrice *= 0.9;
+      baseDays *= 1.3;
+    } else if (timeline === 'rush') {
+      basePrice *= 1.35;
+      baseDays *= 0.6;
+    }
+
+    setEstimatedCost(Math.round(basePrice));
+    setEstimatedDays(Math.round(baseDays));
+  }, [pages, complexity, includeAi, timeline]);
+
+  useEffect(() => {
     const fetchServicesAndStats = async () => {
-      // Skip API call during static generation to prevent hydration mismatch
       if (navigator.userAgent === 'ReactSnap') {
         return;
       }
@@ -76,10 +163,6 @@ const ServicesPage: React.FC = () => {
           apiClient.get(endpoints.services.downloadStats)
         ]);
 
-        // "Hardcoded on frontend side only":
-        // We use the API only to check which services are Active (exist in DB).
-        // We trust staticServices (tools.json) for Order, Popularity, Title, etc.
-        // Normalize backend paths (strip trailing slashes and any '/api' prefix)
         const normalizePath = (p: string) => {
           if (!p) return p;
           const withoutApi = p.startsWith('/api') ? p.replace(/^\/api/, '') : p;
@@ -89,7 +172,6 @@ const ServicesPage: React.FC = () => {
         const backendList: any[] = (servicesRes.data?.results ?? servicesRes.data) || [];
         const activePaths = new Set(backendList.map((s: any) => normalizePath(s.path)));
 
-        // If intersection is empty (e.g., mismatched paths or empty DB), fall back to showing all static services
         let finalServices = [...staticServices]
           .filter(s => activePaths.size === 0 || activePaths.has(normalizePath(s.path)))
           .sort((a, b) => b.popularity - a.popularity);
@@ -101,13 +183,11 @@ const ServicesPage: React.FC = () => {
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
-        // On error, keep the static services visible
         setServices([...staticServices].sort((a, b) => b.popularity - a.popularity));
       }
     };
     fetchServicesAndStats();
 
-    // Fetch tool access config
     const fetchToolAccess = async () => {
       try {
         const response = await apiClient.get(endpoints.services.toolAccess);
@@ -121,17 +201,12 @@ const ServicesPage: React.FC = () => {
     fetchToolAccess();
   }, []);
 
-  // ... (rest of the component)
-
   const statsDisplay = [
     { label: 'Total Tools', value: stats.total_tools, icon: <Code /> },
     { label: 'Active Users', value: stats.active_users, icon: <TrendingUp /> },
     { label: 'Success Rate', value: stats.success_rate, icon: <Star /> },
     { label: 'Uptime', value: stats.uptime, icon: <LinkIcon /> },
   ];
-
-  // Replace the render part near the end
-
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -163,10 +238,6 @@ const ServicesPage: React.FC = () => {
     }
   };
 
-
-
-
-
   const categories = [
     { label: 'All Tools', value: 'all', count: services.length },
     { label: 'Download', value: 'download', count: services.filter(s => s.category === 'download').length },
@@ -184,7 +255,7 @@ const ServicesPage: React.FC = () => {
   });
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 10 }}>
       <Seo
         title="All Tools & Services - Free Developer Utilities"
         description="Explore our curated collection of high-performance developer tools: YouTube Downloader, AI Image Detector, PDF Merger, URL Converter, and more. All free and ready to use."
@@ -213,18 +284,64 @@ const ServicesPage: React.FC = () => {
         ]}
       />
 
-      {/* Header */}
-      <Box sx={{ mb: 6 }}>
-        <Typography variant="h3" gutterBottom sx={{ fontWeight: 800 }}>
-          All Services
-        </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-          Choose from our collection of powerful tools designed to boost your productivity
-        </Typography>
+      {/* Header Banner */}
+      <Box sx={{ 
+        position: 'relative', 
+        mb: 8, 
+        p: { xs: 4, md: 6 }, 
+        borderRadius: '24px', 
+        background: 'linear-gradient(135deg, rgba(13, 14, 18, 0.6) 0%, rgba(13, 14, 18, 0.15) 100%)',
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        overflow: 'hidden',
+        boxShadow: '0 20px 40px -15px rgba(0,0,0,0.7)'
+      }}>
+        <BorderBeam activeColor={primaryColor} />
+        <Box sx={{ position: 'absolute', inset: 0, opacity: 0.05, backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)', backgroundSize: '20px 20px', pointerEvents: 'none' }} />
+        
+        <Grid container spacing={4} alignItems="center">
+          <Grid item xs={12} md={8}>
+            <Typography variant="h2" component="h1" gutterBottom sx={{
+              fontWeight: 900,
+              background: `linear-gradient(135deg, #ffffff 30%, ${primaryColor} 100%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '-0.03em',
+              fontSize: { xs: '2.25rem', sm: '3.25rem', md: '3.75rem' },
+              lineHeight: 1.15
+            }}>
+              Agent Services & Sandbox
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 400, maxWidth: '650px', mt: 1.5 }}>
+              Explore our collection of automated AI agent pipelines and client-side developer utilities designed to accelerate your development workflow.
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
+            <svg width="100%" height="140" viewBox="0 0 200 140" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
+              <motion.g
+                animate={{ y: [0, -8, 0] }}
+                transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+              >
+                <rect x="50" y="20" width="100" height="100" rx="16" fill="rgba(13, 14, 18, 0.6)" stroke={primaryColor} strokeWidth="2" style={{ filter: 'drop-shadow(0 0 12px ' + alpha(primaryColor, 0.3) + ')' }} />
+                
+                <motion.g
+                  style={{ originX: '100px', originY: '70px' }}
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 12, ease: 'linear' }}
+                >
+                  <circle cx="100" cy="70" r="16" stroke="#00e5ff" strokeWidth="2" strokeDasharray="6 4" />
+                </motion.g>
+                <circle cx="100" cy="70" r="4" fill="#ffffff" />
+                
+                <motion.circle cx="30" cy="70" r="6" fill="#a855f7" animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} />
+                <motion.circle cx="170" cy="70" r="6" fill="#f97316" animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, delay: 0.5 }} />
+              </motion.g>
+            </svg>
+          </Grid>
+        </Grid>
       </Box>
 
       {/* Filters and Search */}
-      <Card sx={{ mb: 4, p: 3 }}>
+      <Card sx={{ mb: 6, p: 3, background: 'rgba(13, 14, 18, 0.4)', borderColor: 'rgba(255, 255, 255, 0.05)' }}>
         <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} md={6}>
             <TextField
@@ -235,15 +352,15 @@ const ServicesPage: React.FC = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search />
+                    <Search sx={{ color: 'text.secondary' }} />
                   </InputAdornment>
                 ),
               }}
             />
           </Grid>
           <Grid item xs={12} md={6}>
-            <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end">
-              <Box sx={{ display: 'flex', alignItems: 'center', overflowX: { xs: 'auto', md: 'visible' }, px: { xs: 0.5, md: 0 } }}>
+            <Stack direction="row" spacing={2} alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', overflowX: 'auto', py: 0.5, width: '100%' }}>
                 <ToggleButtonGroup
                   value={filter}
                   exclusive
@@ -252,19 +369,54 @@ const ServicesPage: React.FC = () => {
                   sx={{
                     display: 'inline-flex',
                     gap: 1,
+                    border: 'none',
+                    '& .MuiToggleButtonGroup-grouped': {
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '8px !important',
+                      mx: 0.5,
+                    }
                   }}
                 >
                   {categories.map((category) => (
                     <ToggleButton
                       key={category.value}
                       value={category.value}
-                      sx={{ whiteSpace: 'nowrap', px: 1.25, borderRadius: 2, textTransform: 'none' }}
+                      sx={{ 
+                        whiteSpace: 'nowrap', 
+                        px: 2, 
+                        py: 0.75,
+                        textTransform: 'none',
+                        color: '#94a3b8',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        '&.Mui-selected': {
+                          color: '#000000',
+                          background: primaryColor,
+                          borderColor: primaryColor,
+                          '&:hover': {
+                            background: alpha(primaryColor, 0.9),
+                          },
+                          '& .MuiChip-root': {
+                            bgcolor: '#000000',
+                            color: primaryColor,
+                          }
+                        },
+                        '&:hover': {
+                          bgcolor: 'rgba(255, 255, 255, 0.05)',
+                        }
+                      }}
                     >
                       {category.label}
                       <Chip
                         label={category.count}
                         size="small"
-                        sx={{ ml: 1, height: 20, minWidth: 26 }}
+                        sx={{ 
+                          ml: 1.5, 
+                          height: 20, 
+                          minWidth: 24,
+                          bgcolor: 'rgba(255, 255, 255, 0.08)',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                        }}
                       />
                     </ToggleButton>
                   ))}
@@ -272,7 +424,7 @@ const ServicesPage: React.FC = () => {
               </Box>
 
               <Tooltip title="Sort by">
-                <IconButton>
+                <IconButton sx={{ color: '#94a3b8', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '8px' }}>
                   <Sort />
                 </IconButton>
               </Tooltip>
@@ -282,114 +434,158 @@ const ServicesPage: React.FC = () => {
       </Card>
 
       {/* Services Grid */}
-      <AnimatePresence>
-        <Grid container spacing={3}>
-          {filteredServices.map((service, index) => (
-            <Grid item xs={12} sm={6} md={4} key={service.id}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                layout
-              >
-                <Card sx={{ height: '100%', minHeight: '340px' }}>
-                  <CardContent>
-                    {/* Service Header */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box
-                        sx={{
-                          width: 56,
-                          height: 56,
-                          borderRadius: 2,
-                          bgcolor: (theme) => alpha(theme.palette[service.color as keyof typeof service.color]?.main || theme.palette.primary.main, 0.1),
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: (theme) => theme.palette[service.color as keyof typeof service.color]?.main,
-                        }}
-                      >
-                        {getIcon(service.icon)}
-                      </Box>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Star sx={{ color: 'warning.main', fontSize: 16 }} />
-                        <Typography variant="body2" fontWeight={600}>
-                          {service.popularity}%
-                        </Typography>
-                      </Stack>
-                    </Box>
-
-                    {/* Service Content */}
-                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                      {service.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        mb: 3,
-                        height: '48px', // Fixed height
-                        display: '-webkit-box',
-                        overflow: 'hidden',
-                        WebkitBoxOrient: 'vertical',
-                        WebkitLineClamp: 2,
-                      }}
-                    >
-                      {service.description}
-                    </Typography>
-
-                    {/* Tags */}
-                    <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
-                      {service.tags.map((tag) => (
-                        <Chip
-                          key={tag}
-                          label={tag}
-                          size="small"
-                          variant="outlined"
-                        />
-                      ))}
-                    </Stack>
-
-                    {/* Actions */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Button
-                        component={Link}
-                        to={service.path}
-                        variant="contained"
-                        size="small"
-                      >
-                        Open Tool
-                      </Button>
-                      {toolAccess[service.path] ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Lock sx={{ fontSize: 14, color: 'warning.main' }} />
-                          <Typography variant="caption" color="warning.main" fontWeight={600}>
-                            Login Required
-                          </Typography>
+      <Grid container spacing={4}>
+        <Grid item xs={12}>
+          <AnimatePresence>
+            <Grid container spacing={3.5}>
+              {filteredServices.map((service, index) => (
+                <Grid item xs={12} sm={6} key={service.id}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3, delay: index * 0.04 }}
+                    whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                    layout
+                  >
+                    <Card sx={{
+                      height: '100%',
+                      minHeight: '340px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      background: 'rgba(13, 14, 18, 0.3)',
+                      borderColor: 'rgba(255, 255, 255, 0.05)',
+                      transition: 'border-color 0.3s ease',
+                      '&:hover': {
+                        borderColor: alpha(primaryColor, 0.25),
+                      }
+                    }}>
+                      <BorderBeam />
+                      <CardContent sx={{ p: 3.5, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                        {/* Service Header */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3.5 }}>
+                          <Box
+                            sx={{
+                              width: 52,
+                              height: 52,
+                              borderRadius: '12px',
+                              bgcolor: alpha(theme.palette[service.color as 'primary' | 'secondary']?.main || primaryColor, 0.1),
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: theme.palette[service.color as 'primary' | 'secondary']?.main || primaryColor,
+                            }}
+                          >
+                            <motion.div
+                              whileHover={{ scale: 1.2, rotate: 10 }}
+                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
+                              {getIcon(service.icon)}
+                            </motion.div>
+                          </Box>
+                          <Stack direction="row" alignItems="center" spacing={0.75}>
+                            <Star sx={{ color: 'warning.main', fontSize: 16 }} />
+                            <Typography variant="body2" fontWeight={700}>
+                              {service.popularity}%
+                            </Typography>
+                          </Stack>
                         </Box>
-                      ) : (
-                        <Typography variant="caption" color="text.secondary">
-                          Free to use
+
+                        {/* Service Content */}
+                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
+                          {service.title}
                         </Typography>
-                      )}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </motion.div>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            mb: 3.5,
+                            lineHeight: 1.6,
+                            height: '48px',
+                            display: '-webkit-box',
+                            overflow: 'hidden',
+                            WebkitBoxOrient: 'vertical',
+                            WebkitLineClamp: 2,
+                            flexGrow: 1,
+                          }}
+                        >
+                          {service.description}
+                        </Typography>
+
+                        {/* Tags */}
+                        <Stack direction="row" spacing={1} sx={{ mb: 4, flexWrap: 'wrap', gap: 1 }}>
+                          {service.tags.map((tag: string) => (
+                            <Chip
+                              key={tag}
+                              label={tag}
+                              size="small"
+                              variant="outlined"
+                              sx={{ 
+                                borderColor: 'rgba(255, 255, 255, 0.08)', 
+                                color: 'text.secondary',
+                                fontSize: '0.7rem',
+                                fontWeight: 500
+                              }}
+                            />
+                          ))}
+                        </Stack>
+
+                        {/* Actions */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
+                          <Button
+                            component={Link}
+                            to={service.path}
+                            variant="contained"
+                            size="small"
+                            sx={{
+                              borderRadius: '20px',
+                              px: 3,
+                              py: 0.75,
+                              background: primaryColor,
+                              color: '#000000',
+                              fontWeight: 750,
+                              '&:hover': {
+                                background: alpha(primaryColor, 0.9),
+                                boxShadow: `0 4px 15px ${alpha(primaryColor, 0.3)}`,
+                              }
+                            }}
+                          >
+                            Open Tool
+                          </Button>
+                          {toolAccess[service.path] ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Lock sx={{ fontSize: 14, color: 'warning.main' }} />
+                              <Typography variant="caption" color="warning.main" fontWeight={600}>
+                                Login Required
+                              </Typography>
+                            </Box>
+                          ) : (
+                            <Typography variant="caption" color="text.secondary" fontWeight="500">
+                              Free to use
+                            </Typography>
+                          )}
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </Grid>
+              ))}
             </Grid>
-          ))}
+          </AnimatePresence>
         </Grid>
-      </AnimatePresence>
+      </Grid>
 
       {/* No Results */}
       {filteredServices.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Box sx={{ textAlign: 'center', py: 10 }}>
           <Search sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom fontWeight="700">
             No tools found
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Try adjusting your search or filter criteria
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+            Try adjusting your search query or category filters.
           </Typography>
           <Button
             variant="outlined"
@@ -397,6 +593,7 @@ const ServicesPage: React.FC = () => {
               setSearch('');
               setFilter('all');
             }}
+            sx={{ borderRadius: '20px', px: 4 }}
           >
             Clear Filters
           </Button>
@@ -404,14 +601,22 @@ const ServicesPage: React.FC = () => {
       )}
 
       {/* Stats */}
-      <Grid container spacing={3} sx={{ mt: 8 }}>
+      <Grid container spacing={3.5} sx={{ mt: 10 }}>
         {statsDisplay.map((stat, index) => (
           <Grid item xs={6} md={3} key={index}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
+            <Card sx={{ 
+              border: '1px solid rgba(255, 255, 255, 0.04)', 
+              background: 'linear-gradient(135deg, rgba(13, 14, 18, 0.4) 0%, rgba(13, 14, 18, 0.1) 100%)',
+              transition: 'all 0.3s',
+              '&:hover': {
+                borderColor: alpha(primaryColor, 0.2),
+                transform: 'translateY(-2px)'
+              }
+            }}>
+              <CardContent sx={{ textAlign: 'center', p: 4 }}>
                 <Box
                   sx={{
-                    color: 'primary.main',
+                    color: primaryColor,
                     mb: 2,
                     display: 'flex',
                     justifyContent: 'center',
@@ -419,10 +624,10 @@ const ServicesPage: React.FC = () => {
                 >
                   {stat.icon}
                 </Box>
-                <Typography variant="h4" fontWeight={800} gutterBottom>
+                <Typography variant="h4" fontWeight={900} gutterBottom sx={{ letterSpacing: '-0.02em' }}>
                   {stat.value}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" fontWeight="550">
                   {stat.label}
                 </Typography>
               </CardContent>

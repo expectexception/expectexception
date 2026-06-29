@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
   Container,
   Card,
@@ -33,6 +34,7 @@ import {
   Image as ImageIcon,
 } from '@mui/icons-material';
 import Seo from '../components/seo/Seo';
+import ServicePageHero from '../components/services/ServicePageHero';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 
@@ -168,34 +170,33 @@ const ImageToTextPage: React.FC = () => {
         description="Extract text from images using advanced OCR technology. Supports multiple languages and image formats."
         image="/images/ocr.jpg"
       />
-      <Container maxWidth="lg" sx={{ py: 6 }}>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <TextFields sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-              Image to Text (OCR)
-            </Typography>
-            <Typography variant="h6" color="textSecondary" sx={{ mb: 3 }}>
-              Extract text from images using advanced OCR technology
-            </Typography>
-            <Typography variant="body1" color="textSecondary" sx={{ maxWidth: 600, mx: 'auto' }}>
-              Convert images, scanned documents, and screenshots to editable text.
-              Supports multiple languages and preserves formatting.
-            </Typography>
-          </Box>
-        </motion.div>
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <ServicePageHero
+          icon={TextFields}
+          title="Image to Text (OCR)"
+          subtitle="Extract text from images using advanced OCR technology. Convert images, scanned documents, and screenshots to editable text. Supports multiple languages and preserves formatting."
+        />
 
-        <Grid container spacing={4} sx={{ mb: 6 }}>
+        <Grid container spacing={4} sx={{ mb: 8 }}>
           {/* Upload & Settings */}
           <Grid item xs={12} md={6}>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
+              style={{ height: '100%' }}
             >
-              <Card elevation={3} sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
+              <Card sx={{
+                height: '100%',
+                p: 3,
+                background: 'rgba(13, 14, 18, 0.4)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                borderRadius: '20px',
+                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)'
+              }}>
+                <CardContent sx={{ p: 1 }}>
+                  <Typography variant="h5" gutterBottom sx={{ fontWeight: '800', mb: 3 }}>
                     Upload Image
                   </Typography>
 
@@ -203,42 +204,44 @@ const ImageToTextPage: React.FC = () => {
                   <Box
                     onDragOver={(e) => {
                       e.preventDefault();
-                      e.currentTarget.style.borderColor = '#1976d2';
-                      e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.05)';
+                      e.currentTarget.style.borderColor = '#3dfc55';
+                      e.currentTarget.style.backgroundColor = 'rgba(61, 252, 85, 0.05)';
                     }}
                     onDragLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#ddd';
-                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.01)';
                     }}
                     onDrop={(e) => {
                       e.preventDefault();
-                      e.currentTarget.style.borderColor = '#ddd';
-                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.01)';
                       const droppedFile = e.dataTransfer.files?.[0];
                       if (droppedFile) {
                         handleFileSelect({ target: { files: e.dataTransfer.files } } as any);
                       }
                     }}
                     sx={{
-                      border: '2px dashed #ddd',
-                      borderRadius: 2,
-                      p: 4,
+                      border: '2px dashed rgba(255, 255, 255, 0.1)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                      borderRadius: '16px',
+                      p: 5,
                       textAlign: 'center',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
                       '&:hover': {
-                        borderColor: '#1976d2',
-                        backgroundColor: 'rgba(25, 118, 210, 0.02)',
+                        borderColor: '#3dfc55',
+                        backgroundColor: 'rgba(61, 252, 85, 0.02)',
+                        boxShadow: '0 0 20px rgba(61, 252, 85, 0.05)'
                       },
-                      mb: 3,
+                      mb: 4,
                     }}
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <CloudUpload sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-                    <Typography variant="h6" gutterBottom>
+                    <CloudUpload sx={{ fontSize: 54, color: 'primary.main', mb: 2 }} />
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
                       Drop image here or click to select
                     </Typography>
-                    <Typography variant="body2" color="textSecondary">
+                    <Typography variant="body2" color="text.secondary">
                       Supported: JPG, PNG, GIF, BMP, TIFF
                     </Typography>
                   </Box>
@@ -253,14 +256,20 @@ const ImageToTextPage: React.FC = () => {
 
                   {/* Selected File Display */}
                   {file && (
-                    <Box sx={{ mb: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
-                      <Box sx={{ display: 'flex', gap: 2 }}>
-                        <ImageIcon sx={{ color: 'primary.main', mt: 1 }} />
+                    <Box sx={{
+                      mb: 4,
+                      p: 2.5,
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      borderRadius: '12px'
+                    }}>
+                      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <ImageIcon sx={{ color: 'primary.main' }} />
                         <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="body2" sx={{ fontWeight: '700' }}>
                             {file.name}
                           </Typography>
-                          <Typography variant="caption" color="textSecondary">
+                          <Typography variant="caption" color="text.secondary">
                             Size: {(file.size / 1024).toFixed(2)}KB
                           </Typography>
                         </Box>
@@ -269,7 +278,7 @@ const ImageToTextPage: React.FC = () => {
                   )}
 
                   {/* Language Selection */}
-                  <FormControl fullWidth sx={{ mb: 3 }}>
+                  <FormControl fullWidth sx={{ mb: 4 }}>
                     <InputLabel>Language</InputLabel>
                     <Select
                       value={selectedLanguage}
@@ -286,20 +295,20 @@ const ImageToTextPage: React.FC = () => {
 
                   {/* Error Alert */}
                   {error && (
-                    <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
+                    <Alert severity="error" variant="filled" sx={{ mb: 4, borderRadius: '12px' }} onClose={() => setError('')}>
                       {error}
                     </Alert>
                   )}
 
                   {/* Success Alert */}
                   {success && (
-                    <Alert severity="success" sx={{ mb: 3 }}>
+                    <Alert severity="success" variant="filled" sx={{ mb: 4, borderRadius: '12px', bgcolor: 'rgba(61, 252, 85, 0.15)', color: '#3dfc55', border: '1px solid rgba(61, 252, 85, 0.25)' }}>
                       {success}
                     </Alert>
                   )}
 
                   {/* Action Buttons */}
-                  <Stack direction="row" spacing={2}>
+                  <Stack direction="row" spacing={2.5}>
                     <Button
                       variant="contained"
                       color="primary"
@@ -308,11 +317,16 @@ const ImageToTextPage: React.FC = () => {
                       disabled={!file || loading}
                       startIcon={
                         loading ? (
-                          <CircularProgress size={20} />
+                          <CircularProgress size={18} color="inherit" />
                         ) : (
                           <TextFields />
                         )
                       }
+                      sx={{
+                        py: 1.5,
+                        borderRadius: '10px',
+                        fontWeight: 700
+                      }}
                     >
                       {loading ? 'Extracting...' : 'Extract Text'}
                     </Button>
@@ -323,6 +337,10 @@ const ImageToTextPage: React.FC = () => {
                         onClick={handleReset}
                         disabled={loading}
                         startIcon={<Close />}
+                        sx={{
+                          py: 1.5,
+                          borderRadius: '10px'
+                        }}
                       >
                         Reset
                       </Button>
@@ -339,41 +357,58 @@ const ImageToTextPage: React.FC = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
+              style={{ height: '100%' }}
             >
-              <Card elevation={3} sx={{ height: '100%' }}>
-                <CardContent>
+              <Card sx={{
+                height: '100%',
+                p: 3,
+                background: 'rgba(13, 14, 18, 0.4)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                borderRadius: '20px',
+                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)'
+              }}>
+                <CardContent sx={{ p: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                    <Typography variant="h5" sx={{ fontWeight: '800' }}>
                       Extracted Text
                     </Typography>
                     {ocrResult?.text && (
                       <Box sx={{ display: 'flex', gap: 1 }}>
                         <Tooltip title={copiedToClipboard ? 'Copied!' : 'Copy to clipboard'}>
-                          <IconButton size="small" onClick={handleCopyToClipboard}>
+                          <IconButton
+                            size="small"
+                            onClick={handleCopyToClipboard}
+                            sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', p: 1 }}
+                          >
                             <ContentCopy fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Download as text file">
-                          <IconButton size="small" onClick={handleDownloadAsText}>
+                          <IconButton
+                            size="small"
+                            onClick={handleDownloadAsText}
+                            sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', p: 1 }}
+                          >
                             <Download fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       </Box>
                     )}
                   </Box>
-                  <Divider sx={{ mb: 2 }} />
+                  <Divider sx={{ mb: 3 }} />
 
                   {!ocrResult ? (
-                    <Box sx={{ textAlign: 'center', py: 4 }}>
-                      <Info sx={{ fontSize: 48, color: 'textSecondary', mb: 2 }} />
-                      <Typography color="textSecondary">
+                    <Box sx={{ textAlign: 'center', py: 8 }}>
+                      <Info sx={{ fontSize: 50, color: 'text.secondary', mb: 2 }} />
+                      <Typography color="text.secondary" variant="body1">
                         Upload an image to extract text
                       </Typography>
                     </Box>
                   ) : (
                     <Box>
                       {ocrResult.error && (
-                        <Alert severity="error" sx={{ mb: 2 }}>
+                        <Alert severity="error" variant="filled" sx={{ mb: 3, borderRadius: '12px' }}>
                           {ocrResult.error}
                         </Alert>
                       )}
@@ -386,16 +421,18 @@ const ImageToTextPage: React.FC = () => {
                             style={{
                               width: '100%',
                               minHeight: 300,
-                              padding: '12px',
+                              padding: '16px',
                               fontFamily: 'monospace',
                               fontSize: '14px',
-                              borderRadius: '4px',
-                              border: '1px solid #e0e0e0',
+                              borderRadius: '12px',
+                              border: '1px solid rgba(255, 255, 255, 0.08)',
+                              backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                              color: '#ffffff',
                               boxSizing: 'border-box',
                             }}
                           />
                           {ocrResult.confidence && (
-                            <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'textSecondary' }}>
+                            <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'text.secondary' }}>
                               Confidence: {(ocrResult.confidence * 100).toFixed(1)}%
                             </Typography>
                           )}
@@ -410,11 +447,11 @@ const ImageToTextPage: React.FC = () => {
         </Grid>
 
         {/* Features */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: '800', mb: 4.5, textAlign: 'center' }}>
             Features
           </Typography>
-          <Grid container spacing={3}>
+          <Grid container spacing={3.5}>
             {[
               {
                 title: 'Multi-Language Support',
@@ -434,11 +471,24 @@ const ImageToTextPage: React.FC = () => {
               },
             ].map((feature, index) => (
               <Grid item xs={12} sm={6} md={3} key={index}>
-                <Paper sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                <Paper sx={{
+                  p: 3.5,
+                  textAlign: 'center',
+                  background: 'rgba(13, 14, 18, 0.4)',
+                  backdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  borderRadius: '16px',
+                  height: '100%',
+                  transition: 'all 0.3s',
+                  '&:hover': {
+                    borderColor: 'rgba(61, 252, 85, 0.25)',
+                    transform: 'translateY(-3px)'
+                  }
+                }}>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: '750', fontSize: '1.1rem' }}>
                     {feature.title}
                   </Typography>
-                  <Typography variant="body2" color="textSecondary">
+                  <Typography variant="body2" color="text.secondary">
                     {feature.description}
                   </Typography>
                 </Paper>
@@ -451,5 +501,4 @@ const ImageToTextPage: React.FC = () => {
   );
 };
 
-import { motion } from 'framer-motion';
 export default ImageToTextPage;

@@ -5,6 +5,28 @@ from datetime import datetime
 from django.conf import settings
 from .gpu_utils import get_gpu_info
 
+
+def get_health_snapshot() -> dict:
+    """Lightweight real-time health summary for the chatbot's health_check tool."""
+    snapshot = {'status': 'ok', 'database': 'unknown', 'cpu_percent': None, 'memory_percent': None, 'gpu': None}
+
+    try:
+        from django.db import connections
+        conn = connections['default']
+        conn.ensure_connection()
+        snapshot['database'] = 'ok'
+    except Exception:
+        snapshot['database'] = 'error'
+        snapshot['status'] = 'degraded'
+
+    snapshot['cpu_percent'] = psutil.cpu_percent(interval=None)
+    snapshot['memory_percent'] = psutil.virtual_memory().percent
+
+    gpu_stats = get_gpu_info()
+    snapshot['gpu'] = gpu_stats.get('device') if gpu_stats and gpu_stats.get('available') else None
+
+    return snapshot
+
 def get_system_metrics():
     """
     Gather comprehensive system metrics for real-time dashboard.

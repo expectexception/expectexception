@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
+import ServicePageHero from '../components/services/ServicePageHero';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 
@@ -203,29 +204,41 @@ const SecretSharerPage: React.FC = () => {
 
                 <Box textAlign="center" mb={6}>
                     <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-                        <Lock sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
-                        <Typography variant="h3" fontWeight={800} gutterBottom>Secure {type === 'file' ? 'File' : 'Message'}</Typography>
+                        <Lock sx={{ fontSize: 80, color: 'primary.main', mb: 2, filter: 'drop-shadow(0 0 15px rgba(61, 252, 85, 0.4))' }} />
+                        <Typography variant="h3" component="h1" sx={{
+                            fontWeight: 900,
+                            background: 'linear-gradient(135deg, #ffffff 30%, #3dfc55 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            letterSpacing: '-0.02em',
+                            mb: 2
+                        }}>
+                            Secure {type === 'file' ? 'File' : 'Message'}
+                        </Typography>
                     </motion.div>
                 </Box>
 
                 <Card sx={{
-                    borderRadius: 4, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)',
-                    backdropFilter: 'blur(20px)', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    background: 'rgba(13, 14, 18, 0.4)',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
                     overflow: 'hidden'
                 }}>
-                    <CardContent sx={{ p: 6, minHeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <CardContent sx={{ p: 5, minHeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
 
                         {/* Initial Curtain */}
                         {burnState === 'initial' && !error && (
-                            <Box textAlign="center">
-                                <Alert severity="warning" sx={{ mb: 4, textAlign: 'left' }}>
-                                    Warning: This {type === 'file' ? 'file' : 'message'} wll self-destruct immediately after {type === 'file' ? 'downloading' : 'viewing'}.
+                            <Box textAlign="center" sx={{ width: '100%' }}>
+                                <Alert severity="warning" variant="filled" sx={{ mb: 4, textAlign: 'left', borderRadius: '12px' }}>
+                                    Warning: This {type === 'file' ? 'file' : 'message'} will self-destruct immediately after {type === 'file' ? 'downloading' : 'viewing'}.
                                     {type === 'file' ? ' Please ensure your download completes.' : ' Do not reload the page until saved.'}
                                 </Alert>
                                 <Button
                                     variant="contained" color="error" size="large" onClick={handleReveal} disabled={loading}
-                                    startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Visibility />}
-                                    sx={{ py: 2, px: 6, fontSize: '1.2rem', borderRadius: 50 }}
+                                    startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <Visibility />}
+                                    sx={{ py: 1.5, px: 6, fontSize: '1.1rem', borderRadius: '10px', fontWeight: 700 }}
                                 >
                                     {loading ? 'Decrypting...' : (type === 'file' ? 'Unlock & Download File' : 'View Secret')}
                                 </Button>
@@ -235,26 +248,36 @@ const SecretSharerPage: React.FC = () => {
                         {/* Revealed Content */}
                         {burnState === 'burning' && (
                             <motion.div initial={{ opacity: 0, filter: 'blur(10px)' }} animate={{ opacity: 1, filter: 'blur(0px)' }} transition={{ duration: 0.5 }} style={{ width: '100%' }}>
-                                <Alert severity="error" icon={<LocalFireDepartment />} sx={{ mb: 3 }}>
+                                <Alert severity="error" icon={<LocalFireDepartment />} variant="filled" sx={{ mb: 4, borderRadius: '12px' }}>
                                     This secret has been wiped from the server.
                                 </Alert>
 
                                 {type === 'file' && revealedFile ? (
                                     <Box textAlign="center" py={4}>
                                         <CheckCircle sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
-                                        <Typography variant="h5" gutterBottom>File Decrypted!</Typography>
-                                        <Typography variant="body1" sx={{ fontFamily: 'monospace', mb: 3 }}>{revealedFile.name}</Typography>
-                                        <Button variant="contained" size="large" onClick={downloadFile} startIcon={<GetApp />}>
+                                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800 }}>File Decrypted!</Typography>
+                                        <Typography variant="body1" sx={{ fontFamily: 'monospace', mb: 3, color: '#3dfc55' }}>{revealedFile.name}</Typography>
+                                        <Button variant="contained" size="large" onClick={downloadFile} startIcon={<GetApp />} sx={{ borderRadius: '10px', fontWeight: 700 }}>
                                             Download Again (Cached)
                                         </Button>
                                     </Box>
                                 ) : (
-                                    <Paper elevation={0} sx={{ p: 4, bgcolor: 'rgba(0,0,0,0.05)', border: '1px dashed #666', borderRadius: 2, fontFamily: 'monospace', fontSize: '1.1rem', wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>
+                                    <Paper elevation={0} sx={{
+                                        p: 3,
+                                        bgcolor: 'rgba(0,0,0,0.2)',
+                                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                                        borderRadius: '12px',
+                                        fontFamily: 'monospace',
+                                        fontSize: '1.05rem',
+                                        color: '#ffffff',
+                                        wordBreak: 'break-all',
+                                        whiteSpace: 'pre-wrap'
+                                    }}>
                                         {revealedContent}
                                     </Paper>
                                 )}
 
-                                <Button fullWidth variant="outlined" sx={{ mt: 3 }} onClick={() => navigate('/services/secret-sharer')}>
+                                <Button fullWidth variant="outlined" sx={{ mt: 4, py: 1.2, borderRadius: '10px' }} onClick={() => navigate('/services/secret-sharer')}>
                                     Create New Secret
                                 </Button>
                             </motion.div>
@@ -264,9 +287,11 @@ const SecretSharerPage: React.FC = () => {
                         {(error || burnState === 'destroyed') && (
                             <Box textAlign="center">
                                 <Security sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
-                                <Typography variant="h5" color="text.secondary" gutterBottom>Message Unavailable</Typography>
+                                <Typography variant="h5" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>Message Unavailable</Typography>
                                 <Typography color="text.disabled" sx={{ mb: 4 }}>{error || 'This secret has already been viewed and destroyed.'}</Typography>
-                                <Button variant="contained" onClick={() => navigate('/services/secret-sharer')}>Create New Secret</Button>
+                                <Button variant="contained" onClick={() => navigate('/services/secret-sharer')} sx={{ borderRadius: '10px', fontWeight: 700 }}>
+                                    Create New Secret
+                                </Button>
                             </Box>
                         )}
                     </CardContent>
@@ -284,23 +309,47 @@ const SecretSharerPage: React.FC = () => {
                 toolId={4}
             />
 
-            <Box sx={{ mb: 6, textAlign: 'center' }}>
-                <Typography variant="h2" gutterBottom sx={{ fontWeight: 800 }}>One-Time <span style={{ color: '#f44336' }}>Secret</span></Typography>
-                <Typography variant="h5" color="text.secondary" sx={{ maxWidth: 700, mx: 'auto' }}>
-                    Share sensitive data securely. Links self-destruct after one use.
-                </Typography>
-            </Box>
+            <ServicePageHero
+                icon={Security}
+                title="One-Time Secret"
+                subtitle="Share sensitive data securely. Links self-destruct after one use."
+            />
 
             <Grid container spacing={4} justifyContent="center">
                 <Grid item xs={12} md={8}>
                     <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-                        <Card sx={{ borderRadius: 4, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)', p: 2 }}>
+                        <Card sx={{
+                            borderRadius: '20px',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            background: 'rgba(13, 14, 18, 0.4)',
+                            backdropFilter: 'blur(20px)',
+                            boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                            p: 2
+                        }}>
                             <CardContent>
                                 {!generatedLink ? (
                                     <>
-                                        <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)} variant="fullWidth" sx={{ mb: 3 }}>
-                                            <Tab icon={<ShortText />} label="Text" />
-                                            <Tab icon={<AttachFile />} label="File (Max 50MB)" />
+                                        <Tabs
+                                            value={activeTab}
+                                            onChange={(e, v) => setActiveTab(v)}
+                                            variant="fullWidth"
+                                            sx={{
+                                                mb: 4,
+                                                '& .MuiTab-root': {
+                                                    fontWeight: 700,
+                                                    fontSize: '1rem',
+                                                    color: 'text.secondary',
+                                                    '&.Mui-selected': {
+                                                        color: '#3dfc55'
+                                                    }
+                                                },
+                                                '& .MuiTabs-indicator': {
+                                                    backgroundColor: '#3dfc55'
+                                                }
+                                            }}
+                                        >
+                                            <Tab icon={<ShortText />} label="Text" iconPosition="start" sx={{ minHeight: '48px' }} />
+                                            <Tab icon={<AttachFile />} label="File (Max 50MB)" iconPosition="start" sx={{ minHeight: '48px' }} />
                                         </Tabs>
 
                                         {activeTab === 0 ? (
@@ -308,13 +357,30 @@ const SecretSharerPage: React.FC = () => {
                                                 fullWidth multiline minRows={6} maxRows={12}
                                                 placeholder="Paste your sensitive data here..."
                                                 value={secret} onChange={(e) => setSecret(e.target.value)}
-                                                sx={{ mb: 3, bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                                sx={{
+                                                    mb: 4,
+                                                    '& .MuiOutlinedInput-root': {
+                                                        borderRadius: '12px',
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                                                    }
+                                                }}
                                             />
                                         ) : (
                                             <Box
                                                 sx={{
-                                                    border: '2px dashed rgba(255,255,255,0.2)', borderRadius: 2, p: 4, mb: 3, textAlign: 'center', cursor: 'pointer',
-                                                    bgcolor: 'rgba(0,0,0,0.1)', '&:hover': { bgcolor: 'rgba(0,0,0,0.2)' }
+                                                    border: '2px dashed rgba(255, 255, 255, 0.1)',
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                                                    borderRadius: '16px',
+                                                    p: 5,
+                                                    mb: 4,
+                                                    textAlign: 'center',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        borderColor: '#3dfc55',
+                                                        backgroundColor: 'rgba(61, 252, 85, 0.02)',
+                                                        boxShadow: '0 0 20px rgba(61, 252, 85, 0.05)'
+                                                    }
                                                 }}
                                                 onClick={() => document.getElementById('file-upload')?.click()}
                                             >
@@ -322,28 +388,35 @@ const SecretSharerPage: React.FC = () => {
                                                     id="file-upload" type="file" hidden
                                                     onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
                                                 />
-                                                <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
-                                                <Typography variant="h6">{file ? file.name : 'Click to Upload File'}</Typography>
-                                                <Typography variant="caption" color="text.secondary">Max 50MB. Encrypted locally.</Typography>
+                                                <CloudUpload sx={{ fontSize: 54, color: 'primary.main', mb: 2 }} />
+                                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                                                    {file ? file.name : 'Click to Upload File'}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">Max 50MB. Encrypted locally.</Typography>
                                             </Box>
                                         )}
 
                                         <FormControl fullWidth size="small" sx={{ mb: 4 }}>
                                             <InputLabel>Expires In</InputLabel>
-                                            <Select value={expiration} label="Expires In" onChange={(e) => setExpiration(e.target.value)}>
+                                            <Select
+                                                value={expiration}
+                                                label="Expires In"
+                                                onChange={(e) => setExpiration(e.target.value)}
+                                                sx={{ borderRadius: '10px' }}
+                                            >
                                                 <MenuItem value="1">1 Hour</MenuItem>
                                                 <MenuItem value="24">24 Hours</MenuItem>
                                                 <MenuItem value="168">7 Days</MenuItem>
                                             </Select>
                                         </FormControl>
 
-                                        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                                        {error && <Alert severity="error" variant="filled" sx={{ mb: 4, borderRadius: '12px' }}>{error}</Alert>}
 
                                         <Button
-                                            fullWidth variant="contained" size="large" color="error"
+                                            fullWidth variant="contained" size="large"
                                             onClick={handleCreate} disabled={loading || (activeTab === 0 && !secret) || (activeTab === 1 && !file)}
-                                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Lock />}
-                                            sx={{ py: 2, borderRadius: 3, fontSize: '1.1rem' }}
+                                            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <Lock />}
+                                            sx={{ py: 1.5, borderRadius: '10px', fontWeight: 700 }}
                                         >
                                             {loading ? 'Encrypting...' : 'Create Secret Link'}
                                         </Button>
@@ -351,19 +424,35 @@ const SecretSharerPage: React.FC = () => {
                                 ) : (
                                     <Box textAlign="center" py={4}>
                                         <CheckCircle sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
-                                        <Typography variant="h5" gutterBottom>Secret Created!</Typography>
-                                        <Typography color="text.secondary" paragraph>Share this link. It will self-destruct after beinig used.</Typography>
+                                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800 }}>Secret Created!</Typography>
+                                        <Typography color="text.secondary" paragraph>Share this link. It will self-destruct after being used.</Typography>
 
-                                        <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: 'background.paper', p: 1, borderRadius: 2, border: '1px solid #eee', mb: 3 }}>
-                                            <Typography variant="body1" sx={{ flexGrow: 1, mr: 2, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            backgroundColor: 'rgba(0,0,0,0.2)',
+                                            p: 1.5,
+                                            borderRadius: '12px',
+                                            border: '1px solid rgba(255,255,255,0.05)',
+                                            mb: 4
+                                        }}>
+                                            <Typography variant="body1" sx={{ flexGrow: 1, mr: 2, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', color: '#3dfc55', textAlign: 'left', pl: 1 }}>
                                                 {generatedLink}
                                             </Typography>
-                                            <Button variant={copied ? "contained" : "outlined"} color={copied ? "success" : "primary"} onClick={copyToClipboard} startIcon={<ContentCopy />}>
+                                            <Button
+                                                variant={copied ? "contained" : "outlined"}
+                                                color={copied ? "success" : "primary"}
+                                                onClick={copyToClipboard}
+                                                startIcon={<ContentCopy />}
+                                                sx={{ borderRadius: '8px' }}
+                                            >
                                                 {copied ? "Copied" : "Copy"}
                                             </Button>
                                         </Box>
 
-                                        <Button color="inherit" onClick={() => { setGeneratedLink(''); setFile(null); setSecret(''); }}>Create Another</Button>
+                                        <Button color="inherit" onClick={() => { setGeneratedLink(''); setFile(null); setSecret(''); }} sx={{ fontWeight: 700 }}>
+                                            Create Another
+                                        </Button>
                                     </Box>
                                 )}
                             </CardContent>
