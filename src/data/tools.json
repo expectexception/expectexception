@@ -501,5 +501,101 @@
             "ssl check",
             "ping check"
         ]
+    },
+    {
+        "id": 29,
+        "title": "Word & Character Counter",
+        "description": "Count words, characters, sentences, and paragraphs instantly in your browser.",
+        "path": "/services/word-counter",
+        "icon": "TextFields",
+        "color": "primary",
+        "popularity": 70.0,
+        "category": "developer",
+        "tags": ["text", "counter", "words"],
+        "keywords": ["word counter", "character counter", "text statistics", "reading time"]
+    },
+    {
+        "id": 30,
+        "title": "Lorem Ipsum Generator",
+        "description": "Generate placeholder text for mockups and layouts, fully client-side.",
+        "path": "/services/lorem-ipsum",
+        "icon": "Article",
+        "color": "secondary",
+        "popularity": 65.0,
+        "category": "developer",
+        "tags": ["text", "placeholder", "design"],
+        "keywords": ["lorem ipsum", "placeholder text", "dummy text generator"]
+    },
+    {
+        "id": 31,
+        "title": "CSS Gradient Generator",
+        "description": "Design linear and radial CSS gradients visually and copy the code.",
+        "path": "/services/css-gradient-generator",
+        "icon": "Gradient",
+        "color": "success",
+        "popularity": 72.0,
+        "category": "developer",
+        "tags": ["css", "gradient", "design"],
+        "keywords": ["css gradient generator", "linear gradient", "radial gradient"]
+    },
+    {
+        "id": 32,
+        "title": "Timestamp Converter",
+        "description": "Convert between Unix epoch time and human-readable dates.",
+        "path": "/services/timestamp-converter",
+        "icon": "Schedule",
+        "color": "warning",
+        "popularity": 68.0,
+        "category": "developer",
+        "tags": ["timestamp", "epoch", "date"],
+        "keywords": ["unix timestamp converter", "epoch converter", "date to timestamp"]
+    },
+    {
+        "id": 33,
+        "title": "Password Generator",
+        "description": "Generate cryptographically random, secure passwords locally in your browser.",
+        "path": "/services/password-generator",
+        "icon": "VpnKey",
+        "color": "error",
+        "popularity": 80.0,
+        "category": "security",
+        "tags": ["password", "security", "generator"],
+        "keywords": ["password generator", "strong password", "random password"]
+    },
+    {
+        "id": 34,
+        "title": "Text Diff Checker",
+        "description": "Compare two blocks of text line-by-line and see what changed.",
+        "path": "/services/text-diff",
+        "icon": "Difference",
+        "color": "info",
+        "popularity": 66.0,
+        "category": "developer",
+        "tags": ["diff", "compare", "text"],
+        "keywords": ["text diff checker", "compare text", "diff tool"]
+    },
+    {
+        "id": 35,
+        "title": "Case Converter",
+        "description": "Convert text between camelCase, snake_case, kebab-case, Title Case, and more.",
+        "path": "/services/case-converter",
+        "icon": "TextFormat",
+        "color": "primary",
+        "popularity": 64.0,
+        "category": "developer",
+        "tags": ["text", "case", "converter"],
+        "keywords": ["case converter", "camelcase converter", "snake case converter"]
+    },
+    {
+        "id": 36,
+        "title": "HTML Entity Encoder/Decoder",
+        "description": "Encode special characters to HTML entities, or decode them back.",
+        "path": "/services/html-entity-codec",
+        "icon": "Code",
+        "color": "secondary",
+        "popularity": 60.0,
+        "category": "developer",
+        "tags": ["html", "entities", "encode"],
+        "keywords": ["html entity encoder", "html entity decoder", "escape html"]
     }
 ]

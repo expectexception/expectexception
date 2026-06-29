@@ -12,6 +12,7 @@ import {
     CircularProgress,
 } from '@mui/material';
 import Seo from '../components/seo/Seo';
+import ServicePageHero from '../components/services/ServicePageHero';
 import { VolumeUp, Download } from '@mui/icons-material';
 import apiClient, { API_BASE_URL } from '../api/config';
 import { endpoints } from '../api/endpoints';
@@ -67,20 +68,29 @@ const TextToSpeechPage: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 6 }}>
+        <Container maxWidth="md" sx={{ py: 8 }}>
             <Seo
                 title="AI Text to Speech (TTS) - Natural Voice Generator"
                 toolId={16}
             />
 
-            <Typography variant="h3" gutterBottom sx={{ fontWeight: 800, textAlign: 'center', mb: 4 }}>
-                Text to Speech
-            </Typography>
+            <ServicePageHero
+                icon={VolumeUp}
+                title="Text to Speech"
+                subtitle="Convert any written text into natural-sounding speech using advanced neural AI voices."
+            />
 
-            <Card sx={{ bgcolor: 'background.paper' }}>
-                <CardContent sx={{ p: 4 }}>
+            <Card sx={{
+                background: 'rgba(13, 14, 18, 0.4)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                borderRadius: '20px',
+                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                p: 3
+            }}>
+                <CardContent sx={{ p: 1 }}>
                     {error && (
-                        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+                        <Alert severity="error" variant="filled" sx={{ mb: 4, borderRadius: '12px' }} onClose={() => setError(null)}>
                             {error}
                         </Alert>
                     )}
@@ -92,16 +102,27 @@ const TextToSpeechPage: React.FC = () => {
                         placeholder="Enter text to convert..."
                         value={text}
                         onChange={(e) => setText(e.target.value)}
-                        sx={{ mb: 3 }}
+                        sx={{
+                            mb: 4,
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: '12px',
+                                backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                            }
+                        }}
                     />
 
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 4, flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', gap: 3, alignItems: 'center', mb: 2, flexWrap: 'wrap' }}>
                         <TextField
                             select
                             label="Language"
                             value={lang}
                             onChange={(e) => setLang(e.target.value)}
-                            sx={{ minWidth: 150 }}
+                            sx={{
+                                minWidth: 160,
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: '10px',
+                                }
+                            }}
                             size="small"
                         >
                             {languages.map((l) => (
@@ -116,7 +137,12 @@ const TextToSpeechPage: React.FC = () => {
                             label="Voice Gender"
                             value={gender}
                             onChange={(e) => setGender(e.target.value)}
-                            sx={{ minWidth: 150 }}
+                            sx={{
+                                minWidth: 160,
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: '10px',
+                                }
+                            }}
                             size="small"
                         >
                             <MenuItem value="Male">Male</MenuItem>
@@ -128,16 +154,29 @@ const TextToSpeechPage: React.FC = () => {
                             size="large"
                             onClick={handleConvert}
                             disabled={loading || !text}
-                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <VolumeUp />}
-                            sx={{ px: 4 }}
+                            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <VolumeUp />}
+                            sx={{
+                                px: 4,
+                                py: 1.2,
+                                borderRadius: '10px',
+                                fontWeight: 700,
+                                ml: 'auto'
+                            }}
                         >
                             {loading ? 'Converting...' : 'Convert to Audio'}
                         </Button>
                     </Box>
 
                     {audioUrl && (
-                        <Box sx={{ mt: 4, p: 3, bgcolor: 'action.hover', borderRadius: 2, textAlign: 'center' }}>
-                            <audio controls src={audioUrl} style={{ width: '100%', marginBottom: '16px' }}>
+                        <Box sx={{
+                            mt: 5,
+                            p: 3,
+                            backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            borderRadius: '16px',
+                            textAlign: 'center'
+                        }}>
+                            <audio controls src={audioUrl} style={{ width: '100%', marginBottom: '20px' }}>
                                 Your browser does not support the audio element.
                             </audio>
                             <Button
@@ -148,6 +187,11 @@ const TextToSpeechPage: React.FC = () => {
                                 }}
                                 variant="outlined"
                                 startIcon={<Download />}
+                                sx={{
+                                    py: 1,
+                                    px: 4,
+                                    borderRadius: '10px'
+                                }}
                             >
                                 Download MP3
                             </Button>

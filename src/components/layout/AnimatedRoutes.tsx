@@ -44,6 +44,7 @@ const SearchPage = lazy(() => import('../../pages/SearchPage'));
 const TextToHandwritingPage = lazy(() => import('../../pages/TextToHandwritingPage'));
 const SecretSharerPage = lazy(() => import('../../pages/SecretSharerPage'));
 const HirePage = lazy(() => import('../../pages/HirePage'));
+const EstimatorPage = lazy(() => import('../../pages/EstimatorPage'));
 const ChatbotPage = lazy(() => import('../../pages/ChatbotPage'));
 
 
@@ -76,6 +77,16 @@ const SpeedTest = lazy(() => import('../services/SpeedTest'));
 const AudioSeparator = lazy(() => import('../services/AudioSeparator'));
 const UptimeRobot = lazy(() => import('../services/UptimeRobot'));
 
+// Frontend-only tools (no backend calls) - lazy loaded
+const WordCounter = lazy(() => import('../services/WordCounter'));
+const LoremIpsumGenerator = lazy(() => import('../services/LoremIpsumGenerator'));
+const CssGradientGenerator = lazy(() => import('../services/CssGradientGenerator'));
+const TimestampConverter = lazy(() => import('../services/TimestampConverter'));
+const PasswordGenerator = lazy(() => import('../services/PasswordGenerator'));
+const TextDiffChecker = lazy(() => import('../services/TextDiffChecker'));
+const CaseConverter = lazy(() => import('../services/CaseConverter'));
+const HtmlEntityCodec = lazy(() => import('../services/HtmlEntityCodec'));
+
 
 
 /**
@@ -96,7 +107,7 @@ const withAuthGuard = (
 
 const AnimatedRoutes: React.FC = () => {
     const location = useLocation();
-    const isYtd = window.location.hostname.startsWith('ytd.');
+    const isYtd = window.location.hostname.startsWith('ytdown.');
 
     // Fetch tool access configuration
     const [toolAccess, setToolAccess] = useState<Record<string, boolean>>({});
@@ -127,6 +138,7 @@ const AnimatedRoutes: React.FC = () => {
 
                     {/* Services */}
                     <Route path="/services" element={<PageTransition><ServicesPage /></PageTransition>} />
+                    <Route path="/estimate" element={<PageTransition><EstimatorPage /></PageTransition>} />
                     <Route path="/services/qr-generator" element={<PageTransition>{withAuthGuard(<QrGenerator />, '/services/qr-generator', toolAccess, 'QR Generator')}</PageTransition>} />
                     <Route path="/services/json-formatter" element={<PageTransition>{withAuthGuard(<JsonFormatter />, '/services/json-formatter', toolAccess, 'JSON Formatter')}</PageTransition>} />
                     <Route path="/services/url-downloader" element={<PageTransition>{withAuthGuard(<UrlDownloader />, '/services/url-downloader', toolAccess, 'URL Downloader')}</PageTransition>} />
@@ -164,6 +176,16 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/audio-separator" element={<PageTransition>{withAuthGuard(<AudioSeparator />, '/services/audio-separator', toolAccess, 'Audio Separator')}</PageTransition>} />
                     <Route path="/services/uptime-robot" element={<PageTransition>{withAuthGuard(<UptimeRobot />, '/services/uptime-robot', toolAccess, 'Uptime Robot')}</PageTransition>} />
 
+                    {/* Frontend-only tools - no backend, no auth gate */}
+                    <Route path="/services/word-counter" element={<PageTransition><WordCounter /></PageTransition>} />
+                    <Route path="/services/lorem-ipsum" element={<PageTransition><LoremIpsumGenerator /></PageTransition>} />
+                    <Route path="/services/css-gradient-generator" element={<PageTransition><CssGradientGenerator /></PageTransition>} />
+                    <Route path="/services/timestamp-converter" element={<PageTransition><TimestampConverter /></PageTransition>} />
+                    <Route path="/services/password-generator" element={<PageTransition><PasswordGenerator /></PageTransition>} />
+                    <Route path="/services/text-diff" element={<PageTransition><TextDiffChecker /></PageTransition>} />
+                    <Route path="/services/case-converter" element={<PageTransition><CaseConverter /></PageTransition>} />
+                    <Route path="/services/html-entity-codec" element={<PageTransition><HtmlEntityCodec /></PageTransition>} />
+
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />
@@ -183,6 +205,10 @@ const AnimatedRoutes: React.FC = () => {
 
                     {/* Download Hub */}
                     <Route path="/downloads" element={<PageTransition><DownloadHubPage /></PageTransition>} />
+                    <Route path="/downloads/:slug" element={<PageTransition><DownloadDetailsPage /></PageTransition>} />
+
+                    {/* Chatbot */}
+                    <Route path="/chat" element={<PageTransition><ChatbotPage /></PageTransition>} />
 
                     {/* Admin */}
                     <Route path="/admin/dashboard" element={<AdminGuard><PageTransition><AdminDashboardPage /></PageTransition></AdminGuard>} />
@@ -194,7 +220,6 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
                     <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
                     <Route path="/hire" element={<PageTransition><HirePage /></PageTransition>} />
-                    <Route path="/chat" element={<PageTransition><ChatbotPage /></PageTransition>} />
                     {/* Catch-all: redirect any unlisted URL to home */}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

@@ -34,7 +34,7 @@ const NotificationPrompt: React.FC = () => {
 
         // Show prompt after delay if not subscribed
         if (!subscribed) {
-            setTimeout(() => setShowPrompt(true), 21000000); // Show after 5 seconds
+            setTimeout(() => setShowPrompt(true), 5000); // Show after 5 seconds
         }
     };
 

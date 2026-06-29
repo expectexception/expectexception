@@ -20,14 +20,13 @@ import {
     Stack,
     Button,
     Collapse,
+    Zoom,
+    Chip,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogContentText,
     DialogActions,
-    Chip,
-    Fade,
-    Zoom,
 } from '@mui/material';
 import {
     Send,
@@ -39,20 +38,18 @@ import {
     ContentCopy,
     Check,
     ViewSidebar,
-    LocalHospital,
-    Engineering,
-    SupportAgent,
-    School,
-    Restaurant,
-    SelfImprovement,
-    FitnessCenter,
-    Home,
-    Edit,
-    KeyboardArrowDown,
     Refresh,
     DeleteSweep,
     AccessTime,
-    Gavel,
+    Home,
+    HourglassEmpty,
+    Speed,
+    Memory,
+    CheckCircle,
+    Cancel,
+    ArrowBack,
+    Lightbulb,
+    HelpOutline
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -63,11 +60,17 @@ import CleanStarBackground from '../components/CleanStarBackground';
 const apiBaseUrl = API_BASE_URL;
 
 // --- Types ---
+type Mood = 'neutral' | 'thinking' | 'happy' | 'excited' | 'sleeping' | 'idea' | 'error';
+
 interface Message {
     id?: number;
     role: 'user' | 'assistant' | 'system';
     content: string;
     timestamp?: string;
+    isWidget?: boolean;
+    widgetType?: 'clock' | 'idea' | 'qr';
+    widgetData?: any;
+    agentSteps?: AgentStep[];
 }
 
 interface Conversation {
@@ -79,21 +82,10 @@ interface Conversation {
     message_count: number;
 }
 
-interface Suggestion {
-    text: string;
-    icon: React.ReactNode;
-}
-
-interface Persona {
+interface AgentStep {
     id: string;
-    name: string;
-    icon: React.ReactNode;
-    color: string;
-    gradient: string;
-    prompt: string;
-    description: string;
-    suggestions: Suggestion[];
-    thinkingText: string;
+    label: string;
+    status: 'pending' | 'running' | 'done' | 'failed';
 }
 
 interface GroupedConversations {
@@ -103,86 +95,416 @@ interface GroupedConversations {
     older: Conversation[];
 }
 
-// --- Persona UI Configuration (Icons & Colors) ---
-const personaUIConfig: Record<string, { icon: React.ReactNode; color: string; gradient: string }> = {
-    general: {
-        icon: <SupportAgent />,
-        color: '#6366f1',
-        gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
-    },
-    doctor: {
-        icon: <LocalHospital />,
-        color: '#10b981',
-        gradient: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)'
-    },
-    engineer: {
-        icon: <Engineering />,
-        color: '#f59e0b',
-        gradient: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)'
-    },
-    teacher: {
-        icon: <School />,
-        color: '#8b5cf6',
-        gradient: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)'
-    },
-    chef: {
-        icon: <Restaurant />,
-        color: '#f97316',
-        gradient: 'linear-gradient(135deg, #f97316 0%, #fb923c 100%)'
-    },
-    therapist: {
-        icon: <SelfImprovement />,
-        color: '#06b6d4',
-        gradient: 'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)'
-    },
-    fitness: {
-        icon: <FitnessCenter />,
-        color: '#ef4444',
-        gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)'
-    },
-    advocate: {
-        icon: <Gavel />,
-        color: '#475569',
-        gradient: 'linear-gradient(135deg, #475569 0%, #1e293b 100%)'
-    }
-};
+// --- Custom Animated SVG Face Component ---
+const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
+    const colorMap = {
+        neutral: '#00eeff', // Cyan
+        thinking: '#00eeff', // Cyan
+        happy: '#3dfc55', // Neon Green
+        excited: '#3dfc55', // Neon Green
+        sleeping: '#8b5cf6', // Purple
+        idea: '#f59e0b', // Amber
+        error: '#ef4444', // Red
+    };
 
-// --- Custom Components ---
-const ThinkingIndicator: React.FC<{ persona: Persona; isLoading: boolean }> = ({ persona, isLoading }) => {
-    const [currentTextIndex, setCurrentTextIndex] = useState(0);
-
-    const messages = useMemo(() => {
-        return [persona.thinkingText || 'Thinking...'];
-    }, [persona]);
-
-    useEffect(() => {
-        if (!isLoading || messages.length <= 1) return;
-        const interval = setInterval(() => {
-            setCurrentTextIndex(prev => (prev + 1) % messages.length);
-        }, 2500);
-        return () => clearInterval(interval);
-    }, [isLoading, messages]);
+    const activeColor = colorMap[mood] || '#00eeff';
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
-                <Avatar sx={{ width: 36, height: 36, background: persona.gradient, flexShrink: 0 }}>
-                    {persona.icon}
-                </Avatar>
-                <Box sx={{ py: 1.5, px: 1 }}>
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                        {[0, 1, 2].map(i => (
-                            <motion.div key={i} animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}>
-                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: persona.color }} />
-                            </motion.div>
-                        ))}
-                        <Typography variant="body2" color="grey.500" sx={{ ml: 1 }}>
-                            {messages[currentTextIndex]}
-                        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2 }}>
+            <motion.div
+                animate={mood === 'sleeping' ? {
+                    scale: [1, 0.97, 1],
+                    y: [0, 4, 0]
+                } : {
+                    y: [0, -6, 0],
+                }}
+                transition={{
+                    duration: mood === 'sleeping' ? 4 : 3,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                }}
+                style={{ position: 'relative', width: 120, height: 120 }}
+            >
+                <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="5" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                        <filter id="eye-glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+
+                    {/* Antennas / Side Ears */}
+                    <motion.path
+                        d="M 15 60 L 5 60 M 105 60 L 115 60"
+                        stroke={activeColor}
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        animate={mood === 'excited' ? { strokeWidth: [3, 5, 3] } : {}}
+                        transition={{ duration: 0.5, repeat: Infinity }}
+                    />
+                    <motion.circle
+                        cx="5" cy="60" r="3"
+                        fill={activeColor}
+                        animate={mood === 'excited' ? { scale: [1, 1.5, 1] } : {}}
+                        transition={{ duration: 0.5, repeat: Infinity }}
+                    />
+                    <motion.circle
+                        cx="115" cy="60" r="3"
+                        fill={activeColor}
+                        animate={mood === 'excited' ? { scale: [1, 1.5, 1] } : {}}
+                        transition={{ duration: 0.5, repeat: Infinity }}
+                    />
+
+                    {/* Head Chassis */}
+                    <motion.rect
+                        x="20"
+                        y="25"
+                        width="80"
+                        height="70"
+                        rx="20"
+                        stroke={activeColor}
+                        strokeWidth="3"
+                        fill="rgba(13, 14, 18, 0.8)"
+                        style={{ filter: 'url(#glow)' }}
+                        animate={
+                            mood === 'thinking'
+                                ? { strokeDasharray: ["8, 4", "4, 8", "8, 4"], strokeDashoffset: [0, 12] }
+                                : mood === 'error'
+                                ? { x: [20, 22, 18, 20], y: [25, 24, 26, 25] }
+                                : {}
+                        }
+                        transition={
+                            mood === 'thinking'
+                                ? { duration: 1, repeat: Infinity, ease: 'linear' }
+                                : mood === 'error'
+                                ? { duration: 0.15, repeat: Infinity }
+                                : {}
+                        }
+                    />
+
+                    {/* Golden Lightbulb / Spark for Idea Mood */}
+                    {mood === 'idea' && (
+                        <motion.g
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                        >
+                            <path d="M 60 5 L 60 18" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+                            <path d="M 48 10 L 53 15" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+                            <path d="M 72 10 L 67 15" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+                            <circle cx="60" cy="18" r="4" fill="#f59e0b" />
+                        </motion.g>
+                    )}
+
+                    {/* Floating Zzz for Sleeping Mood */}
+                    {mood === 'sleeping' && (
+                        <motion.g>
+                            <motion.text
+                                x="95" y="25"
+                                fill="#8b5cf6"
+                                fontSize="10"
+                                fontWeight="bold"
+                                animate={{ opacity: [0, 1, 0], y: [25, 10], x: [95, 100] }}
+                                transition={{ duration: 3, repeat: Infinity, delay: 0 }}
+                            >
+                                Z
+                            </motion.text>
+                            <motion.text
+                                x="90" y="35"
+                                fill="#8b5cf6"
+                                fontSize="14"
+                                fontWeight="bold"
+                                animate={{ opacity: [0, 1, 0], y: [35, 15], x: [90, 98] }}
+                                transition={{ duration: 3, repeat: Infinity, delay: 1 }}
+                            >
+                                Z
+                            </motion.text>
+                        </motion.g>
+                    )}
+
+                    {/* Eyes Group */}
+                    <g style={{ filter: 'url(#eye-glow)' }}>
+                        {/* Left Eye */}
+                        {mood === 'neutral' && (
+                            <motion.ellipse
+                                cx="42" cy="53" rx="6" ry="8"
+                                fill={activeColor}
+                                animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+                                transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                            />
+                        )}
+                        {mood === 'thinking' && (
+                            <motion.path
+                                d="M 36 53 A 6 6 0 1 1 48 53"
+                                stroke={activeColor}
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                animate={{ rotate: 360 }}
+                                style={{ originX: '42px', originY: '53px' }}
+                                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            />
+                        )}
+                        {mood === 'happy' && (
+                            <path d="M 35 56 Q 42 48 49 56" stroke={activeColor} strokeWidth="3.5" strokeLinecap="round" />
+                        )}
+                        {mood === 'excited' && (
+                            <motion.circle
+                                cx="42" cy="53" r="8"
+                                fill={activeColor}
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ duration: 0.6, repeat: Infinity }}
+                            />
+                        )}
+                        {mood === 'sleeping' && (
+                            <path d="M 35 55 L 47 55" stroke={activeColor} strokeWidth="3" strokeLinecap="round" />
+                        )}
+                        {mood === 'idea' && (
+                            <g>
+                                <circle cx="42" cy="53" r="8" fill={activeColor} />
+                                <circle cx="42" cy="53" r="3" fill="#000" />
+                            </g>
+                        )}
+                        {mood === 'error' && (
+                            <path d="M 37 48 L 47 58 M 47 48 L 37 58" stroke={activeColor} strokeWidth="3" strokeLinecap="round" />
+                        )}
+
+                        {/* Right Eye */}
+                        {mood === 'neutral' && (
+                            <motion.ellipse
+                                cx="78" cy="53" rx="6" ry="8"
+                                fill={activeColor}
+                                animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+                                transition={{ duration: 3, repeat: Infinity, repeatDelay: 2.2 }}
+                            />
+                        )}
+                        {mood === 'thinking' && (
+                            <motion.path
+                                d="M 72 53 A 6 6 0 1 1 84 53"
+                                stroke={activeColor}
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                animate={{ rotate: -360 }}
+                                style={{ originX: '78px', originY: '53px' }}
+                                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            />
+                        )}
+                        {mood === 'happy' && (
+                            <path d="M 71 56 Q 78 48 85 56" stroke={activeColor} strokeWidth="3.5" strokeLinecap="round" />
+                        )}
+                        {mood === 'excited' && (
+                            <motion.circle
+                                cx="78" cy="53" r="8"
+                                fill={activeColor}
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ duration: 0.6, repeat: Infinity, delay: 0.1 }}
+                            />
+                        )}
+                        {mood === 'sleeping' && (
+                            <path d="M 71 55 L 83 55" stroke={activeColor} strokeWidth="3" strokeLinecap="round" />
+                        )}
+                        {mood === 'idea' && (
+                            <g>
+                                <circle cx="78" cy="53" r="8" fill={activeColor} />
+                                <circle cx="78" cy="53" r="3" fill="#000" />
+                            </g>
+                        )}
+                        {mood === 'error' && (
+                            <path d="M 73 48 L 83 58 M 83 48 L 73 58" stroke={activeColor} strokeWidth="3" strokeLinecap="round" />
+                        )}
+                    </g>
+
+                    {/* Mouth / Waveform */}
+                    {mood === 'neutral' && (
+                        <motion.path
+                            d="M 45 78 Q 60 76 75 78"
+                            stroke={activeColor}
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            animate={{ d: ["M 45 78 Q 60 76 75 78", "M 45 78 Q 60 80 75 78", "M 45 78 Q 60 76 75 78"] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                        />
+                    )}
+                    {mood === 'thinking' && (
+                        <motion.path
+                            d="M 45 78 Q 50 72 55 78 T 65 78 T 75 78"
+                            stroke={activeColor}
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            animate={{ d: [
+                                "M 45 78 Q 50 72 55 78 T 65 78 T 75 78",
+                                "M 45 78 Q 50 84 55 78 T 65 78 T 75 78",
+                                "M 45 78 Q 50 72 55 78 T 65 78 T 75 78"
+                            ] }}
+                            transition={{ duration: 0.8, repeat: Infinity }}
+                        />
+                    )}
+                    {mood === 'happy' && (
+                        <path d="M 45 75 Q 60 88 75 75" stroke={activeColor} strokeWidth="3.5" strokeLinecap="round" />
+                    )}
+                    {mood === 'excited' && (
+                        <motion.path
+                            d="M 40 76 Q 45 68 50 76 T 60 76 T 70 76 T 80 76"
+                            stroke={activeColor}
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                            animate={{ d: [
+                                "M 40 76 Q 45 66 50 76 T 60 76 T 70 76 T 80 76",
+                                "M 40 76 Q 45 86 50 76 T 60 76 T 70 76 T 80 76",
+                                "M 40 76 Q 45 66 50 76 T 60 76 T 70 76 T 80 76"
+                              ] }}
+                            transition={{ duration: 0.4, repeat: Infinity }}
+                        />
+                    )}
+                    {mood === 'sleeping' && (
+                        <motion.path
+                            d="M 50 78 Q 60 81 70 78"
+                            stroke={activeColor}
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            animate={{ d: ["M 50 78 Q 60 81 70 78", "M 50 78 Q 60 76 70 78", "M 50 78 Q 60 81 70 78"] }}
+                            transition={{ duration: 4, repeat: Infinity }}
+                        />
+                    )}
+                    {mood === 'idea' && (
+                        <motion.circle
+                            cx="60" cy="78" r="3"
+                            fill={activeColor}
+                            animate={{ scale: [1, 1.5, 1] }}
+                            transition={{ duration: 1.2, repeat: Infinity }}
+                        />
+                    )}
+                    {mood === 'error' && (
+                        <path d="M 45 80 L 50 76 L 55 80 L 60 76 L 65 80 L 70 76 L 75 80" stroke={activeColor} strokeWidth="3" strokeLinecap="round" />
+                    )}
+                </svg>
+            </motion.div>
+        </Box>
+    );
+};
+
+// --- Glowing Clock Widget ---
+const ClockWidget: React.FC = () => {
+    const [time, setTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <Box sx={{
+            p: 3,
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, rgba(13,14,18,0.8) 0%, rgba(5,5,5,0.9) 100%)',
+            border: '1px solid rgba(61, 252, 85, 0.2)',
+            boxShadow: '0 8px 32px rgba(61, 252, 85, 0.1), inset 0 0 15px rgba(61, 252, 85, 0.05)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            maxWidth: 320,
+            mx: 'auto',
+            my: 2
+        }}>
+            <AccessTime sx={{ fontSize: 40, color: '#3dfc55', mb: 1.5 }} />
+            <Typography variant="h3" sx={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, color: '#3dfc55', letterSpacing: 1 }}>
+                {time.toLocaleTimeString()}
+            </Typography>
+            <Typography variant="body2" color="grey.400" sx={{ mt: 1, fontWeight: 600 }}>
+                {time.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </Typography>
+            <Typography variant="caption" color="grey.650" sx={{ mt: 0.5 }}>
+                Local Timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}
+            </Typography>
+        </Box>
+    );
+};
+
+// --- Agent Steps UI Indicator ---
+const AgentStepsIndicator: React.FC<{ steps: AgentStep[] }> = ({ steps }) => {
+    return (
+        <Box sx={{
+            mb: 2,
+            p: 2,
+            borderRadius: '12px',
+            border: '1px solid rgba(255,255,255,0.05)',
+            bgcolor: 'rgba(0, 0, 0, 0.2)',
+            maxWidth: 400
+        }}>
+            <Typography variant="caption" sx={{ color: '#00eeff', fontWeight: 800, letterSpacing: 1.5, display: 'block', mb: 1.5, textTransform: 'uppercase' }}>
+                Agent Execution Log
+            </Typography>
+            <Stack spacing={1}>
+                {steps.map((step) => (
+                    <Box key={step.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+                        {step.status === 'running' && (
+                            <HourglassEmpty sx={{ fontSize: 16, color: '#00eeff', animation: 'spin 2s linear infinite', flexShrink: 0 }} />
+                        )}
+                        {step.status === 'done' && (
+                            <CheckCircle sx={{ fontSize: 16, color: '#3dfc55', flexShrink: 0 }} />
+                        )}
+                        {step.status === 'pending' && (
+                            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'grey.700', ml: 0.75, mr: 0.75, flexShrink: 0 }} />
+                        )}
+                        {step.status === 'failed' && (
+                            <Cancel sx={{ fontSize: 16, color: '#ef4444', flexShrink: 0 }} />
+                        )}
+                        <Tooltip title={step.label}>
+                            <Typography
+                                variant="body2"
+                                noWrap
+                                sx={{
+                                    fontWeight: 600,
+                                    color: step.status === 'done' ? 'grey.300' : step.status === 'running' ? '#00eeff' : 'grey.550',
+                                    fontSize: '0.85rem',
+                                    minWidth: 0,
+                                }}
+                            >
+                                {step.label}
+                            </Typography>
+                        </Tooltip>
                     </Box>
-                </Box>
-            </Box>
-        </motion.div>
+                ))}
+            </Stack>
+        </Box>
+    );
+};
+
+// --- QR Code Widget (rendered when the chatbot's qr_generator tool runs) ---
+const QrWidget: React.FC<{ url: string; encoded?: string }> = ({ url, encoded }) => {
+    const apiBaseUrlForMedia = API_BASE_URL;
+    const fullUrl = url.startsWith('http') ? url : `${apiBaseUrlForMedia}${url}`;
+    return (
+        <Box sx={{
+            p: 3,
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, rgba(13,14,18,0.8) 0%, rgba(5,5,5,0.9) 100%)',
+            border: '1px solid rgba(61, 252, 85, 0.2)',
+            boxShadow: '0 8px 32px rgba(61, 252, 85, 0.1), inset 0 0 15px rgba(61, 252, 85, 0.05)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            maxWidth: 280,
+            mx: 'auto',
+            my: 2
+        }}>
+            <Box component="img" src={fullUrl} alt="Generated QR code" sx={{ width: 200, height: 200, borderRadius: 1, bgcolor: '#fff', p: 1 }} />
+            {encoded && (
+                <Typography variant="caption" color="grey.500" sx={{ mt: 1.5, wordBreak: 'break-all', textAlign: 'center' }}>
+                    {encoded}
+                </Typography>
+            )}
+            <Button
+                size="small"
+                href={fullUrl}
+                download
+                sx={{ mt: 1.5 }}
+            >
+                Download
+            </Button>
+        </Box>
     );
 };
 
@@ -236,33 +558,20 @@ const ChatbotPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isStreaming, setIsStreaming] = useState(false);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-    const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(false);
+    const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
     const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
-    const [availableModels, setAvailableModels] = useState<string[]>([]);
-    const [selectedModel, setSelectedModel] = useState<string>('');
-    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-    const [showScrollButton, setShowScrollButton] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [lastMessageContent, setLastMessageContent] = useState<string>('');
 
     // Dialog states
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [conversationToDelete, setConversationToDelete] = useState<number | null>(null);
     const [clearAllDialogOpen, setClearAllDialogOpen] = useState(false);
-    const [clearAllConfirmStep, setClearAllConfirmStep] = useState(0);
 
-    // Persona state
-    const [availablePersonas, setAvailablePersonas] = useState<Persona[]>([{
-        id: 'general',
-        name: 'General',
-        ...personaUIConfig['general'],
-        description: 'Loading...',
-        prompt: '',
-        suggestions: [],
-        thinkingText: 'Thinking...'
-    }]);
-    const [selectedPersona, setSelectedPersona] = useState<Persona>(availablePersonas[0]);
-    const [customNames, setCustomNames] = useState<Record<string, string>>({});
+    // Chatbot mood
+    const [mood, setMood] = useState<Mood>('neutral');
+
+    // Agent Steps state
+    const [activeSteps, setActiveSteps] = useState<AgentStep[]>([]);
 
     // Refs
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -272,42 +581,7 @@ const ChatbotPage: React.FC = () => {
     const lastRenderTimeRef = useRef<number>(0);
     const accumulatedContentRef = useRef<string>('');
 
-    // --- Effects ---
-
-    // Load custom names from localStorage
-    useEffect(() => {
-        try {
-            const saved = localStorage.getItem('personaNames');
-            if (saved) setCustomNames(JSON.parse(saved));
-        } catch (e) { /* ignore */ }
-    }, []);
-
-    // Fetch personas from backend
-    useEffect(() => {
-        const fetchPersonas = async () => {
-            try {
-                const res = await apiClient.get('/api/chatbot/personas/');
-                if (res.data && Array.isArray(res.data)) {
-                    const merged = res.data.map((bp: any) => {
-                        const uiConfig = personaUIConfig[bp.id] || personaUIConfig['general'];
-                        return {
-                            ...bp,
-                            icon: uiConfig.icon,
-                            color: uiConfig.color,
-                            gradient: uiConfig.gradient,
-                            suggestions: bp.suggestions || [],
-                            thinkingText: bp.thinkingText || 'Thinking...'
-                        } as Persona;
-                    });
-                    setAvailablePersonas(merged);
-                    setSelectedPersona(prev => merged.find((p: Persona) => p.id === prev.id) || merged[0]);
-                }
-            } catch (err) { console.error('Failed to load backend personas', err); }
-        };
-        fetchPersonas();
-    }, []);
-
-    // Check Ollama status - with proper cleanup
+    // Check Ollama status
     useEffect(() => {
         let isMounted = true;
         const controller = new AbortController();
@@ -319,12 +593,6 @@ const ChatbotPage: React.FC = () => {
                 });
                 if (isMounted) {
                     setIsAvailable(response.data.available);
-                    if (response.data.models) {
-                        setAvailableModels(response.data.models);
-                        if (!selectedModel && response.data.current_model) {
-                            setSelectedModel(response.data.current_model);
-                        }
-                    }
                 }
             } catch (err: any) {
                 if (err.name !== 'CanceledError' && isMounted) {
@@ -349,10 +617,8 @@ const ChatbotPage: React.FC = () => {
             try {
                 const response = await apiClient.get('/api/chatbot/conversations/');
                 setConversations(response.data);
-                // Sync to localStorage
                 localStorage.setItem('chat_conversations', JSON.stringify(response.data));
             } catch (err) {
-                console.error('Failed to load conversations from API, trying localStorage', err);
                 const saved = localStorage.getItem('chat_conversations');
                 if (saved) setConversations(JSON.parse(saved));
             }
@@ -360,14 +626,13 @@ const ChatbotPage: React.FC = () => {
         loadConversations();
     }, [currentConversationId]);
 
-    // Save/Restore messages to local storage for persistence
+    // Save/Restore messages
     useEffect(() => {
         if (currentConversationId) {
             localStorage.setItem(`chat_messages_${currentConversationId}`, JSON.stringify(messages));
         }
     }, [messages, currentConversationId]);
 
-    // Load messages from localStorage if API fails or for quicker initial load
     const restoreMessagesFromLocalStorage = useCallback((id: number) => {
         const saved = localStorage.getItem(`chat_messages_${id}`);
         if (saved) {
@@ -381,85 +646,36 @@ const ChatbotPage: React.FC = () => {
         return false;
     }, []);
 
-    // Scroll handling for showing scroll-to-bottom button
-    useEffect(() => {
-        const container = messagesContainerRef.current;
-        if (!container) return;
-
-        const handleScroll = () => {
-            const { scrollTop, scrollHeight, clientHeight } = container;
-            const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-            setShowScrollButton(distanceFromBottom > 200);
-        };
-
-        container.addEventListener('scroll', handleScroll);
-        return () => container.removeEventListener('scroll', handleScroll);
+    // Scroll handling
+    const scrollToBottom = useCallback(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, []);
 
-    // Keyboard shortcuts
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Ctrl+N for new chat
-            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-                e.preventDefault();
-                startNewConversation();
-            }
-            // Escape to close mobile drawer
-            if (e.key === 'Escape' && mobileDrawerOpen) {
-                setMobileDrawerOpen(false);
-            }
-        };
+        scrollToBottom();
+    }, [messages, isLoading, activeSteps, scrollToBottom]);
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [mobileDrawerOpen]);
-
-    // Group conversations by date
+    // Group conversations
     const groupedConversations = useMemo(() =>
         groupConversationsByDate(conversations),
         [conversations]
     );
 
-    // --- Handlers ---
-
-    const scrollToBottom = useCallback(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, []);
-
-    useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
-
-    const handleRename = () => {
-        const current = customNames[selectedPersona.id] || selectedPersona.name;
-        const newName = window.prompt(`Name your ${selectedPersona.name}:`, current);
-        if (newName && newName.trim()) {
-            const updated = { ...customNames, [selectedPersona.id]: newName.trim() };
-            setCustomNames(updated);
-            localStorage.setItem('personaNames', JSON.stringify(updated));
-        }
-    };
-
     const loadConversation = async (id: number) => {
-        // Try local storage first for speed
         restoreMessagesFromLocalStorage(id);
-
         try {
             const response = await apiClient.get(`/api/chatbot/conversations/${id}/`);
             setMessages(response.data.messages || []);
             setCurrentConversationId(id);
             setMobileDrawerOpen(false);
-            // Update local storage with fresh data
             localStorage.setItem(`chat_messages_${id}`, JSON.stringify(response.data.messages || []));
+            setMood('neutral');
         } catch {
-            setError('Failed to load conversation from server');
-            // If restoreMessagesFromLocalStorage failed too
-            if (!localStorage.getItem(`chat_messages_${id}`)) {
-                setError('Failed to load conversation');
-            }
+            setError('Failed to load conversation');
         }
     };
 
     const startNewConversation = () => {
-        // Cancel any ongoing stream
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
         }
@@ -467,7 +683,7 @@ const ChatbotPage: React.FC = () => {
         setCurrentConversationId(null);
         setError(null);
         setMobileDrawerOpen(false);
-        setLastMessageContent('');
+        setMood('neutral');
         inputRef.current?.focus();
     };
 
@@ -483,67 +699,40 @@ const ChatbotPage: React.FC = () => {
             await apiClient.delete(`/api/chatbot/conversations/${conversationToDelete}/`);
             setConversations(prev => prev.filter(c => c.id !== conversationToDelete));
             if (currentConversationId === conversationToDelete) startNewConversation();
-        } catch { console.error('Failed to delete'); }
+        } catch {
+            console.error('Failed to delete');
+        }
         setDeleteDialogOpen(false);
         setConversationToDelete(null);
     };
 
     const handleClearAllClick = () => {
-        setClearAllConfirmStep(1);
         setClearAllDialogOpen(true);
     };
 
     const confirmClearAll = async () => {
-        if (clearAllConfirmStep === 1) {
-            setClearAllConfirmStep(2);
-            return;
-        }
-
         try {
             await apiClient.delete('/api/chatbot/conversations/clear/');
             setConversations([]);
             startNewConversation();
-        } catch { console.error('Failed to clear all'); }
-
-        setClearAllDialogOpen(false);
-        setClearAllConfirmStep(0);
-    };
-
-    const copyToClipboard = (text: string, index: number) => {
-        navigator.clipboard.writeText(text);
-        setCopiedIndex(index);
-        setTimeout(() => setCopiedIndex(null), 2000);
-    };
-
-    const regenerateResponse = async () => {
-        if (messages.length < 2 || isLoading || isStreaming) return;
-
-        // Get the last user message
-        const lastUserMsgIndex = messages.reduce((lastIdx, msg, idx) =>
-            msg.role === 'user' ? idx : lastIdx, -1);
-
-        if (lastUserMsgIndex === -1) return;
-
-        const lastUserMessage = messages[lastUserMsgIndex].content;
-
-        // Remove the last assistant message if present
-        const newMessages = messages.slice(0, -1);
-        if (newMessages[newMessages.length - 1]?.role === 'user') {
-            // Remove the user message too, we'll resend it
-            newMessages.pop();
+        } catch {
+            console.error('Failed to clear all');
         }
+        setClearAllDialogOpen(false);
+    };
 
-        setMessages(newMessages);
-        await sendMessage(lastUserMessage);
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
     };
 
     const handleTextKeyDown = (e: React.KeyboardEvent) => {
-        if ((e.key === 'Enter' && !e.shiftKey) || (e.key === 'Enter' && (e.ctrlKey || e.metaKey))) {
+        if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     };
 
+    // --- Send Message ---
     const sendMessage = async (messageText?: string) => {
         const text = messageText || inputValue.trim();
         if (!text || isLoading || isStreaming) return;
@@ -558,6 +747,11 @@ const ChatbotPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
         accumulatedContentRef.current = '';
+
+        // Real agent steps (if any) arrive as SSE 'step' events from the backend
+        // tool registry below - no fabricated delays here.
+        setMood('thinking');
+        setActiveSteps([]);
 
         const updateAssistantMessageContent = (content: string, forceUpdate = false) => {
             const now = Date.now();
@@ -579,8 +773,6 @@ const ChatbotPage: React.FC = () => {
         abortControllerRef.current = new AbortController();
 
         try {
-            const modelToUse = selectedModel || (availableModels.length > 0 ? availableModels[0] : 'qwen2:1.5b');
-
             const response = await fetch(`${apiBaseUrl}/api/chatbot/chat/`, {
                 method: 'POST',
                 headers: {
@@ -591,19 +783,20 @@ const ChatbotPage: React.FC = () => {
                 signal: abortControllerRef.current.signal,
                 body: JSON.stringify({
                     message: text,
-                    model: modelToUse,
+                    model: 'qwen3:4b',
                     conversation_id: currentConversationId,
-                    system_prompt: selectedPersona.prompt.replace(/\{NAME\}/g, customNames[selectedPersona.id] || selectedPersona.name)
+                    system_prompt: 'You are A.E.G.I.S., a premium agentic portfolio chatbot. Keep your tone highly technical, professional, and helpful. You have access to real backend tools (blog search, service listing, QR generation, system health checks, contact handoff) that run automatically when relevant.'
                 })
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || 'Failed to send message');
+                throw new Error('Failed to reach AI service');
             }
 
             setIsLoading(false);
             setIsStreaming(true);
+            setActiveSteps([]);
+            setMood('excited');
 
             const assistantMessage: Message = {
                 role: 'assistant',
@@ -617,7 +810,6 @@ const ChatbotPage: React.FC = () => {
 
             if (reader) {
                 let buffer = '';
-
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
@@ -632,43 +824,87 @@ const ChatbotPage: React.FC = () => {
 
                         try {
                             const data = JSON.parse(trimmedLine.slice(6));
-
+                            if (data.type === 'step') {
+                                setMood('thinking');
+                                setActiveSteps(prev => {
+                                    const idx = prev.findIndex(s => s.id === data.id);
+                                    const next: AgentStep = { id: data.id, label: data.label, status: data.status };
+                                    if (idx === -1) return [...prev, next];
+                                    const copy = [...prev];
+                                    copy[idx] = next;
+                                    return copy;
+                                });
+                            }
                             if (data.chunk) {
                                 accumulatedContentRef.current += data.chunk;
                                 updateAssistantMessageContent(accumulatedContentRef.current);
                             }
-
                             if (data.final) {
                                 accumulatedContentRef.current = data.final;
                                 updateAssistantMessageContent(accumulatedContentRef.current, true);
                             }
-
                             if (data.done) {
                                 const finalContent = data.final ?? accumulatedContentRef.current;
                                 accumulatedContentRef.current = finalContent;
-                                updateAssistantMessageContent(finalContent, true);
+                                setActiveSteps([]);
                                 setCurrentConversationId(data.conversation_id);
-                                setLastMessageContent(finalContent);
-                            }
 
-                            if (data.error) {
-                                setError(data.error);
-                                setMessages(prev => prev.slice(0, -1));
+                                if (data.tool_used === 'qr_generator' && data.tool_data?.qr_url) {
+                                    setMessages(prev => {
+                                        const updated = [...prev];
+                                        const lastIndex = updated.length - 1;
+                                        if (lastIndex >= 0 && updated[lastIndex].role === 'assistant') {
+                                            updated[lastIndex] = {
+                                                ...updated[lastIndex],
+                                                content: finalContent,
+                                                isWidget: true,
+                                                widgetType: 'qr',
+                                                widgetData: data.tool_data,
+                                            };
+                                        }
+                                        return updated;
+                                    });
+                                } else {
+                                    updateAssistantMessageContent(finalContent, true);
+                                }
                             }
                         } catch { /* ignore parse errors */ }
                     }
                 }
             }
         } catch (err: any) {
-            if (err.name === 'AbortError') return;
-            let errorMessage = 'Failed to send message';
-            if (err.message === 'Failed to fetch' || err.message.includes('network')) {
-                errorMessage = 'Network error. Please check your connection.';
-            } else if (err.message) {
-                errorMessage = err.message;
+            // FALLBACK MODE: Trigger local fallback response if backend is offline/errored
+            console.warn('Backend unavailable, switching to local agent synthesis.');
+            await new Promise(r => setTimeout(r, 400));
+            setActiveSteps([]);
+            setIsLoading(false);
+
+            // Synthesize local fallback response based on keywords
+            let fallbackResponse = `Hello! I am **A.E.G.I.S.**, your agentic AI portfolio assistant.
+
+The backend is currently unreachable, so I can't run live tools or generate a real answer right now. Please try again in a moment, or browse the site directly via /services and /blogs in the meantime.`;
+
+            const cleanText = text.toLowerCase();
+            if (cleanText.includes('hello') || cleanText.includes('hi') || cleanText.includes('hey')) {
+                fallbackResponse = `Greetings! I am **A.E.G.I.S.**, the portfolio agent. How can I assist you with your projects, architectures, or technical queries today?`;
+                setMood('happy');
+            } else if (cleanText.includes('skill') || cleanText.includes('portfolio') || cleanText.includes('experience')) {
+                fallbackResponse = `### 🛠️ Developer Expertise & Core Stack
+The developer specializes in building high-performance, automated, and visually stunning web systems:
+- **Frontend**: Expert-level React, TypeScript, Next.js, and complex interactive UI designs.
+- **Backend & Automation**: Python (Django, FastAPI), Docker containerization, CI/CD, and server optimization.
+- **AI & Agents**: Custom LangChain/Ollama integrations, multi-model ensemble architectures, and vector search systems.`;
+                setMood('idea');
+            } else {
+                setMood('neutral');
             }
-            setError(errorMessage);
-            setMessages(prev => prev.slice(0, -1));
+
+            const assistantMessage: Message = {
+                role: 'assistant',
+                content: fallbackResponse,
+                timestamp: new Date().toISOString()
+            };
+            setMessages(prev => [...prev, assistantMessage]);
         } finally {
             setIsLoading(false);
             setIsStreaming(false);
@@ -676,12 +912,11 @@ const ChatbotPage: React.FC = () => {
         }
     };
 
-    // Render conversation group
     const renderConversationGroup = (title: string, items: Conversation[]) => {
         if (items.length === 0) return null;
         return (
-            <Box key={title}>
-                <Typography variant="caption" sx={{ px: 2, py: 1, color: 'grey.600', fontWeight: 600, letterSpacing: 1, display: 'block' }}>
+            <Box key={title} sx={{ mb: 2 }}>
+                <Typography variant="caption" sx={{ px: 2, py: 1, color: '#3dfc55', fontWeight: 800, letterSpacing: 1.5, display: 'block' }}>
                     {title}
                 </Typography>
                 {items.map((conv) => (
@@ -692,7 +927,7 @@ const ChatbotPage: React.FC = () => {
                             <IconButton
                                 size="small"
                                 onClick={(e) => handleDeleteClick(conv.id, e)}
-                                sx={{ color: 'grey.700', '&:hover': { color: '#ef4444' } }}
+                                sx={{ color: 'grey.600', '&:hover': { color: '#ef4444' } }}
                             >
                                 <Delete fontSize="small" />
                             </IconButton>
@@ -702,16 +937,20 @@ const ChatbotPage: React.FC = () => {
                             selected={currentConversationId === conv.id}
                             onClick={() => loadConversation(conv.id)}
                             sx={{
-                                borderRadius: 2,
+                                borderRadius: '8px',
                                 mb: 0.5,
-                                '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.08)' },
-                                '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' }
+                                borderLeft: currentConversationId === conv.id ? '3px solid #3dfc55' : '3px solid transparent',
+                                '&.Mui-selected': {
+                                    bgcolor: 'rgba(61, 252, 85, 0.08)',
+                                    '&:hover': { bgcolor: 'rgba(61, 252, 85, 0.12)' }
+                                },
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' }
                             }}
                         >
                             <ListItemText
                                 primary={conv.title}
                                 secondary={`${conv.message_count || 0} messages`}
-                                primaryTypographyProps={{ noWrap: true, fontSize: '0.9rem', color: 'grey.300' }}
+                                primaryTypographyProps={{ noWrap: true, fontSize: '0.85rem', color: 'grey.300', fontWeight: currentConversationId === conv.id ? 700 : 500 }}
                                 secondaryTypographyProps={{ fontSize: '0.7rem', color: 'grey.600' }}
                             />
                         </ListItemButton>
@@ -722,95 +961,56 @@ const ChatbotPage: React.FC = () => {
     };
 
     const formatMessage = (content: string) => {
-        // Handle <think> blocks
-        if (content.includes('<think>')) {
-            const parts = content.split(/<think>([\s\S]*?)<\/think>/g);
-            return parts.map((part, i) => {
-                if (i % 2 === 1) { // This is the thinking content
-                    return (
-                        <Paper
-                            key={`think-${i}`}
-                            elevation={0}
-                            sx={{
-                                my: 1.5,
-                                p: 2,
-                                borderRadius: 2,
-                                borderLeft: '3px solid #6366f1',
-                                bgcolor: 'rgba(99, 102, 241, 0.05)',
-                                fontStyle: 'italic',
-                                color: 'grey.400',
-                                fontSize: '0.9rem',
-                            }}
-                        >
-                            <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 600, mb: 0.5, display: 'block', textTransform: 'uppercase', letterSpacing: 1 }}>
-                                Thought Process
-                            </Typography>
-                            {part.trim()}
-                        </Paper>
-                    );
-                }
-                // Regular content - recursively format code blocks
-                if (!part.trim()) return null;
-                return <Box key={i}>{formatMessage(part)}</Box>;
-            });
-        }
-
         const parts = content.split(/(```[\s\S]*?```)/g);
         return parts.map((part, i) => {
             if (part.startsWith('```') && part.endsWith('```')) {
                 const code = part.slice(3, -3);
                 const firstLine = code.split('\n')[0];
-                const language = firstLine.match(/^[a-z]+$/i) ? firstLine : '';
+                const language = firstLine.match(/^[a-z0-9]+$/i) ? firstLine : '';
                 const codeContent = language ? code.slice(language.length + 1) : code;
                 return (
-                    <Paper key={i} elevation={0} sx={{ my: 2, borderRadius: 2, overflow: 'hidden', bgcolor: '#0d1117', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <Box sx={{ px: 2, py: 1, bgcolor: 'rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Paper key={i} elevation={0} sx={{ my: 2, borderRadius: '12px', overflow: 'hidden', bgcolor: '#0d0e12', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Box sx={{ px: 2, py: 1, bgcolor: 'rgba(255,255,255,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                             <Typography variant="caption" sx={{ color: 'grey.500', fontFamily: 'monospace' }}>{language || 'text'}</Typography>
-                            <IconButton size="small" onClick={() => copyToClipboard(codeContent.trim(), -1)} sx={{ color: 'grey.500' }}><ContentCopy fontSize="small" /></IconButton>
+                            <IconButton size="small" onClick={() => copyToClipboard(codeContent.trim())} sx={{ color: 'grey.500' }}>
+                                <ContentCopy fontSize="small" />
+                            </IconButton>
                         </Box>
                         <Box sx={{ p: 2, overflow: 'auto' }}>
-                            <pre style={{ margin: 0, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: '#e6edf3' }}><code>{codeContent.trim()}</code></pre>
+                            <pre style={{ margin: 0, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.8rem', color: '#e6edf3' }}><code>{codeContent.trim()}</code></pre>
                         </Box>
                     </Paper>
                 );
             }
-            // Parse inline markdown for the text part
+
             return (
                 <span key={i} style={{ whiteSpace: 'pre-wrap', display: 'block', wordBreak: 'break-word' }}>
                     {part.split('\n').map((line, lineIndex) => {
                         let renderLine: React.ReactNode = line;
-                        
-                        // Bold
+
+                        // Bold markdown parser
                         if (line.includes('**')) {
                             const boldParts = line.split(/(\*\*.*?\*\*)/g);
-                            renderLine = boldParts.map((bp, bpi) => 
-                                bp.startsWith('**') && bp.endsWith('**') 
-                                    ? <strong key={`b-${bpi}`} style={{ color: 'white' }}>{bp.slice(2, -2)}</strong> 
+                            renderLine = boldParts.map((bp, bpi) =>
+                                bp.startsWith('**') && bp.endsWith('**')
+                                    ? <strong key={`b-${bpi}`} style={{ color: '#ffffff', fontWeight: 700 }}>{bp.slice(2, -2)}</strong>
                                     : bp
                             );
                         }
 
-                        // Blockquotes (Legal / Formal notice blocks)
-                        if (line.startsWith('> ')) {
-                            return (
-                                <Box key={`l-${lineIndex}`} sx={{
-                                    borderLeft: '4px solid #94a3b8',
-                                    bgcolor: 'rgba(255,255,255,0.03)',
-                                    pl: 2, py: 0.5, my: 1,
-                                    color: 'grey.300',
-                                    fontStyle: 'italic',
-                                    borderRadius: '0 4px 4px 0'
-                                }}>
-                                    {line.slice(2)}
-                                </Box>
-                            );
+                        // Headers markdown parser
+                        if (line.startsWith('### ')) {
+                            return <Typography key={`h3-${lineIndex}`} variant="subtitle1" sx={{ color: '#3dfc55', fontWeight: 800, mt: 2, mb: 1 }}>{line.slice(4)}</Typography>;
+                        }
+                        if (line.startsWith('#### ')) {
+                            return <Typography key={`h4-${lineIndex}`} variant="subtitle2" sx={{ color: '#00eeff', fontWeight: 700, mt: 1.5, mb: 0.5 }}>{line.slice(5)}</Typography>;
                         }
 
                         // Lists
-                        if (line.trim().startsWith('- ') || line.trim().match(/^\d+\.\s/)) {
+                        if (line.trim().startsWith('- ')) {
                             return (
                                 <Box key={`l-${lineIndex}`} sx={{ display: 'flex', pl: 2, mb: 0.5 }}>
-                                    <Box sx={{ mr: 1, color: 'grey.400' }}>•</Box>
+                                    <Box sx={{ mr: 1, color: '#3dfc55' }}>•</Box>
                                     <Box>{renderLine}</Box>
                                 </Box>
                             );
@@ -831,27 +1031,63 @@ const ChatbotPage: React.FC = () => {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            bgcolor: 'rgba(15, 23, 42, 0.98)',
-            backdropFilter: 'blur(20px)',
+            bgcolor: 'rgba(13, 14, 18, 0.65)',
+            backdropFilter: 'blur(24px)',
+            borderRight: '1px solid rgba(255, 255, 255, 0.05)',
         }}>
             {/* Header */}
             <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Avatar sx={{ width: 32, height: 32, background: selectedPersona.gradient }}>
-                        {selectedPersona.icon}
+                    <Avatar sx={{ width: 32, height: 32, bgcolor: 'rgba(61, 252, 85, 0.1)', border: '1px solid #3dfc55' }}>
+                        <Memory sx={{ color: '#3dfc55', fontSize: 18 }} />
                     </Avatar>
-                    <Typography variant="h6" fontWeight={700} sx={{ background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                        ExpectException - AI
+                    <Typography variant="h6" fontWeight={800} sx={{ background: 'linear-gradient(to right, #fff, #3dfc55)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        A.E.G.I.S. Log
                     </Typography>
                 </Box>
                 {isMobile && <IconButton onClick={() => setMobileDrawerOpen(false)} sx={{ color: 'grey.500' }}><Close /></IconButton>}
             </Box>
 
-            {/* Buttons & Model Select (Mobile) */}
-            <Box sx={{ px: 2, pb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-
-                <Button fullWidth variant="contained" startIcon={<Add />} onClick={startNewConversation} sx={{ bgcolor: 'white', color: 'black', '&:hover': { bgcolor: 'grey.200' }, textTransform: 'none', fontWeight: 600, py: 1 }}>New Chat</Button>
-                <Button fullWidth variant="outlined" startIcon={<Home />} onClick={() => navigate('/')} sx={{ borderColor: 'rgba(255,255,255,0.2)', color: 'grey.400', '&:hover': { borderColor: 'white', color: 'white', bgcolor: 'rgba(255,255,255,0.05)' }, textTransform: 'none' }}>Back to Website</Button>
+            {/* Buttons */}
+            <Box sx={{ px: 2, pb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Button
+                    fullWidth
+                    variant="contained"
+                    startIcon={<Add />}
+                    onClick={startNewConversation}
+                    sx={{
+                        bgcolor: '#3dfc55',
+                        color: '#000000',
+                        '&:hover': { bgcolor: 'rgba(61, 252, 85, 0.8)' },
+                        textTransform: 'none',
+                        fontWeight: 800,
+                        py: 1.2,
+                        borderRadius: '10px',
+                        boxShadow: '0 4px 14px rgba(61, 252, 85, 0.25)'
+                    }}
+                >
+                    New Session
+                </Button>
+                <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<Home />}
+                    onClick={() => navigate('/')}
+                    sx={{
+                        borderColor: 'rgba(255,255,255,0.08)',
+                        color: 'grey.300',
+                        borderRadius: '10px',
+                        '&:hover': {
+                            borderColor: '#3dfc55',
+                            color: 'white',
+                            bgcolor: 'rgba(61, 252, 85, 0.05)'
+                        },
+                        textTransform: 'none',
+                        py: 1
+                    }}
+                >
+                    Back to Portfolio
+                </Button>
             </Box>
 
             <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
@@ -860,8 +1096,8 @@ const ChatbotPage: React.FC = () => {
             <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', px: 1, py: 2 }}>
                 {conversations.length === 0 ? (
                     <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
-                        <Typography variant="body2" color="grey.600">No conversations yet</Typography>
-                        <Typography variant="caption" color="grey.700">Start a new chat to begin</Typography>
+                        <Typography variant="body2" color="grey.600" sx={{ fontWeight: 600 }}>No active logs</Typography>
+                        <Typography variant="caption" color="grey.700">Start chatting to record history</Typography>
                     </Box>
                 ) : (
                     <List sx={{ mt: 1 }}>
@@ -884,19 +1120,33 @@ const ChatbotPage: React.FC = () => {
                         sx={{
                             color: 'grey.600',
                             textTransform: 'none',
+                            fontWeight: 700,
                             '&:hover': { color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.1)' }
                         }}
                     >
-                        Clear All Chats
+                        Purge All Logs
                     </Button>
                 </Box>
             )}
 
             {/* Status Footer */}
-            <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: isAvailable ? '#10b981' : '#ef4444', boxShadow: isAvailable ? '0 0 10px #10b981' : 'none' }} />
-                    <Typography variant="caption" color="grey.400">{isAvailable ? 'AI Online' : 'Connecting...'}</Typography>
+            <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.08)', bgcolor: 'rgba(5, 5, 5, 0.2)' }}>
+                <Stack direction="row" alignItems="center" spacing={1.5}>
+                    <Box sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        bgcolor: isAvailable ? '#3dfc55' : '#ef4444',
+                        boxShadow: isAvailable ? '0 0 12px #3dfc55' : '0 0 12px #ef4444',
+                        animation: isAvailable ? 'pulseGreen 1.5s infinite alternate' : 'none',
+                        '@keyframes pulseGreen': {
+                            '0%': { opacity: 0.6 },
+                            '100%': { opacity: 1 }
+                        }
+                    }} />
+                    <Typography variant="caption" color="#94a3b8" fontWeight="700">
+                        {isAvailable ? 'AI Core: Qwen3 Active' : 'AI Core: Local Fallback'}
+                    </Typography>
                 </Stack>
             </Box>
         </Box>
@@ -907,55 +1157,48 @@ const ChatbotPage: React.FC = () => {
             display: 'flex',
             height: '100dvh',
             width: '100vw',
-            bgcolor: '#020617',
+            bgcolor: '#050505',
             color: 'white',
             position: 'fixed',
             inset: 0,
             overflow: 'hidden',
         }}>
             <CleanStarBackground withNebula={true} />
-            <Seo title="ExpExc AI Chat" description="Premium Cloud-Based AI Assistant" />
+            <Seo title="A.E.G.I.S. Agentic Chatbot" description="ExpectException Interactive Agent" />
 
             {/* Delete Confirmation Dialog */}
             <Dialog
                 open={deleteDialogOpen}
                 onClose={() => setDeleteDialogOpen(false)}
-                PaperProps={{ sx: { bgcolor: '#1e293b', color: 'white', borderRadius: 3 } }}
+                PaperProps={{ sx: { bgcolor: '#0d0e12', border: '1px solid rgba(255,255,255,0.05)', color: 'white', borderRadius: '16px' } }}
             >
-                <DialogTitle>Delete Conversation?</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 800 }}>Delete Conversation Log?</DialogTitle>
                 <DialogContent>
-                    <DialogContentText sx={{ color: 'grey.400' }}>
-                        This action cannot be undone. This conversation and all its messages will be permanently deleted.
+                    <DialogContentText sx={{ color: 'grey.400', fontWeight: 500 }}>
+                        This action cannot be undone. This conversation log will be permanently deleted.
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: 'grey.400' }}>Cancel</Button>
-                    <Button onClick={confirmDelete} variant="contained" color="error">Delete</Button>
+                    <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: 'grey.400', fontWeight: 700 }}>Cancel</Button>
+                    <Button onClick={confirmDelete} variant="contained" color="error" sx={{ fontWeight: 700, borderRadius: '8px' }}>Delete</Button>
                 </DialogActions>
             </Dialog>
 
             {/* Clear All Confirmation Dialog */}
             <Dialog
                 open={clearAllDialogOpen}
-                onClose={() => { setClearAllDialogOpen(false); setClearAllConfirmStep(0); }}
-                PaperProps={{ sx: { bgcolor: '#1e293b', color: 'white', borderRadius: 3 } }}
+                onClose={() => setClearAllDialogOpen(false)}
+                PaperProps={{ sx: { bgcolor: '#0d0e12', border: '1px solid rgba(255,255,255,0.05)', color: 'white', borderRadius: '16px' } }}
             >
-                <DialogTitle sx={{ color: '#ef4444' }}>
-                    {clearAllConfirmStep === 1 ? '⚠️ Clear All Chats?' : '⚠️ Are you absolutely sure?'}
-                </DialogTitle>
+                <DialogTitle sx={{ color: '#ef4444', fontWeight: 800 }}>Purge All Logs?</DialogTitle>
                 <DialogContent>
-                    <DialogContentText sx={{ color: 'grey.400' }}>
-                        {clearAllConfirmStep === 1
-                            ? `This will permanently delete all ${conversations.length} conversation(s).`
-                            : 'This is your final warning. All chats will be gone forever!'
-                        }
+                    <DialogContentText sx={{ color: 'grey.400', fontWeight: 500 }}>
+                        This will permanently delete all conversation history.
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={() => { setClearAllDialogOpen(false); setClearAllConfirmStep(0); }} sx={{ color: 'grey.400' }}>Cancel</Button>
-                    <Button onClick={confirmClearAll} variant="contained" color="error">
-                        {clearAllConfirmStep === 1 ? 'Continue' : 'Delete Everything'}
-                    </Button>
+                    <Button onClick={() => setClearAllDialogOpen(false)} sx={{ color: 'grey.400', fontWeight: 700 }}>Cancel</Button>
+                    <Button onClick={confirmClearAll} variant="contained" color="error" sx={{ fontWeight: 700, borderRadius: '8px' }}>Purge Everything</Button>
                 </DialogActions>
             </Dialog>
 
@@ -968,7 +1211,6 @@ const ChatbotPage: React.FC = () => {
                     <Box sx={{
                         width: drawerWidth,
                         height: '100%',
-                        borderRight: '1px solid rgba(255,255,255,0.08)',
                         flexShrink: 0,
                         overflow: 'hidden'
                     }}>
@@ -996,6 +1238,7 @@ const ChatbotPage: React.FC = () => {
                                 color: 'rgba(255,255,255,0.7)',
                                 bgcolor: 'rgba(255,255,255,0.05)',
                                 backdropFilter: 'blur(8px)',
+                                border: '1px solid rgba(255,255,255,0.05)',
                                 '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', color: 'white' }
                             }}
                         >
@@ -1008,6 +1251,7 @@ const ChatbotPage: React.FC = () => {
                                 color: 'rgba(255,255,255,0.7)',
                                 bgcolor: 'rgba(255,255,255,0.05)',
                                 backdropFilter: 'blur(8px)',
+                                border: '1px solid rgba(255,255,255,0.05)',
                                 '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', color: 'white' }
                             }}
                         >
@@ -1016,7 +1260,7 @@ const ChatbotPage: React.FC = () => {
                     )}
                 </Box>
 
-                {/* Floating Persona Indicator (Top Right) */}
+                {/* Floating Info Indicator (Top Right) */}
                 <Box sx={{
                     position: 'absolute',
                     top: { xs: 16, md: 24 },
@@ -1030,186 +1274,141 @@ const ChatbotPage: React.FC = () => {
                     px: 2,
                     py: 0.75,
                     borderRadius: 3,
-                    border: '1px solid rgba(255,255,255,0.05)',
-                    transition: 'all 0.3s',
-                    cursor: 'pointer',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.1)' }
-                }} onClick={handleRename}>
-                    <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem', bgcolor: 'transparent', color: selectedPersona.color, border: `1px solid ${alpha(selectedPersona.color, 0.5)}` }}>
-                        {selectedPersona.icon}
-                    </Avatar>
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600, letterSpacing: 0.5 }}>
-                        {customNames[selectedPersona.id] || selectedPersona.name}
+                    border: '1px solid rgba(255,255,255,0.05)'
+                }}>
+                    <Typography variant="caption" sx={{ color: '#3dfc55', fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                        Agent: A.E.G.I.S. v3
                     </Typography>
                 </Box>
 
-                {/* Messages Area with Star Background */}
+                {/* Messages Area */}
                 <Box
                     ref={messagesContainerRef}
                     sx={{
                         flex: 1,
                         overflowY: 'auto',
                         overflowX: 'hidden',
-                        p: { xs: 2, md: 3 },
+                        p: { xs: 2, md: 4 },
                         pt: { xs: 10, md: 10 },
                         position: 'relative',
                         zIndex: 1,
                     }}
                 >
+                    {error && <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2, bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5' }}>{error}</Alert>}
 
-                    {error && <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2, bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5', position: 'relative', zIndex: 1 }}>{error}</Alert>}
-
-                    {/* Empty State with Persona Selection */}
+                    {/* Empty State / Welcome Screen */}
                     {messages.length === 0 && (
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                            <Box sx={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 4, position: 'relative', zIndex: 1 }}>
-                                <Box sx={{ my: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                                    {/* Logo */}
-                                    <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
-                                        <Avatar sx={{ width: 80, height: 80, mb: 3, background: selectedPersona.gradient, boxShadow: `0 0 60px ${alpha(selectedPersona.color, 0.5)}` }}>
-                                            {React.cloneElement(selectedPersona.icon as React.ReactElement, { sx: { fontSize: 40 } })}
-                                        </Avatar>
-                                    </motion.div>
+                            <Box sx={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', px: 2 }}>
+                                <ChatbotFace mood={mood} />
+                                <Typography variant="h3" sx={{
+                                    fontWeight: 900,
+                                    letterSpacing: '-0.03em',
+                                    background: 'linear-gradient(135deg, #ffffff 30%, #3dfc55 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    mb: 1.5
+                                }}>
+                                    A.E.G.I.S. Agentic Assistant
+                                </Typography>
+                                <Typography variant="body1" color="grey.400" sx={{ maxWidth: 500, mb: 4, fontWeight: 500 }}>
+                                    I am an autonomous agent designed to elaborate project ideas, execute diagnostic workflows, and assist you.
+                                </Typography>
 
-                                    <Typography variant="h4" fontWeight={700} gutterBottom sx={{ textAlign: 'center', background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                                        {selectedPersona.id === 'general' ? 'How can I help you?' : `Chat with ${selectedPersona.name}`}
-                                    </Typography>
-                                    <Typography variant="body2" color="grey.500" sx={{ mb: 3 }}>
-                                        Powered by ExpExc Cloud <span style={{ fontSize: '10px', opacity: 0.5 }}>(v3.0.1)</span>
-                                    </Typography>
-
-                                    {/* Persona Selection */}
-                                    <Typography variant="body2" color="grey.400" sx={{ mb: 2 }}>Choose your assistant:</Typography>
-                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 800, mb: 4 }}>
-                                        {availablePersonas.map((persona, i) => (
-                                            <motion.div key={persona.id} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                                <Paper
-                                                    onClick={() => setSelectedPersona(persona)}
-                                                    sx={{
-                                                        p: 1.5, width: 90, cursor: 'pointer', textAlign: 'center',
-                                                        background: selectedPersona.id === persona.id ? persona.gradient : 'rgba(255,255,255,0.03)',
-                                                        border: `2px solid ${selectedPersona.id === persona.id ? persona.color : 'rgba(255,255,255,0.1)'}`,
-                                                        borderRadius: 2, transition: 'all 0.2s',
-                                                        '&:hover': { borderColor: persona.color, bgcolor: alpha(persona.color, 0.1) }
-                                                    }}
-                                                >
-                                                    <Avatar sx={{ width: 36, height: 36, mx: 'auto', mb: 0.5, background: selectedPersona.id === persona.id ? 'rgba(255,255,255,0.2)' : persona.gradient, fontSize: 18 }}>
-                                                        {persona.icon}
-                                                    </Avatar>
-                                                    <Typography variant="caption" fontWeight={600} color={selectedPersona.id === persona.id ? 'white' : 'grey.300'} sx={{ display: 'block' }}>{persona.name}</Typography>
-                                                </Paper>
-                                            </motion.div>
-                                        ))}
-                                    </Box>
-
-                                    {!isAvailable && <Alert severity="info" sx={{ mb: 3, bgcolor: 'rgba(30, 41, 59, 0.8)', color: '#93c5fd' }}>Connecting to cloud...</Alert>}
-
-                                    {/* Dynamic Suggestions */}
-                                    <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 650 }}>
-                                        {selectedPersona.suggestions.map((s, i) => (
-                                            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-                                                <Paper
-                                                    onClick={() => sendMessage(s.text)}
-                                                    elevation={2}
-                                                    sx={{
-                                                        px: 2.5, py: 1.5,
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 1.5,
-                                                        bgcolor: 'rgba(30, 41, 59, 0.4)',
-                                                        backdropFilter: 'blur(8px)',
-                                                        border: '1px solid rgba(255,255,255,0.1)',
-                                                        borderRadius: 4,
-                                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                                        '&:hover': {
-                                                            bgcolor: alpha(selectedPersona.color, 0.12),
-                                                            borderColor: alpha(selectedPersona.color, 0.5),
-                                                            transform: 'translateY(-2px)',
-                                                            boxShadow: `0 8px 24px ${alpha(selectedPersona.color, 0.2)}`
-                                                        }
-                                                    }}
-                                                >
-                                                    <Box sx={{
-                                                        color: selectedPersona.color,
-                                                        display: 'flex',
-                                                        bgcolor: alpha(selectedPersona.color, 0.1),
-                                                        p: 0.5,
-                                                        borderRadius: 2
-                                                    }}>
-                                                        {s.icon || React.cloneElement(selectedPersona.icon as React.ReactElement, { sx: { fontSize: 20 } })}
-                                                    </Box>
-                                                    <Typography variant="body2" fontWeight={500} color="grey.200">{s.text}</Typography>
-                                                </Paper>
-                                            </motion.div>
-                                        ))}
-                                    </Box>
+                                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 600 }}>
+                                    {[
+                                        { text: 'What is the current time?', desc: 'Launches local clock module' },
+                                        { text: 'Elaborate on a SaaS idea', desc: 'Generates structured MVP blueprint' },
+                                        { text: 'List developer skills', desc: 'Reviews tech stack capabilities' }
+                                    ].map((suggestion, i) => (
+                                        <Paper
+                                            key={i}
+                                            onClick={() => sendMessage(suggestion.text)}
+                                            sx={{
+                                                p: 2,
+                                                width: 170,
+                                                cursor: 'pointer',
+                                                bgcolor: 'rgba(255, 255, 255, 0.02)',
+                                                border: '1px solid rgba(255, 255, 255, 0.05)',
+                                                borderRadius: '12px',
+                                                transition: 'all 0.2s',
+                                                '&:hover': {
+                                                    borderColor: '#3dfc55',
+                                                    bgcolor: 'rgba(61, 252, 85, 0.03)',
+                                                    transform: 'translateY(-2px)'
+                                                }
+                                            }}
+                                        >
+                                            <Typography variant="body2" sx={{ fontWeight: 700, color: 'white', mb: 0.5 }}>{suggestion.text}</Typography>
+                                            <Typography variant="caption" color="grey.500">{suggestion.desc}</Typography>
+                                        </Paper>
+                                    ))}
                                 </Box>
                             </Box>
                         </motion.div>
                     )}
 
                     {/* Messages List */}
-                    <Box sx={{ maxWidth: 800, mx: 'auto', position: 'relative', zIndex: 1 }}>
+                    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
                         <AnimatePresence>
                             {messages.map((msg, idx) => (
-                                <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                                    <Box sx={{ display: 'flex', gap: { xs: 1.5, md: 2.5 }, mb: { xs: 3, md: 4 }, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
+                                <motion.div key={idx} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                                    <Box sx={{ display: 'flex', gap: { xs: 1.5, md: 2.5 }, mb: 4, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
                                         <Avatar sx={{
-                                            width: { xs: 28, md: 36 },
-                                            height: { xs: 28, md: 36 },
-                                            bgcolor: msg.role === 'user' ? 'rgba(255,255,255,0.1)' : 'transparent',
-                                            background: msg.role === 'assistant' ? selectedPersona.gradient : undefined,
-                                            flexShrink: 0,
-                                            border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                                            width: 36,
+                                            height: 36,
+                                            bgcolor: msg.role === 'user' ? 'rgba(255,255,255,0.05)' : 'transparent',
+                                            border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.1)' : 'none',
                                             mt: 0.5
                                         }}>
-                                            {msg.role === 'user' ? <Person sx={{ fontSize: { xs: 16, md: 20 } }} /> : React.cloneElement(selectedPersona.icon as React.ReactElement, { sx: { fontSize: { xs: 16, md: 20 } } })}
+                                            {msg.role === 'user' ? (
+                                                <Person sx={{ fontSize: 20, color: 'grey.300' }} />
+                                            ) : (
+                                                <Avatar sx={{ width: 36, height: 36, bgcolor: 'rgba(61, 252, 85, 0.1)', border: '1px solid #3dfc55' }}>
+                                                    <Memory sx={{ color: '#3dfc55', fontSize: 18 }} />
+                                                </Avatar>
+                                            )}
                                         </Avatar>
-                                        <Box sx={{ maxWidth: { xs: '85%', sm: '80%', md: '75%' } }}>
-                                            <Paper elevation={msg.role === 'user' ? 0 : 2} sx={{
-                                                py: { xs: 1.5, md: 2 },
-                                                px: { xs: 2, md: 2.5 },
-                                                bgcolor: msg.role === 'user' ? 'rgba(30, 41, 59, 0.6)' : 'rgba(15, 23, 42, 0.7)',
-                                                backdropFilter: 'blur(10px)',
-                                                borderRadius: 3,
+                                        <Box sx={{ maxWidth: '80%' }}>
+                                            <Paper elevation={0} sx={{
+                                                py: 2,
+                                                px: 2.5,
+                                                bgcolor: msg.role === 'user' ? 'rgba(61, 252, 85, 0.03)' : 'rgba(13, 14, 18, 0.5)',
+                                                backdropFilter: 'blur(20px)',
+                                                borderRadius: '16px',
                                                 border: '1px solid',
-                                                borderColor: msg.role === 'user' ? 'rgba(255,255,255,0.1)' : alpha(selectedPersona.color, 0.2),
-                                                borderTopRightRadius: msg.role === 'user' ? 1 : 12,
-                                                borderTopLeftRadius: msg.role === 'assistant' ? 1 : 12,
+                                                borderColor: msg.role === 'user' ? 'rgba(61, 252, 85, 0.15)' : 'rgba(255,255,255,0.05)',
+                                                borderTopRightRadius: msg.role === 'user' ? 0 : '16px',
+                                                borderTopLeftRadius: msg.role === 'assistant' ? 0 : '16px',
                                                 color: 'grey.100',
-                                                boxShadow: msg.role === 'assistant' ? `0 4px 20px ${alpha(selectedPersona.color, 0.05)}` : 'none',
+                                                boxShadow: msg.role === 'user' ? 'none' : '0 10px 30px rgba(0,0,0,0.3)',
+                                                position: 'relative',
                                             }}>
-                                                <Typography component="div" sx={{
-                                                    lineHeight: 1.7,
-                                                    fontSize: { xs: '0.925rem', md: '1rem' },
-                                                }}>{formatMessage(msg.content)}</Typography>
-                                            </Paper>
-                                            {/* Message footer with timestamp and actions */}
-                                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, ml: 1, alignItems: 'center', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', opacity: 0.7 }}>
-                                                {msg.timestamp && (
-                                                    <Tooltip title={new Date(msg.timestamp).toLocaleString()}>
-                                                        <Typography variant="caption" sx={{ color: 'grey.500', display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.7rem' }}>
-                                                            {formatTimestamp(new Date(msg.timestamp))}
-                                                        </Typography>
-                                                    </Tooltip>
+                                                {/* Rendering Clock Widget if applicable */}
+                                                {msg.isWidget && msg.widgetType === 'clock' && (
+                                                    <ClockWidget />
                                                 )}
-                                                {msg.role === 'assistant' && !isStreaming && (
-                                                    <>
-                                                        <Tooltip title={copiedIndex === idx ? 'Copied!' : 'Copy'}>
-                                                            <IconButton size="small" onClick={() => copyToClipboard(msg.content, idx)} sx={{ color: 'grey.600', padding: 0.5 }}>
-                                                                {copiedIndex === idx ? <Check fontSize="small" sx={{ fontSize: 14 }} color="success" /> : <ContentCopy fontSize="small" sx={{ fontSize: 14 }} />}
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        {idx === messages.length - 1 && (
-                                                            <Tooltip title="Regenerate response">
-                                                                <IconButton size="small" onClick={regenerateResponse} sx={{ color: 'grey.600' }}>
-                                                                    <Refresh fontSize="small" />
-                                                                </IconButton>
-                                                            </Tooltip>
-                                                        )}
-                                                    </>
+                                                {msg.isWidget && msg.widgetType === 'qr' && msg.widgetData?.qr_url && (
+                                                    <QrWidget url={msg.widgetData.qr_url} encoded={msg.widgetData.encoded} />
+                                                )}
+                                                <Typography component="div" sx={{ lineHeight: 1.7, fontSize: '0.95rem' }}>
+                                                    {formatMessage(msg.content)}
+                                                </Typography>
+                                            </Paper>
+
+                                            {/* Timestamp & actions */}
+                                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, ml: 1, alignItems: 'center', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', opacity: 0.6 }}>
+                                                {msg.timestamp && (
+                                                    <Typography variant="caption" sx={{ color: 'grey.600', fontSize: '0.7rem' }}>
+                                                        {formatTimestamp(new Date(msg.timestamp))}
+                                                    </Typography>
+                                                )}
+                                                {msg.role === 'assistant' && (
+                                                    <Tooltip title="Copy Content">
+                                                        <IconButton size="small" onClick={() => copyToClipboard(msg.content)} sx={{ color: 'grey.600', p: 0.2 }}>
+                                                            <ContentCopy fontSize="small" sx={{ fontSize: 13 }} />
+                                                        </IconButton>
+                                                    </Tooltip>
                                                 )}
                                             </Box>
                                         </Box>
@@ -1218,58 +1417,87 @@ const ChatbotPage: React.FC = () => {
                             ))}
                         </AnimatePresence>
 
-                        {/* Loading Animation */}
-                        {isLoading && <ThinkingIndicator persona={selectedPersona} isLoading={isLoading} />}
+                        {/* Agent Steps Indicator */}
+                        {activeSteps.length > 0 && (
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                <Box sx={{ display: 'flex', gap: 2.5, mb: 4 }}>
+                                    <Avatar sx={{ width: 36, height: 36, bgcolor: 'rgba(0, 238, 255, 0.1)', border: '1px solid #00eeff' }}>
+                                        <HourglassEmpty sx={{ color: '#00eeff', fontSize: 18, animation: 'spin 2s linear infinite' }} />
+                                    </Avatar>
+                                    <Box sx={{ flexGrow: 1 }}>
+                                        <AgentStepsIndicator steps={activeSteps} />
+                                    </Box>
+                                </Box>
+                            </motion.div>
+                        )}
                         <div ref={messagesEndRef} />
                     </Box>
-
-                    {/* Scroll to bottom button */}
-                    <Zoom in={showScrollButton}>
-                        <IconButton
-                            onClick={scrollToBottom}
-                            sx={{
-                                position: 'fixed',
-                                bottom: 100,
-                                right: 24,
-                                bgcolor: 'rgba(30, 41, 59, 0.9)',
-                                color: 'white',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                '&:hover': { bgcolor: 'rgba(30, 41, 59, 1)' },
-                                zIndex: 10,
-                            }}
-                        >
-                            <KeyboardArrowDown />
-                        </IconButton>
-                    </Zoom>
                 </Box>
 
                 {/* Input Area */}
-                <Box sx={{ p: 2, pb: 1, display: 'flex', justifyContent: 'center', background: 'linear-gradient(to top, rgba(2, 6, 23, 1) 80%, transparent)' }}>
-                    <Paper elevation={4} sx={{ p: '4px 8px', display: 'flex', alignItems: 'center', width: '100%', maxWidth: 800, borderRadius: 4, bgcolor: 'rgba(30, 41, 59, 0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.3s', '&:hover, &:focus-within': { bgcolor: 'rgba(30, 41, 59, 0.8)', borderColor: selectedPersona.color } }}>
+                <Box sx={{
+                    p: { xs: 2, md: 4 },
+                    pt: 0,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(to top, #050505 80%, transparent)',
+                    position: 'relative',
+                    zIndex: 10
+                }}>
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: '8px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                            maxWidth: 800,
+                            borderRadius: '16px',
+                            bgcolor: 'rgba(13, 14, 18, 0.65)',
+                            backdropFilter: 'blur(24px)',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                            boxShadow: '0 20px 40px -15px rgba(0,0,0,0.7)',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            '&:focus-within': {
+                                borderColor: '#3dfc55',
+                                bgcolor: 'rgba(13, 14, 18, 0.8)',
+                                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.9), 0 0 20px -3px rgba(61, 252, 85, 0.2)',
+                            }
+                        }}
+                    >
                         <TextField
                             inputRef={inputRef}
                             fullWidth
                             multiline
-                            maxRows={5}
-                            placeholder={`Message ${selectedPersona.name}...`}
+                            maxRows={4}
+                            placeholder="Ask A.E.G.I.S. to elaborate an idea, check the time..."
                             value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
+                            onChange={(e) => {
+                                setInputValue(e.target.value);
+                                if (e.target.value.trim() && mood === 'neutral') {
+                                    setMood('excited');
+                                } else if (!e.target.value.trim() && mood === 'excited') {
+                                    setMood('neutral');
+                                }
+                            }}
                             onKeyDown={handleTextKeyDown}
-                            sx={{ ml: 2, flex: 1, '& .MuiInputBase-root': { color: 'white' } }}
+                            sx={{ ml: 2, flex: 1, '& .MuiInputBase-root': { color: 'white', fontSize: '0.95rem' } }}
                             variant="standard"
                             InputProps={{ disableUnderline: true }}
                         />
-                        {/* Character count */}
-                        {inputValue.length > 0 && (
-                            <Typography variant="caption" sx={{ color: inputValue.length > 4000 ? 'error.main' : 'grey.600', mr: 1 }}>
-                                {inputValue.length}
-                            </Typography>
-                        )}
-                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                             <IconButton
                                 onClick={() => sendMessage()}
                                 disabled={!inputValue.trim() || isLoading}
-                                sx={{ p: 1.5, m: 0.5, bgcolor: inputValue.trim() ? selectedPersona.color : 'transparent', color: inputValue.trim() ? 'white' : 'grey.600', '&:hover': { bgcolor: inputValue.trim() ? alpha(selectedPersona.color, 0.8) : 'rgba(255,255,255,0.05)' }, transition: 'all 0.2s', borderRadius: 3 }}
+                                sx={{
+                                    p: 1.5,
+                                    m: 0.5,
+                                    bgcolor: inputValue.trim() ? '#3dfc55' : 'transparent',
+                                    color: inputValue.trim() ? '#000000' : 'grey.600',
+                                    '&:hover': { bgcolor: inputValue.trim() ? 'rgba(61, 252, 85, 0.8)' : 'rgba(255,255,255,0.05)' },
+                                    transition: 'all 0.2s',
+                                    borderRadius: '10px'
+                                }}
                             >
                                 <Send />
                             </IconButton>

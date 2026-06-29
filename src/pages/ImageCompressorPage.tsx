@@ -19,6 +19,7 @@ import { CloudUpload, Compress, Download } from '@mui/icons-material';
 import Seo from '../components/seo/Seo';
 import apiClient, { API_BASE_URL } from '../api/config';
 import { endpoints } from '../api/endpoints';
+import ServicePageHero from '../components/services/ServicePageHero';
 
 const ImageCompressorPage: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -92,56 +93,80 @@ const ImageCompressorPage: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 6 }}>
+        <Container maxWidth="md" sx={{ py: 8 }}>
             <Seo
                 title="Online Image Compressor - Reduce Image Size Free"
                 toolId={11}
             />
-            <Typography variant="h3" gutterBottom sx={{ fontWeight: 800, textAlign: 'center', mb: 4 }}>
-                Image Compressor
-            </Typography>
+            <ServicePageHero
+                icon={Compress}
+                title="Image Compressor"
+                subtitle="Reduce the file size of your JPEG, PNG, and WEBP images while maintaining high visual quality."
+            />
 
-            <Card sx={{ bgcolor: 'background.paper' }}>
-                <CardContent sx={{ p: 4 }}>
+            <Card sx={{
+                background: 'rgba(13, 14, 18, 0.4)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                borderRadius: '20px',
+                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                p: 3
+            }}>
+                <CardContent sx={{ p: 1 }}>
                     {error && (
-                        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+                        <Alert severity="error" variant="filled" sx={{ mb: 4, borderRadius: '12px' }} onClose={() => setError(null)}>
                             {error}
                         </Alert>
                     )}
 
                     <Box
                         sx={{
-                            border: '2px dashed',
-                            borderColor: 'divider',
-                            borderRadius: 2,
-                            p: 6,
+                            border: '2px dashed rgba(255, 255, 255, 0.1)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                            borderRadius: '16px',
+                            p: 5,
                             textAlign: 'center',
                             cursor: 'pointer',
-                            bgcolor: 'action.hover',
+                            transition: 'all 0.3s ease',
                             mb: 4,
-                            '&:hover': { borderColor: 'primary.main' }
+                            '&:hover': {
+                                borderColor: '#3dfc55',
+                                backgroundColor: 'rgba(61, 252, 85, 0.02)',
+                                boxShadow: '0 0 20px rgba(61, 252, 85, 0.05)'
+                            }
                         }}
                         component="label"
                     >
                         <input type="file" hidden accept="image/*" onChange={handleFileChange} />
-                        <CloudUpload sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
-                        <Typography variant="h6" color="text.secondary">
+                        <CloudUpload sx={{ fontSize: 54, color: 'primary.main', mb: 2 }} />
+                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
                             {file ? file.name : 'Click to upload or drag and drop'}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary">
                             Supported: JPEG, PNG, WEBP
                         </Typography>
                     </Box>
 
                     <Grid container spacing={4} sx={{ mb: 4 }}>
                         <Grid item xs={12} md={6}>
-                            <Typography gutterBottom>Quality: {quality}%</Typography>
+                            <Typography gutterBottom sx={{ fontWeight: 600, mb: 2 }}>Quality: {quality}%</Typography>
                             <Slider
                                 value={quality}
                                 onChange={(_, v) => setQuality(v as number)}
                                 min={10}
                                 max={100}
                                 valueLabelDisplay="auto"
+                                sx={{
+                                    color: '#3dfc55',
+                                    '& .MuiSlider-thumb': {
+                                        '&:hover, &.Mui-focusVisible': {
+                                            boxShadow: '0px 0px 0px 8px rgba(61, 252, 85, 0.16)',
+                                        },
+                                        '&.Mui-active': {
+                                            boxShadow: '0px 0px 0px 14px rgba(61, 252, 85, 0.16)',
+                                        },
+                                    },
+                                }}
                             />
                         </Grid>
                         <Grid item xs={12} md={6}>
@@ -152,6 +177,11 @@ const ImageCompressorPage: React.FC = () => {
                                 value={format}
                                 onChange={(e) => setFormat(e.target.value)}
                                 size="small"
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: '10px',
+                                    }
+                                }}
                             >
                                 <MenuItem value="WEBP">WEBP (Recommended)</MenuItem>
                                 <MenuItem value="JPEG">JPEG</MenuItem>
@@ -160,14 +190,19 @@ const ImageCompressorPage: React.FC = () => {
                         </Grid>
                     </Grid>
 
-                    <Box sx={{ textAlign: 'center' }}>
+                    <Box sx={{ textAlign: 'center', mb: 1 }}>
                         <Button
                             variant="contained"
                             size="large"
                             onClick={handleCompress}
                             disabled={loading || !file}
-                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Compress />}
-                            sx={{ px: 6 }}
+                            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <Compress />}
+                            sx={{
+                                px: 6,
+                                py: 1.5,
+                                borderRadius: '10px',
+                                fontWeight: 700
+                            }}
                         >
                             {loading ? 'Compressing...' : 'Compress Image'}
                         </Button>
@@ -176,33 +211,44 @@ const ImageCompressorPage: React.FC = () => {
                     {file && estimatedSize !== null && (
                         <Box sx={{ mt: 3, textAlign: 'center' }}>
                             <Typography variant="body2" color="text.secondary">
-                                Estimated Output: <strong>{formatBytes(estimatedSize)}</strong> — original {formatBytes(file.size)}
+                                Estimated Output: <strong style={{ color: '#3dfc55' }}>{formatBytes(estimatedSize)}</strong> — original {formatBytes(file.size)}
                             </Typography>
                         </Box>
                     )}
 
                     {result && (
-                        <Box sx={{ mt: 6, p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                            <Typography variant="h6" gutterBottom>Compression Result</Typography>
+                        <Box sx={{
+                            mt: 5,
+                            p: 3,
+                            backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            borderRadius: '16px'
+                        }}>
+                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 800, mb: 3 }}>Compression Result</Typography>
 
                             <Grid container spacing={4} alignItems="center">
                                 <Grid item xs={12} md={4}>
                                     <Box
                                         component="img"
                                         src={result.full_url}
-                                        sx={{ width: '100%', borderRadius: 1 }}
+                                        sx={{
+                                            width: '100%',
+                                            borderRadius: '12px',
+                                            border: '1px solid rgba(255,255,255,0.05)',
+                                            boxShadow: '0 10px 20px rgba(0,0,0,0.3)'
+                                        }}
                                         alt="Compressed"
                                     />
                                 </Grid>
                                 <Grid item xs={12} md={8}>
-                                    <Stack spacing={2}>
+                                    <Stack spacing={2.5}>
                                         <Box>
                                             <Typography variant="subtitle2" color="text.secondary">Original Size</Typography>
-                                            <Typography variant="body1">{formatBytes(result.original_size)}</Typography>
+                                            <Typography variant="body1" fontWeight="600">{formatBytes(result.original_size)}</Typography>
                                         </Box>
                                         <Box>
                                             <Typography variant="subtitle2" color="text.secondary">Compressed Size</Typography>
-                                            <Typography variant="body1" fontWeight="bold" color="success.main">
+                                            <Typography variant="body1" fontWeight="800" color="success.main">
                                                 {formatBytes(result.compressed_size)}
                                             </Typography>
                                         </Box>
@@ -212,6 +258,7 @@ const ImageCompressorPage: React.FC = () => {
                                                 label={`-${((1 - result.compressed_size / result.original_size) * 100).toFixed(1)}%`}
                                                 color="success"
                                                 size="small"
+                                                sx={{ fontWeight: 700, px: 1 }}
                                             />
                                         </Box>
 
@@ -220,7 +267,11 @@ const ImageCompressorPage: React.FC = () => {
                                             startIcon={<Download />}
                                             href={result.full_url}
                                             download={`compressed_${result.filename}`}
-                                            sx={{ mt: 2 }}
+                                            sx={{
+                                                mt: 1.5,
+                                                py: 1,
+                                                borderRadius: '10px'
+                                            }}
                                         >
                                             Download Image
                                         </Button>

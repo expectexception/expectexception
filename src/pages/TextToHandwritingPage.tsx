@@ -27,6 +27,7 @@ import {
     Settings,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import ServicePageHero from '../components/services/ServicePageHero';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 
@@ -87,24 +88,11 @@ const TextToHandwritingPage: React.FC = () => {
                 toolId={2}
             />
 
-            <Box sx={{ mb: 6, textAlign: 'center' }}>
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 800 }}>
-                        Text to <span style={{
-                            background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                        }}>Handwriting</span>
-                    </Typography>
-                    <Typography variant="h5" color="text.secondary" sx={{ maxWidth: 700, mx: 'auto' }}>
-                        Transform digital text into realistic, organic handwriting with just one click.
-                    </Typography>
-                </motion.div>
-            </Box>
+            <ServicePageHero
+                icon={Create}
+                title="Text to Handwriting"
+                subtitle="Transform digital text into realistic, organic handwriting with just one click."
+            />
 
             <Grid container spacing={4}>
                 {/* Controls Area */}
@@ -113,18 +101,21 @@ const TextToHandwritingPage: React.FC = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
+                        style={{ height: '100%' }}
                     >
                         <Card sx={{
-                            borderRadius: 4,
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            background: 'rgba(255,255,255,0.05)',
+                            height: '100%',
+                            borderRadius: '20px',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            background: 'rgba(13, 14, 18, 0.4)',
                             backdropFilter: 'blur(20px)',
-                            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)'
+                            boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                            p: 2
                         }}>
-                            <CardContent sx={{ p: 4 }}>
+                            <CardContent sx={{ p: 2 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                                     <Create sx={{ mr: 1, color: 'primary.main' }} />
-                                    <Typography variant="h6" fontWeight={700}>Input Text</Typography>
+                                    <Typography variant="h6" fontWeight={800}>Input Text</Typography>
                                 </Box>
 
                                 <TextField
@@ -137,14 +128,16 @@ const TextToHandwritingPage: React.FC = () => {
                                     onChange={(e) => setText(e.target.value)}
                                     sx={{
                                         mb: 4,
-                                        bgcolor: 'rgba(0,0,0,0.02)',
-                                        '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: '10px',
+                                            backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                                        }
                                     }}
                                 />
 
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                                     <Settings sx={{ mr: 1, color: 'primary.main' }} />
-                                    <Typography variant="h6" fontWeight={700}>Customization</Typography>
+                                    <Typography variant="h6" fontWeight={800}>Customization</Typography>
                                 </Box>
 
                                 <Grid container spacing={2}>
@@ -155,6 +148,7 @@ const TextToHandwritingPage: React.FC = () => {
                                                 value={font}
                                                 label="Handwriting Style"
                                                 onChange={(e) => setFont(e.target.value)}
+                                                sx={{ borderRadius: '10px' }}
                                             >
                                                 <MenuItem value="caveat">Caveat (Playful)</MenuItem>
                                                 <MenuItem value="indie_flower">Indie Flower (Casual)</MenuItem>
@@ -171,6 +165,7 @@ const TextToHandwritingPage: React.FC = () => {
                                                 value={paper}
                                                 label="Paper Type"
                                                 onChange={(e) => setPaper(e.target.value)}
+                                                sx={{ borderRadius: '10px' }}
                                             >
                                                 <MenuItem value="plain">Plain White</MenuItem>
                                                 <MenuItem value="lined">Lined Paper</MenuItem>
@@ -186,6 +181,7 @@ const TextToHandwritingPage: React.FC = () => {
                                                 value={ink}
                                                 label="Ink Color"
                                                 onChange={(e) => setInk(e.target.value)}
+                                                sx={{ borderRadius: '10px' }}
                                             >
                                                 <MenuItem value="blue">Blue Ink</MenuItem>
                                                 <MenuItem value="black">Black Ink</MenuItem>
@@ -201,20 +197,18 @@ const TextToHandwritingPage: React.FC = () => {
                                     size="large"
                                     onClick={handleGenerate}
                                     disabled={loading || !text}
-                                    startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Description />}
+                                    startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <Description />}
                                     sx={{
                                         mt: 4,
                                         py: 1.5,
-                                        borderRadius: 3,
-                                        fontSize: '1.1rem',
-                                        background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                                        boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                                        borderRadius: '10px',
+                                        fontWeight: 700
                                     }}
                                 >
                                     {loading ? 'Generating...' : 'Generate Handwriting'}
                                 </Button>
                                 {error && (
-                                    <Typography color="error" variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
+                                    <Typography color="error" variant="body2" sx={{ mt: 2, textAlign: 'center', fontWeight: 600 }}>
                                         {error}
                                     </Typography>
                                 )}
@@ -229,19 +223,29 @@ const TextToHandwritingPage: React.FC = () => {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
+                        style={{ height: '100%' }}
                     >
                         <Card sx={{
                             height: '100%',
                             minHeight: 500,
-                            borderRadius: 4,
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            background: 'rgba(255,255,255,0.05)',
+                            borderRadius: '20px',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            background: 'rgba(13, 14, 18, 0.4)',
+                            backdropFilter: 'blur(20px)',
+                            boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
                             display: 'flex',
                             flexDirection: 'column',
                             position: 'relative',
                             overflow: 'hidden'
                         }}>
-                            <CardContent sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0, bgcolor: '#f5f5f5' }}>
+                            <CardContent sx={{
+                                flexGrow: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                p: 0,
+                                bgcolor: 'rgba(0, 0, 0, 0.2)'
+                            }}>
                                 {imageUrl ? (
                                     <Box sx={{
                                         width: '100%',
@@ -249,32 +253,37 @@ const TextToHandwritingPage: React.FC = () => {
                                         overflow: 'auto',
                                         display: 'flex',
                                         justifyContent: 'center',
-                                        border: '1px solid #ddd',
-                                        p: 2
+                                        p: 3
                                     }}>
                                         <Fade in={true}>
                                             <img
                                                 src={imageUrl}
                                                 alt="Generated Handwriting"
-                                                style={{ maxWidth: '100%', height: 'auto', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
+                                                style={{
+                                                    maxWidth: '100%',
+                                                    height: 'auto',
+                                                    borderRadius: '8px',
+                                                    boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                                                    border: '1px solid rgba(255,255,255,0.05)'
+                                                }}
                                             />
                                         </Fade>
                                     </Box>
                                 ) : (
-                                    <Box sx={{ textAlign: 'center', p: 4, opacity: 0.6 }}>
+                                    <Box sx={{ textAlign: 'center', p: 4, opacity: 0.5 }}>
                                         <FormatColorText sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
-                                        <Typography variant="h6" color="text.secondary">
+                                        <Typography variant="h6" color="text.secondary" fontWeight="600">
                                             Preview will appear here
                                         </Typography>
                                     </Box>
                                 )}
                             </CardContent>
                             <Box sx={{
-                                p: 2,
-                                borderTop: '1px solid rgba(0,0,0,0.1)',
+                                p: 2.5,
+                                borderTop: '1px solid rgba(255,255,255,0.05)',
                                 display: 'flex',
                                 justifyContent: 'flex-end',
-                                bgcolor: '#fff'
+                                bgcolor: 'rgba(0, 0, 0, 0.1)'
                             }}>
                                 <Tooltip title="Download Image">
                                     <span>
@@ -283,6 +292,7 @@ const TextToHandwritingPage: React.FC = () => {
                                             onClick={handleDownload}
                                             disabled={!imageUrl}
                                             startIcon={<Download />}
+                                            sx={{ borderRadius: '10px' }}
                                         >
                                             Download Image
                                         </Button>

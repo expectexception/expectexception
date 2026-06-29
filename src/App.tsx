@@ -1,9 +1,7 @@
-// ... (previous imports)
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
-import { theme } from './theme/theme';
+import { CustomThemeContextProvider } from './context/CustomThemeContext';
 import Layout from './components/Layout/Layout';
 import AnimatedRoutes from './components/layout/AnimatedRoutes';
 import AnimatedBackground from './components/layout/AnimatedBackground';
@@ -32,6 +30,7 @@ function AppContent({ deferredPrompt, handleInstall, handleDismiss }: any) {
             <Layout>
                 <AnimatedRoutes />
             </Layout>
+            <NotificationPrompt />
         </>
     );
 }
@@ -70,7 +69,7 @@ function App() {
     };
 
     return (
-        <ThemeProvider theme={theme}>
+        <CustomThemeContextProvider>
             <CssBaseline />
             <HelmetProvider>
                 <AuthProvider>
@@ -85,7 +84,7 @@ function App() {
                     </NotificationProvider>
                 </AuthProvider>
             </HelmetProvider>
-        </ThemeProvider>
+        </CustomThemeContextProvider>
     );
 }
 

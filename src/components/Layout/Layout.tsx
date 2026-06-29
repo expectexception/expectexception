@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
     AppBar,
     Toolbar,
+    Grid,
     Container,
     Button,
     IconButton,
@@ -18,6 +19,7 @@ import {
     Menu,
     MenuItem,
     Stack,
+    Divider,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import {
@@ -25,7 +27,6 @@ import {
     Home,
     Build,
     Article,
-    Download,
     Notifications,
     Search,
     Person,
@@ -34,20 +35,22 @@ import {
     Login,
     Logout,
     AppRegistration,
-    ImageSearch,
-    SmartToy,
+    Code,
     AdminPanelSettings,
+    ChatBubbleOutline,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import ScrollToTop from '../layout/ScrollToTop';
 import SearchDialog from '../layout/SearchDialog';
+import ChatbotWidget from '../layout/ChatbotWidget';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, logout, user } = useAuth();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [chatbotOpen, setChatbotOpen] = useState(false);
     const theme = useTheme();
     const location = useLocation();
 
@@ -97,8 +100,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const navItems = [
         { label: 'Home', path: '/', icon: <Home /> },
         { label: 'Services', path: '/services', icon: <Build /> },
-        { label: 'ExpExc AI', path: '/chat', icon: <SmartToy /> },
-        { label: 'Hire', path: '/hire', icon: <Person /> },
+        { label: 'AI Agent', onClick: () => setChatbotOpen(true), icon: <ChatBubbleOutline /> },
         { label: 'Blogs', path: '/blogs', icon: <Article /> },
     ];
 
@@ -110,60 +112,85 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <Box sx={{
             width: 280,
             height: '100%',
-            bgcolor: 'background.paper',
+            bgcolor: '#0d0e12',
             display: 'flex',
             flexDirection: 'column',
-            backgroundImage: `linear-gradient(to bottom, ${alpha(theme.palette.primary.main, 0.05)}, transparent)`,
+            backgroundImage: `linear-gradient(to bottom, ${alpha(theme.palette.primary.main, 0.03)}, transparent)`,
+            borderLeft: '1px solid rgba(255, 255, 255, 0.05)',
         }}>
             <Box sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Stack direction="row" alignItems="center" spacing={1.5}>
-                    <Dashboard sx={{ color: 'primary.main', fontSize: 28 }} />
-                    <Typography variant="h6" color="text.primary" fontWeight="800" sx={{ letterSpacing: '-0.02em' }}>
-                        ExpectException
+                <Stack direction="row" alignItems="center" spacing={1}>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 28,
+                        height: 28,
+                        borderRadius: '6px',
+                        border: '1.5px solid',
+                        borderColor: 'primary.main',
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        color: 'primary.main',
+                    }}>
+                        <Code sx={{ fontSize: 16 }} />
+                    </Box>
+                    <Typography variant="h6" color="#ffffff" fontWeight="800" sx={{ letterSpacing: '-0.03em' }}>
+                        Expect<span style={{ color: theme.palette.primary.main }}>Exception</span>
                     </Typography>
                 </Stack>
-                <IconButton onClick={handleDrawerToggle} sx={{ bgcolor: alpha(theme.palette.text.primary, 0.05) }}>
+                <IconButton onClick={handleDrawerToggle} sx={{ bgcolor: alpha('#ffffff', 0.05), color: '#ffffff' }}>
                     <Close fontSize="small" />
                 </IconButton>
             </Box>
 
             <List sx={{ px: 2, flexGrow: 1 }}>
-                {navItems.map((item) => (
-                    <ListItem
-                        key={item.label}
-                        component={Link}
-                        to={item.path}
-                        onClick={handleDrawerToggle}
-                        sx={{
-                            borderRadius: 3,
-                            mb: 1,
-                            py: 1.5,
-                            bgcolor: location.pathname === item.path ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
-                            color: location.pathname === item.path ? 'primary.main' : 'text.secondary',
-                            border: '1px solid',
-                            borderColor: location.pathname === item.path ? alpha(theme.palette.primary.main, 0.2) : 'transparent',
-                            '&:hover': {
-                                bgcolor: alpha(theme.palette.primary.main, 0.05),
-                                color: 'primary.main',
+                {navItems.map((item) => {
+                    const isSelected = item.path ? location.pathname === item.path : false;
+                    const itemProps = item.path
+                        ? { component: Link as any, to: item.path, onClick: handleDrawerToggle }
+                        : {
+                            component: 'div' as any,
+                            onClick: () => {
+                                item.onClick?.();
+                                handleDrawerToggle();
                             },
-                            transition: 'all 0.2s',
-                        }}
-                    >
-                        <ListItemIcon sx={{
-                            color: location.pathname === item.path ? 'primary.main' : 'text.secondary',
-                            minWidth: 40
-                        }}>
-                            {item.icon}
-                        </ListItemIcon>
-                        <ListItemText
-                            primary={item.label}
-                            primaryTypographyProps={{
-                                fontWeight: location.pathname === item.path ? 700 : 500,
-                                fontSize: '0.95rem'
+                            style: { cursor: 'pointer' }
+                        };
+                    return (
+                        <ListItem
+                            key={item.label}
+                            {...itemProps}
+                            sx={{
+                                borderRadius: 2,
+                                mb: 1,
+                                py: 1.25,
+                                bgcolor: isSelected ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                                color: isSelected ? 'primary.main' : '#94a3b8',
+                                border: '1px solid',
+                                borderColor: isSelected ? alpha(theme.palette.primary.main, 0.15) : 'transparent',
+                                '&:hover': {
+                                    bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                    color: 'primary.main',
+                                },
+                                transition: 'all 0.2s',
                             }}
-                        />
-                    </ListItem>
-                ))}
+                        >
+                            <ListItemIcon sx={{
+                                color: isSelected ? 'primary.main' : '#94a3b8',
+                                minWidth: 36
+                            }}>
+                                {item.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                                primary={item.label}
+                                primaryTypographyProps={{
+                                    fontWeight: isSelected ? 700 : 500,
+                                    fontSize: '0.9rem'
+                                }}
+                            />
+                        </ListItem>
+                    );
+                })}
 
                 {/* Admin Dashboard - Only visible for admin users in mobile drawer */}
                 {isAuthenticated && user?.is_staff && (
@@ -172,13 +199,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         to="/admin/dashboard"
                         onClick={handleDrawerToggle}
                         sx={{
-                            borderRadius: 3,
+                            borderRadius: 2,
                             mb: 1,
-                            py: 1.5,
+                            py: 1.25,
                             bgcolor: location.pathname === '/admin/dashboard' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
-                            color: location.pathname === '/admin/dashboard' ? 'primary.main' : 'text.secondary',
+                            color: location.pathname === '/admin/dashboard' ? 'primary.main' : '#94a3b8',
                             border: '1px solid',
-                            borderColor: location.pathname === '/admin/dashboard' ? alpha(theme.palette.primary.main, 0.2) : 'transparent',
+                            borderColor: location.pathname === '/admin/dashboard' ? alpha(theme.palette.primary.main, 0.15) : 'transparent',
                             '&:hover': {
                                 bgcolor: alpha(theme.palette.primary.main, 0.05),
                                 color: 'primary.main',
@@ -187,8 +214,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         }}
                     >
                         <ListItemIcon sx={{
-                            color: location.pathname === '/admin/dashboard' ? 'primary.main' : 'text.secondary',
-                            minWidth: 40
+                            color: location.pathname === '/admin/dashboard' ? 'primary.main' : '#94a3b8',
+                            minWidth: 36
                         }}>
                             <AdminPanelSettings />
                         </ListItemIcon>
@@ -196,7 +223,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             primary="Admin"
                             primaryTypographyProps={{
                                 fontWeight: location.pathname === '/admin/dashboard' ? 700 : 500,
-                                fontSize: '0.95rem'
+                                fontSize: '0.9rem'
                             }}
                         />
                     </ListItem>
@@ -204,31 +231,34 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </List>
 
             {/* Mobile Auth Section */}
-            <Box sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider', bgcolor: alpha(theme.palette.background.paper, 0.5) }}>
+            <Box sx={{ p: 3, borderTop: '1px solid rgba(255, 255, 255, 0.05)', bgcolor: 'rgba(5, 5, 5, 0.4)' }}>
                 {isAuthenticated ? (
                     <Stack spacing={2}>
                         <Box sx={{
-                            p: 2,
-                            borderRadius: 3,
+                            p: 1.5,
+                            borderRadius: 2,
                             bgcolor: alpha(theme.palette.primary.main, 0.05),
                             border: '1px solid',
                             borderColor: alpha(theme.palette.primary.main, 0.1),
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 2
+                            gap: 1.5
                         }}>
                             <Avatar sx={{
-                                bgcolor: 'secondary.main',
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.4)}`,
+                                bgcolor: 'primary.main',
+                                color: '#000000',
+                                fontWeight: 700,
+                                width: 36,
+                                height: 36,
                                 border: '2px solid rgba(255,255,255,0.1)'
                             }}>
                                 {user?.email?.charAt(0).toUpperCase()}
                             </Avatar>
                             <Box sx={{ minWidth: 0 }}>
-                                <Typography variant="subtitle2" fontWeight="bold" noWrap>
+                                <Typography variant="subtitle2" fontWeight="bold" noWrap color="#ffffff">
                                     {user?.email?.split('@')[0]}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary" noWrap display="block">
+                                <Typography variant="caption" color="#94a3b8" noWrap display="block">
                                     {user?.email}
                                 </Typography>
                             </Box>
@@ -240,7 +270,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             variant="outlined"
                             startIcon={<Person />}
                             fullWidth
-                            sx={{ borderRadius: 3 }}
+                            sx={{ borderRadius: 2 }}
                         >
                             My Profile
                         </Button>
@@ -250,7 +280,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             color="error"
                             startIcon={<Logout />}
                             fullWidth
-                            sx={{ borderRadius: 3 }}
+                            sx={{ borderRadius: 2 }}
                         >
                             Logout
                         </Button>
@@ -265,12 +295,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             startIcon={<Login />}
                             fullWidth
                             sx={{
-                                borderRadius: 3,
-                                py: 1.5,
-                                borderColor: alpha(theme.palette.primary.main, 0.3),
-                                color: 'text.primary',
+                                borderRadius: 2,
+                                py: 1.25,
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                color: '#ffffff',
                                 '&:hover': {
-                                    borderColor: theme.palette.primary.main,
+                                    borderColor: 'primary.main',
                                     bgcolor: alpha(theme.palette.primary.main, 0.05)
                                 }
                             }}
@@ -285,19 +315,18 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             startIcon={<AppRegistration />}
                             fullWidth
                             sx={{
-                                borderRadius: 3,
-                                py: 1.5,
-                                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                                boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
+                                borderRadius: 2,
+                                py: 1.25,
+                                background: theme.palette.primary.main,
+                                color: '#000000',
                                 fontWeight: 700,
                                 '&:hover': {
-                                    background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: `0 12px 24px ${alpha(theme.palette.primary.main, 0.4)}`,
+                                    background: theme.palette.primary.light,
+                                    transform: 'translateY(-1px)',
                                 }
                             }}
                         >
-                            Register Now
+                            Register
                         </Button>
                     </Stack>
                 )}
@@ -306,125 +335,136 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     );
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: '#050505' }}>
             {/* App Bar - Hidden on chat page */}
             {!location.pathname.startsWith('/chat') && (
                 <AppBar
                     position="sticky"
-                    elevation={scrolled ? 4 : 0}
+                    elevation={0}
                     sx={{
-                        bgcolor: scrolled ? 'rgba(15, 23, 42, 0.95)' : 'rgba(15, 23, 42, 0.8)',
-                        borderBottom: '1px solid',
-                        borderColor: scrolled ? 'rgba(59, 130, 246, 0.2)' : 'divider',
+                        bgcolor: scrolled ? 'rgba(10, 11, 14, 0.85)' : 'rgba(10, 11, 14, 0.4)',
+                        borderBottom: scrolled ? '1px solid rgba(61, 252, 85, 0.15)' : '1px solid rgba(255, 255, 255, 0.05)',
                         backdropFilter: 'blur(20px)',
-                        boxShadow: scrolled ? '0 8px 32px 0 rgba(59, 130, 246, 0.15)' : 'none',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: scrolled ? '0 10px 30px -10px rgba(0,0,0,0.5), 0 1px 0 0 rgba(61, 252, 85, 0.1)' : 'none',
                     }}
                 >
                     <Container maxWidth="xl">
-                        <Toolbar sx={{ px: { xs: 0.5, sm: 1, md: 2 }, minHeight: { xs: 52, sm: 58, md: 64 }, flexWrap: 'nowrap' }}>
+                        <Toolbar sx={{ px: { xs: 1, sm: 2 }, minHeight: { xs: 58, sm: 64, md: 72 }, flexWrap: 'nowrap' }}>
                             {/* Logo */}
-                            <Box sx={{ display: 'flex', alignItems: 'center', mr: { xs: 1, md: 4 }, flexShrink: 0, whiteSpace: 'nowrap' }}>
-                                <Dashboard sx={{ color: 'primary.main', fontSize: { xs: 20, sm: 24, md: 28 }, mr: 0.5 }} />
-                                <Typography
-                                    variant="h6"
-                                    component={Link}
-                                    to="/"
-                                    sx={{
-                                        fontWeight: 800,
-                                        background: 'linear-gradient(45deg, #2563eb, #7c3aed)',
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent',
-                                        textDecoration: 'none',
-                                        fontSize: { xs: '0.85rem', sm: '1rem', md: '1.25rem' },
-                                        letterSpacing: '-0.02em',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                >
-                                    ExpectException
-                                </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mr: { xs: 1, md: 4 }, flexShrink: 0 }}>
+                                <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', gap: 8 }}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: '8px',
+                                        border: '2px solid',
+                                        borderColor: 'primary.main',
+                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                        color: 'primary.main',
+                                        boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.2)}`,
+                                    }}>
+                                        <Code sx={{ fontSize: 18 }} />
+                                    </Box>
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            fontWeight: 850,
+                                            fontSize: { xs: '1rem', sm: '1.15rem', md: '1.35rem' },
+                                            letterSpacing: '-0.03em',
+                                            color: '#ffffff',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        Expect<span style={{ color: theme.palette.primary.main, marginLeft: '2px' }}>Exception</span>
+                                    </Typography>
+                                </Link>
                             </Box>
 
                             {/* Desktop Navigation */}
-                            <Box sx={{ display: { xs: 'none', md: 'flex' }, flexGrow: 1, gap: 0.5, ml: 1 }}>
-                                {navItems.map((item) => (
-                                    <Button
-                                        key={item.label}
-                                        component={Link}
-                                        to={item.path}
-                                        startIcon={item.icon}
-                                        size="small"
-                                        sx={{
-                                            color: location.pathname === item.path ? 'primary.main' : 'text.secondary',
-                                            fontWeight: location.pathname === item.path ? 600 : 400,
-                                            fontSize: '0.85rem',
-                                            px: 1.5,
-                                            py: 0.5,
-                                            minWidth: 'auto',
-                                            position: 'relative',
-                                            whiteSpace: 'nowrap',
-                                            '& .MuiButton-startIcon': {
-                                                marginRight: 0.5,
-                                            },
-                                            '&::after': {
-                                                content: '""',
-                                                position: 'absolute',
-                                                bottom: 4,
-                                                left: '50%',
-                                                transform: 'translateX(-50%)',
-                                                width: location.pathname === item.path ? '60%' : '0%',
-                                                height: '2px',
-                                                bgcolor: 'primary.main',
-                                                transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            },
-                                            '&:hover': {
-                                                color: 'primary.light',
-                                                bgcolor: 'transparent',
+                            <Box sx={{ display: { xs: 'none', md: 'flex' }, flexGrow: 1, gap: 1, ml: 2 }}>
+                                {navItems.map((item) => {
+                                    const isSelected = item.path ? location.pathname === item.path : false;
+                                    const buttonProps = item.path
+                                        ? { component: Link as any, to: item.path }
+                                        : { onClick: item.onClick };
+                                    return (
+                                        <Button
+                                            key={item.label}
+                                            {...buttonProps}
+                                            size="small"
+                                            sx={{
+                                                color: isSelected ? 'primary.main' : '#94a3b8',
+                                                fontWeight: isSelected ? 700 : 500,
+                                                fontSize: '0.9rem',
+                                                px: 2,
+                                                py: 0.75,
+                                                minWidth: 'auto',
+                                                position: 'relative',
+                                                whiteSpace: 'nowrap',
+                                                transition: 'all 0.3s ease',
                                                 '&::after': {
-                                                    width: '60%',
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    bottom: 2,
+                                                    left: '50%',
+                                                    transform: 'translateX(-50%)',
+                                                    width: isSelected ? '50%' : '0%',
+                                                    height: '2px',
+                                                    bgcolor: 'primary.main',
+                                                    transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    boxShadow: `0 0 8px ${theme.palette.primary.main}`,
                                                 },
-                                            },
-                                        }}
-                                    >
-                                        {item.label}
-                                    </Button>
-                                ))}
+                                                '&:hover': {
+                                                    color: 'primary.main',
+                                                    bgcolor: 'transparent',
+                                                    textShadow: `0 0 10px ${alpha(theme.palette.primary.main, 0.5)}`,
+                                                    '&::after': {
+                                                        width: '50%',
+                                                    },
+                                                },
+                                            }}
+                                        >
+                                            {item.label}
+                                        </Button>
+                                    );
+                                })}
 
                                 {/* Admin Dashboard - Only visible for admin users */}
                                 {isAuthenticated && user?.is_staff && (
                                     <Button
                                         component={Link}
                                         to="/admin/dashboard"
-                                        startIcon={<AdminPanelSettings />}
                                         size="small"
                                         sx={{
-                                            color: location.pathname === '/admin/dashboard' ? 'primary.main' : 'text.secondary',
-                                            fontWeight: location.pathname === '/admin/dashboard' ? 600 : 400,
-                                            fontSize: '0.85rem',
-                                            px: 1.5,
-                                            py: 0.5,
+                                            color: location.pathname === '/admin/dashboard' ? 'primary.main' : '#94a3b8',
+                                            fontWeight: location.pathname === '/admin/dashboard' ? 700 : 505,
+                                            fontSize: '0.9rem',
+                                            px: 2,
+                                            py: 0.75,
                                             minWidth: 'auto',
                                             position: 'relative',
                                             whiteSpace: 'nowrap',
-                                            '& .MuiButton-startIcon': {
-                                                marginRight: 0.5,
-                                            },
                                             '&::after': {
                                                 content: '""',
                                                 position: 'absolute',
-                                                bottom: 4,
+                                                bottom: 2,
                                                 left: '50%',
                                                 transform: 'translateX(-50%)',
-                                                width: location.pathname === '/admin/dashboard' ? '60%' : '0%',
+                                                width: location.pathname === '/admin/dashboard' ? '50%' : '0%',
                                                 height: '2px',
                                                 bgcolor: 'primary.main',
                                                 transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                             },
                                             '&:hover': {
-                                                color: 'primary.light',
+                                                color: 'primary.main',
                                                 bgcolor: 'transparent',
                                                 '&::after': {
-                                                    width: '60%',
+                                                    width: '50%',
                                                 },
                                             },
                                         }}
@@ -435,75 +475,57 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             </Box>
 
                             {/* Right Side Actions */}
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.25, sm: 0.5, md: 1 }, ml: 'auto' }}>
-                                <Tooltip title="Search">
-                                    <IconButton onClick={handleSearchOpen} size="small" sx={{ p: { xs: 0.5, sm: 1 } }}>
-                                        <Search sx={{ fontSize: { xs: 20, sm: 24 } }} />
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5, md: 2 }, ml: 'auto' }}>
+                                <Tooltip title="Search Tools">
+                                    <IconButton onClick={handleSearchOpen} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
+                                        <Search sx={{ fontSize: 22 }} />
                                     </IconButton>
                                 </Tooltip>
 
-                                {/* <Tooltip title="Notifications">
-                                    <IconButton onClick={handleNotificationClick}>
-                                        <Badge badgeContent={unreadCount} color="error">
-                                            <Notifications />
-                                        </Badge>
-                                    </IconButton>
-                                </Tooltip> */}
-                                <Menu
-                                    anchorEl={notificationAnchorEl}
-                                    open={Boolean(notificationAnchorEl)}
-                                    onClose={handleNotificationClose}
-                                    PaperProps={{
-                                        sx: { mt: 1, width: 320, maxHeight: 400, borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }
+                                {/* LET'S TALK CTA Button */}
+                                <Button
+                                    component={Link}
+                                    to="/hire"
+                                    variant="contained"
+                                    size="small"
+                                    sx={{
+                                        display: { xs: 'none', sm: 'inline-flex' },
+                                        borderRadius: '30px',
+                                        px: 3.5,
+                                        py: 1,
+                                        fontWeight: 800,
+                                        fontSize: '0.85rem',
+                                        letterSpacing: '0.05em',
+                                        background: theme.palette.primary.main,
+                                        color: '#000000',
+                                        animation: 'pulseGlow 2s infinite alternate',
+                                        '@keyframes pulseGlow': {
+                                            '0%': { boxShadow: '0 0 4px ' + alpha(theme.palette.primary.main, 0.3) },
+                                            '100%': { boxShadow: '0 0 16px ' + alpha(theme.palette.primary.main, 0.7) }
+                                        },
+                                        '&:hover': {
+                                            background: theme.palette.primary.light,
+                                            boxShadow: '0 0 24px ' + alpha(theme.palette.primary.main, 0.8),
+                                        }
                                     }}
-                                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                 >
-                                    <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Typography variant="subtitle1" fontWeight="bold">Notifications</Typography>
-                                        {unreadCount > 0 && (
-                                            <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }}>
-                                                Mark all read
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                    {notifications.length === 0 ? (
-                                        <Box sx={{ p: 3, textAlign: 'center' }}>
-                                            <Typography variant="body2" color="text.secondary">No notifications</Typography>
-                                        </Box>
-                                    ) : (
-                                        <List sx={{ p: 0 }}>
-                                            {notifications.slice(0, 5).map((notification) => (
-                                                <ListItem
-                                                    key={notification.id}
-                                                    button
-                                                    onClick={() => handleNotificationItemClick(notification.id)}
-                                                    divider
-                                                    sx={{ bgcolor: notification.read ? 'transparent' : 'action.hover' }}
-                                                >
-                                                    <ListItemText
-                                                        primary={notification.verb}
-                                                        secondary={notification.description}
-                                                        primaryTypographyProps={{ variant: 'body2', fontWeight: notification.read ? 400 : 600 }}
-                                                        secondaryTypographyProps={{ variant: 'caption', noWrap: true }}
-                                                    />
-                                                </ListItem>
-                                            ))}
-                                            <Box sx={{ p: 1, textAlign: 'center' }}>
-                                                <Button size="small" component={Link} to="/notifications" onClick={handleNotificationClose}>
-                                                    View All
-                                                </Button>
-                                            </Box>
-                                        </List>
-                                    )}
-                                </Menu>
+                                    LET'S TALK
+                                </Button>
 
-                                {/* Desktop Auth */}
-                                <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: { sm: 0.5, md: 1 } }}>
+                                {/* Desktop Auth / Profile */}
+                                <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center' }}>
                                     {isAuthenticated ? (
                                         <>
-                                            <IconButton onClick={handleProfileMenuOpen} size="small">
-                                                <Avatar sx={{ bgcolor: 'secondary.main', width: { sm: 32, md: 36 }, height: { sm: 32, md: 36 }, fontSize: '0.9rem' }}>
+                                            <IconButton onClick={handleProfileMenuOpen} size="small" sx={{ p: 0.5 }}>
+                                                <Avatar sx={{
+                                                    bgcolor: 'primary.main',
+                                                    color: '#000000',
+                                                    fontWeight: 700,
+                                                    width: 34,
+                                                    height: 34,
+                                                    fontSize: '0.9rem',
+                                                    border: '2px solid rgba(255,255,255,0.1)'
+                                                }}>
                                                     {user?.email?.charAt(0).toUpperCase() || <Person />}
                                                 </Avatar>
                                             </IconButton>
@@ -512,25 +534,34 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                                 open={Boolean(anchorEl)}
                                                 onClose={handleProfileMenuClose}
                                                 PaperProps={{
-                                                    sx: { mt: 1, minWidth: 180, borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }
+                                                    sx: {
+                                                        mt: 1.5,
+                                                        minWidth: 200,
+                                                        bgcolor: '#0d0e12',
+                                                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                                                        borderRadius: 2,
+                                                        boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                                                    }
                                                 }}
+                                                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                                                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                             >
-                                                <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider', mb: 1 }}>
-                                                    <Typography variant="subtitle2" fontWeight="bold">Account</Typography>
-                                                    <Typography variant="caption" color="text.secondary">{user?.email}</Typography>
+                                                <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid rgba(255, 255, 255, 0.05)', mb: 1 }}>
+                                                    <Typography variant="subtitle2" fontWeight="bold" color="#ffffff">Account</Typography>
+                                                    <Typography variant="caption" color="#94a3b8" noWrap display="block">{user?.email}</Typography>
                                                 </Box>
                                                 <MenuItem
                                                     component={Link}
                                                     to={`/profile/${user?.email}`}
                                                     onClick={handleProfileMenuClose}
-                                                    sx={{ borderRadius: 1, mx: 1 }}
+                                                    sx={{ borderRadius: 1, mx: 1, color: '#ffffff', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' } }}
                                                 >
-                                                    <ListItemIcon><Person fontSize="small" /></ListItemIcon>
+                                                    <ListItemIcon><Person fontSize="small" sx={{ color: 'primary.main' }} /></ListItemIcon>
                                                     My Profile
                                                 </MenuItem>
                                                 <MenuItem
                                                     onClick={handleLogout}
-                                                    sx={{ borderRadius: 1, mx: 1, color: 'error.main' }}
+                                                    sx={{ borderRadius: 1, mx: 1, color: 'error.main', '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.05) } }}
                                                 >
                                                     <ListItemIcon><Logout fontSize="small" sx={{ color: 'error.main' }} /></ListItemIcon>
                                                     Logout
@@ -538,14 +569,26 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                             </Menu>
                                         </>
                                     ) : (
-                                        <>
-                                            <Button component={Link} to="/login" variant="text" size="small" sx={{ fontSize: '0.8rem', px: 1.5, minWidth: 'auto', whiteSpace: 'nowrap' }}>
-                                                Sign In
-                                            </Button>
-                                            <Button component={Link} to="/register" variant="contained" size="small" sx={{ fontSize: '0.8rem', px: 1.5, minWidth: 'auto', whiteSpace: 'nowrap' }}>
-                                                Register
-                                            </Button>
-                                        </>
+                                        <Button
+                                            component={Link}
+                                            to="/login"
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                fontSize: '0.85rem',
+                                                borderRadius: '8px',
+                                                px: 2.5,
+                                                borderColor: 'rgba(255, 255, 255, 0.15)',
+                                                color: '#ffffff',
+                                                '&:hover': {
+                                                    borderColor: 'primary.main',
+                                                    color: 'primary.main',
+                                                    bgcolor: 'transparent',
+                                                }
+                                            }}
+                                        >
+                                            Sign In
+                                        </Button>
                                     )}
                                 </Box>
 
@@ -554,7 +597,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                     color="inherit"
                                     edge="end"
                                     onClick={handleDrawerToggle}
-                                    sx={{ display: { xs: 'flex', md: 'none' } }}
+                                    sx={{ display: { xs: 'flex', md: 'none' }, color: '#ffffff' }}
                                 >
                                     <MenuIcon />
                                 </IconButton>
@@ -573,7 +616,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 ModalProps={{ keepMounted: true }}
                 sx={{
                     display: { xs: 'block', md: 'none' },
-                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 280 },
+                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 280, bgcolor: 'transparent' },
                 }}
             >
                 {drawer}
@@ -589,56 +632,169 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <Box
                     component="footer"
                     sx={{
-                        bgcolor: 'rgba(15, 23, 42, 0.95)',
-                        borderTop: '1px solid',
-                        borderColor: 'rgba(59, 130, 246, 0.1)',
-                        py: 6,
+                        bgcolor: 'rgba(10, 11, 14, 0.95)',
+                        backdropFilter: 'blur(16px)',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                        py: 8,
                         mt: 'auto',
                         position: 'relative',
                         overflow: 'hidden',
-                        '&::before': {
-                            content: '""',
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            height: '1px',
-                            background: 'linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent)',
-                        },
                     }}
                 >
-                    <Container maxWidth="xl">
-                        <Stack direction="row" spacing={3} justifyContent="center" sx={{ mb: 3 }}>
-                            <Link to="/privacy-policy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
-                                Privacy Policy
-                            </Link>
-                            <Link to="/terms-of-service" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
-                                Terms of Service
-                            </Link>
-                            <Link to="/contact" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
-                                Contact Us
-                            </Link>
+                    {/* Glowing Top Border Line */}
+                    <Box sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '1px',
+                        background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}, #00e5ff, transparent)`,
+                        opacity: 0.4,
+                    }} />
+
+                    {/* Subtle grid background */}
+                    <Box sx={{ position: 'absolute', inset: 0, opacity: 0.02, backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)', backgroundSize: '24px 24px', pointerEvents: 'none' }} />
+
+                    <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
+                        <Grid container spacing={5} sx={{ mb: 6 }}>
+                            {/* Column 1: Brand & Bio */}
+                            <Grid item xs={12} md={4}>
+                                <Stack spacing={2.5}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: 32,
+                                            height: 32,
+                                            borderRadius: '8px',
+                                            border: '2px solid',
+                                            borderColor: 'primary.main',
+                                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                            color: 'primary.main',
+                                        }}>
+                                            <Code sx={{ fontSize: 18 }} />
+                                        </Box>
+                                        <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.02em', fontSize: '1.25rem', color: '#ffffff' }}>
+                                            Expect<span style={{ color: theme.palette.primary.main }}>Exception</span>
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="body2" color="#94a3b8" sx={{ lineHeight: 1.7, fontSize: '0.9rem', maxWidth: '320px' }}>
+                                        We design and build high-performance web systems, custom software automation, and autonomous AI pipelines engineered to scale.
+                                    </Typography>
+                                    <Stack direction="row" spacing={1.5} alignItems="center">
+                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#3dfc55', boxShadow: '0 0 10px #3dfc55' }} />
+                                        <Typography variant="caption" color="text.secondary" fontWeight="600">
+                                            Accepting new projects
+                                        </Typography>
+                                    </Stack>
+                                </Stack>
+                            </Grid>
+
+                            {/* Column 2: Engineering Services */}
+                            <Grid item xs={6} sm={4} md={2.5}>
+                                <Typography variant="subtitle2" color="#ffffff" fontWeight="800" sx={{ mb: 2.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    Services
+                                </Typography>
+                                <Stack spacing={1.5}>
+                                    <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                        Software Engineering
+                                    </Link>
+                                    <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                        Workflow Automation
+                                    </Link>
+                                    <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                        Autonomous AI Agents
+                                    </Link>
+                                </Stack>
+                            </Grid>
+
+                            {/* Column 3: Utility Sandbox */}
+                            <Grid item xs={6} sm={4} md={2.5}>
+                                <Typography variant="subtitle2" color="#ffffff" fontWeight="800" sx={{ mb: 2.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    Sandbox
+                                </Typography>
+                                <Stack spacing={1.5}>
+                                    <Link to="/services" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                        All Developer Tools
+                                    </Link>
+                                    <Box
+                                        onClick={() => setChatbotOpen(true)}
+                                        style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s', cursor: 'pointer' }}
+                                        onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'}
+                                        onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}
+                                    >
+                                        ExpExc AI Chat
+                                    </Box>
+                                    <Link to="/blogs" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                        Technical Blog
+                                    </Link>
+                                </Stack>
+                            </Grid>
+
+                            {/* Column 4: Get in Touch */}
+                            <Grid item xs={12} sm={4} md={3}>
+                                <Typography variant="subtitle2" color="#ffffff" fontWeight="800" sx={{ mb: 2.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    Connect
+                                </Typography>
+                                <Stack spacing={2}>
+                                    <Typography variant="body2" color="#94a3b8" sx={{ fontSize: '0.85rem' }}>
+                                        Have an automation or software project in mind? Let's build it.
+                                    </Typography>
+                                    <Button
+                                        component={Link}
+                                        to="/hire"
+                                        variant="outlined"
+                                        size="small"
+                                        sx={{
+                                            alignSelf: 'flex-start',
+                                            borderRadius: '8px',
+                                            px: 2.5,
+                                            py: 0.75,
+                                            borderColor: 'rgba(255, 255, 255, 0.15)',
+                                            color: '#ffffff',
+                                            fontSize: '0.8rem',
+                                            fontWeight: 700,
+                                            '&:hover': {
+                                                borderColor: 'primary.main',
+                                                color: 'primary.main',
+                                                bgcolor: 'rgba(61, 252, 85, 0.03)'
+                                            }
+                                        }}
+                                    >
+                                        Start a Project
+                                    </Button>
+                                </Stack>
+                            </Grid>
+                        </Grid>
+
+                        <Divider sx={{ borderColor: 'rgba(255,255,255,0.05)', mb: 4 }} />
+
+                        <Stack
+                            direction={{ xs: 'column', sm: 'row' }}
+                            spacing={2}
+                            justifyContent="space-between"
+                            alignItems="center"
+                        >
+                            <Typography
+                                variant="body2"
+                                color="#94a3b8"
+                                sx={{ fontSize: '0.8rem', textAlign: { xs: 'center', sm: 'left' } }}
+                            >
+                                © {new Date().getFullYear()} ExpectException. All rights reserved.
+                            </Typography>
+                            <Stack direction="row" spacing={3}>
+                                <Link to="/privacy-policy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.8rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                    Privacy
+                                </Link>
+                                <Link to="/terms-of-service" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.8rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                    Terms
+                                </Link>
+                                <Link to="/contact" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.8rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                    Contact
+                                </Link>
+                            </Stack>
                         </Stack>
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            align="center"
-                            sx={{
-                                mb: 2,
-                                fontSize: '0.9rem',
-                            }}
-                        >
-                            © {new Date().getFullYear()} ExpectException. All rights reserved.
-                        </Typography>
-                        <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            align="center"
-                            display="block"
-                            sx={{ opacity: 0.7 }}
-                        >
-                            Made with ❤️ for developers and creators
-                        </Typography>
                     </Container>
                 </Box>
             )}
@@ -648,6 +804,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             {/* Search Dialog */}
             <SearchDialog open={searchOpen} onClose={handleSearchClose} />
+
+            {/* Global Chatbot Widget */}
+            <ChatbotWidget isOpen={chatbotOpen} setIsOpen={setChatbotOpen} />
         </Box>
     );
 };

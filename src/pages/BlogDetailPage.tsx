@@ -16,6 +16,7 @@ import {
     Grid,
     useMediaQuery,
     useTheme,
+    alpha,
 } from '@mui/material';
 import {
     CalendarToday,
@@ -28,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
+import DOMPurify from 'dompurify';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { Post, Comment } from '../types';
@@ -237,7 +239,7 @@ const BlogDetailPage: React.FC = () => {
                     },
                 }}
             >
-                <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(doc.body.innerHTML) }} />
                 {/* Render code blocks with syntax highlighting */}
                 {codeBlocksData.map((data) => (
                     <CodeBlock
@@ -297,7 +299,23 @@ const BlogDetailPage: React.FC = () => {
                     <meta name="keywords" content={post.keywords || post.tags.map(t => t.name).join(', ')} />
                 </Helmet>
 
-                <Button component={Link} to="/blogs" startIcon={<ArrowBack />} sx={{ mb: { xs: 2, md: 4 } }}>
+                <Button 
+                    component={Link} 
+                    to="/blogs" 
+                    startIcon={<ArrowBack />} 
+                    variant="outlined"
+                    sx={{ 
+                        mb: { xs: 3, md: 5 },
+                        borderRadius: '10px',
+                        borderColor: 'rgba(255, 255, 255, 0.08)',
+                        color: 'grey.300',
+                        '&:hover': {
+                            borderColor: theme.palette.primary.main,
+                            color: theme.palette.primary.main,
+                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                        }
+                    }}
+                >
                     Back to Blogs
                 </Button>
 
@@ -313,7 +331,17 @@ const BlogDetailPage: React.FC = () => {
                             <Box sx={{ mb: { xs: 3, md: 4 } }}>
                                 <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
                                     {post.tags.map((tag) => (
-                                        <Chip key={tag.id} label={tag.name} color="primary" size="small" />
+                                        <Chip 
+                                            key={tag.id} 
+                                            label={tag.name} 
+                                            size="small" 
+                                            sx={{
+                                                bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                                color: theme.palette.primary.main,
+                                                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                                                fontWeight: 600,
+                                            }}
+                                        />
                                     ))}
                                 </Stack>
                                 <Typography
@@ -321,9 +349,13 @@ const BlogDetailPage: React.FC = () => {
                                     component="h1"
                                     gutterBottom
                                     sx={{
-                                        fontWeight: 800,
-                                        fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' },
-                                        lineHeight: 1.2,
+                                        fontWeight: 900,
+                                        fontSize: { xs: '2.25rem', sm: '2.75rem', md: '3.25rem' },
+                                        lineHeight: 1.25,
+                                        letterSpacing: '-0.02em',
+                                        background: 'linear-gradient(to right, #ffffff, #94a3b8)',
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
                                     }}
                                 >
                                     {post.title}
@@ -370,8 +402,19 @@ const BlogDetailPage: React.FC = () => {
                                         startIcon={<ThumbUp />}
                                         variant={isLiked ? "contained" : "outlined"}
                                         onClick={handleLike}
-                                        color={isLiked ? "primary" : "inherit"}
-                                        sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                                        sx={{ 
+                                            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                                            borderRadius: '10px',
+                                            bgcolor: isLiked ? theme.palette.primary.main : 'transparent',
+                                            color: isLiked ? '#000000' : 'white',
+                                            borderColor: isLiked ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
+                                            fontWeight: 700,
+                                            '&:hover': {
+                                                bgcolor: isLiked ? alpha(theme.palette.primary.main, 0.8) : 'rgba(255,255,255,0.05)',
+                                                borderColor: isLiked ? 'transparent' : theme.palette.primary.main,
+                                                color: isLiked ? '#000000' : theme.palette.primary.main,
+                                            }
+                                        }}
                                     >
                                         Like ({likesCount})
                                     </Button>

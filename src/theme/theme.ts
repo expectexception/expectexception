@@ -1,4 +1,4 @@
-import { createTheme, alpha } from '@mui/material/styles';
+import { createTheme, alpha, Theme } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -17,203 +17,236 @@ declare module '@mui/material/styles' {
   }
 }
 
-export const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#3b82f6', // Bright, vibrant blue
-      light: '#60a5fa',
-      dark: '#2563eb',
-      contrastText: '#ffffff',
+export const getTheme = (primaryColor: string = '#3dfc55'): Theme => {
+  return createTheme({
+    palette: {
+      mode: 'dark',
+      primary: {
+        main: primaryColor,
+        light: alpha(primaryColor, 0.8),
+        dark: alpha(primaryColor, 1.2),
+        contrastText: '#000000', // Black text on neon background for premium contrast
+      },
+      secondary: {
+        main: '#00e5ff', // Neon Cyan
+        contrastText: '#000000',
+      },
+      background: {
+        default: '#050505', // Ultra-dark background
+        paper: '#0d0e12',   // Premium charcoal card background
+      },
+      glass: {
+        light: alpha('#0d0e12', 0.6),
+        main: alpha('#050505', 0.7),
+        dark: alpha('#010102', 0.8),
+      },
+      text: {
+        primary: '#ffffff', // Pure white text
+        secondary: '#94a3b8', // Cool slate grey text
+      },
+      divider: alpha('#ffffff', 0.08),
+      action: {
+        hover: alpha(primaryColor, 0.08),
+        selected: alpha(primaryColor, 0.12),
+      },
     },
-    secondary: {
-      main: '#8b5cf6', // Violet
-      light: '#a78bfa',
-      dark: '#7c3aed',
-      contrastText: '#ffffff',
+    typography: {
+      fontFamily: '"Outfit", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+      h1: {
+        fontWeight: 800,
+        fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+        lineHeight: 1.1,
+        letterSpacing: '-0.02em',
+        color: '#ffffff',
+      },
+      h2: {
+        fontWeight: 700,
+        fontSize: 'clamp(1.8rem, 4.5vw, 2.75rem)',
+        lineHeight: 1.2,
+        letterSpacing: '-0.01em',
+      },
+      h3: {
+        fontWeight: 700,
+        fontSize: 'clamp(1.4rem, 3.5vw, 2.2rem)',
+      },
+      h4: {
+        fontWeight: 600,
+        fontSize: 'clamp(1.15rem, 3vw, 1.6rem)',
+      },
+      button: {
+        fontWeight: 600,
+        textTransform: 'none',
+      },
     },
-    background: {
-      default: '#0f172a', // Slate 900
-      paper: '#1e293b',   // Slate 800
+    shape: {
+      borderRadius: 12,
     },
-    glass: {
-      light: alpha('#1e293b', 0.6),
-      main: alpha('#0f172a', 0.7),
-      dark: alpha('#020617', 0.8),
-    },
-    text: {
-      primary: '#f1f5f9', // Slate 100
-      secondary: '#94a3b8', // Slate 400
-    },
-    divider: alpha('#94a3b8', 0.1),
-    action: {
-      hover: alpha('#3b82f6', 0.08),
-      selected: alpha('#3b82f6', 0.12),
-    },
-  },
-  typography: {
-    fontFamily: '"Outfit", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontWeight: 800,
-      fontSize: 'clamp(2.2rem, 6vw, 3.5rem)',
-      lineHeight: 1.1,
-      letterSpacing: '-0.02em',
-      background: 'linear-gradient(to right, #60a5fa, #a78bfa)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-    },
-    h2: {
-      fontWeight: 700,
-      fontSize: 'clamp(1.75rem, 4.5vw, 2.5rem)',
-      lineHeight: 1.2,
-      letterSpacing: '-0.01em',
-    },
-    h3: {
-      fontWeight: 700,
-      fontSize: 'clamp(1.4rem, 3.5vw, 2rem)',
-    },
-    h4: {
-      fontWeight: 600,
-      fontSize: 'clamp(1.15rem, 3vw, 1.5rem)',
-    },
-    button: {
-      fontWeight: 600,
-      textTransform: 'none',
-    },
-  },
-  shape: {
-    borderRadius: 16,
-  },
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          scrollbarColor: '#334155 #0f172a',
-          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            width: '8px',
-            height: '8px',
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            backgroundColor: '#050505',
+            color: '#ffffff',
+            scrollbarColor: `${alpha(primaryColor, 0.3)} #050505`,
+            '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+              width: '8px',
+              height: '8px',
+            },
+            '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+              borderRadius: 8,
+              backgroundColor: alpha(primaryColor, 0.3),
+              minHeight: 24,
+              border: '2px solid #050505',
+              '&:hover': {
+                backgroundColor: primaryColor,
+              },
+            },
+            '&::-webkit-scrollbar-track, & *::-webkit-scrollbar-track': {
+              backgroundColor: '#050505',
+            },
           },
-          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
             borderRadius: 8,
-            backgroundColor: '#334155',
-            minHeight: 24,
-            border: '2px solid #0f172a',
-          },
-          '&::-webkit-scrollbar-track, & *::-webkit-scrollbar-track': {
-            backgroundColor: '#0f172a',
-          },
-        },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          padding: '10px 24px',
-          boxShadow: 'none',
-          fontSize: '0.95rem',
-          transition: 'all 0.2s',
-          '@media (max-width:600px)': {
-            padding: '8px 12px',
-            fontSize: '0.85rem',
-          },
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-          },
-        },
-        contained: {
-          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-          backgroundColor: alpha('#1e293b', 0.6),
-          backdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-          transition: 'transform 0.2s, box-shadow 0.2s',
-          '&:hover': {
-            borderColor: 'rgba(59, 130, 246, 0.3)',
-          },
-        },
-      },
-    },
-    MuiToggleButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          padding: '6px 12px',
-          '@media (max-width:600px)': {
-            padding: '6px 10px',
-            fontSize: '0.85rem',
-            minWidth: 'unset',
-          },
-          '&.Mui-selected': {
-            boxShadow: '0 6px 16px rgba(59,130,246,0.12)'
-          }
-        }
-      }
-    },
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          padding: 8,
-          '@media (max-width:600px)': {
-            padding: 6,
-          }
-        }
-      }
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          fontWeight: 500,
-          height: 28,
-          '@media (max-width:600px)': {
-            height: 22,
-            fontSize: '0.75rem',
-            paddingLeft: 6,
-            paddingRight: 6,
-          }
-        },
-        sizeSmall: {
-          height: 20,
-          fontSize: '0.7rem'
-        }
-      }
-    },
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-          backgroundColor: alpha('#0f172a', 0.8),
-          backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-        },
-      },
-    },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            backgroundColor: alpha('#1e293b', 0.5),
-            '& fieldset': {
-              borderColor: alpha('#94a3b8', 0.2),
+            padding: '10px 24px',
+            boxShadow: 'none',
+            fontSize: '0.95rem',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '@media (max-width:600px)': {
+              padding: '8px 16px',
+              fontSize: '0.85rem',
             },
-            '&:hover fieldset': {
-              borderColor: alpha('#94a3b8', 0.4),
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: `0 8px 20px ${alpha(primaryColor, 0.25)}`,
             },
-            '&.Mui-focused fieldset': {
-              borderColor: '#3b82f6',
+          },
+          contained: {
+            background: primaryColor,
+            color: '#000000',
+            '&:hover': {
+              background: alpha(primaryColor, 0.9),
+              boxShadow: `0 8px 25px ${alpha(primaryColor, 0.4)}`,
+            },
+          },
+          outlined: {
+            borderColor: alpha('#ffffff', 0.2),
+            color: '#ffffff',
+            '&:hover': {
+              borderColor: primaryColor,
+              color: primaryColor,
+              backgroundColor: alpha(primaryColor, 0.04),
+            },
+          },
+          text: {
+            color: '#ffffff',
+            '&:hover': {
+              color: primaryColor,
+              backgroundColor: alpha(primaryColor, 0.04),
             },
           },
         },
       },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            backgroundImage: 'none',
+            backgroundColor: alpha('#0d0e12', 0.6),
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              borderColor: alpha(primaryColor, 0.3),
+              boxShadow: `0 15px 30px -10px ${alpha(primaryColor, 0.15)}`,
+              transform: 'translateY(-4px)',
+            },
+          },
+        },
+      },
+      MuiAppBar: {
+        styleOverrides: {
+          root: {
+            backgroundImage: 'none',
+            backgroundColor: alpha('#050505', 0.75),
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+          },
+        },
+      },
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: alpha('#0d0e12', 0.4),
+              '& fieldset': {
+                borderColor: alpha('#ffffff', 0.1),
+              },
+              '&:hover fieldset': {
+                borderColor: alpha('#ffffff', 0.25),
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: primaryColor,
+              },
+            },
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundImage: 'none',
+            backgroundColor: 'rgba(13, 14, 18, 0.6)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            borderColor: 'rgba(255, 255, 255, 0.05)',
+            color: '#94a3b8',
+          },
+          head: {
+            color: '#ffffff',
+            fontWeight: 700,
+          },
+        },
+      },
+      MuiPaginationItem: {
+        styleOverrides: {
+          root: {
+            color: '#94a3b8',
+            '&.Mui-selected': {
+              backgroundColor: alpha(primaryColor, 0.15),
+              color: primaryColor,
+              border: `1px solid ${alpha(primaryColor, 0.3)}`,
+              fontWeight: 700,
+              '&:hover': {
+                backgroundColor: alpha(primaryColor, 0.25),
+              },
+            },
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              color: '#ffffff',
+            },
+          },
+        },
+      },
+      MuiDivider: {
+        styleOverrides: {
+          root: {
+            borderColor: 'rgba(255, 255, 255, 0.06)',
+          },
+        },
+      },
     },
-    
-  },
-});
+  });
+};
+
+export const theme = getTheme();
