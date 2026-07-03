@@ -39,6 +39,7 @@ import CodeBlock from '../components/blog/CodeBlock';
 import ShareButtons from '../components/blog/ShareButtons';
 import ReadingProgressBar from '../components/blog/ReadingProgressBar';
 import { useAuth } from '../context/AuthContext';
+import Seo from '../components/seo/Seo';
 
 const BlogDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -293,11 +294,27 @@ const BlogDetailPage: React.FC = () => {
         <>
             <ReadingProgressBar />
             <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
-                <Helmet>
-                    <title>{post.seo_title || post.title} | ExpectException</title>
-                    <meta name="description" content={post.seo_description || post.content.substring(0, 160)} />
-                    <meta name="keywords" content={post.keywords || post.tags.map(t => t.name).join(', ')} />
-                </Helmet>
+                <Seo
+                    title={post.seo_title || post.title}
+                    description={post.seo_description || post.content.replace(/<[^>]*>/g, '').substring(0, 160)}
+                    keywords={post.keywords ? post.keywords.split(',').map((k: string) => k.trim()) : post.tags.map((t: any) => t.name)}
+                    type="article"
+                    date={post.created_at}
+                    author={post.author?.email || 'ExpectException'}
+                    image={post.cover_image || undefined}
+                    structuredData={{
+                        '@context': 'https://schema.org',
+                        '@type': 'Article',
+                        headline: post.seo_title || post.title,
+                        description: post.seo_description || post.content.replace(/<[^>]*>/g, '').substring(0, 160),
+                        author: { '@type': 'Person', name: post.author?.email || 'ExpectException' },
+                        datePublished: post.created_at,
+                        dateModified: (post as any).updated_at || post.created_at,
+                        publisher: { '@type': 'Organization', name: 'ExpectException', logo: 'https://expectexception.com/logo512.png' },
+                        image: post.cover_image || 'https://expectexception.com/logo512.png',
+                        keywords: post.tags.map((t: any) => t.name).join(', '),
+                    }}
+                />
 
                 <Button 
                     component={Link} 

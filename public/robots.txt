@@ -5,8 +5,9 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /login
 Disallow: /register
+Disallow: /profile
 
-# User-agent: Googlebot
-# Allow: /
+User-agent: Googlebot
+Allow: /
 
 Sitemap: https://expectexception.com/sitemap.xml

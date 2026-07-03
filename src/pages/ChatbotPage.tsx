@@ -1167,7 +1167,19 @@ The developer specializes in building high-performance, automated, and visually 
             overflow: 'hidden',
         }}>
             <CleanStarBackground withNebula={true} />
-            <Seo title="Daemon - Agentic Chatbot" description="ExpectException Interactive Agent" />
+            <Seo
+                title="Daemon – Free AI Agentic Chatbot with Tool-Calling"
+                description="Chat with Daemon, an agentic AI assistant powered by local LLMs (Ollama/Qwen). Ask it to write code, search the web, analyze files, and call real backend tools. Completely free."
+                keywords={[
+                    'free ai chatbot',
+                    'agentic ai assistant',
+                    'local llm chatbot',
+                    'ai with tool calling',
+                    'free gpt alternative',
+                    'ai assistant no signup',
+                    'qwen chatbot free',
+                ]}
+            />
 
             {/* Delete Confirmation Dialog */}
             <Dialog

@@ -268,32 +268,54 @@ const ServicesPage: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 10 }}>
       <Seo
-        title="All Tools & Services - Free Developer Utilities"
-        description="Explore our curated collection of high-performance developer tools: YouTube Downloader, AI Image Detector, PDF Merger, URL Converter, and more. All free and ready to use."
+        title="Free Online Developer Tools – YouTube Downloader, AI Detector, PDF Converter & More"
+        description="Explore 20+ free online developer tools: YouTube downloader, AI image detector, PDF to Word converter, image compressor, OCR, text-to-speech, QR generator, and more. No sign-up required."
         keywords={[
-          'developer tools',
-          'free online tools',
-          'youtube downloader 4k',
-          'yt to mp3 converter',
-          'pdf to word online free',
-          'ai detector chatgpt',
-          'json formatter and validator',
-          'qr code generator custom',
-          'online conversion tools',
-          'image processing utilities',
-          'productivity software free',
-          'web developer toolkit 2025',
-          'all-in-one dev tools',
-          'free document converters',
-          'online encryption tools sha256',
-          'technical utilities for programmers',
-          'creative tools online',
-          'base64 converter',
-          'image to text ocr free',
-          'background removal ai',
-          'pdf merger splitter online'
+          'free online tools 2025',
+          'youtube video downloader free',
+          'yt to mp4 converter online',
+          'yt to mp3 free',
+          'ai image detector free',
+          'deepfake image checker',
+          'chatgpt image detector',
+          'pdf to word converter free online',
+          'pdf to docx no email',
+          'image compressor online',
+          'reduce image file size free',
+          'ocr online free no signup',
+          'extract text from image',
+          'text to speech neural ai',
+          'qr code generator free',
+          'json formatter validator online',
+          'secret message sharer',
+          'one time secret link',
+          'developer utilities',
+          'all in one dev tools',
+        ]}
+        faq={[
+          {
+            question: 'Is ExpectException free to use?',
+            answer: 'Yes, all tools on ExpectException are completely free. No account, subscription, or credit card required.',
+          },
+          {
+            question: 'Can I download YouTube videos for free?',
+            answer: 'Yes. Our YouTube Downloader lets you download YouTube videos in MP4, MP3, and other formats directly in your browser with no software installation.',
+          },
+          {
+            question: 'How does the AI Image Detector work?',
+            answer: 'Our AI Detector uses ensemble machine-learning models to analyze image artifacts and patterns that indicate AI generation. Upload any image and receive an instant forensic analysis.',
+          },
+          {
+            question: 'Can I convert PDF to Word without an account?',
+            answer: 'Absolutely. Our PDF to Word converter supports DOCX, DOC, ODT, RTF, and TXT output. Upload your PDF and download the result — no email or login needed.',
+          },
+          {
+            question: 'Is there a file size limit for image compression?',
+            answer: 'We support image files up to 50 MB. Our Image Compressor uses lossless and lossy algorithms to reduce file size by up to 90% while preserving visual quality.',
+          },
         ]}
       />
+
 
       {/* Header Banner */}
       <Box sx={{ 

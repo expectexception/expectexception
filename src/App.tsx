@@ -11,6 +11,8 @@ import NotificationPrompt from './components/NotificationPrompt';
 import GATracker from './components/analytics/GATracker';
 
 import { HelmetProvider } from 'react-helmet-async';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Analytics } from '@vercel/analytics/react';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt(): Promise<void>;
@@ -27,6 +29,8 @@ function AppContent({ deferredPrompt, handleInstall, handleDismiss }: any) {
             {/* Hide AnimatedBackground on chat page - it has its own StarBackground */}
             {!isChatPage && <AnimatedBackground />}
             <GATracker />
+            <SpeedInsights />
+            <Analytics />
             <Layout>
                 <AnimatedRoutes />
             </Layout>

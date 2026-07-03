@@ -823,10 +823,40 @@ const HomePage: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', pb: 8, bgcolor: '#050505', color: '#ffffff' }}>
       <Seo
-        title="Premium Developer Tools & Creative Engineering"
-        description="Explore RJT's interactive frontend canvases, custom web engineering, and a functional suite of developer tools."
-        keywords={['developer tools', 'web engineer', 'frontend engineer', 'react developer', 'creative frontend', 'expectexception', 'interactive canvas']}
+        title="ExpectException – Free Developer Tools, AI Engineering & Portfolio"
+        description="ExpectException: free online tools (YouTube downloader, AI detector, PDF converter, OCR), developer blog, and the full-stack engineering portfolio of RJT — React, Django, AI & DevOps specialist."
+        keywords={[
+          'expectexception',
+          'free developer tools',
+          'full stack developer portfolio',
+          'react django developer',
+          'ai engineer portfolio',
+          'youtube downloader free',
+          'ai image detector',
+          'pdf to word free',
+          'hire full stack developer',
+          'hire react developer',
+          'hire django developer',
+          'web developer for hire',
+          'ai automation engineer',
+          'devops engineer portfolio',
+          'creative frontend developer',
+        ]}
         structuredData={appSchema}
+        faq={[
+          {
+            question: 'What is ExpectException?',
+            answer: 'ExpectException is a free online toolkit offering 20+ developer utilities — YouTube downloader, AI image detector, PDF converter, image compressor, OCR, text-to-speech — plus a tech blog and a full-stack developer portfolio.',
+          },
+          {
+            question: 'Are all tools on ExpectException free?',
+            answer: 'Yes. Every tool is free with no registration, subscription, or hidden fee.',
+          },
+          {
+            question: 'Can I hire the developer behind ExpectException?',
+            answer: 'Yes! RJT is available for freelance and contract work in React, Django, Python, and AI/ML integrations. Visit the Hire page for rates and contact details.',
+          },
+        ]}
       />
 
       {/* --- HERO SECTION --- */}
