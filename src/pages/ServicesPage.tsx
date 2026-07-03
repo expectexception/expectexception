@@ -50,13 +50,18 @@ import {
   Speed,
   Mic,
   NetworkCheck,
+  BookmarkBorder,
+  Bookmark,
+  History,
 } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../components/seo/Seo';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { staticServices, staticStats } from '../data/StaticData';
+import { useToolBookmarks } from '../hooks/useToolBookmarks';
+import { useToolHistory } from '../hooks/useToolHistory';
 
 // --- Reusable Border Beam Effect ---
 interface BorderBeamProps {
@@ -97,6 +102,11 @@ const BorderBeam: React.FC<BorderBeamProps> = ({ duration = 8, size = 150, activ
 const ServicesPage: React.FC = () => {
   const theme = useTheme();
   const primaryColor = theme.palette.primary.main;
+  const navigate = useNavigate();
+  const { toggle: toggleBookmark, isBookmarked } = useToolBookmarks();
+  const { history: toolHistory, addToHistory } = useToolHistory();
+  const [showBookmarked, setShowBookmarked] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [services, setServices] = useState<any[]>(() => {
@@ -251,7 +261,8 @@ const ServicesPage: React.FC = () => {
       service.description.toLowerCase().includes(search.toLowerCase()) ||
       service.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
     const matchesFilter = filter === 'all' || service.category === filter;
-    return matchesSearch && matchesFilter;
+    const matchesBookmark = !showBookmarked || isBookmarked(service.id);
+    return matchesSearch && matchesFilter && matchesBookmark;
   });
 
   return (
@@ -309,7 +320,7 @@ const ServicesPage: React.FC = () => {
               fontSize: { xs: '2.25rem', sm: '3.25rem', md: '3.75rem' },
               lineHeight: 1.15
             }}>
-              Agent Services & Sandbox
+              Tools & Services
             </Typography>
             <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 400, maxWidth: '650px', mt: 1.5 }}>
               Explore our collection of automated AI agent pipelines and client-side developer utilities designed to accelerate your development workflow.
@@ -328,7 +339,7 @@ const ServicesPage: React.FC = () => {
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 12, ease: 'linear' }}
                 >
-                  <circle cx="100" cy="70" r="16" stroke="#00e5ff" strokeWidth="2" strokeDasharray="6 4" />
+                  <circle cx="100" cy="70" r="16" stroke={theme.palette.secondary.main} strokeWidth="2" strokeDasharray="6 4" />
                 </motion.g>
                 <circle cx="100" cy="70" r="4" fill="#ffffff" />
                 
@@ -428,10 +439,52 @@ const ServicesPage: React.FC = () => {
                   <Sort />
                 </IconButton>
               </Tooltip>
+
+              <Tooltip title={showBookmarked ? 'Show all tools' : 'Show bookmarked tools'}>
+                <IconButton
+                    onClick={() => setShowBookmarked(v => !v)}
+                    sx={{
+                        color: showBookmarked ? 'primary.main' : '#94a3b8',
+                        border: `1px solid ${showBookmarked ? primaryColor : 'rgba(255,255,255,0.1)'}`,
+                        borderRadius: '8px',
+                    }}
+                >
+                    <Bookmark sx={{ fontSize: 20 }} />
+                </IconButton>
+              </Tooltip>
             </Stack>
           </Grid>
         </Grid>
       </Card>
+
+      {/* Recent History Strip */}
+      {toolHistory.length > 0 && !showBookmarked && !search && (
+          <Box sx={{ mb: 3 }}>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5 }}>
+                  <History sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      Recently Used
+                  </Typography>
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                  {toolHistory.slice(0, 5).map(entry => (
+                      <Chip
+                          key={entry.id}
+                          label={entry.title}
+                          size="small"
+                          onClick={() => navigate(entry.path)}
+                          sx={{
+                              cursor: 'pointer',
+                              bgcolor: alpha(primaryColor, 0.08),
+                              color: 'text.primary',
+                              border: `1px solid ${alpha(primaryColor, 0.2)}`,
+                              '&:hover': { bgcolor: alpha(primaryColor, 0.15) },
+                          }}
+                      />
+                  ))}
+              </Stack>
+          </Box>
+      )}
 
       {/* Services Grid */}
       <Grid container spacing={4}>
@@ -486,6 +539,15 @@ const ServicesPage: React.FC = () => {
                             </motion.div>
                           </Box>
                           <Stack direction="row" alignItems="center" spacing={0.75}>
+                            <Tooltip title={isBookmarked(service.id) ? 'Remove bookmark' : 'Bookmark tool'}>
+                                <IconButton
+                                    size="small"
+                                    onClick={(e) => { e.preventDefault(); toggleBookmark(service.id); }}
+                                    sx={{ p: 0.5, color: isBookmarked(service.id) ? 'primary.main' : 'text.secondary' }}
+                                >
+                                    {isBookmarked(service.id) ? <Bookmark sx={{ fontSize: 18 }} /> : <BookmarkBorder sx={{ fontSize: 18 }} />}
+                                </IconButton>
+                            </Tooltip>
                             <Star sx={{ color: 'warning.main', fontSize: 16 }} />
                             <Typography variant="body2" fontWeight={700}>
                               {service.popularity}%
@@ -535,8 +597,10 @@ const ServicesPage: React.FC = () => {
                         {/* Actions */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
                           <Button
-                            component={Link}
-                            to={service.path}
+                            onClick={() => {
+                                addToHistory({ id: service.id, title: service.title, path: service.path });
+                                navigate(service.path);
+                            }}
                             variant="contained"
                             size="small"
                             sx={{

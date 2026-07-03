@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     Box,
     Button,
-    Container,
     Grid,
     Typography,
     Stack,
@@ -10,14 +9,13 @@ import {
     useTheme,
     Paper,
     alpha,
-    Card
+    Card,
+    Container,
 } from '@mui/material';
 import {
-    PlayArrow,
     Refresh,
     Speed,
     NetworkCheck,
-    Storage,
     CompassCalibration
 } from '@mui/icons-material';
 import {
@@ -28,7 +26,7 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import Seo from '../seo/Seo';
-import ServicePageHero from './ServicePageHero';
+import ServicePageShell from './ServicePageShell';
 
 // @ts-ignore
 import ndt7 from '@m-lab/ndt7';
@@ -40,6 +38,8 @@ interface SpeedPoint {
 
 const SpeedTest: React.FC = () => {
     const theme = useTheme();
+    const downloadColor = theme.palette.secondary.main;
+    const uploadColor = theme.palette.primary.main;
     const [running, setRunning] = useState(false);
     const [phase, setPhase] = useState<'idle' | 'download' | 'upload' | 'complete'>('idle');
     const [downloadSpeed, setDownloadSpeed] = useState(0);
@@ -355,11 +355,13 @@ const SpeedTest: React.FC = () => {
             }} />
 
             <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-                <ServicePageHero
-                    icon={Speed}
-                    title="Network Telemetry Sandbox"
-                    subtitle="Inspect bandwidth throughput, packet latency, and data flow pipelines in real-time."
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+                    <Speed sx={{ fontSize: 40, color: 'primary.main' }} />
+                    <Box>
+                        <Typography variant="h4" fontWeight="800">Network Telemetry Sandbox</Typography>
+                        <Typography variant="body2" color="text.secondary">Inspect bandwidth throughput, packet latency, and data flow pipelines in real-time.</Typography>
+                    </Box>
+                </Box>
 
                 <Grid container spacing={4} alignItems="stretch" justifyContent="center">
                     {/* Left Side: Pipeline Visualization */}

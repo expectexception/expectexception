@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Container,
     Typography,
     Box,
     Card,
@@ -14,19 +13,29 @@ import {
     TextField,
     Grid,
     Chip,
+    useTheme,
+    alpha,
 } from '@mui/material';
 import { CloudUpload, Compress, Download } from '@mui/icons-material';
 import Seo from '../components/seo/Seo';
 import apiClient, { API_BASE_URL } from '../api/config';
 import { endpoints } from '../api/endpoints';
-import ServicePageHero from '../components/services/ServicePageHero';
+import ServicePageShell from '../components/services/ServicePageShell';
+
+interface CompressionResult {
+    full_url: string;
+    original_size: number;
+    compressed_size: number;
+    filename: string;
+}
 
 const ImageCompressorPage: React.FC = () => {
+    const theme = useTheme();
     const [file, setFile] = useState<File | null>(null);
     const [quality, setQuality] = useState(80);
     const [format, setFormat] = useState('WEBP');
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<any | null>(null);
+    const [result, setResult] = useState<CompressionResult | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
 
@@ -67,9 +76,7 @@ const ImageCompressorPage: React.FC = () => {
         formData.append('format', format);
 
         try {
-            const response = await apiClient.post(endpoints.services.imageCompressor, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            const response = await apiClient.post(endpoints.services.imageCompressor, formData);
 
             const url = response.data.image_url.startsWith('http')
                 ? response.data.image_url
@@ -93,15 +100,14 @@ const ImageCompressorPage: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <ServicePageShell
+            icon={Compress}
+            title="Image Compressor"
+            subtitle="Reduce the file size of your JPEG, PNG, and WEBP images while maintaining high visual quality."
+        >
             <Seo
                 title="Online Image Compressor - Reduce Image Size Free"
                 toolId={11}
-            />
-            <ServicePageHero
-                icon={Compress}
-                title="Image Compressor"
-                subtitle="Reduce the file size of your JPEG, PNG, and WEBP images while maintaining high visual quality."
             />
 
             <Card sx={{
@@ -110,11 +116,14 @@ const ImageCompressorPage: React.FC = () => {
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 2, sm: 3 },
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
             }}>
                 <CardContent sx={{ p: 1 }}>
                     {error && (
-                        <Alert severity="error" variant="filled" sx={{ mb: 4, borderRadius: '12px' }} onClose={() => setError(null)}>
+                        <Alert severity="error" variant="filled" sx={{ mb: 2, borderRadius: '12px' }} onClose={() => setError(null)}>
                             {error}
                         </Alert>
                     )}
@@ -124,21 +133,21 @@ const ImageCompressorPage: React.FC = () => {
                             border: '2px dashed rgba(255, 255, 255, 0.1)',
                             backgroundColor: 'rgba(255, 255, 255, 0.01)',
                             borderRadius: '16px',
-                            p: 5,
+                            p: { xs: 3, sm: 4 },
                             textAlign: 'center',
                             cursor: 'pointer',
                             transition: 'all 0.3s ease',
-                            mb: 4,
+                            mb: 3,
                             '&:hover': {
-                                borderColor: '#3dfc55',
-                                backgroundColor: 'rgba(61, 252, 85, 0.02)',
-                                boxShadow: '0 0 20px rgba(61, 252, 85, 0.05)'
+                                borderColor: theme.palette.primary.main,
+                                backgroundColor: alpha(theme.palette.primary.main, 0.02),
+                                boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.05)}`
                             }
                         }}
                         component="label"
                     >
                         <input type="file" hidden accept="image/*" onChange={handleFileChange} />
-                        <CloudUpload sx={{ fontSize: 54, color: 'primary.main', mb: 2 }} />
+                        <CloudUpload sx={{ fontSize: 48, color: 'primary.main', mb: 1.5 }} />
                         <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
                             {file ? file.name : 'Click to upload or drag and drop'}
                         </Typography>
@@ -147,26 +156,16 @@ const ImageCompressorPage: React.FC = () => {
                         </Typography>
                     </Box>
 
-                    <Grid container spacing={4} sx={{ mb: 4 }}>
+                    <Grid container spacing={3} sx={{ mb: 3 }}>
                         <Grid item xs={12} md={6}>
-                            <Typography gutterBottom sx={{ fontWeight: 600, mb: 2 }}>Quality: {quality}%</Typography>
+                            <Typography gutterBottom sx={{ fontWeight: 600, mb: 1.5 }}>Quality: {quality}%</Typography>
                             <Slider
                                 value={quality}
                                 onChange={(_, v) => setQuality(v as number)}
                                 min={10}
                                 max={100}
                                 valueLabelDisplay="auto"
-                                sx={{
-                                    color: '#3dfc55',
-                                    '& .MuiSlider-thumb': {
-                                        '&:hover, &.Mui-focusVisible': {
-                                            boxShadow: '0px 0px 0px 8px rgba(61, 252, 85, 0.16)',
-                                        },
-                                        '&.Mui-active': {
-                                            boxShadow: '0px 0px 0px 14px rgba(61, 252, 85, 0.16)',
-                                        },
-                                    },
-                                }}
+                                color="primary"
                             />
                         </Grid>
                         <Grid item xs={12} md={6}>
@@ -199,7 +198,7 @@ const ImageCompressorPage: React.FC = () => {
                             startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <Compress />}
                             sx={{
                                 px: 6,
-                                py: 1.5,
+                                py: 1.25,
                                 borderRadius: '10px',
                                 fontWeight: 700
                             }}
@@ -209,30 +208,32 @@ const ImageCompressorPage: React.FC = () => {
                     </Box>
 
                     {file && estimatedSize !== null && (
-                        <Box sx={{ mt: 3, textAlign: 'center' }}>
+                        <Box sx={{ mt: 2, textAlign: 'center' }}>
                             <Typography variant="body2" color="text.secondary">
-                                Estimated Output: <strong style={{ color: '#3dfc55' }}>{formatBytes(estimatedSize)}</strong> — original {formatBytes(file.size)}
+                                Estimated Output: <strong style={{ color: theme.palette.primary.main }}>{formatBytes(estimatedSize)}</strong> — original {formatBytes(file.size)}
                             </Typography>
                         </Box>
                     )}
 
                     {result && (
                         <Box sx={{
-                            mt: 5,
-                            p: 3,
+                            mt: 3,
+                            p: 2.5,
                             backgroundColor: 'rgba(255, 255, 255, 0.02)',
                             border: '1px solid rgba(255, 255, 255, 0.05)',
                             borderRadius: '16px'
                         }}>
-                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 800, mb: 3 }}>Compression Result</Typography>
+                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 800, mb: 2 }}>Compression Result</Typography>
 
-                            <Grid container spacing={4} alignItems="center">
+                            <Grid container spacing={3} alignItems="center">
                                 <Grid item xs={12} md={4}>
                                     <Box
                                         component="img"
                                         src={result.full_url}
                                         sx={{
                                             width: '100%',
+                                            maxHeight: 180,
+                                            objectFit: 'contain',
                                             borderRadius: '12px',
                                             border: '1px solid rgba(255,255,255,0.05)',
                                             boxShadow: '0 10px 20px rgba(0,0,0,0.3)'
@@ -241,7 +242,7 @@ const ImageCompressorPage: React.FC = () => {
                                     />
                                 </Grid>
                                 <Grid item xs={12} md={8}>
-                                    <Stack spacing={2.5}>
+                                    <Stack spacing={1.5}>
                                         <Box>
                                             <Typography variant="subtitle2" color="text.secondary">Original Size</Typography>
                                             <Typography variant="body1" fontWeight="600">{formatBytes(result.original_size)}</Typography>
@@ -268,7 +269,7 @@ const ImageCompressorPage: React.FC = () => {
                                             href={result.full_url}
                                             download={`compressed_${result.filename}`}
                                             sx={{
-                                                mt: 1.5,
+                                                mt: 1,
                                                 py: 1,
                                                 borderRadius: '10px'
                                             }}
@@ -282,7 +283,7 @@ const ImageCompressorPage: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

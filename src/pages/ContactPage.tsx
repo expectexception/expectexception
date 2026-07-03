@@ -18,7 +18,7 @@ const BorderBeam: React.FC<{ activeColor?: string }> = ({ activeColor }) => {
         inset: 0,
         borderRadius: 'inherit',
         border: '1.5px solid transparent',
-        background: `linear-gradient(90deg, ${color}, #00e5ff) border-box`,
+        background: `linear-gradient(90deg, ${color}, ${theme.palette.secondary.main}) border-box`,
         WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
         WebkitMaskComposite: 'xor',
         maskComposite: 'exclude',
@@ -79,7 +79,7 @@ const CommunicationHubSvg: React.FC = () => {
         cx="200"
         cy="100"
         r="30"
-        stroke="#00e5ff"
+        stroke={theme.palette.secondary.main}
         strokeWidth="1"
         animate={{ scale: [1, 3.5], opacity: [0.4, 0] }}
         transition={{ repeat: Infinity, duration: 3, ease: 'easeOut', delay: 1.5 }}
@@ -260,9 +260,9 @@ const ContactPage: React.FC = () => {
                                 '&:hover .border-beam-overlay': { opacity: 1 }
                             }}
                         >
-                            <BorderBeam activeColor="#00e5ff" />
+                            <BorderBeam activeColor={theme.palette.secondary.main} />
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                <LocationOn sx={{ mr: 2, color: '#00e5ff' }} />
+                                <LocationOn sx={{ mr: 2, color: 'secondary.main' }} />
                                 <Typography variant="h6" fontWeight="800">Location</Typography>
                             </Box>
                             <Typography variant="body1" color="text.secondary" fontWeight="600">

@@ -60,6 +60,8 @@ export const endpoints = {
     // Notifications
     notifications: {
         list: '/api/notifications/',
+        inApp: '/api/notifications/in-app/',
+        inAppMarkRead: (id: number) => `/api/notifications/in-app/${id}/`,
     },
 
     // Services & Tools
@@ -140,6 +142,8 @@ export const endpoints = {
             toggleFavorite: '/api/services/dashboard/toggle_favorite/',
         },
         search: '/api/services/search/',
+        shareCreate: '/api/services/share/',
+        shareRetrieve: (id: string) => `/api/services/share/${id}/`,
         toolAccess: '/api/services/tool-access/',
         toolAccessToggle: '/api/services/tool-access/toggle/',
         textToHandwriting: '/api/text-to-handwriting/generate/',
@@ -149,6 +153,22 @@ export const endpoints = {
             createFile: '/api/secret-sharer/create-file/',
             viewFile: (id: string) => `/api/secret-sharer/view-file/${id}/`
         },
+    },
+
+    // Community Forum
+    community: {
+        categories: '/api/community/categories/',
+        threads: '/api/community/threads/',
+        threadDetail: (id: number) => `/api/community/threads/${id}/`,
+        threadBySlug: (slug: string) => `/api/community/threads/?slug=${slug}`,
+        threadVote: (id: number) => `/api/community/threads/${id}/vote/`,
+        threadSolve: (id: number) => `/api/community/threads/${id}/mark_solved/`,
+        replies: '/api/community/replies/',
+        replyVote: (id: number) => `/api/community/replies/${id}/vote/`,
+        replyAccept: (id: number) => `/api/community/replies/${id}/accept/`,
+        bookmarks: '/api/community/bookmarks/',
+        bookmarkToggle: (id: number) => `/api/community/bookmarks/${id}/`,
+        stats: '/api/community/stats/',
     },
 
     // AI Image Detector

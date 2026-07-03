@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import {
-    Container, Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
-    TextField, Chip, alpha
+    Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
+    TextField, useTheme, alpha
 } from '@mui/material';
 import { PictureAsPdf, CloudUpload, Download, ContentCut } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import apiClient from '../../api/config';
+import ServicePageShell from './ServicePageShell';
+import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 
 const PdfSplitter: React.FC = () => {
+    const theme = useTheme();
     const [file, setFile] = useState<File | null>(null);
     const [pages, setPages] = useState('all');
     const [loading, setLoading] = useState(false);
@@ -34,7 +36,11 @@ const PdfSplitter: React.FC = () => {
 
         try {
             const response = await apiClient.post(endpoints.services.pdfSplit, formData);
-            setResult(response.data);
+            const data = response.data;
+            if (data.file_url && !data.file_url.startsWith('http')) {
+                data.file_url = `${API_BASE_URL}${data.file_url}`;
+            }
+            setResult(data);
         } catch (err: any) {
             setError(err.response?.data?.error || 'Split failed');
         } finally {
@@ -43,61 +49,58 @@ const PdfSplitter: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={ContentCut}
+            title="PDF Splitter"
+            subtitle="Extract pages from PDF files"
+        >
             <Seo
                 title="Split PDF Online - Extract Pages Free"
                 toolId={15}
             />
 
-
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                PDF Splitter
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Extract pages from PDF files
-            </Typography>
-
-            {error && <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ mb: 1.5, flexShrink: 0 }} onClose={() => setError(null)}>{error}</Alert>}
             {result && (
-                <Alert severity="success" sx={{ mb: 3 }} action={
+                <Alert severity="success" sx={{ mb: 1.5, flexShrink: 0 }} action={
                     <Button color="inherit" size="small" href={result.file_url} target="_blank" startIcon={<Download />}>
                         Download ZIP
                     </Button>
                 }>Extracted {result.extracted_pages} of {result.total_pages} pages!</Alert>
             )}
 
-            <Card>
-                <CardContent sx={{ p: 4 }}>
+            <Card sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                     <Box
                         sx={{
                             border: '2px dashed',
                             borderColor: 'divider',
                             borderRadius: 3,
-                            p: 6,
+                            p: { xs: 3, sm: 4 },
                             textAlign: 'center',
-                            bgcolor: file ? alpha('#10b981', 0.05) : 'transparent',
+                            bgcolor: file ? alpha(theme.palette.secondary.main, 0.05) : 'transparent',
                         }}
                     >
                         <input accept=".pdf" style={{ display: 'none' }} id="pdf-upload" type="file" onChange={handleFileSelect} />
                         <label htmlFor="pdf-upload" style={{ cursor: 'pointer', display: 'block' }}>
                             {file ? (
                                 <>
-                                    <PictureAsPdf sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
+                                    <PictureAsPdf sx={{ fontSize: 56, color: 'error.main', mb: 1.5 }} />
                                     <Typography variant="h6">{file.name}</Typography>
                                 </>
                             ) : (
                                 <>
-                                    <CloudUpload sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+                                    <CloudUpload sx={{ fontSize: 56, color: 'primary.main', mb: 1.5 }} />
                                     <Typography variant="h6">Drop your PDF here</Typography>
                                 </>
                             )}
                         </label>
                     </Box>
 
-                    <Box sx={{ mt: 3 }}>
+                    <Box sx={{ mt: 2 }}>
                         <Typography variant="subtitle2" gutterBottom>Pages to extract:</Typography>
                         <TextField
                             fullWidth
+                            size="small"
                             value={pages}
                             onChange={(e) => setPages(e.target.value)}
                             placeholder="all, 1-5, 1,3,5"
@@ -105,7 +108,7 @@ const PdfSplitter: React.FC = () => {
                         />
                     </Box>
 
-                    {loading && <LinearProgress sx={{ mt: 3 }} />}
+                    {loading && <LinearProgress sx={{ mt: 2 }} />}
 
                     <Button
                         fullWidth
@@ -114,13 +117,13 @@ const PdfSplitter: React.FC = () => {
                         onClick={handleSplit}
                         disabled={!file || loading}
                         startIcon={<ContentCut />}
-                        sx={{ mt: 3, py: 1.5 }}
+                        sx={{ mt: 2, py: 1.25 }}
                     >
                         {loading ? 'Splitting...' : 'Split PDF'}
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

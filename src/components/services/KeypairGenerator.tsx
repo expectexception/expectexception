@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-    Container,
     Card,
     CardContent,
     Typography,
@@ -17,6 +16,7 @@ import {
 } from '@mui/material';
 import { ContentCopy, VpnKey, Delete } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 
 type KeyType = 'rsa' | 'ec';
 
@@ -57,6 +57,9 @@ const KeypairGenerator: React.FC = () => {
     const [publicJwk, setPublicJwk] = useState('');
     const [privateJwk, setPrivateJwk] = useState('');
 
+    // Pure client-side tool: keys are generated with the browser's Web Crypto
+    // API and never sent to any server. Private keys should never leave the
+    // browser, so there is intentionally no backend endpoint for this tool.
     const cryptoSupported = useMemo(() => {
         return typeof window !== 'undefined' && !!window.crypto?.subtle;
     }, []);
@@ -121,209 +124,215 @@ const KeypairGenerator: React.FC = () => {
 
     const hasKeys = !!publicPem && !!privatePem;
 
+    const keyFieldSx = {
+        flex: 1,
+        minHeight: 0,
+        '& .MuiInputBase-root': { height: '100%', alignItems: 'flex-start' },
+        '& .MuiInputBase-input': { fontFamily: 'monospace', fontSize: '0.78rem', height: '100% !important', overflowY: 'auto !important' },
+    };
+
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={VpnKey}
+            title="RSA/EC Keypair Generator"
+            subtitle="Generate RSA or Elliptic Curve keypairs in your browser - private keys never leave your device."
+            maxWidth="md"
+        >
             <Seo title="RSA/EC Keypair Generator" toolId={25} />
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                RSA/EC Keypair Generator
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Generate RSA or Elliptic Curve keypairs in your browser.
-            </Typography>
+            <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                {!cryptoSupported && (
+                    <Alert severity="warning" sx={{ mb: 1.5, flexShrink: 0 }}>
+                        WebCrypto is not available. This tool requires a modern browser and HTTPS/localhost.
+                    </Alert>
+                )}
 
-            {!cryptoSupported && (
-                <Alert severity="warning" sx={{ mb: 3 }}>
-                    WebCrypto is not available. This tool requires a modern browser and HTTPS/localhost.
-                </Alert>
-            )}
+                {error && (
+                    <Alert severity="error" sx={{ mb: 1.5, flexShrink: 0 }}>
+                        {error}
+                    </Alert>
+                )}
 
-            {error && (
-                <Alert severity="error" sx={{ mb: 3 }}>
-                    {error}
-                </Alert>
-            )}
-
-            <Card sx={{ mb: 3 }}>
-                <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
-                    <Stack spacing={2} direction={{ xs: 'column', md: 'row' }}>
-                        <FormControl fullWidth>
-                            <InputLabel>Key Type</InputLabel>
-                            <Select
-                                value={keyType}
-                                label="Key Type"
-                                onChange={(e) => {
-                                    setKeyType(e.target.value as KeyType);
-                                    setError(null);
-                                }}
-                            >
-                                <MenuItem value="rsa">RSA</MenuItem>
-                                <MenuItem value="ec">EC (Elliptic Curve)</MenuItem>
-                            </Select>
-                        </FormControl>
-
-                        {keyType === 'rsa' ? (
-                            <FormControl fullWidth>
-                                <InputLabel>RSA Bits</InputLabel>
+                <Card sx={{ mb: 1.5, flexShrink: 0 }}>
+                    <CardContent sx={{ p: 2 }}>
+                        <Stack spacing={1.5} direction={{ xs: 'column', md: 'row' }}>
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Key Type</InputLabel>
                                 <Select
-                                    value={rsaBits}
-                                    label="RSA Bits"
-                                    onChange={(e) => setRsaBits(Number(e.target.value))}
+                                    value={keyType}
+                                    label="Key Type"
+                                    onChange={(e) => {
+                                        setKeyType(e.target.value as KeyType);
+                                        setError(null);
+                                    }}
                                 >
-                                    <MenuItem value={2048}>2048</MenuItem>
-                                    <MenuItem value={3072}>3072</MenuItem>
-                                    <MenuItem value={4096}>4096</MenuItem>
+                                    <MenuItem value="rsa">RSA</MenuItem>
+                                    <MenuItem value="ec">EC (Elliptic Curve)</MenuItem>
                                 </Select>
                             </FormControl>
-                        ) : (
-                            <FormControl fullWidth>
-                                <InputLabel>Curve</InputLabel>
-                                <Select
-                                    value={ecCurve}
-                                    label="Curve"
-                                    onChange={(e) => setEcCurve(e.target.value as any)}
+
+                            {keyType === 'rsa' ? (
+                                <FormControl fullWidth size="small">
+                                    <InputLabel>RSA Bits</InputLabel>
+                                    <Select
+                                        value={rsaBits}
+                                        label="RSA Bits"
+                                        onChange={(e) => setRsaBits(Number(e.target.value))}
+                                    >
+                                        <MenuItem value={2048}>2048</MenuItem>
+                                        <MenuItem value={3072}>3072</MenuItem>
+                                        <MenuItem value={4096}>4096</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            ) : (
+                                <FormControl fullWidth size="small">
+                                    <InputLabel>Curve</InputLabel>
+                                    <Select
+                                        value={ecCurve}
+                                        label="Curve"
+                                        onChange={(e) => setEcCurve(e.target.value as any)}
+                                    >
+                                        <MenuItem value="P-256">P-256</MenuItem>
+                                        <MenuItem value="P-384">P-384</MenuItem>
+                                        <MenuItem value="P-521">P-521</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            )}
+
+                            <Button
+                                variant="contained"
+                                onClick={handleGenerate}
+                                disabled={loading || !cryptoSupported}
+                                startIcon={<VpnKey />}
+                                sx={{ minWidth: { xs: '100%', md: 200 } }}
+                            >
+                                {loading ? 'Generating...' : 'Generate Keypair'}
+                            </Button>
+
+                            <Button
+                                variant="outlined"
+                                color="inherit"
+                                onClick={clearAll}
+                                disabled={loading || !hasKeys}
+                                startIcon={<Delete />}
+                                sx={{ minWidth: { xs: '100%', md: 140 } }}
+                            >
+                                Clear
+                            </Button>
+                        </Stack>
+
+                        {loading && <LinearProgress sx={{ mt: 1.5 }} />}
+                    </CardContent>
+                </Card>
+
+                <Box
+                    sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                        gridTemplateRows: { xs: 'repeat(4, minmax(140px, 1fr))', md: 'repeat(2, minmax(0, 1fr))' },
+                        gap: 1.5,
+                        flex: 1,
+                        minHeight: 0,
+                    }}
+                >
+                    <Card sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                        <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, flexShrink: 0 }}>
+                                <Typography variant="subtitle2">Public Key (PEM)</Typography>
+                                <Button
+                                    size="small"
+                                    startIcon={<ContentCopy />}
+                                    disabled={!publicPem}
+                                    onClick={() => copyToClipboard(publicPem)}
                                 >
-                                    <MenuItem value="P-256">P-256</MenuItem>
-                                    <MenuItem value="P-384">P-384</MenuItem>
-                                    <MenuItem value="P-521">P-521</MenuItem>
-                                </Select>
-                            </FormControl>
-                        )}
+                                    Copy
+                                </Button>
+                            </Box>
+                            <TextField
+                                fullWidth
+                                multiline
+                                value={publicPem}
+                                placeholder="Generate a keypair to see the public key..."
+                                InputProps={{ readOnly: true }}
+                                sx={keyFieldSx}
+                            />
+                        </CardContent>
+                    </Card>
 
-                        <Button
-                            variant="contained"
-                            onClick={handleGenerate}
-                            disabled={loading || !cryptoSupported}
-                            startIcon={<VpnKey />}
-                            sx={{ minWidth: { xs: '100%', md: 220 } }}
-                        >
-                            {loading ? 'Generating...' : 'Generate Keypair'}
-                        </Button>
+                    <Card sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                        <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, flexShrink: 0 }}>
+                                <Typography variant="subtitle2">Private Key (PEM)</Typography>
+                                <Button
+                                    size="small"
+                                    startIcon={<ContentCopy />}
+                                    disabled={!privatePem}
+                                    onClick={() => copyToClipboard(privatePem)}
+                                >
+                                    Copy
+                                </Button>
+                            </Box>
+                            <TextField
+                                fullWidth
+                                multiline
+                                value={privatePem}
+                                placeholder="Generate a keypair to see the private key..."
+                                InputProps={{ readOnly: true }}
+                                sx={keyFieldSx}
+                            />
+                        </CardContent>
+                    </Card>
 
-                        <Button
-                            variant="outlined"
-                            color="inherit"
-                            onClick={clearAll}
-                            disabled={loading || !hasKeys}
-                            startIcon={<Delete />}
-                            sx={{ minWidth: { xs: '100%', md: 160 } }}
-                        >
-                            Clear
-                        </Button>
-                    </Stack>
+                    <Card sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                        <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, flexShrink: 0 }}>
+                                <Typography variant="subtitle2">Public Key (JWK)</Typography>
+                                <Button
+                                    size="small"
+                                    startIcon={<ContentCopy />}
+                                    disabled={!publicJwk}
+                                    onClick={() => copyToClipboard(publicJwk)}
+                                >
+                                    Copy
+                                </Button>
+                            </Box>
+                            <TextField
+                                fullWidth
+                                multiline
+                                value={publicJwk}
+                                placeholder="Generate a keypair to see the public JWK..."
+                                InputProps={{ readOnly: true }}
+                                sx={keyFieldSx}
+                            />
+                        </CardContent>
+                    </Card>
 
-                    {loading && <LinearProgress sx={{ mt: 2 }} />}
-                </CardContent>
-            </Card>
-
-            <Box
-                sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                    gap: 3,
-                }}
-            >
-                <Card>
-                    <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h6">Public Key (PEM)</Typography>
-                            <Button
-                                size="small"
-                                startIcon={<ContentCopy />}
-                                disabled={!publicPem}
-                                onClick={() => copyToClipboard(publicPem)}
-                            >
-                                Copy
-                            </Button>
-                        </Box>
-                        <TextField
-                            fullWidth
-                            multiline
-                            minRows={10}
-                            value={publicPem}
-                            placeholder="Generate a keypair to see the public key..."
-                            InputProps={{ readOnly: true }}
-                            sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace' } }}
-                        />
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h6">Private Key (PEM)</Typography>
-                            <Button
-                                size="small"
-                                startIcon={<ContentCopy />}
-                                disabled={!privatePem}
-                                onClick={() => copyToClipboard(privatePem)}
-                            >
-                                Copy
-                            </Button>
-                        </Box>
-                        <TextField
-                            fullWidth
-                            multiline
-                            minRows={10}
-                            value={privatePem}
-                            placeholder="Generate a keypair to see the private key..."
-                            InputProps={{ readOnly: true }}
-                            sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace' } }}
-                        />
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h6">Public Key (JWK)</Typography>
-                            <Button
-                                size="small"
-                                startIcon={<ContentCopy />}
-                                disabled={!publicJwk}
-                                onClick={() => copyToClipboard(publicJwk)}
-                            >
-                                Copy
-                            </Button>
-                        </Box>
-                        <TextField
-                            fullWidth
-                            multiline
-                            minRows={10}
-                            value={publicJwk}
-                            placeholder="Generate a keypair to see the public JWK..."
-                            InputProps={{ readOnly: true }}
-                            sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace' } }}
-                        />
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h6">Private Key (JWK)</Typography>
-                            <Button
-                                size="small"
-                                startIcon={<ContentCopy />}
-                                disabled={!privateJwk}
-                                onClick={() => copyToClipboard(privateJwk)}
-                            >
-                                Copy
-                            </Button>
-                        </Box>
-                        <TextField
-                            fullWidth
-                            multiline
-                            minRows={10}
-                            value={privateJwk}
-                            placeholder="Generate a keypair to see the private JWK..."
-                            InputProps={{ readOnly: true }}
-                            sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace' } }}
-                        />
-                    </CardContent>
-                </Card>
+                    <Card sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                        <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, flexShrink: 0 }}>
+                                <Typography variant="subtitle2">Private Key (JWK)</Typography>
+                                <Button
+                                    size="small"
+                                    startIcon={<ContentCopy />}
+                                    disabled={!privateJwk}
+                                    onClick={() => copyToClipboard(privateJwk)}
+                                >
+                                    Copy
+                                </Button>
+                            </Box>
+                            <TextField
+                                fullWidth
+                                multiline
+                                value={privateJwk}
+                                placeholder="Generate a keypair to see the private JWK..."
+                                InputProps={{ readOnly: true }}
+                                sx={keyFieldSx}
+                            />
+                        </CardContent>
+                    </Card>
+                </Box>
             </Box>
-        </Container>
+        </ServicePageShell>
     );
 };
 

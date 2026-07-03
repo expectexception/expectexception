@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Seo from '../components/seo/Seo';
 import {
-    Container,
     Box,
     Typography,
     Card,
@@ -28,6 +27,8 @@ import {
     LinearProgress,
     Collapse,
     Stack,
+    useTheme,
+    alpha,
 } from '@mui/material';
 import {
     CloudUpload,
@@ -49,6 +50,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
+import ServicePageShell from '../components/services/ServicePageShell';
 
 // Interfaces for the enhanced API response
 interface EnsembleResult {
@@ -92,6 +94,7 @@ interface TaskStatus {
 }
 
 const AIDetectorPage: React.FC = () => {
+    const theme = useTheme();
     const { isAuthenticated } = useAuth();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string>('');
@@ -349,7 +352,7 @@ const AIDetectorPage: React.FC = () => {
                         bgcolor: 'rgba(255, 255, 255, 0.05)',
                         '& .MuiLinearProgress-bar': {
                             borderRadius: 4,
-                            background: 'linear-gradient(90deg, #3dfc55, #00eeff)',
+                            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                         }
                     }}
                 />
@@ -450,9 +453,12 @@ const AIDetectorPage: React.FC = () => {
         if (!result) return null;
 
         const isAI = result.is_ai_generated;
-        const bgColor = isAI ? 'rgba(244, 67, 54, 0.03)' : 'rgba(61, 252, 85, 0.03)';
-        const borderColor = isAI ? 'rgba(244, 67, 54, 0.4)' : 'rgba(61, 252, 85, 0.4)';
-        const textColor = isAI ? '#f44336' : '#3dfc55';
+        const errorMain = theme.palette.error.main;
+        const primaryMain = theme.palette.primary.main;
+        const secondaryMain = theme.palette.secondary.main;
+        const bgColor = isAI ? alpha(errorMain, 0.03) : alpha(primaryMain, 0.03);
+        const borderColor = isAI ? alpha(errorMain, 0.4) : alpha(primaryMain, 0.4);
+        const textColor = isAI ? errorMain : primaryMain;
 
         return (
             <motion.div
@@ -467,18 +473,18 @@ const AIDetectorPage: React.FC = () => {
                         borderRadius: '20px',
                         backdropFilter: 'blur(20px)',
                         overflow: 'hidden',
-                        mb: 4,
-                        boxShadow: isAI ? '0 10px 30px rgba(244, 67, 54, 0.15)' : '0 10px 30px rgba(61, 252, 85, 0.15)',
+                        mb: 3,
+                        boxShadow: isAI ? `0 10px 30px ${alpha(errorMain, 0.15)}` : `0 10px 30px ${alpha(primaryMain, 0.15)}`,
                     }}
                 >
-                    <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                    <CardContent sx={{ p: { xs: 2.5, sm: 4 }, textAlign: 'center' }}>
                         {/* Cache indicator */}
                         {result.from_cache && (
                             <Chip
-                                icon={<Speed sx={{ fontSize: 16, color: '#00eeff !important' }} />}
+                                icon={<Speed sx={{ fontSize: 16, color: `${secondaryMain} !important` }} />}
                                 label="Cached Result"
                                 size="small"
-                                sx={{ mb: 3, fontWeight: 700, bgcolor: 'rgba(0, 238, 255, 0.1)', color: '#00eeff' }}
+                                sx={{ mb: 3, fontWeight: 700, bgcolor: alpha(secondaryMain, 0.1), color: secondaryMain }}
                             />
                         )}
 
@@ -572,7 +578,9 @@ const AIDetectorPage: React.FC = () => {
                                                 transition={{ duration: 1, ease: 'easeOut' }}
                                                 style={{
                                                     height: '100%',
-                                                    background: isAI ? 'linear-gradient(90deg, #f44336, #d32f2f)' : 'linear-gradient(90deg, #3dfc55, #2e7d32)',
+                                                    background: isAI
+                                                        ? `linear-gradient(90deg, ${theme.palette.error.main}, ${theme.palette.error.dark})`
+                                                        : `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
                                                     borderRadius: 4,
                                                 }}
                                             />
@@ -601,9 +609,10 @@ const AIDetectorPage: React.FC = () => {
                     variant="scrollable"
                     scrollButtons="auto"
                     sx={{
-                        mb: 4,
+                        mb: 2,
+                        flexShrink: 0,
                         '& .MuiTabs-indicator': {
-                            backgroundColor: '#3dfc55',
+                            backgroundColor: 'primary.main',
                             height: 3,
                             borderRadius: '3px 3px 0 0'
                         },
@@ -611,7 +620,7 @@ const AIDetectorPage: React.FC = () => {
                             fontWeight: 700,
                             color: 'text.secondary',
                             '&.Mui-selected': {
-                                color: '#3dfc55'
+                                color: 'primary.main'
                             }
                         }
                     }}
@@ -857,33 +866,19 @@ const AIDetectorPage: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 8 }, px: { xs: 2, sm: 3 } }}>
+        <ServicePageShell
+            icon={ImageSearch}
+            title="AI Image Detector"
+            subtitle="Forensic analysis with multi-model ensemble detection."
+            maxWidth="lg"
+        >
             <Seo
                 title="AI Image Detector - Forensic AI Generation Check"
                 toolId={3}
             />
-            <Box sx={{ mb: { xs: 5, sm: 8 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
-                <Box>
-                    <Typography
-                        variant="h2"
-                        component="h1"
-                        sx={{
-                            fontWeight: 900,
-                            letterSpacing: '-0.03em',
-                            background: 'linear-gradient(135deg, #ffffff 30%, #3dfc55 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            mb: 1.5,
-                            fontSize: { xs: '2.5rem', sm: '3.75rem' }
-                        }}
-                    >
-                        AI Image Detector
-                    </Typography>
-                    <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                        Forensic analysis with multi-model ensemble detection
-                    </Typography>
-                </Box>
-                {isAuthenticated && (
+
+            {isAuthenticated && (
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1.5, flexShrink: 0 }}>
                     <Box sx={{ display: 'flex', gap: 1, bgcolor: 'rgba(0, 0, 0, 0.2)', border: '1px solid rgba(255,255,255,0.05)', p: 0.5, borderRadius: '12px' }}>
                         <Button
                             variant={viewMode === 'upload' ? 'contained' : 'text'}
@@ -904,17 +899,18 @@ const AIDetectorPage: React.FC = () => {
                             History
                         </Button>
                     </Box>
-                )}
-            </Box>
+                </Box>
+            )}
 
             {error && (
                 <Fade in={!!error}>
-                    <Alert severity="error" variant="filled" sx={{ mb: 4, borderRadius: '12px' }} onClose={() => setError('')}>
+                    <Alert severity="error" variant="filled" sx={{ mb: 1.5, borderRadius: '12px', flexShrink: 0 }} onClose={() => setError('')}>
                         {error}
                     </Alert>
                 </Fade>
             )}
 
+            <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
             <AnimatePresence mode="wait">
                 {viewMode === 'upload' ? (
                     <motion.div
@@ -952,15 +948,15 @@ const AIDetectorPage: React.FC = () => {
                                                 sx={{
                                                     border: '2px dashed rgba(255, 255, 255, 0.1)',
                                                     borderRadius: '16px',
-                                                    p: { xs: 4, sm: 6 },
+                                                    p: { xs: 3, sm: 4 },
                                                     textAlign: 'center',
                                                     cursor: 'pointer',
                                                     backgroundColor: 'rgba(255, 255, 255, 0.01)',
                                                     transition: 'all 0.3s ease',
                                                     '&:hover': {
-                                                        borderColor: '#3dfc55',
-                                                        backgroundColor: 'rgba(61, 252, 85, 0.02)',
-                                                        boxShadow: '0 0 20px rgba(61, 252, 85, 0.05)',
+                                                        borderColor: 'primary.main',
+                                                        backgroundColor: alpha(theme.palette.primary.main, 0.02),
+                                                        boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.05)}`,
                                                         transform: 'scale(1.005)',
                                                     },
                                                 }}
@@ -1066,7 +1062,8 @@ const AIDetectorPage: React.FC = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </Container>
+            </Box>
+        </ServicePageShell>
     );
 };
 

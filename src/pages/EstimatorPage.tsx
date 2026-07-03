@@ -27,7 +27,7 @@ import Seo from '../components/seo/Seo';
 
 const EstimatorPage: React.FC = () => {
   const theme = useTheme();
-  const primaryColor = '#3dfc55';
+  const primaryColor = theme.palette.primary.main;
 
   const [pages, setPages] = useState(5);
   const [complexity, setComplexity] = useState('standard');
@@ -85,9 +85,9 @@ const EstimatorPage: React.FC = () => {
     const startY = svgHeight - paddingBottom;
 
     // Determine color based on complexity
-    const complexityColor = 
+    const complexityColor =
       complexity === 'simple' ? '#00eeff' :
-      complexity === 'standard' ? '#3dfc55' : '#a855f7';
+      complexity === 'standard' ? theme.palette.primary.main : '#a855f7';
 
     return (
       <svg width="100%" height={svgHeight} viewBox={`0 0 240 ${svgHeight}`} fill="none" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
@@ -220,7 +220,7 @@ const EstimatorPage: React.FC = () => {
       <Box sx={{ textAlign: 'center', mb: 8 }}>
         <Typography variant="h3" component="h1" gutterBottom sx={{
           fontWeight: 900,
-          background: 'linear-gradient(135deg, #ffffff 30%, #3dfc55 100%)',
+          background: `linear-gradient(135deg, #ffffff 30%, ${primaryColor} 100%)`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           letterSpacing: '-0.02em',
@@ -264,7 +264,7 @@ const EstimatorPage: React.FC = () => {
                   sx={{
                     color: primaryColor,
                     '& .MuiSlider-thumb': {
-                      boxShadow: '0 0 10px rgba(61, 252, 85, 0.4)'
+                      boxShadow: `0 0 10px ${alpha(primaryColor, 0.4)}`
                     }
                   }}
                 />

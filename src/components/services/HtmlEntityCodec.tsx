@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Container, Card, CardContent, Box, Typography, TextField, Button, Stack } from '@mui/material';
+import { Card, CardContent, Box, Typography, TextField, Button, Stack } from '@mui/material';
 import { Code, ContentCopy, SwapVert } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from './ServicePageHero';
+import ServicePageShell from './ServicePageShell';
 
 const encodeEntities = (s: string): string => {
     const div = document.createElement('div');
@@ -30,13 +30,13 @@ const HtmlEntityCodec: React.FC = () => {
     const copy = () => navigator.clipboard.writeText(output);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <ServicePageShell
+            icon={Code}
+            title="HTML Entity Encoder / Decoder"
+            subtitle="Encode special characters to HTML entities, or decode them back - all processed locally."
+            maxWidth="md"
+        >
             <Seo title="HTML Entity Encoder / Decoder - Free Online Tool" toolId={36} />
-            <ServicePageHero
-                icon={Code}
-                title="HTML Entity Encoder / Decoder"
-                subtitle="Encode special characters to HTML entities, or decode them back - all processed locally."
-            />
 
             <Card sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
@@ -44,7 +44,10 @@ const HtmlEntityCodec: React.FC = () => {
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: 3,
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Stack direction="row" spacing={1.5} sx={{ mb: 3 }}>
@@ -100,7 +103,7 @@ const HtmlEntityCodec: React.FC = () => {
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

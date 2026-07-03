@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     AppBar,
     Toolbar,
@@ -38,12 +38,19 @@ import {
     Code,
     AdminPanelSettings,
     ChatBubbleOutline,
+    SportsEsports,
+    Forum,
+    DarkMode,
+    LightMode,
+    SettingsBrightness,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { useCustomTheme } from '../../context/CustomThemeContext';
 import ScrollToTop from '../layout/ScrollToTop';
 import SearchDialog from '../layout/SearchDialog';
+import CommandPalette from '../layout/CommandPalette';
 import ChatbotWidget from '../layout/ChatbotWidget';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -53,6 +60,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [chatbotOpen, setChatbotOpen] = useState(false);
     const theme = useTheme();
     const location = useLocation();
+    const { colorMode, setColorMode } = useCustomTheme();
+
+    const cycleModeIcon = colorMode === 'dark' ? <DarkMode sx={{ fontSize: 20 }} />
+        : colorMode === 'light' ? <LightMode sx={{ fontSize: 20 }} />
+        : <SettingsBrightness sx={{ fontSize: 20 }} />;
+    const nextMode = colorMode === 'dark' ? 'light' : colorMode === 'light' ? 'system' : 'dark';
+    const modeLabel = colorMode === 'dark' ? 'Switch to Light Mode' : colorMode === 'light' ? 'Switch to System Mode' : 'Switch to Dark Mode';
 
     // Scroll detection for navbar effects
     React.useEffect(() => {
@@ -77,7 +91,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     };
 
     // Notification Menu
-    const { notifications, unreadCount } = useNotifications();
+    const { notifications, inAppNotifications, unreadCount, markAllRead, markOneRead } = useNotifications();
     const [notificationAnchorEl, setNotificationAnchorEl] = useState<null | HTMLElement>(null);
 
     const handleNotificationClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -88,20 +102,33 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         setNotificationAnchorEl(null);
     };
 
-    const handleNotificationItemClick = (id: number) => {
+    const handleNotificationItemClick = (id: number, url?: string) => {
+        markOneRead(id);
         handleNotificationClose();
+        if (url) window.location.href = url;
     };
 
-    // Search Dialog
+    // Search / Command Palette
     const [searchOpen, setSearchOpen] = useState(false);
-    const handleSearchOpen = () => setSearchOpen(true);
+    const [cmdOpen, setCmdOpen] = useState(false);
+    const handleSearchOpen = () => setCmdOpen(true);
     const handleSearchClose = () => setSearchOpen(false);
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setCmdOpen(o => !o); }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, []);
 
     const navItems = [
         { label: 'Home', path: '/', icon: <Home /> },
         { label: 'Services', path: '/services', icon: <Build /> },
-        { label: 'AI Agent', onClick: () => setChatbotOpen(true), icon: <ChatBubbleOutline /> },
+        { label: 'Sandbox', path: '/sandbox', icon: <SportsEsports /> },
+        { label: 'Community', path: '/community', icon: <Forum /> },
         { label: 'Blogs', path: '/blogs', icon: <Article /> },
+        { label: 'Daemon', onClick: () => setChatbotOpen(true), icon: <ChatBubbleOutline /> },
     ];
 
     const handleDrawerToggle = () => {
@@ -343,10 +370,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     elevation={0}
                     sx={{
                         bgcolor: scrolled ? 'rgba(10, 11, 14, 0.85)' : 'rgba(10, 11, 14, 0.4)',
-                        borderBottom: scrolled ? '1px solid rgba(61, 252, 85, 0.15)' : '1px solid rgba(255, 255, 255, 0.05)',
+                        borderBottom: scrolled ? `1px solid ${alpha(theme.palette.primary.main, 0.15)}` : '1px solid rgba(255, 255, 255, 0.05)',
                         backdropFilter: 'blur(20px)',
                         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                        boxShadow: scrolled ? '0 10px 30px -10px rgba(0,0,0,0.5), 0 1px 0 0 rgba(61, 252, 85, 0.1)' : 'none',
+                        boxShadow: scrolled ? `0 10px 30px -10px rgba(0,0,0,0.5), 0 1px 0 0 ${alpha(theme.palette.primary.main, 0.1)}` : 'none',
                     }}
                 >
                     <Container maxWidth="xl">
@@ -476,9 +503,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
                             {/* Right Side Actions */}
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5, md: 2 }, ml: 'auto' }}>
-                                <Tooltip title="Search Tools">
+                                <Tooltip title="Search  ⌘K">
                                     <IconButton onClick={handleSearchOpen} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
                                         <Search sx={{ fontSize: 22 }} />
+                                    </IconButton>
+                                </Tooltip>
+
+                                <Tooltip title={modeLabel}>
+                                    <IconButton onClick={() => setColorMode(nextMode)} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
+                                        {cycleModeIcon}
                                     </IconButton>
                                 </Tooltip>
 
@@ -516,6 +549,44 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                 <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center' }}>
                                     {isAuthenticated ? (
                                         <>
+                                            {/* Notification Bell */}
+                                            <Tooltip title="Notifications">
+                                                <IconButton onClick={handleNotificationClick} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' }, mr: 0.5 }}>
+                                                    <Badge badgeContent={unreadCount > 0 ? unreadCount : undefined} color="error" max={9}>
+                                                        <Notifications sx={{ fontSize: 22 }} />
+                                                    </Badge>
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Menu
+                                                anchorEl={notificationAnchorEl}
+                                                open={Boolean(notificationAnchorEl)}
+                                                onClose={handleNotificationClose}
+                                                PaperProps={{ sx: { mt: 1.5, minWidth: 320, maxWidth: 360, bgcolor: '#0d0e12', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2, maxHeight: 400, overflow: 'auto' } }}
+                                                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                                                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                                            >
+                                                <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                                                    <Typography variant="subtitle2" fontWeight={700}>Notifications</Typography>
+                                                    {unreadCount > 0 && (
+                                                        <Button size="small" onClick={markAllRead} sx={{ fontSize: '0.7rem', color: 'primary.main', p: 0 }}>Mark all read</Button>
+                                                    )}
+                                                </Box>
+                                                {inAppNotifications.length === 0 ? (
+                                                    <MenuItem disabled sx={{ py: 2, justifyContent: 'center', color: 'text.secondary', fontSize: '0.85rem' }}>
+                                                        No notifications yet
+                                                    </MenuItem>
+                                                ) : (
+                                                    inAppNotifications.slice(0, 15).map(n => (
+                                                        <MenuItem key={n.id} onClick={() => handleNotificationItemClick(n.id, n.url)} sx={{ py: 1.5, px: 2, opacity: n.is_read ? 0.6 : 1, alignItems: 'flex-start', gap: 1 }}>
+                                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: n.is_read ? 'transparent' : 'primary.main', mt: 0.75, flexShrink: 0 }} />
+                                                            <Box sx={{ minWidth: 0 }}>
+                                                                <Typography variant="body2" fontWeight={n.is_read ? 400 : 600} sx={{ lineHeight: 1.3 }}>{n.title}</Typography>
+                                                                {n.body && <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 260 }}>{n.body}</Typography>}
+                                                            </Box>
+                                                        </MenuItem>
+                                                    ))
+                                                )}
+                                            </Menu>
                                             <IconButton onClick={handleProfileMenuOpen} size="small" sx={{ p: 0.5 }}>
                                                 <Avatar sx={{
                                                     bgcolor: 'primary.main',
@@ -648,7 +719,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         left: 0,
                         right: 0,
                         height: '1px',
-                        background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}, #00e5ff, transparent)`,
+                        background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}, ${theme.palette.secondary.main}, transparent)`,
                         opacity: 0.4,
                     }} />
 
@@ -683,7 +754,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                         We design and build high-performance web systems, custom software automation, and autonomous AI pipelines engineered to scale.
                                     </Typography>
                                     <Stack direction="row" spacing={1.5} alignItems="center">
-                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#3dfc55', boxShadow: '0 0 10px #3dfc55' }} />
+                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', boxShadow: `0 0 10px ${theme.palette.primary.main}` }} />
                                         <Typography variant="caption" color="text.secondary" fontWeight="600">
                                             Accepting new projects
                                         </Typography>
@@ -697,36 +768,39 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                     Services
                                 </Typography>
                                 <Stack spacing={1.5}>
-                                    <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                    <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                         Software Engineering
                                     </Link>
-                                    <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                    <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                         Workflow Automation
                                     </Link>
-                                    <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                    <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                         Autonomous AI Agents
                                     </Link>
                                 </Stack>
                             </Grid>
 
-                            {/* Column 3: Utility Sandbox */}
+                            {/* Column 3: Explore */}
                             <Grid item xs={6} sm={4} md={2.5}>
                                 <Typography variant="subtitle2" color="#ffffff" fontWeight="800" sx={{ mb: 2.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    Sandbox
+                                    Explore
                                 </Typography>
                                 <Stack spacing={1.5}>
-                                    <Link to="/services" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                    <Link to="/services" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                         All Developer Tools
+                                    </Link>
+                                    <Link to="/sandbox" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                        Sandbox & Mini Games
                                     </Link>
                                     <Box
                                         onClick={() => setChatbotOpen(true)}
                                         style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s', cursor: 'pointer' }}
-                                        onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'}
+                                        onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main}
                                         onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}
                                     >
-                                        ExpExc AI Chat
+                                        Daemon AI Chat
                                     </Box>
-                                    <Link to="/blogs" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                    <Link to="/blogs" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                         Technical Blog
                                     </Link>
                                 </Stack>
@@ -758,7 +832,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                             '&:hover': {
                                                 borderColor: 'primary.main',
                                                 color: 'primary.main',
-                                                bgcolor: 'rgba(61, 252, 85, 0.03)'
+                                                bgcolor: alpha(theme.palette.primary.main, 0.03)
                                             }
                                         }}
                                     >
@@ -784,13 +858,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                 © {new Date().getFullYear()} ExpectException. All rights reserved.
                             </Typography>
                             <Stack direction="row" spacing={3}>
-                                <Link to="/privacy-policy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.8rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                <Link to="/privacy-policy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.8rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                     Privacy
                                 </Link>
-                                <Link to="/terms-of-service" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.8rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                <Link to="/terms-of-service" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.8rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                     Terms
                                 </Link>
-                                <Link to="/contact" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.8rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#3dfc55'} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                <Link to="/contact" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.8rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                     Contact
                                 </Link>
                             </Stack>
@@ -804,6 +878,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             {/* Search Dialog */}
             <SearchDialog open={searchOpen} onClose={handleSearchClose} />
+            {/* Command Palette */}
+            <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
             {/* Global Chatbot Widget */}
             <ChatbotWidget isOpen={chatbotOpen} setIsOpen={setChatbotOpen} />

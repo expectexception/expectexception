@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
-    Container, Card, CardContent, Typography, Button, Box, Alert, TextField,
-    ToggleButton, ToggleButtonGroup, Stack
+    Card, CardContent, Typography, Button, Box, Alert, TextField,
+    ToggleButton, ToggleButtonGroup, Stack,
 } from '@mui/material';
-import { Code, ContentCopy, SwapHoriz, CloudUpload } from '@mui/icons-material';
+import { Code, ContentCopy, SwapHoriz } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 
@@ -44,93 +45,103 @@ const Base64Tool: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={Code}
+            title="Base64 Encoder/Decoder"
+            subtitle="Encode text to Base64 or decode Base64 to text"
+            maxWidth="md"
+        >
             <Seo
                 title="Base64 Encoder & Decoder - Online Text & File Converter"
                 toolId={18}
             />
 
+            <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                {error && <Alert severity="error" sx={{ mb: 1.5, flexShrink: 0 }}>{error}</Alert>}
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                Base64 Encoder/Decoder
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Encode text to Base64 or decode Base64 to text
-            </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5, flexShrink: 0 }}>
+                    <ToggleButtonGroup
+                        value={mode}
+                        exclusive
+                        onChange={(_, v) => v && setMode(v)}
+                        color="primary"
+                        size="small"
+                    >
+                        <ToggleButton value="encode">Encode</ToggleButton>
+                        <ToggleButton value="decode">Decode</ToggleButton>
+                    </ToggleButtonGroup>
+                </Box>
 
-            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-                <ToggleButtonGroup
-                    value={mode}
-                    exclusive
-                    onChange={(_, v) => v && setMode(v)}
-                    color="primary"
+                <Box
+                    sx={{
+                        display: 'flex',
+                        gap: 2,
+                        flexDirection: { xs: 'column', md: 'row' },
+                        flex: 1,
+                        minHeight: 0,
+                    }}
                 >
-                    <ToggleButton value="encode">Encode</ToggleButton>
-                    <ToggleButton value="decode">Decode</ToggleButton>
-                </ToggleButtonGroup>
-            </Box>
+                    <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 0 }, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                        <CardContent sx={{ p: { xs: 2, sm: 2.5 }, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <Typography variant="subtitle2" gutterBottom sx={{ flexShrink: 0 }}>
+                                {mode === 'encode' ? 'Text Input' : 'Base64 Input'}
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                multiline
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder={mode === 'encode' ? 'Enter text to encode...' : 'Paste Base64 to decode...'}
+                                sx={{
+                                    flex: 1,
+                                    minHeight: 0,
+                                    '& .MuiInputBase-root': { height: '100%', alignItems: 'flex-start' },
+                                    '& .MuiInputBase-input': { fontFamily: 'monospace', height: '100% !important', overflowY: 'auto !important' },
+                                }}
+                            />
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                onClick={handleProcess}
+                                disabled={!input.trim() || loading}
+                                sx={{ mt: 1.5, flexShrink: 0 }}
+                            >
+                                {loading ? 'Processing...' : mode === 'encode' ? 'Encode →' : 'Decode →'}
+                            </Button>
+                        </CardContent>
+                    </Card>
 
-            <Box
-                sx={{
-                    display: 'flex',
-                    gap: { xs: 2, sm: 2 },
-                    flexDirection: { xs: 'column', md: 'row' },
-                }}
-            >
-                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 300 } }}>
-                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-                        <Typography variant="h6" gutterBottom>
-                            {mode === 'encode' ? 'Text Input' : 'Base64 Input'}
-                        </Typography>
-                        <TextField
-                            fullWidth
-                            multiline
-                            rows={12}
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            placeholder={mode === 'encode' ? 'Enter text to encode...' : 'Paste Base64 to decode...'}
-                            sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace' } }}
-                        />
-                        <Button
-                            fullWidth
-                            variant="contained"
-                            onClick={handleProcess}
-                            disabled={!input.trim() || loading}
-                            sx={{ mt: 2, py: 1.5 }}
-                        >
-                            {loading ? 'Processing...' : mode === 'encode' ? 'Encode →' : 'Decode →'}
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 300 } }}>
-                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="h6">Output</Typography>
-                            <Stack direction="row" spacing={1}>
-                                <Button size="small" startIcon={<SwapHoriz />} onClick={handleSwap} disabled={!output}>
-                                    Swap
-                                </Button>
-                                <Button size="small" startIcon={<ContentCopy />} onClick={handleCopy} disabled={!output}>
-                                    Copy
-                                </Button>
-                            </Stack>
-                        </Box>
-                        <TextField
-                            fullWidth
-                            multiline
-                            rows={12}
-                            value={output}
-                            InputProps={{ readOnly: true }}
-                            placeholder="Result will appear here..."
-                            sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace' } }}
-                        />
-                    </CardContent>
-                </Card>
+                    <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 0 }, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                        <CardContent sx={{ p: { xs: 2, sm: 2.5 }, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, flexShrink: 0 }}>
+                                <Typography variant="subtitle2">Output</Typography>
+                                <Stack direction="row" spacing={1}>
+                                    <Button size="small" startIcon={<SwapHoriz />} onClick={handleSwap} disabled={!output}>
+                                        Swap
+                                    </Button>
+                                    <Button size="small" startIcon={<ContentCopy />} onClick={handleCopy} disabled={!output}>
+                                        Copy
+                                    </Button>
+                                </Stack>
+                            </Box>
+                            <TextField
+                                fullWidth
+                                multiline
+                                value={output}
+                                InputProps={{ readOnly: true }}
+                                placeholder="Result will appear here..."
+                                sx={{
+                                    flex: 1,
+                                    minHeight: 0,
+                                    '& .MuiInputBase-root': { height: '100%', alignItems: 'flex-start' },
+                                    '& .MuiInputBase-input': { fontFamily: 'monospace', height: '100% !important', overflowY: 'auto !important' },
+                                }}
+                            />
+                        </CardContent>
+                    </Card>
+                </Box>
             </Box>
-        </Container>
+        </ServicePageShell>
     );
 };
 

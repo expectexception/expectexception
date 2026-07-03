@@ -1,10 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTheme } from '@mui/material';
 
 // Parent-child hover propagation is handled by framer-motion.
 // When the parent Card has whileHover="hover", these children will automatically trigger their "hover" variants.
 
 export const WebDevSvg: React.FC = () => {
+  const theme = useTheme();
   return (
     <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
       {/* Browser Window */}
@@ -18,7 +20,7 @@ export const WebDevSvg: React.FC = () => {
         strokeWidth="2"
         strokeLinecap="round"
         variants={{
-          hover: { stroke: 'var(--primary-color, #3dfc55)', scale: 1.02 }
+          hover: { stroke: theme.palette.primary.main, scale: 1.02 }
         }}
         transition={{ duration: 0.3 }}
       />
@@ -38,9 +40,9 @@ export const WebDevSvg: React.FC = () => {
         strokeLinejoin="round"
         variants={{
           hover: { 
-            stroke: 'var(--primary-color, #3dfc55)',
+            stroke: theme.palette.primary.main,
             x: -2,
-            filter: 'drop-shadow(0px 0px 4px var(--primary-color, #3dfc55))'
+            filter: `drop-shadow(0px 0px 4px ${theme.palette.primary.main})`
           }
         }}
         transition={{ duration: 0.3 }}
@@ -53,9 +55,9 @@ export const WebDevSvg: React.FC = () => {
         strokeLinejoin="round"
         variants={{
           hover: { 
-            stroke: 'var(--primary-color, #3dfc55)',
+            stroke: theme.palette.primary.main,
             x: 2,
-            filter: 'drop-shadow(0px 0px 4px var(--primary-color, #3dfc55))'
+            filter: `drop-shadow(0px 0px 4px ${theme.palette.primary.main})`
           }
         }}
         transition={{ duration: 0.3 }}
@@ -70,9 +72,9 @@ export const WebDevSvg: React.FC = () => {
         strokeLinecap="round"
         variants={{
           hover: { 
-            stroke: 'var(--primary-color, #3dfc55)',
+            stroke: theme.palette.primary.main,
             rotate: 10,
-            filter: 'drop-shadow(0px 0px 4px var(--primary-color, #3dfc55))'
+            filter: `drop-shadow(0px 0px 4px ${theme.palette.primary.main})`
           }
         }}
         transition={{ duration: 0.3 }}
@@ -81,6 +83,7 @@ export const WebDevSvg: React.FC = () => {
   );
 };
 export const BackendSvg: React.FC = () => {
+  const theme = useTheme();
   return (
     <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
       {/* Top Database Cylinder */}
@@ -91,7 +94,7 @@ export const BackendSvg: React.FC = () => {
         transition={{ duration: 0.3 }}
       >
         <path d="M12 14C12 11.2386 20.0589 9 30 9C39.9411 9 48 11.2386 48 14M12 14V20C12 22.7614 20.0589 25 30 25C39.9411 25 48 22.7614 48 20V14M12 14C12 16.7614 20.0589 19 30 19C39.9411 19 48 16.7614 48 14" stroke="currentColor" strokeWidth="2" />
-        <motion.circle cx="30" cy="14" r="2" fill="var(--primary-color, #3dfc55)" opacity="0" variants={{ hover: { opacity: 1 } }} />
+        <motion.circle cx="30" cy="14" r="2" fill={theme.palette.primary.main} opacity="0" variants={{ hover: { opacity: 1 } }} />
       </motion.g>
 
       {/* Middle Database Cylinder */}
@@ -102,7 +105,7 @@ export const BackendSvg: React.FC = () => {
         transition={{ duration: 0.3 }}
       >
         <path d="M12 27C12 24.2386 20.0589 22 30 22C39.9411 22 48 24.2386 48 27M12 27V33C12 35.7614 20.0589 38 30 38C39.9411 38 48 35.7614 48 33V27M12 27C12 29.7614 20.0589 32 30 32C39.9411 32 48 29.7614 48 27" stroke="currentColor" strokeWidth="2" />
-        <motion.circle cx="30" cy="27" r="2" fill="var(--primary-color, #3dfc55)" opacity="0" variants={{ hover: { opacity: 1 } }} />
+        <motion.circle cx="30" cy="27" r="2" fill={theme.palette.primary.main} opacity="0" variants={{ hover: { opacity: 1 } }} />
       </motion.g>
 
       {/* Bottom Database Cylinder */}
@@ -113,13 +116,13 @@ export const BackendSvg: React.FC = () => {
         transition={{ duration: 0.3 }}
       >
         <path d="M12 40C12 37.2386 20.0589 35 30 35C39.9411 35 48 37.2386 48 40M12 40V46C12 48.7614 20.0589 51 30 51C39.9411 51 48 48.7614 48 46V40M12 40C12 42.7614 20.0589 45 30 45C39.9411 45 48 42.7614 48 40" stroke="currentColor" strokeWidth="2" />
-        <motion.circle cx="30" cy="40" r="2" fill="var(--primary-color, #3dfc55)" opacity="0" variants={{ hover: { opacity: 1 } }} />
+        <motion.circle cx="30" cy="40" r="2" fill={theme.palette.primary.main} opacity="0" variants={{ hover: { opacity: 1 } }} />
       </motion.g>
 
       {/* Pulsing data line on the left side */}
       <motion.path
         d="M8 14V46"
-        stroke="var(--primary-color, #3dfc55)"
+        stroke={theme.palette.primary.main}
         strokeWidth="1.5"
         strokeDasharray="4 4"
         animate={{ strokeDashoffset: [0, -20] }}
@@ -132,6 +135,7 @@ export const BackendSvg: React.FC = () => {
 };
 
 export const FullStackSvg: React.FC = () => {
+  const theme = useTheme();
   return (
     <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
       {/* Outer rotating nodes */}
@@ -164,9 +168,9 @@ export const FullStackSvg: React.FC = () => {
         fill="#050505"
         variants={{
           hover: { 
-            stroke: 'var(--primary-color, #3dfc55)',
+            stroke: theme.palette.primary.main,
             scale: 1.05,
-            filter: 'drop-shadow(0px 0px 5px var(--primary-color, #3dfc55))'
+            filter: `drop-shadow(0px 0px 5px ${theme.palette.primary.main})`
           }
         }}
         transition={{ duration: 0.3 }}
@@ -177,6 +181,7 @@ export const FullStackSvg: React.FC = () => {
 };
 
 export const AiSvg: React.FC = () => {
+  const theme = useTheme();
   return (
     <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
       {/* Neural Network mesh */}
@@ -187,7 +192,7 @@ export const AiSvg: React.FC = () => {
         strokeWidth="1.5"
         opacity="0.25"
         variants={{
-          hover: { stroke: 'var(--primary-color, #3dfc55)', opacity: 0.4 }
+          hover: { stroke: theme.palette.primary.main, opacity: 0.4 }
         }}
         transition={{ duration: 0.4 }}
       />
@@ -200,7 +205,7 @@ export const AiSvg: React.FC = () => {
         fill="#050505"
         stroke="currentColor"
         strokeWidth="2"
-        variants={{ hover: { stroke: 'var(--primary-color, #3dfc55)', scale: 1.2 } }}
+        variants={{ hover: { stroke: theme.palette.primary.main, scale: 1.2 } }}
       />
       <motion.circle
         cx="45"
@@ -209,7 +214,7 @@ export const AiSvg: React.FC = () => {
         fill="#050505"
         stroke="currentColor"
         strokeWidth="2"
-        variants={{ hover: { stroke: 'var(--primary-color, #3dfc55)', scale: 1.2 } }}
+        variants={{ hover: { stroke: theme.palette.primary.main, scale: 1.2 } }}
       />
       <motion.circle
         cx="30"
@@ -218,7 +223,7 @@ export const AiSvg: React.FC = () => {
         fill="#050505"
         stroke="currentColor"
         strokeWidth="2"
-        variants={{ hover: { stroke: 'var(--primary-color, #3dfc55)', scale: 1.2 } }}
+        variants={{ hover: { stroke: theme.palette.primary.main, scale: 1.2 } }}
       />
       <motion.circle
         cx="15"
@@ -227,7 +232,7 @@ export const AiSvg: React.FC = () => {
         fill="#050505"
         stroke="currentColor"
         strokeWidth="2"
-        variants={{ hover: { stroke: 'var(--primary-color, #3dfc55)', scale: 1.2 } }}
+        variants={{ hover: { stroke: theme.palette.primary.main, scale: 1.2 } }}
       />
 
       {/* Central Node */}
@@ -238,9 +243,9 @@ export const AiSvg: React.FC = () => {
         fill="currentColor"
         variants={{
           hover: { 
-            fill: 'var(--primary-color, #3dfc55)',
+            fill: theme.palette.primary.main,
             scale: 1.15,
-            filter: 'drop-shadow(0px 0px 6px var(--primary-color, #3dfc55))'
+            filter: `drop-shadow(0px 0px 6px ${theme.palette.primary.main})`
           }
         }}
         transition={{ duration: 0.3 }}
@@ -250,6 +255,7 @@ export const AiSvg: React.FC = () => {
 };
 
 export const PlanningAgentSvg: React.FC = () => {
+  const theme = useTheme();
   return (
     <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
       {/* Brain/Grid Base */}
@@ -261,8 +267,8 @@ export const PlanningAgentSvg: React.FC = () => {
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 10, ease: 'linear' }}
       >
-        <circle cx="30" cy="26" r="6" stroke="var(--primary-color, #3dfc55)" strokeWidth="2" strokeDasharray="3 3" />
-        <path d="M30 17V20M30 32V35M21 26H24M36 26H39" stroke="var(--primary-color, #3dfc55)" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="30" cy="26" r="6" stroke={theme.palette.primary.main} strokeWidth="2" strokeDasharray="3 3" />
+        <path d="M30 17V20M30 32V35M21 26H24M36 26H39" stroke={theme.palette.primary.main} strokeWidth="2" strokeLinecap="round" />
       </motion.g>
 
       {/* Task List / Checklist items */}
@@ -286,6 +292,7 @@ export const PlanningAgentSvg: React.FC = () => {
 };
 
 export const CodingAgentSvg: React.FC = () => {
+  const theme = useTheme();
   return (
     <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
       {/* Code Editor Frame */}
@@ -297,7 +304,7 @@ export const CodingAgentSvg: React.FC = () => {
       {/* Typing Code Lines */}
       <motion.path
         d="M14 28H34M14 34H42M14 40H26"
-        stroke="var(--primary-color, #3dfc55)"
+        stroke={theme.palette.primary.main}
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeDasharray="100"
@@ -308,7 +315,7 @@ export const CodingAgentSvg: React.FC = () => {
 
       {/* Blinking Terminal Cursor */}
       <motion.rect
-        x="28" y="39" width="4" height="2" fill="var(--primary-color, #3dfc55)"
+        x="28" y="39" width="4" height="2" fill={theme.palette.primary.main}
         animate={{ opacity: [0, 1, 0] }}
         transition={{ repeat: Infinity, duration: 0.8 }}
       />
@@ -317,6 +324,7 @@ export const CodingAgentSvg: React.FC = () => {
 };
 
 export const TestingAgentSvg: React.FC = () => {
+  const theme = useTheme();
   return (
     <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
       {/* Target Grid */}
@@ -328,7 +336,7 @@ export const TestingAgentSvg: React.FC = () => {
       {/* Radar Sweeper */}
       <motion.line
         x1="30" y1="30" x2="48" y2="20"
-        stroke="var(--primary-color, #3dfc55)"
+        stroke={theme.palette.primary.main}
         strokeWidth="2.5"
         strokeLinecap="round"
         style={{ originX: '30px', originY: '30px' }}
@@ -343,7 +351,7 @@ export const TestingAgentSvg: React.FC = () => {
         transition={{ repeat: Infinity, duration: 1.5 }}
       />
       <motion.circle
-        cx="40" cy="38" r="3" fill="var(--primary-color, #3dfc55)"
+        cx="40" cy="38" r="3" fill={theme.palette.primary.main}
         animate={{ scale: [0.8, 1.3, 0.8], opacity: [0.2, 1, 0.2] }}
         transition={{ repeat: Infinity, duration: 1.5, delay: 0.75 }}
       />
@@ -352,6 +360,7 @@ export const TestingAgentSvg: React.FC = () => {
 };
 
 export const DeployAgentSvg: React.FC = () => {
+  const theme = useTheme();
   return (
     <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
       {/* Cloud Outline */}
@@ -362,17 +371,17 @@ export const DeployAgentSvg: React.FC = () => {
         animate={{ y: [4, -4, 4] }}
         transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
       >
-        <path d="M30 44V26M30 26L24 32M30 26L36 32" stroke="var(--primary-color, #3dfc55)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M30 44V26M30 26L24 32M30 26L36 32" stroke={theme.palette.primary.main} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       </motion.g>
 
       {/* Floating Data Packets */}
       <motion.circle
-        cx="22" cy="42" r="1.5" fill="var(--primary-color, #3dfc55)"
+        cx="22" cy="42" r="1.5" fill={theme.palette.primary.main}
         animate={{ y: [0, -16], opacity: [0, 1, 0] }}
         transition={{ repeat: Infinity, duration: 1.8, delay: 0.2 }}
       />
       <motion.circle
-        cx="38" cy="42" r="1.5" fill="var(--primary-color, #3dfc55)"
+        cx="38" cy="42" r="1.5" fill={theme.palette.primary.main}
         animate={{ y: [0, -16], opacity: [0, 1, 0] }}
         transition={{ repeat: Infinity, duration: 1.8, delay: 0.9 }}
       />

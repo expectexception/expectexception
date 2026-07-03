@@ -24,8 +24,8 @@
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#0047AB",
-  "background_color": "#ffffff",
+  "theme_color": "#3dfc55",
+  "background_color": "#050505",
   "categories": [
     "productivity",
     "developer tools",

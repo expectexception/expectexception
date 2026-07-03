@@ -1,0 +1,101 @@
+[
+    {
+        "id": 1,
+        "title": "Snake",
+        "description": "The classic grid-crawler. Eat, grow, and try not to run into yourself. Arrow keys or swipe to steer.",
+        "icon": "VideogameAsset",
+        "path": "/sandbox/snake",
+        "category": "classic",
+        "tags": ["classic", "arcade", "keyboard"],
+        "color": "primary",
+        "is_active": true
+    },
+    {
+        "id": 2,
+        "title": "2048",
+        "description": "Slide and merge numbered tiles to build up to 2048 (and beyond). One wrong move and it's over.",
+        "icon": "Apps",
+        "path": "/sandbox/2048",
+        "category": "classic",
+        "tags": ["classic", "puzzle", "numbers"],
+        "color": "secondary",
+        "is_active": true
+    },
+    {
+        "id": 3,
+        "title": "Tic-Tac-Toe",
+        "description": "Play against a minimax-perfect AI. Good luck ever beating it - a draw is the best you'll usually get.",
+        "icon": "GridOn",
+        "path": "/sandbox/tic-tac-toe",
+        "category": "classic",
+        "tags": ["classic", "ai", "strategy"],
+        "color": "warning",
+        "is_active": true
+    },
+    {
+        "id": 4,
+        "title": "Particle Playground",
+        "description": "A reactive particle field that follows your cursor. Click to burst, drag to paint trails of light.",
+        "icon": "AutoAwesome",
+        "path": "/sandbox/particles",
+        "category": "creative",
+        "tags": ["creative", "canvas", "generative"],
+        "color": "secondary",
+        "is_active": true
+    },
+    {
+        "id": 5,
+        "title": "Falling Sand",
+        "description": "A pixel-physics sandbox. Drop sand, water, and stone and watch them settle, flow, and pile up.",
+        "icon": "Grain",
+        "path": "/sandbox/falling-sand",
+        "category": "creative",
+        "tags": ["creative", "physics", "simulation"],
+        "color": "info",
+        "is_active": true
+    },
+    {
+        "id": 6,
+        "title": "Word Guess",
+        "description": "Guess the hidden 5-letter word in 6 tries. Green means right spot, yellow means wrong spot.",
+        "icon": "Spellcheck",
+        "path": "/sandbox/word-guess",
+        "category": "puzzle",
+        "tags": ["puzzle", "word", "daily"],
+        "color": "success",
+        "is_active": true
+    },
+    {
+        "id": 7,
+        "title": "Sliding Puzzle",
+        "description": "Shuffle the 15-tile board, then slide pieces back into numerical order as fast as you can.",
+        "icon": "Extension",
+        "path": "/sandbox/sliding-puzzle",
+        "category": "puzzle",
+        "tags": ["puzzle", "logic", "speedrun"],
+        "color": "primary",
+        "is_active": true
+    },
+    {
+        "id": 8,
+        "title": "Reaction Test",
+        "description": "Wait for the screen to flash, then click as fast as you can. Measures your reaction time in milliseconds.",
+        "icon": "Bolt",
+        "path": "/sandbox/reaction-test",
+        "category": "reaction",
+        "tags": ["reaction", "reflex", "score"],
+        "color": "warning",
+        "is_active": true
+    },
+    {
+        "id": 9,
+        "title": "Aim Trainer",
+        "description": "Targets pop up at random - click them before they disappear. Tracks accuracy and average speed.",
+        "icon": "GpsFixed",
+        "path": "/sandbox/aim-trainer",
+        "category": "reaction",
+        "tags": ["reaction", "aim", "score"],
+        "color": "secondary",
+        "is_active": true
+    }
+]

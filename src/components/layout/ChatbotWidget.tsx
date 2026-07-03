@@ -50,11 +50,12 @@ interface AgentStep {
 
 // --- Custom Animated SVG Face Component ---
 const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
+    const theme = useTheme();
     const colorMap = {
         neutral: '#00eeff', // Cyan
         thinking: '#00eeff', // Cyan
-        happy: '#3dfc55', // Neon Green
-        excited: '#3dfc55', // Neon Green
+        happy: theme.palette.primary.main, // Neon Green
+        excited: theme.palette.primary.main, // Neon Green
         sleeping: '#8b5cf6', // Purple
         idea: '#f59e0b', // Amber
         error: '#ef4444', // Red
@@ -270,6 +271,7 @@ const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
 
 // --- Glowing Clock Widget ---
 const ClockWidget: React.FC = () => {
+    const theme = useTheme();
     const [time, setTime] = useState(new Date());
 
     useEffect(() => {
@@ -282,8 +284,8 @@ const ClockWidget: React.FC = () => {
             p: 2,
             borderRadius: '12px',
             background: 'linear-gradient(135deg, rgba(13,14,18,0.85) 0%, rgba(5,5,5,0.95) 100%)',
-            border: '1px solid rgba(61, 252, 85, 0.2)',
-            boxShadow: '0 4px 20px rgba(61, 252, 85, 0.1)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+            boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.1)}`,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -291,8 +293,8 @@ const ClockWidget: React.FC = () => {
             maxWidth: 260,
             mx: 'auto'
         }}>
-            <AccessTime sx={{ fontSize: 24, color: '#3dfc55', mb: 0.5 }} />
-            <Typography variant="h5" sx={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, color: '#3dfc55' }}>
+            <AccessTime sx={{ fontSize: 24, color: 'primary.main', mb: 0.5 }} />
+            <Typography variant="h5" sx={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, color: 'primary.main' }}>
                 {time.toLocaleTimeString()}
             </Typography>
             <Typography variant="caption" color="grey.400" sx={{ mt: 0.5 }}>
@@ -323,7 +325,7 @@ const AgentStepsIndicator: React.FC<{ steps: AgentStep[] }> = ({ steps }) => {
                             <HourglassEmpty sx={{ fontSize: 13, color: '#00eeff', animation: 'spin 2s linear infinite' }} />
                         )}
                         {step.status === 'done' && (
-                            <CheckCircle sx={{ fontSize: 13, color: '#3dfc55' }} />
+                            <CheckCircle sx={{ fontSize: 13, color: 'primary.main' }} />
                         )}
                         {step.status === 'pending' && (
                             <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: 'grey.700', mx: 0.5 }} />
@@ -385,7 +387,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             setMessages([
                 {
                     role: 'assistant',
-                    content: 'Hello! I am **A.E.G.I.S.**, your global portfolio assistant. How can I help you design, build, or automate today?'
+                    content: 'Hello! I am **Daemon**, your site-wide agentic assistant. How can I help you design, build, or automate today?'
                 }
             ]);
         }
@@ -517,7 +519,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             setActiveSteps([]);
             setMood('idea');
 
-            const elaborationText = `### 🚀 A.E.G.I.S. Project Blueprint
+            const elaborationText = `### 🚀 Daemon Project Blueprint
 
 I have synthesized an MVP roadmap for your idea:
 - **Core Architecture**: React (Frontend) + Django REST Framework (Backend) containerized in Docker.
@@ -604,7 +606,19 @@ I have synthesized an MVP roadmap for your idea:
                 body: JSON.stringify({
                     message: text,
                     model: 'qwen3:4b',
-                    system_prompt: 'You are A.E.G.I.S., a premium agentic portfolio chatbot. Keep your responses technical, helpful, and concise. You can simulate agent actions like system diagnostics and project elaboration.'
+                    system_prompt: `You are Daemon, the AI assistant for ExpectException — a developer tools platform. Be helpful, concise and technical.
+
+AVAILABLE TOOLS on this platform:
+• URL Downloader, YouTube Downloader, QR Generator, JSON Formatter
+• PDF tools: PDF to Word, Word to PDF, PDF Merger, PDF Splitter, Image to PDF
+• Image tools: Background Remover, Image Upscaler, Image Resizer, Image Converter, Image to Text (OCR)
+• Developer tools: Base64, Hash Generator, UUID, Color Converter, Markdown Preview, Regex Tester, JWT Decoder, Number Base Converter, URL Encoder/Decoder, JSON ↔ CSV, Cron Explainer, Color Palette Generator
+• Text tools: Word Counter, Lorem Ipsum, Text Diff, Case Converter, HTML Entity Codec, Timestamp Converter, Password Generator, CSS Gradient Generator
+• Network tools: Speed Test, DNS Lookup, Redirect Inspector, Website Diagnostics, Uptime Robot
+• AI tools: AI Detector, Audio Separator, Text to Handwriting, Text to Speech, Image Compressor
+• Community Forum: /community — StackOverflow-style Q&A for developers
+
+If users ask about a tool, give them the direct path e.g. /services/jwt-decoder. Be brief unless asked for detail. Don't use emojis unless in lists.`
                 })
             });
 
@@ -663,7 +677,7 @@ I have synthesized an MVP roadmap for your idea:
             setActiveSteps([]);
             setIsLoading(false);
 
-            let fallbackResponse = `I am **A.E.G.I.S.**, your agentic AI companion. 
+            let fallbackResponse = `I am **Daemon**, your agentic AI companion.
 
 I am currently running in local fallback mode. Try:
 - "what is the time" to open the Clock utility.
@@ -732,13 +746,13 @@ I am currently running in local fallback mode. Try:
                         }
 
                         if (line.startsWith('### ')) {
-                            return <Typography key={`h3-${lineIndex}`} variant="body2" sx={{ color: '#3dfc55', fontWeight: 800, mt: 1, mb: 0.5 }}>{line.slice(4)}</Typography>;
+                            return <Typography key={`h3-${lineIndex}`} variant="body2" sx={{ color: 'primary.main', fontWeight: 800, mt: 1, mb: 0.5 }}>{line.slice(4)}</Typography>;
                         }
 
                         if (line.trim().startsWith('- ')) {
                             return (
                                 <Box key={`l-${lineIndex}`} sx={{ display: 'flex', pl: 1, mb: 0.25 }}>
-                                    <Box sx={{ mr: 0.75, color: '#3dfc55' }}>•</Box>
+                                    <Box sx={{ mr: 0.75, color: 'primary.main' }}>•</Box>
                                     <Box>{renderLine}</Box>
                                 </Box>
                             );
@@ -768,13 +782,13 @@ I am currently running in local fallback mode. Try:
                                 width: 60,
                                 height: 60,
                                 bgcolor: '#0d0e12',
-                                color: '#3dfc55',
-                                border: '2px solid rgba(61, 252, 85, 0.3)',
-                                boxShadow: '0 8px 32px rgba(61, 252, 85, 0.25)',
+                                color: 'primary.main',
+                                border: `2px solid ${alpha(themed.palette.primary.main, 0.3)}`,
+                                boxShadow: `0 8px 32px ${alpha(themed.palette.primary.main, 0.25)}`,
                                 '&:hover': {
-                                    bgcolor: 'rgba(61, 252, 85, 0.05)',
-                                    borderColor: '#3dfc55',
-                                    boxShadow: '0 8px 32px rgba(61, 252, 85, 0.45)',
+                                    bgcolor: alpha(themed.palette.primary.main, 0.05),
+                                    borderColor: 'primary.main',
+                                    boxShadow: `0 8px 32px ${alpha(themed.palette.primary.main, 0.45)}`,
                                     transform: 'scale(1.05)'
                                 },
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -819,14 +833,14 @@ I am currently running in local fallback mode. Try:
                                 bgcolor: 'rgba(5, 5, 5, 0.2)'
                             }}>
                                 <Stack direction="row" alignItems="center" spacing={1.5}>
-                                    <Avatar sx={{ width: 28, height: 28, bgcolor: 'rgba(61, 252, 85, 0.1)', border: '1px solid #3dfc55' }}>
-                                        <Memory sx={{ color: '#3dfc55', fontSize: 15 }} />
+                                    <Avatar sx={{ width: 28, height: 28, bgcolor: alpha(themed.palette.primary.main, 0.1), border: '1px solid', borderColor: 'primary.main' }}>
+                                        <Memory sx={{ color: 'primary.main', fontSize: 15 }} />
                                     </Avatar>
                                     <Box>
                                         <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', lineHeight: 1.1 }}>
-                                            A.E.G.I.S.
+                                            Daemon
                                         </Typography>
-                                        <Typography variant="caption" color={isAvailable ? '#3dfc55' : 'grey.500'} sx={{ fontSize: '0.65rem', fontWeight: 600 }}>
+                                        <Typography variant="caption" color={isAvailable ? 'primary.main' : 'grey.500'} sx={{ fontSize: '0.65rem', fontWeight: 600 }}>
                                             {isAvailable ? 'AI Core Live' : 'Local Fallback'}
                                         </Typography>
                                     </Box>
@@ -862,9 +876,9 @@ I am currently running in local fallback mode. Try:
                                         <Box sx={{ maxWidth: '85%' }}>
                                             <Paper sx={{
                                                 p: 1.5,
-                                                bgcolor: msg.role === 'user' ? 'rgba(61, 252, 85, 0.04)' : 'rgba(13, 14, 18, 0.6)',
+                                                bgcolor: msg.role === 'user' ? alpha(themed.palette.primary.main, 0.04) : 'rgba(13, 14, 18, 0.6)',
                                                 border: '1px solid',
-                                                borderColor: msg.role === 'user' ? 'rgba(61, 252, 85, 0.15)' : 'rgba(255,255,255,0.05)',
+                                                borderColor: msg.role === 'user' ? alpha(themed.palette.primary.main, 0.15) : 'rgba(255,255,255,0.05)',
                                                 borderRadius: '14px',
                                                 borderTopRightRadius: msg.role === 'user' ? 0 : '14px',
                                                 borderTopLeftRadius: msg.role === 'assistant' ? 0 : '14px',
@@ -890,6 +904,37 @@ I am currently running in local fallback mode. Try:
                                 <div ref={messagesEndRef} />
                             </Box>
 
+                            {/* Quick Suggestions — show when chat is idle/new */}
+                            {messages.length <= 1 && !isLoading && (
+                                <Box sx={{ px: 1.5, pb: 1 }}>
+                                    <Typography variant="caption" color="grey.600" sx={{ display: 'block', mb: 0.75, fontSize: '0.68rem', letterSpacing: 0.5 }}>
+                                        TRY ASKING
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.6 }}>
+                                        {[
+                                            'What tools are available?',
+                                            'Help me convert a PDF',
+                                            'What time is it?',
+                                            'Generate a QR code',
+                                            'Check website uptime',
+                                        ].map(suggestion => (
+                                            <Box
+                                                key={suggestion}
+                                                onClick={() => { setInputValue(suggestion); setTimeout(() => inputRef.current?.focus(), 50); }}
+                                                sx={{
+                                                    px: 1.2, py: 0.5, borderRadius: 1.5, cursor: 'pointer', fontSize: '0.7rem',
+                                                    bgcolor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
+                                                    color: 'grey.400', transition: 'all 0.15s',
+                                                    '&:hover': { bgcolor: alpha(themed.palette.primary.main, 0.1), color: 'primary.main', borderColor: alpha(themed.palette.primary.main, 0.3) }
+                                                }}
+                                            >
+                                                {suggestion}
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </Box>
+                            )}
+
                             {/* Input Area */}
                             <Box sx={{
                                 p: 1.5,
@@ -906,7 +951,7 @@ I am currently running in local fallback mode. Try:
                                         bgcolor: 'rgba(255, 255, 255, 0.02)',
                                         border: '1px solid rgba(255, 255, 255, 0.06)',
                                         '&:focus-within': {
-                                            borderColor: '#3dfc55',
+                                            borderColor: 'primary.main',
                                             bgcolor: 'rgba(255, 255, 255, 0.04)'
                                         }
                                     }}
@@ -916,7 +961,7 @@ I am currently running in local fallback mode. Try:
                                         fullWidth
                                         multiline
                                         maxRows={3}
-                                        placeholder="Ask A.E.G.I.S..."
+                                        placeholder="Ask Daemon..."
                                         value={inputValue}
                                         onChange={(e) => {
                                             setInputValue(e.target.value);
@@ -936,7 +981,7 @@ I am currently running in local fallback mode. Try:
                                         disabled={!inputValue.trim() || isLoading}
                                         sx={{
                                             p: 1,
-                                            color: inputValue.trim() ? '#3dfc55' : 'grey.600',
+                                            color: inputValue.trim() ? 'primary.main' : 'grey.600',
                                             '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' }
                                         }}
                                     >

@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Container, Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
-    TextField, FormControlLabel, Switch, Grid, alpha
+    Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
+    TextField, FormControlLabel, Switch, Grid, useTheme
 } from '@mui/material';
-import { Image, CloudUpload, Download, AspectRatio } from '@mui/icons-material';
+import { AspectRatio as AspectRatioIcon, CloudUpload, Download } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import apiClient from '../../api/config';
+import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';
+import ServicePageShell from './ServicePageShell';
 
 const ImageResizer: React.FC = () => {
+    const theme = useTheme();
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [width, setWidth] = useState('');
@@ -94,7 +96,11 @@ const ImageResizer: React.FC = () => {
 
         try {
             const response = await apiClient.post(endpoints.services.imageResize, formData);
-            setResult(response.data);
+            const data = response.data;
+            if (data.file_url && !data.file_url.startsWith('http')) {
+                data.file_url = `${API_BASE_URL}${data.file_url}`;
+            }
+            setResult(data);
         } catch (err: any) {
             setError(err.response?.data?.error || 'Resize failed');
         } finally {
@@ -103,39 +109,33 @@ const ImageResizer: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
-            <Seo
-                title="Resize Images Online - Pixel & Percentage Scaler"
-                toolId={12}
-            />
+        <ServicePageShell
+            icon={AspectRatioIcon}
+            title="Image Resizer"
+            subtitle="Resize images to custom dimensions"
+            maxWidth="md"
+        >
+            <Seo title="Resize Images Online - Pixel & Percentage Scaler" toolId={12} />
 
+            <Card sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                    {result && (
+                        <Alert severity="success" sx={{ mb: 2 }} action={
+                            <Button color="inherit" size="small" href={result.file_url} target="_blank" startIcon={<Download />}>
+                                Download
+                            </Button>
+                        }>Resized from {result.original_size} to {result.new_size}</Alert>
+                    )}
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                Image Resizer
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Resize images to custom dimensions
-            </Typography>
-
-            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-            {result && (
-                <Alert severity="success" sx={{ mb: 3 }} action={
-                    <Button color="inherit" size="small" href={result.file_url} target="_blank" startIcon={<Download />}>
-                        Download
-                    </Button>
-                }>Resized from {result.original_size} to {result.new_size}</Alert>
-            )}
-
-            <Card>
-                <CardContent sx={{ p: 4 }}>
-                    <Box sx={{ border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: 4, textAlign: 'center', mb: 3 }}>
-                        <input accept="image/*" style={{ display: 'none' }} id="image-upload" type="file" onChange={handleFileSelect} />
-                        <label htmlFor="image-upload" style={{ cursor: 'pointer' }}>
+                    <Box sx={{ border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: 2.5, textAlign: 'center', mb: 2.5 }}>
+                        <input accept="image/*" style={{ display: 'none' }} id="image-resize-upload" type="file" onChange={handleFileSelect} />
+                        <label htmlFor="image-resize-upload" style={{ cursor: 'pointer' }}>
                             {preview ? (
-                                <Box component="img" src={preview} sx={{ maxWidth: '100%', maxHeight: 300, borderRadius: 2 }} />
+                                <Box component="img" src={preview} sx={{ maxWidth: '100%', maxHeight: 180, objectFit: 'contain', borderRadius: 2 }} />
                             ) : (
                                 <>
-                                    <CloudUpload sx={{ fontSize: 48, color: 'primary.main' }} />
+                                    <CloudUpload sx={{ fontSize: 40, color: theme.palette.primary.main }} />
                                     <Typography variant="h6">Upload image</Typography>
                                 </>
                             )}
@@ -154,11 +154,11 @@ const ImageResizer: React.FC = () => {
                     <FormControlLabel
                         control={<Switch checked={maintainAspect} onChange={(e) => setMaintainAspect(e.target.checked)} />}
                         label="Maintain aspect ratio"
-                        sx={{ mt: 2 }}
+                        sx={{ mt: 1.5 }}
                     />
 
                     {file && originalWidth && originalHeight && originalSize && estimatedSize !== null && (
-                        <Box sx={{ mt: 2, mb: 1 }}>
+                        <Box sx={{ mt: 1, mb: 0.5 }}>
                             <Typography variant="body2" color="text.secondary">
                                 Original: {originalWidth}×{originalHeight}, {formatBytes(originalSize)} — Estimated: <strong>{formatBytes(estimatedSize)}</strong>
                             </Typography>
@@ -173,14 +173,14 @@ const ImageResizer: React.FC = () => {
                         size="large"
                         onClick={handleResize}
                         disabled={!file || loading}
-                        startIcon={<AspectRatio />}
-                        sx={{ mt: 3, py: 1.5 }}
+                        startIcon={<AspectRatioIcon />}
+                        sx={{ mt: 2.5, py: 1.25 }}
                     >
                         {loading ? 'Resizing...' : 'Resize Image'}
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

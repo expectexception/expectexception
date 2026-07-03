@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import {
-    Container, Card, CardContent, Typography, Button, Box, Alert, LinearProgress, Chip, alpha
+    Card, CardContent, Typography, Button, Box, Alert, LinearProgress, Chip, useTheme, alpha
 } from '@mui/material';
 import { PictureAsPdf, CloudUpload, Download, Description } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 
 const DocToPdf: React.FC = () => {
+    const theme = useTheme();
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -55,31 +57,27 @@ const DocToPdf: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={PictureAsPdf}
+            title="Word to PDF Converter"
+            subtitle="Convert DOC, DOCX, ODT, RTF files to PDF"
+        >
             <Seo
                 title="Convert Word to PDF Online - Fast & Free"
                 toolId={9}
             />
 
-
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                Word to PDF Converter
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Convert DOC, DOCX, ODT, RTF files to PDF
-            </Typography>
-
-            {error && <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ mb: 1.5, flexShrink: 0 }} onClose={() => setError(null)}>{error}</Alert>}
             {result && (
-                <Alert severity="success" sx={{ mb: 3 }} action={
+                <Alert severity="success" sx={{ mb: 1.5, flexShrink: 0 }} action={
                     <Button color="inherit" size="small" href={result.file_url} target="_blank" startIcon={<Download />}>
                         Download
                     </Button>
                 }>Conversion successful!</Alert>
             )}
 
-            <Card>
-                <CardContent sx={{ p: 4 }}>
+            <Card sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                     <Box
                         onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
                         onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
@@ -89,9 +87,9 @@ const DocToPdf: React.FC = () => {
                             border: '2px dashed',
                             borderColor: dragActive ? 'primary.main' : 'divider',
                             borderRadius: 3,
-                            p: 6,
+                            p: { xs: 3, sm: 4 },
                             textAlign: 'center',
-                            bgcolor: file ? alpha('#10b981', 0.05) : 'transparent',
+                            bgcolor: file ? alpha(theme.palette.secondary.main, 0.05) : 'transparent',
                             cursor: 'pointer',
                         }}
                     >
@@ -105,7 +103,7 @@ const DocToPdf: React.FC = () => {
                         <label htmlFor="doc-upload" style={{ cursor: 'pointer', display: 'block' }}>
                             {file ? (
                                 <>
-                                    <Description sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+                                    <Description sx={{ fontSize: 56, color: 'primary.main', mb: 1.5 }} />
                                     <Typography variant="h6">{file.name}</Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         {(file.size / 1024 / 1024).toFixed(2)} MB
@@ -113,16 +111,16 @@ const DocToPdf: React.FC = () => {
                                 </>
                             ) : (
                                 <>
-                                    <CloudUpload sx={{ fontSize: 64, color: 'primary.main', mb: 2, opacity: 0.8 }} />
+                                    <CloudUpload sx={{ fontSize: 56, color: 'primary.main', mb: 1.5, opacity: 0.8 }} />
                                     <Typography variant="h6">Drop your document here</Typography>
                                     <Typography variant="body2" color="text.secondary">or click to browse</Typography>
-                                    <Chip label="Max 50MB" size="small" variant="outlined" sx={{ mt: 2 }} />
+                                    <Chip label="Max 50MB" size="small" variant="outlined" sx={{ mt: 1.5 }} />
                                 </>
                             )}
                         </label>
                     </Box>
 
-                    {loading && <LinearProgress sx={{ mt: 3 }} />}
+                    {loading && <LinearProgress sx={{ mt: 2 }} />}
 
                     <Button
                         fullWidth
@@ -131,13 +129,13 @@ const DocToPdf: React.FC = () => {
                         onClick={handleConvert}
                         disabled={!file || loading}
                         startIcon={<PictureAsPdf />}
-                        sx={{ mt: 3, py: 1.5 }}
+                        sx={{ mt: 2, py: 1.25 }}
                     >
                         {loading ? 'Converting...' : 'Convert to PDF'}
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

@@ -653,7 +653,7 @@ const UptimeRobot: React.FC = () => {
                         left: 0,
                         right: 0,
                         height: '2px',
-                        background: 'linear-gradient(90deg, #3b82f6, #10b981, #f59e0b, #ec4899)'
+                        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main}, #f59e0b, #ec4899)`
                     }} />
 
                     <Box>
@@ -712,7 +712,7 @@ const UptimeRobot: React.FC = () => {
                     <Tabs 
                         value={activeMainTab} 
                         onChange={(_, v) => setActiveMainTab(v)}
-                        TabIndicatorProps={{ style: { background: 'linear-gradient(90deg, #10b981, #3b82f6)', height: 3, borderRadius: '2px' } }}
+                        TabIndicatorProps={{ style: { background: `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`, height: 3, borderRadius: '2px' } }}
                         sx={{
                             '& .MuiTab-root': {
                                 color: '#64748b',
@@ -1422,7 +1422,7 @@ const UptimeRobot: React.FC = () => {
                                                     onClick={() => handleForceTriggerNow(selectedTrigger.id)}
                                                     disabled={selectedTrigger.status === 'paused' || loading}
                                                     sx={{
-                                                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
                                                         textTransform: 'none',
                                                         fontWeight: 700,
                                                         borderRadius: '8px'
@@ -1538,7 +1538,7 @@ const UptimeRobot: React.FC = () => {
                             <TextField
                                 fullWidth
                                 label="Endpoint Identifier Name"
-                                placeholder="My sleeping portfolio page..."
+                                placeholder="My sleeping side project..."
                                 value={newTriggerName}
                                 onChange={(e) => setNewTriggerName(e.target.value)}
                                 InputLabelProps={{ style: { color: '#64748b' } }}

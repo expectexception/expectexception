@@ -54,10 +54,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../components/seo/Seo';
-import apiClient, { API_BASE_URL } from '../api/config';
+import apiClient, { API_BASE_URL, HEAVY_API_BASE_URL } from '../api/config';
 import CleanStarBackground from '../components/CleanStarBackground';
 
-const apiBaseUrl = API_BASE_URL;
+const apiBaseUrl = HEAVY_API_BASE_URL;
 
 // --- Types ---
 type Mood = 'neutral' | 'thinking' | 'happy' | 'excited' | 'sleeping' | 'idea' | 'error';
@@ -97,11 +97,12 @@ interface GroupedConversations {
 
 // --- Custom Animated SVG Face Component ---
 const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
+    const theme = useTheme();
     const colorMap = {
         neutral: '#00eeff', // Cyan
         thinking: '#00eeff', // Cyan
-        happy: '#3dfc55', // Neon Green
-        excited: '#3dfc55', // Neon Green
+        happy: theme.palette.primary.main, // Neon Green
+        excited: theme.palette.primary.main, // Neon Green
         sleeping: '#8b5cf6', // Purple
         idea: '#f59e0b', // Amber
         error: '#ef4444', // Red
@@ -387,6 +388,7 @@ const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
 
 // --- Glowing Clock Widget ---
 const ClockWidget: React.FC = () => {
+    const theme = useTheme();
     const [time, setTime] = useState(new Date());
 
     useEffect(() => {
@@ -399,8 +401,8 @@ const ClockWidget: React.FC = () => {
             p: 3,
             borderRadius: '16px',
             background: 'linear-gradient(135deg, rgba(13,14,18,0.8) 0%, rgba(5,5,5,0.9) 100%)',
-            border: '1px solid rgba(61, 252, 85, 0.2)',
-            boxShadow: '0 8px 32px rgba(61, 252, 85, 0.1), inset 0 0 15px rgba(61, 252, 85, 0.05)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.1)}, inset 0 0 15px ${alpha(theme.palette.primary.main, 0.05)}`,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -408,8 +410,8 @@ const ClockWidget: React.FC = () => {
             mx: 'auto',
             my: 2
         }}>
-            <AccessTime sx={{ fontSize: 40, color: '#3dfc55', mb: 1.5 }} />
-            <Typography variant="h3" sx={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, color: '#3dfc55', letterSpacing: 1 }}>
+            <AccessTime sx={{ fontSize: 40, color: 'primary.main', mb: 1.5 }} />
+            <Typography variant="h3" sx={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, color: 'primary.main', letterSpacing: 1 }}>
                 {time.toLocaleTimeString()}
             </Typography>
             <Typography variant="body2" color="grey.400" sx={{ mt: 1, fontWeight: 600 }}>
@@ -443,7 +445,7 @@ const AgentStepsIndicator: React.FC<{ steps: AgentStep[] }> = ({ steps }) => {
                             <HourglassEmpty sx={{ fontSize: 16, color: '#00eeff', animation: 'spin 2s linear infinite', flexShrink: 0 }} />
                         )}
                         {step.status === 'done' && (
-                            <CheckCircle sx={{ fontSize: 16, color: '#3dfc55', flexShrink: 0 }} />
+                            <CheckCircle sx={{ fontSize: 16, color: 'primary.main', flexShrink: 0 }} />
                         )}
                         {step.status === 'pending' && (
                             <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'grey.700', ml: 0.75, mr: 0.75, flexShrink: 0 }} />
@@ -474,6 +476,7 @@ const AgentStepsIndicator: React.FC<{ steps: AgentStep[] }> = ({ steps }) => {
 
 // --- QR Code Widget (rendered when the chatbot's qr_generator tool runs) ---
 const QrWidget: React.FC<{ url: string; encoded?: string }> = ({ url, encoded }) => {
+    const theme = useTheme();
     const apiBaseUrlForMedia = API_BASE_URL;
     const fullUrl = url.startsWith('http') ? url : `${apiBaseUrlForMedia}${url}`;
     return (
@@ -481,8 +484,8 @@ const QrWidget: React.FC<{ url: string; encoded?: string }> = ({ url, encoded })
             p: 3,
             borderRadius: '16px',
             background: 'linear-gradient(135deg, rgba(13,14,18,0.8) 0%, rgba(5,5,5,0.9) 100%)',
-            border: '1px solid rgba(61, 252, 85, 0.2)',
-            boxShadow: '0 8px 32px rgba(61, 252, 85, 0.1), inset 0 0 15px rgba(61, 252, 85, 0.05)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.1)}, inset 0 0 15px ${alpha(theme.palette.primary.main, 0.05)}`,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -785,7 +788,7 @@ const ChatbotPage: React.FC = () => {
                     message: text,
                     model: 'qwen3:4b',
                     conversation_id: currentConversationId,
-                    system_prompt: 'You are A.E.G.I.S., a premium agentic portfolio chatbot. Keep your tone highly technical, professional, and helpful. You have access to real backend tools (blog search, service listing, QR generation, system health checks, contact handoff) that run automatically when relevant.'
+                    system_prompt: 'You are Daemon, a premium agentic assistant running inside ExpectException. Keep your tone highly technical, professional, and helpful. You have access to real backend tools (blog search, service listing, QR generation, system health checks, contact handoff) that run automatically when relevant.'
                 })
             });
 
@@ -880,15 +883,15 @@ const ChatbotPage: React.FC = () => {
             setIsLoading(false);
 
             // Synthesize local fallback response based on keywords
-            let fallbackResponse = `Hello! I am **A.E.G.I.S.**, your agentic AI portfolio assistant.
+            let fallbackResponse = `Hello! I am **Daemon**, your agentic AI assistant.
 
 The backend is currently unreachable, so I can't run live tools or generate a real answer right now. Please try again in a moment, or browse the site directly via /services and /blogs in the meantime.`;
 
             const cleanText = text.toLowerCase();
             if (cleanText.includes('hello') || cleanText.includes('hi') || cleanText.includes('hey')) {
-                fallbackResponse = `Greetings! I am **A.E.G.I.S.**, the portfolio agent. How can I assist you with your projects, architectures, or technical queries today?`;
+                fallbackResponse = `Greetings! I am **Daemon**, running in the background here. How can I assist you with your projects, architectures, or technical queries today?`;
                 setMood('happy');
-            } else if (cleanText.includes('skill') || cleanText.includes('portfolio') || cleanText.includes('experience')) {
+            } else if (cleanText.includes('skill') || cleanText.includes('projects') || cleanText.includes('experience')) {
                 fallbackResponse = `### 🛠️ Developer Expertise & Core Stack
 The developer specializes in building high-performance, automated, and visually stunning web systems:
 - **Frontend**: Expert-level React, TypeScript, Next.js, and complex interactive UI designs.
@@ -916,7 +919,7 @@ The developer specializes in building high-performance, automated, and visually 
         if (items.length === 0) return null;
         return (
             <Box key={title} sx={{ mb: 2 }}>
-                <Typography variant="caption" sx={{ px: 2, py: 1, color: '#3dfc55', fontWeight: 800, letterSpacing: 1.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ px: 2, py: 1, color: 'primary.main', fontWeight: 800, letterSpacing: 1.5, display: 'block' }}>
                     {title}
                 </Typography>
                 {items.map((conv) => (
@@ -939,10 +942,10 @@ The developer specializes in building high-performance, automated, and visually 
                             sx={{
                                 borderRadius: '8px',
                                 mb: 0.5,
-                                borderLeft: currentConversationId === conv.id ? '3px solid #3dfc55' : '3px solid transparent',
+                                borderLeft: currentConversationId === conv.id ? `3px solid ${themed.palette.primary.main}` : '3px solid transparent',
                                 '&.Mui-selected': {
-                                    bgcolor: 'rgba(61, 252, 85, 0.08)',
-                                    '&:hover': { bgcolor: 'rgba(61, 252, 85, 0.12)' }
+                                    bgcolor: alpha(themed.palette.primary.main, 0.08),
+                                    '&:hover': { bgcolor: alpha(themed.palette.primary.main, 0.12) }
                                 },
                                 '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' }
                             }}
@@ -1000,7 +1003,7 @@ The developer specializes in building high-performance, automated, and visually 
 
                         // Headers markdown parser
                         if (line.startsWith('### ')) {
-                            return <Typography key={`h3-${lineIndex}`} variant="subtitle1" sx={{ color: '#3dfc55', fontWeight: 800, mt: 2, mb: 1 }}>{line.slice(4)}</Typography>;
+                            return <Typography key={`h3-${lineIndex}`} variant="subtitle1" sx={{ color: 'primary.main', fontWeight: 800, mt: 2, mb: 1 }}>{line.slice(4)}</Typography>;
                         }
                         if (line.startsWith('#### ')) {
                             return <Typography key={`h4-${lineIndex}`} variant="subtitle2" sx={{ color: '#00eeff', fontWeight: 700, mt: 1.5, mb: 0.5 }}>{line.slice(5)}</Typography>;
@@ -1010,7 +1013,7 @@ The developer specializes in building high-performance, automated, and visually 
                         if (line.trim().startsWith('- ')) {
                             return (
                                 <Box key={`l-${lineIndex}`} sx={{ display: 'flex', pl: 2, mb: 0.5 }}>
-                                    <Box sx={{ mr: 1, color: '#3dfc55' }}>•</Box>
+                                    <Box sx={{ mr: 1, color: 'primary.main' }}>•</Box>
                                     <Box>{renderLine}</Box>
                                 </Box>
                             );
@@ -1038,11 +1041,11 @@ The developer specializes in building high-performance, automated, and visually 
             {/* Header */}
             <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Avatar sx={{ width: 32, height: 32, bgcolor: 'rgba(61, 252, 85, 0.1)', border: '1px solid #3dfc55' }}>
-                        <Memory sx={{ color: '#3dfc55', fontSize: 18 }} />
+                    <Avatar sx={{ width: 32, height: 32, bgcolor: alpha(themed.palette.primary.main, 0.1), border: '1px solid', borderColor: 'primary.main' }}>
+                        <Memory sx={{ color: 'primary.main', fontSize: 18 }} />
                     </Avatar>
-                    <Typography variant="h6" fontWeight={800} sx={{ background: 'linear-gradient(to right, #fff, #3dfc55)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                        A.E.G.I.S. Log
+                    <Typography variant="h6" fontWeight={800} sx={{ background: `linear-gradient(to right, #fff, ${themed.palette.primary.main})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        Daemon Log
                     </Typography>
                 </Box>
                 {isMobile && <IconButton onClick={() => setMobileDrawerOpen(false)} sx={{ color: 'grey.500' }}><Close /></IconButton>}
@@ -1056,14 +1059,14 @@ The developer specializes in building high-performance, automated, and visually 
                     startIcon={<Add />}
                     onClick={startNewConversation}
                     sx={{
-                        bgcolor: '#3dfc55',
+                        bgcolor: 'primary.main',
                         color: '#000000',
-                        '&:hover': { bgcolor: 'rgba(61, 252, 85, 0.8)' },
+                        '&:hover': { bgcolor: alpha(themed.palette.primary.main, 0.8) },
                         textTransform: 'none',
                         fontWeight: 800,
                         py: 1.2,
                         borderRadius: '10px',
-                        boxShadow: '0 4px 14px rgba(61, 252, 85, 0.25)'
+                        boxShadow: `0 4px 14px ${alpha(themed.palette.primary.main, 0.25)}`
                     }}
                 >
                     New Session
@@ -1078,15 +1081,15 @@ The developer specializes in building high-performance, automated, and visually 
                         color: 'grey.300',
                         borderRadius: '10px',
                         '&:hover': {
-                            borderColor: '#3dfc55',
+                            borderColor: 'primary.main',
                             color: 'white',
-                            bgcolor: 'rgba(61, 252, 85, 0.05)'
+                            bgcolor: alpha(themed.palette.primary.main, 0.05)
                         },
                         textTransform: 'none',
                         py: 1
                     }}
                 >
-                    Back to Portfolio
+                    Back to Home
                 </Button>
             </Box>
 
@@ -1136,8 +1139,8 @@ The developer specializes in building high-performance, automated, and visually 
                         width: 8,
                         height: 8,
                         borderRadius: '50%',
-                        bgcolor: isAvailable ? '#3dfc55' : '#ef4444',
-                        boxShadow: isAvailable ? '0 0 12px #3dfc55' : '0 0 12px #ef4444',
+                        bgcolor: isAvailable ? 'primary.main' : '#ef4444',
+                        boxShadow: isAvailable ? `0 0 12px ${themed.palette.primary.main}` : '0 0 12px #ef4444',
                         animation: isAvailable ? 'pulseGreen 1.5s infinite alternate' : 'none',
                         '@keyframes pulseGreen': {
                             '0%': { opacity: 0.6 },
@@ -1164,7 +1167,7 @@ The developer specializes in building high-performance, automated, and visually 
             overflow: 'hidden',
         }}>
             <CleanStarBackground withNebula={true} />
-            <Seo title="A.E.G.I.S. Agentic Chatbot" description="ExpectException Interactive Agent" />
+            <Seo title="Daemon - Agentic Chatbot" description="ExpectException Interactive Agent" />
 
             {/* Delete Confirmation Dialog */}
             <Dialog
@@ -1276,8 +1279,8 @@ The developer specializes in building high-performance, automated, and visually 
                     borderRadius: 3,
                     border: '1px solid rgba(255,255,255,0.05)'
                 }}>
-                    <Typography variant="caption" sx={{ color: '#3dfc55', fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                        Agent: A.E.G.I.S. v3
+                    <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                        Agent: Daemon v3
                     </Typography>
                 </Box>
 
@@ -1304,12 +1307,12 @@ The developer specializes in building high-performance, automated, and visually 
                                 <Typography variant="h3" sx={{
                                     fontWeight: 900,
                                     letterSpacing: '-0.03em',
-                                    background: 'linear-gradient(135deg, #ffffff 30%, #3dfc55 100%)',
+                                    background: `linear-gradient(135deg, #ffffff 30%, ${themed.palette.primary.main} 100%)`,
                                     WebkitBackgroundClip: 'text',
                                     WebkitTextFillColor: 'transparent',
                                     mb: 1.5
                                 }}>
-                                    A.E.G.I.S. Agentic Assistant
+                                    Daemon Agentic Assistant
                                 </Typography>
                                 <Typography variant="body1" color="grey.400" sx={{ maxWidth: 500, mb: 4, fontWeight: 500 }}>
                                     I am an autonomous agent designed to elaborate project ideas, execute diagnostic workflows, and assist you.
@@ -1333,8 +1336,8 @@ The developer specializes in building high-performance, automated, and visually 
                                                 borderRadius: '12px',
                                                 transition: 'all 0.2s',
                                                 '&:hover': {
-                                                    borderColor: '#3dfc55',
-                                                    bgcolor: 'rgba(61, 252, 85, 0.03)',
+                                                    borderColor: 'primary.main',
+                                                    bgcolor: alpha(themed.palette.primary.main, 0.03),
                                                     transform: 'translateY(-2px)'
                                                 }
                                             }}
@@ -1364,8 +1367,8 @@ The developer specializes in building high-performance, automated, and visually 
                                             {msg.role === 'user' ? (
                                                 <Person sx={{ fontSize: 20, color: 'grey.300' }} />
                                             ) : (
-                                                <Avatar sx={{ width: 36, height: 36, bgcolor: 'rgba(61, 252, 85, 0.1)', border: '1px solid #3dfc55' }}>
-                                                    <Memory sx={{ color: '#3dfc55', fontSize: 18 }} />
+                                                <Avatar sx={{ width: 36, height: 36, bgcolor: alpha(themed.palette.primary.main, 0.1), border: '1px solid', borderColor: 'primary.main' }}>
+                                                    <Memory sx={{ color: 'primary.main', fontSize: 18 }} />
                                                 </Avatar>
                                             )}
                                         </Avatar>
@@ -1373,11 +1376,11 @@ The developer specializes in building high-performance, automated, and visually 
                                             <Paper elevation={0} sx={{
                                                 py: 2,
                                                 px: 2.5,
-                                                bgcolor: msg.role === 'user' ? 'rgba(61, 252, 85, 0.03)' : 'rgba(13, 14, 18, 0.5)',
+                                                bgcolor: msg.role === 'user' ? alpha(themed.palette.primary.main, 0.03) : 'rgba(13, 14, 18, 0.5)',
                                                 backdropFilter: 'blur(20px)',
                                                 borderRadius: '16px',
                                                 border: '1px solid',
-                                                borderColor: msg.role === 'user' ? 'rgba(61, 252, 85, 0.15)' : 'rgba(255,255,255,0.05)',
+                                                borderColor: msg.role === 'user' ? alpha(themed.palette.primary.main, 0.15) : 'rgba(255,255,255,0.05)',
                                                 borderTopRightRadius: msg.role === 'user' ? 0 : '16px',
                                                 borderTopLeftRadius: msg.role === 'assistant' ? 0 : '16px',
                                                 color: 'grey.100',
@@ -1459,9 +1462,9 @@ The developer specializes in building high-performance, automated, and visually 
                             boxShadow: '0 20px 40px -15px rgba(0,0,0,0.7)',
                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             '&:focus-within': {
-                                borderColor: '#3dfc55',
+                                borderColor: 'primary.main',
                                 bgcolor: 'rgba(13, 14, 18, 0.8)',
-                                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.9), 0 0 20px -3px rgba(61, 252, 85, 0.2)',
+                                boxShadow: `0 20px 40px -15px rgba(0,0,0,0.9), 0 0 20px -3px ${alpha(themed.palette.primary.main, 0.2)}`,
                             }
                         }}
                     >
@@ -1470,7 +1473,7 @@ The developer specializes in building high-performance, automated, and visually 
                             fullWidth
                             multiline
                             maxRows={4}
-                            placeholder="Ask A.E.G.I.S. to elaborate an idea, check the time..."
+                            placeholder="Ask Daemon to elaborate an idea, check the time..."
                             value={inputValue}
                             onChange={(e) => {
                                 setInputValue(e.target.value);
@@ -1492,9 +1495,9 @@ The developer specializes in building high-performance, automated, and visually 
                                 sx={{
                                     p: 1.5,
                                     m: 0.5,
-                                    bgcolor: inputValue.trim() ? '#3dfc55' : 'transparent',
+                                    bgcolor: inputValue.trim() ? 'primary.main' : 'transparent',
                                     color: inputValue.trim() ? '#000000' : 'grey.600',
-                                    '&:hover': { bgcolor: inputValue.trim() ? 'rgba(61, 252, 85, 0.8)' : 'rgba(255,255,255,0.05)' },
+                                    '&:hover': { bgcolor: inputValue.trim() ? alpha(themed.palette.primary.main, 0.8) : 'rgba(255,255,255,0.05)' },
                                     transition: 'all 0.2s',
                                     borderRadius: '10px'
                                 }}

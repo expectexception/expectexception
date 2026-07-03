@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import {
-    Container, Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
-    List, ListItem, ListItemIcon, ListItemText, IconButton, alpha
+    Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
+    List, ListItem, ListItemIcon, ListItemText, IconButton, useTheme, alpha
 } from '@mui/material';
 import { Image, CloudUpload, Download, Delete, PictureAsPdf } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 
 const ImageToPdf: React.FC = () => {
+    const theme = useTheme();
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -52,39 +54,36 @@ const ImageToPdf: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={PictureAsPdf}
+            title="Image to PDF Converter"
+            subtitle="Combine multiple images into a single PDF"
+        >
             <Seo
                 title="Convert Images to PDF - Combine Photos Online"
                 toolId={17}
             />
 
-
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                Image to PDF Converter
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Combine multiple images into a single PDF
-            </Typography>
-
-            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ mb: 1.5, flexShrink: 0 }} onClose={() => setError(null)}>{error}</Alert>}
             {result && (
-                <Alert severity="success" sx={{ mb: 3 }} action={
+                <Alert severity="success" sx={{ mb: 1.5, flexShrink: 0 }} action={
                     <Button color="inherit" size="small" href={result.file_url} target="_blank" startIcon={<Download />}>
                         Download PDF
                     </Button>
                 }>Created PDF with {result.images_count} images!</Alert>
             )}
 
-            <Card>
-                <CardContent sx={{ p: 4 }}>
+            <Card sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <CardContent sx={{ p: { xs: 2, sm: 3 }, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                     <Box
                         sx={{
                             border: '2px dashed',
                             borderColor: 'divider',
                             borderRadius: 3,
-                            p: 4,
+                            p: 3,
                             textAlign: 'center',
-                            bgcolor: files.length > 0 ? alpha('#3b82f6', 0.05) : 'transparent',
+                            flexShrink: 0,
+                            bgcolor: files.length > 0 ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
                         }}
                     >
                         <input
@@ -96,14 +95,14 @@ const ImageToPdf: React.FC = () => {
                             onChange={handleFileSelect}
                         />
                         <label htmlFor="image-upload" style={{ cursor: 'pointer' }}>
-                            <CloudUpload sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+                            <CloudUpload sx={{ fontSize: 44, color: 'primary.main', mb: 1 }} />
                             <Typography variant="h6">Add images</Typography>
                             <Typography variant="body2" color="text.secondary">JPG, PNG, GIF, WEBP</Typography>
                         </label>
                     </Box>
 
                     {files.length > 0 && (
-                        <List sx={{ mt: 2 }}>
+                        <List sx={{ mt: 1.5, flex: 1, minHeight: 0, overflowY: 'auto' }}>
                             {files.map((file, index) => (
                                 <ListItem key={index} secondaryAction={
                                     <IconButton edge="end" onClick={() => removeFile(index)}><Delete /></IconButton>
@@ -124,13 +123,13 @@ const ImageToPdf: React.FC = () => {
                         onClick={handleConvert}
                         disabled={files.length === 0 || loading}
                         startIcon={<PictureAsPdf />}
-                        sx={{ mt: 3, py: 1.5 }}
+                        sx={{ mt: 2, py: 1.25, flexShrink: 0 }}
                     >
                         {loading ? 'Converting...' : `Convert ${files.length} Images to PDF`}
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

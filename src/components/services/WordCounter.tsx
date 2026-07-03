@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { Container, Card, CardContent, TextField, Grid, Box, Typography } from '@mui/material';
+import { Card, CardContent, TextField, Grid, Box, Typography } from '@mui/material';
 import { TextFields } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from './ServicePageHero';
+import ServicePageShell from './ServicePageShell';
 
 const STAT_DEFS: { label: string; compute: (text: string) => number }[] = [
     { label: 'Words', compute: (t) => (t.trim() ? t.trim().split(/\s+/).length : 0) },
@@ -18,13 +18,13 @@ const WordCounter: React.FC = () => {
     const stats = useMemo(() => STAT_DEFS.map(s => ({ label: s.label, value: s.compute(text) })), [text]);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <ServicePageShell
+            icon={TextFields}
+            title="Word & Character Counter"
+            subtitle="Count words, characters, sentences, and paragraphs instantly - runs entirely in your browser."
+            maxWidth="md"
+        >
             <Seo title="Word & Character Counter - Free Online Tool" toolId={29} />
-            <ServicePageHero
-                icon={TextFields}
-                title="Word & Character Counter"
-                subtitle="Count words, characters, sentences, and paragraphs instantly - runs entirely in your browser."
-            />
 
             <Card sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
@@ -32,19 +32,24 @@ const WordCounter: React.FC = () => {
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: 3,
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                overflowY: 'auto',
             }}>
-                <CardContent sx={{ p: 1 }}>
+                <CardContent sx={{ p: 1, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                     <TextField
                         fullWidth
                         multiline
-                        minRows={10}
+                        minRows={6}
                         placeholder="Paste or type your text here..."
                         value={text}
                         onChange={(e) => setText(e.target.value)}
-                        sx={{ mb: 4 }}
+                        sx={{ mb: 3, flex: 1 }}
                     />
-                    <Grid container spacing={2}>
+                    <Grid container spacing={2} sx={{ flexShrink: 0 }}>
                         {stats.map((s) => (
                             <Grid item xs={6} sm={4} key={s.label}>
                                 <Box sx={{
@@ -62,7 +67,7 @@ const WordCounter: React.FC = () => {
                     </Grid>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

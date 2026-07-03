@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
-    Container, Card, CardContent, Typography, Button, Box, TextField, Grid, Stack, Chip
+    Card, CardContent, Typography, Button, Box, TextField, Grid, Stack, Chip,
 } from '@mui/material';
 import { Palette, ContentCopy } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 import { isReactSnap } from '../../utils/isReactSnap';
@@ -40,25 +41,22 @@ const ColorConverter: React.FC = () => {
         if (color.match(/^#[0-9A-Fa-f]{6}$/)) {
             handleConvert();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [color]);
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={Palette}
+            title="Color Converter"
+            subtitle="Convert colors between HEX, RGB, and HSL formats"
+        >
             <Seo
                 title="Color Converter & Code Generator - HEX, RGB, HSL, CMYK"
                 toolId={22}
             />
 
-
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                Color Converter
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Convert colors between HEX, RGB, and HSL formats
-            </Typography>
-
-            <Card>
-                <CardContent sx={{ p: 4 }}>
+            <Card sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                <CardContent sx={{ p: 3 }}>
                     <Grid container spacing={3}>
                         <Grid item xs={12} md={6}>
                             <Typography variant="subtitle2" gutterBottom>Pick a Color</Typography>
@@ -67,7 +65,7 @@ const ColorConverter: React.FC = () => {
                                     type="color"
                                     value={color}
                                     onChange={(e) => setColor(e.target.value)}
-                                    style={{ width: 60, height: 60, cursor: 'pointer', border: 'none', borderRadius: 8 }}
+                                    style={{ width: 56, height: 56, cursor: 'pointer', border: 'none', borderRadius: 8 }}
                                 />
                                 <TextField
                                     value={color}
@@ -81,8 +79,8 @@ const ColorConverter: React.FC = () => {
                             {/* Color Preview */}
                             <Box
                                 sx={{
-                                    mt: 3,
-                                    height: 150,
+                                    mt: 2.5,
+                                    height: 110,
                                     borderRadius: 2,
                                     bgcolor: color,
                                     display: 'flex',
@@ -104,7 +102,7 @@ const ColorConverter: React.FC = () => {
                         <Grid item xs={12} md={6}>
                             <Typography variant="subtitle2" gutterBottom>Color Values</Typography>
                             {result && (
-                                <Stack spacing={2}>
+                                <Stack spacing={1.5}>
                                     {[
                                         { label: 'HEX', value: result.hex },
                                         { label: 'RGB', value: result.rgb },
@@ -129,7 +127,7 @@ const ColorConverter: React.FC = () => {
                                         </Box>
                                     ))}
 
-                                    <Box sx={{ mt: 2 }}>
+                                    <Box sx={{ mt: 1 }}>
                                         <Typography variant="subtitle2" gutterBottom>RGB Components</Typography>
                                         <Stack direction="row" spacing={1}>
                                             <Chip label={`R: ${result.r}`} color="error" />
@@ -143,7 +141,7 @@ const ColorConverter: React.FC = () => {
                     </Grid>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

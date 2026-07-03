@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { endpoints } from '../api/endpoints';
 import apiClient from '../api/config';
-import { Box, Avatar, Typography, TextField, Button, CircularProgress, Divider, Stack, Paper, Chip, Grid } from '@mui/material';
+import { Box, Avatar, Typography, TextField, Button, CircularProgress, Divider, Stack, Paper, Chip, Grid, Alert, IconButton, Tooltip } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -15,7 +15,14 @@ import {
     Favorite as FavoriteIcon,
     Edit as EditIcon,
     Save as SaveIcon,
-    Cancel as CancelIcon
+    Cancel as CancelIcon,
+    Key as KeyIcon,
+    Delete as DeleteIcon,
+    ContentCopy as CopyIcon,
+    Add as AddIcon,
+    PersonAdd as PersonAddIcon,
+    PersonRemove as PersonRemoveIcon,
+    EmojiEvents as TrophyIcon,
 } from '@mui/icons-material';
 import { useTheme, alpha } from '@mui/material/styles';
 
@@ -24,6 +31,8 @@ interface ProfileData {
     user: number;
     bio: string;
     avatar: string | null;
+    reputation?: number;
+    badges?: string[];
     website: string | null;
     followers: number[];
     email_verified: boolean;
@@ -32,7 +41,7 @@ interface ProfileData {
 const BorderBeam: React.FC<{ activeColor?: string }> = ({ activeColor }) => {
   const theme = useTheme();
   const color = activeColor || theme.palette.primary.main;
-  
+
   return (
     <Box
       className="border-beam-overlay"
@@ -41,7 +50,7 @@ const BorderBeam: React.FC<{ activeColor?: string }> = ({ activeColor }) => {
         inset: 0,
         borderRadius: 'inherit',
         border: '1.5px solid transparent',
-        background: `linear-gradient(90deg, ${color}, #00e5ff) border-box`,
+        background: `linear-gradient(90deg, ${color}, ${theme.palette.secondary.main}) border-box`,
         WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
         WebkitMaskComposite: 'xor',
         maskComposite: 'exclude',
@@ -69,6 +78,9 @@ const ProfilePage: React.FC = () => {
     const [editing, setEditing] = useState(false);
     const [bio, setBio] = useState('');
     const [website, setWebsite] = useState('');
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followerCount, setFollowerCount] = useState(0);
+    const [followLoading, setFollowLoading] = useState(false);
 
     // Dashboard State
     const [activity, setActivity] = useState<any[]>([]);
@@ -86,6 +98,11 @@ const ProfilePage: React.FC = () => {
                 setProfile(profileData);
                 setBio(profileData.bio || '');
                 setWebsite(profileData.website || '');
+                setFollowerCount(profileData.followers?.length || 0);
+                if (user && profileData.followers) {
+                    // followers is an array of user IDs
+                    setIsFollowing(profileData.followers.includes(user.id));
+                }
 
                 const activityRes = await apiClient.get(endpoints.services.dashboard.activity);
                 setActivity(activityRes.data);
@@ -133,6 +150,18 @@ const ProfilePage: React.FC = () => {
     }
 
     const isOwnProfile = user && user.email === email;
+
+    const handleFollowToggle = async () => {
+        if (!token || isOwnProfile) return;
+        setFollowLoading(true);
+        try {
+            const res = await apiClient.post(`/api/auth/profiles/${email}/follow/`);
+            const followed = res.data?.status === 'followed';
+            setIsFollowing(followed);
+            setFollowerCount(c => followed ? c + 1 : Math.max(0, c - 1));
+        } catch {}
+        setFollowLoading(false);
+    };
 
     return (
         <Box sx={{ maxWidth: 1000, mx: 'auto', p: { xs: 2, md: 4 }, py: { xs: 4, md: 8 } }}>
@@ -202,6 +231,24 @@ const ProfilePage: React.FC = () => {
                                 'No website linked'
                             )}
                         </Typography>
+                        <Stack direction="row" spacing={2} sx={{ mt: 2, justifyContent: { xs: 'center', sm: 'flex-start' } }} alignItems="center">
+                            <Chip label={`${followerCount} Followers`} size="small" sx={{ fontWeight: 600 }} />
+                            {profile.reputation > 0 && (
+                                <Chip icon={<TrophyIcon sx={{ fontSize: '0.9rem !important' }} />} label={`${profile.reputation} Rep`} size="small" color="primary" sx={{ fontWeight: 700 }} />
+                            )}
+                            {!isOwnProfile && token && (
+                                <Button
+                                    size="small"
+                                    variant={isFollowing ? 'outlined' : 'contained'}
+                                    startIcon={isFollowing ? <PersonRemoveIcon /> : <PersonAddIcon />}
+                                    onClick={handleFollowToggle}
+                                    disabled={followLoading}
+                                    sx={{ borderRadius: '8px', fontWeight: 700 }}
+                                >
+                                    {isFollowing ? 'Unfollow' : 'Follow'}
+                                </Button>
+                            )}
+                        </Stack>
                     </Box>
                 </Paper>
             </motion.div>
@@ -286,7 +333,7 @@ const ProfilePage: React.FC = () => {
                                     '&:hover .border-beam-overlay': { opacity: 1 },
                                 }}
                             >
-                                <BorderBeam activeColor="#00e5ff" />
+                                <BorderBeam activeColor={theme.palette.secondary.main} />
                                 <Typography variant="h5" fontWeight="800" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                     <FavoriteIcon sx={{ color: '#f43f5e' }} /> Favorite Tools
                                 </Typography>
@@ -371,6 +418,10 @@ const ProfilePage: React.FC = () => {
                 </Grid>
             </Grid>
 
+            {/* API Keys Panel */}
+            {token && isOwnProfile && <APIKeysPanel primaryColor={primaryColor} token={token} />}
+            {token && isOwnProfile && <SessionsPanel primaryColor={primaryColor} />}
+
             {/* Admin Actions Panel */}
             {token && user?.is_staff && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
@@ -420,3 +471,183 @@ const ProfilePage: React.FC = () => {
 };
 
 export default ProfilePage;
+
+// ── Sessions Panel ─────────────────────────────────────────────────────────────
+const SessionsPanel: React.FC<{ primaryColor: string }> = ({ primaryColor }) => {
+    const [sessions, setSessions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const theme = useTheme();
+
+    const fetchSessions = useCallback(async () => {
+        try {
+            const res = await apiClient.get('/api/auth/sessions/');
+            setSessions(res.data?.sessions || []);
+        } catch {}
+        finally { setLoading(false); }
+    }, []);
+
+    useEffect(() => { fetchSessions(); }, [fetchSessions]);
+
+    const revoke = async (id: string) => {
+        try {
+            await apiClient.delete(`/api/auth/sessions/${id}/`);
+            setSessions(prev => prev.filter(s => s.id !== id));
+        } catch {}
+    };
+
+    const revokeAll = async () => {
+        try {
+            await apiClient.delete('/api/auth/sessions/revoke-all/');
+            setSessions([]);
+        } catch {}
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}>
+            <Paper sx={{ mt: 4, p: 4, background: 'linear-gradient(135deg, rgba(13,14,18,0.8) 0%, rgba(13,14,18,0.4) 100%)', border: `1px solid ${alpha(primaryColor, 0.15)}`, borderRadius: '16px' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <KeyIcon sx={{ color: primaryColor }} />
+                        <Typography variant="h5" fontWeight={800}>Active Sessions</Typography>
+                    </Box>
+                    {sessions.length > 1 && (
+                        <Button size="small" color="error" variant="outlined" onClick={revokeAll} sx={{ fontSize: '0.75rem' }}>
+                            Revoke All
+                        </Button>
+                    )}
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    These are your active login sessions. Revoke any you don't recognise.
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                {loading ? <CircularProgress size={24} /> : sessions.length === 0 ? (
+                    <Typography color="text.secondary" variant="body2">No session data available for your auth method.</Typography>
+                ) : (
+                    <Stack spacing={1.5}>
+                        {sessions.map(s => (
+                            <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, borderRadius: 1.5, bgcolor: alpha(primaryColor, 0.05), border: `1px solid ${alpha(primaryColor, 0.12)}` }}>
+                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                    <Typography variant="body2" fontWeight={700}>{s.current ? 'Current Session' : `Session ${s.id.slice(0, 8)}…`}</Typography>
+                                    {s.created && <Typography variant="caption" color="text.secondary">Started: {new Date(s.created).toLocaleString()}</Typography>}
+                                    {s.expiry && <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Expires: {new Date(s.expiry).toLocaleString()}</Typography>}
+                                </Box>
+                                <Tooltip title="Revoke session">
+                                    <IconButton size="small" onClick={() => revoke(s.id)} sx={{ color: 'error.main' }}>
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                        ))}
+                    </Stack>
+                )}
+            </Paper>
+        </motion.div>
+    );
+};
+
+// ── API Keys Panel ────────────────────────────────────────────────────────────
+interface APIKey { id: number; name: string; masked_key: string; scope: string; created_at: string; last_used_at: string | null }
+
+const APIKeysPanel: React.FC<{ primaryColor: string; token: string }> = ({ primaryColor, token }) => {
+    const [keys, setKeys] = useState<APIKey[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [newKeyName, setNewKeyName] = useState('');
+    const [createdKey, setCreatedKey] = useState<string | null>(null);
+    const [creating, setCreating] = useState(false);
+    const theme = useTheme();
+
+    const fetch = useCallback(async () => {
+        try {
+            const res = await apiClient.get('/api/auth/api-keys/');
+            setKeys(res.data || []);
+        } catch {}
+        finally { setLoading(false); }
+    }, []);
+
+    useEffect(() => { fetch(); }, [fetch]);
+
+    const create = async () => {
+        if (!newKeyName.trim()) return;
+        setCreating(true);
+        try {
+            const res = await apiClient.post('/api/auth/api-keys/', { name: newKeyName.trim(), scope: 'full' });
+            setCreatedKey(res.data.key);
+            setNewKeyName('');
+            fetch();
+        } catch {} finally { setCreating(false); }
+    };
+
+    const revoke = async (id: number) => {
+        try {
+            await apiClient.delete(`/api/auth/api-keys/${id}/`);
+            setKeys(prev => prev.filter(k => k.id !== id));
+        } catch {}
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
+            <Paper sx={{ mt: 5, p: 4, background: 'linear-gradient(135deg, rgba(13,14,18,0.8) 0%, rgba(13,14,18,0.4) 100%)', border: `1px solid ${alpha(primaryColor, 0.15)}`, borderRadius: '16px' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <KeyIcon sx={{ mr: 1.5, color: primaryColor }} />
+                    <Typography variant="h5" fontWeight={800}>API Keys</Typography>
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    Use API keys to access ExpectException tools programmatically. Pass as <code>Authorization: Bearer &lt;key&gt;</code>.
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                {createdKey && (
+                    <Alert severity="success" sx={{ mb: 3 }} onClose={() => setCreatedKey(null)}>
+                        <strong>Copy your new key now — it won't be shown again:</strong>
+                        <Box sx={{ fontFamily: 'monospace', fontSize: '0.8rem', mt: 1, wordBreak: 'break-all', display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {createdKey}
+                            <IconButton size="small" onClick={() => navigator.clipboard.writeText(createdKey)}><CopyIcon fontSize="small" /></IconButton>
+                        </Box>
+                    </Alert>
+                )}
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 3 }}>
+                    <TextField
+                        size="small"
+                        placeholder="Key name (e.g. My Script)"
+                        value={newKeyName}
+                        onChange={e => setNewKeyName(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && create()}
+                        sx={{ flexGrow: 1 }}
+                    />
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={create}
+                        disabled={creating || !newKeyName.trim()}
+                        sx={{ whiteSpace: 'nowrap', bgcolor: primaryColor, color: '#000' }}
+                    >
+                        {creating ? 'Creating…' : 'Create Key'}
+                    </Button>
+                </Stack>
+
+                {loading ? <CircularProgress size={24} /> : keys.length === 0 ? (
+                    <Typography color="text.secondary" variant="body2">No API keys yet. Create one above.</Typography>
+                ) : (
+                    <Stack spacing={1.5}>
+                        {keys.map(k => (
+                            <Box key={k.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, borderRadius: 1.5, bgcolor: alpha(primaryColor, 0.05), border: `1px solid ${alpha(primaryColor, 0.12)}` }}>
+                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                    <Typography variant="body2" fontWeight={700}>{k.name}</Typography>
+                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>{k.masked_key}</Typography>
+                                    <Chip label={k.scope} size="small" sx={{ ml: 1, height: 18, fontSize: '0.65rem' }} />
+                                </Box>
+                                <Tooltip title="Revoke key">
+                                    <IconButton size="small" onClick={() => revoke(k.id)} sx={{ color: 'error.main' }}>
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                        ))}
+                    </Stack>
+                )}
+            </Paper>
+        </motion.div>
+    );
+};

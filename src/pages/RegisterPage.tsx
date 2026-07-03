@@ -12,10 +12,12 @@ import {
     CircularProgress,
     InputAdornment,
     IconButton,
+    Divider,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Visibility, VisibilityOff, AppRegistration, Person, Email } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useTheme, alpha } from '@mui/material/styles';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
@@ -23,6 +25,9 @@ import GoogleSignInButton from '../components/auth/GoogleSignInButton';
 
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
+    const theme = useTheme();
+    const primary = theme.palette.primary.main;
+    const secondary = theme.palette.secondary.main;
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -108,11 +113,25 @@ const RegisterPage: React.FC = () => {
                     style={{ width: '100%' }}
                 >
                     <Box sx={{ mb: 4, textAlign: 'center' }}>
+                        <Box sx={{
+                            width: 64,
+                            height: 64,
+                            borderRadius: '50%',
+                            background: `radial-gradient(circle, ${alpha(primary, 0.2)}, transparent)`,
+                            border: `1.5px solid ${alpha(primary, 0.4)}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mx: 'auto',
+                            mb: 2,
+                        }}>
+                            <AppRegistration sx={{ color: primary, fontSize: 28 }} />
+                        </Box>
                         <Typography
                             variant="h3"
                             sx={{
                                 fontWeight: 800,
-                                background: 'linear-gradient(45deg, #3b82f6, #8b5cf6)',
+                                background: `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`,
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 mb: 1,
@@ -125,7 +144,11 @@ const RegisterPage: React.FC = () => {
                         </Typography>
                     </Box>
 
-                    <Card sx={{ backdropFilter: 'blur(20px)' }}>
+                    <Card sx={{
+                        backdropFilter: 'blur(20px)',
+                        border: `1px solid ${alpha(primary, 0.12)}`,
+                        boxShadow: `0 0 40px ${alpha(primary, 0.06)}`,
+                    }}>
                         <CardContent sx={{ p: 4 }}>
                             {error && (
                                 <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
@@ -146,6 +169,7 @@ const RegisterPage: React.FC = () => {
                                     context="signup"
                                 />
                             )}
+                            <Divider sx={{ my: 2.5, fontSize: '0.75rem', color: 'text.disabled' }}>or register with email</Divider>
 
                             <Box component="form" onSubmit={handleSubmit}>
                                 <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
