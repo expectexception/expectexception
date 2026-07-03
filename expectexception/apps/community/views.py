@@ -1,6 +1,5 @@
 from django.utils import timezone
 from django.db.models import Q
-from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
@@ -34,6 +33,7 @@ class ThreadViewSet(viewsets.ModelViewSet):
             qs = qs.filter(category__slug=category)
         if search:
             try:
+                from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
                 vector = SearchVector('title', weight='A') + SearchVector('body', weight='B') + SearchVector('tags', weight='C')
                 query = SearchQuery(search)
                 qs = qs.annotate(rank=SearchRank(vector, query)).filter(rank__gte=0.01).order_by('-rank')
