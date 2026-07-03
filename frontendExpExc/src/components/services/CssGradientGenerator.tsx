@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import {
-    Container, Card, CardContent, Box, Typography, Button, Slider, Grid,
+    Card, CardContent, Box, Typography, Button, Slider, Grid,
     ToggleButtonGroup, ToggleButton, Snackbar, IconButton,
 } from '@mui/material';
 import { Gradient, ContentCopy, Add, Close, Shuffle } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from './ServicePageHero';
+import ServicePageShell from './ServicePageShell';
 
 interface Stop {
     id: number;
@@ -60,13 +60,13 @@ const CssGradientGenerator: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <ServicePageShell
+            icon={Gradient}
+            title="CSS Gradient Generator"
+            subtitle="Design linear and radial gradients visually and copy the CSS - all in your browser."
+            maxWidth="md"
+        >
             <Seo title="CSS Gradient Generator - Free Online Tool" toolId={31} />
-            <ServicePageHero
-                icon={Gradient}
-                title="CSS Gradient Generator"
-                subtitle="Design linear and radial gradients visually and copy the CSS - all in your browser."
-            />
 
             <Card sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
@@ -74,7 +74,10 @@ const CssGradientGenerator: React.FC = () => {
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: 3,
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box sx={{
@@ -150,7 +153,7 @@ const CssGradientGenerator: React.FC = () => {
             </Card>
 
             <Snackbar open={snackbar} autoHideDuration={2000} onClose={() => setSnackbar(false)} message="CSS copied to clipboard!" />
-        </Container>
+        </ServicePageShell>
     );
 };
 

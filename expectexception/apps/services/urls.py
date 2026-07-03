@@ -1,4 +1,5 @@
 from django.urls import path
+from .share_views import ToolShareCreateView, ToolShareRetrieveView
 from .views import (
     TextToSpeechView, 
     ImageCompressorView, 
@@ -60,6 +61,7 @@ from .views import (
     UptimeRobotView,
     UptimeTriggersView,
     UptimeTriggerDetailView,
+    CeleryTaskStatusView,
 )
 from .server_status_view import ServerStatusView, get_metrics_api # Updated import path
 from .admin_views import (
@@ -151,6 +153,7 @@ urlpatterns = [
     path('audio-separator/status/<str:task_id>/', AudioSeparatorStatusView.as_view(), name='audio-separator-status'),
 
     path('health/', HealthCheckView.as_view(), name='health-check'),
+    path('task/<str:task_id>/status/', CeleryTaskStatusView.as_view(), name='task-status'),
     path('tool-access/', ToolAccessView.as_view(), name='tool-access'),
     path('tool-access/toggle/', ToolAccessToggleView.as_view(), name='tool-access-toggle'),
     path('server-health/', ServerStatusView.as_view(), name='server-health'),
@@ -161,4 +164,7 @@ urlpatterns = [
     path('webhook/<uuid:endpoint_id>/requests/', WebhookRequestsListView.as_view(), name='webhook-requests'),
     path('webhook/<uuid:endpoint_id>/requests/<uuid:request_id>/', WebhookRequestDetailView.as_view(), name='webhook-request-detail'),
     path('webhook/<uuid:endpoint_id>/replay/<uuid:request_id>/', WebhookReplayView.as_view(), name='webhook-replay'),
+    # Shareable tool results
+    path('share/', ToolShareCreateView.as_view(), name='tool-share-create'),
+    path('share/<str:short_id>/', ToolShareRetrieveView.as_view(), name='tool-share-retrieve'),
 ] + router.urls + admin_urlpatterns

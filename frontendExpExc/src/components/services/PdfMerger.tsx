@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import {
-    Container, Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
-    List, ListItem, ListItemIcon, ListItemText, IconButton, alpha
+    Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
+    List, ListItem, ListItemIcon, ListItemText, IconButton, useTheme, alpha
 } from '@mui/material';
 import { PictureAsPdf, CloudUpload, Download, Delete, MergeType } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import apiClient from '../../api/config';
+import ServicePageShell from './ServicePageShell';
+import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 
 const PdfMerger: React.FC = () => {
+    const theme = useTheme();
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -40,7 +42,11 @@ const PdfMerger: React.FC = () => {
 
         try {
             const response = await apiClient.post(endpoints.services.pdfMerge, formData);
-            setResult(response.data);
+            const data = response.data;
+            if (data.file_url && !data.file_url.startsWith('http')) {
+                data.file_url = `${API_BASE_URL}${data.file_url}`;
+            }
+            setResult(data);
         } catch (err: any) {
             setError(err.response?.data?.error || 'Merge failed');
         } finally {
@@ -49,39 +55,36 @@ const PdfMerger: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={MergeType}
+            title="PDF Merger"
+            subtitle="Combine multiple PDF files into a single document"
+        >
             <Seo
                 title="Merge PDF Files Online - Combine Documents Free"
                 toolId={13}
             />
 
-
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                PDF Merger
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Combine multiple PDF files into a single document
-            </Typography>
-
-            {error && <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ mb: 1.5, flexShrink: 0 }} onClose={() => setError(null)}>{error}</Alert>}
             {result && (
-                <Alert severity="success" sx={{ mb: 3 }} action={
+                <Alert severity="success" sx={{ mb: 1.5, flexShrink: 0 }} action={
                     <Button color="inherit" size="small" href={result.file_url} target="_blank" startIcon={<Download />}>
                         Download
                     </Button>
                 }>PDFs merged successfully!</Alert>
             )}
 
-            <Card>
-                <CardContent sx={{ p: 4 }}>
+            <Card sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <CardContent sx={{ p: { xs: 2, sm: 3 }, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                     <Box
                         sx={{
                             border: '2px dashed',
                             borderColor: 'divider',
                             borderRadius: 3,
-                            p: 4,
+                            p: 3,
                             textAlign: 'center',
-                            bgcolor: files.length > 0 ? alpha('#3b82f6', 0.05) : 'transparent',
+                            flexShrink: 0,
+                            bgcolor: files.length > 0 ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
                         }}
                     >
                         <input
@@ -93,14 +96,14 @@ const PdfMerger: React.FC = () => {
                             onChange={handleFileSelect}
                         />
                         <label htmlFor="pdf-upload" style={{ cursor: 'pointer' }}>
-                            <CloudUpload sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+                            <CloudUpload sx={{ fontSize: 44, color: 'primary.main', mb: 1 }} />
                             <Typography variant="h6">Add PDF files</Typography>
                             <Typography variant="body2" color="text.secondary">Max 20 files</Typography>
                         </label>
                     </Box>
 
                     {files.length > 0 && (
-                        <List sx={{ mt: 2 }}>
+                        <List sx={{ mt: 1.5, flex: 1, minHeight: 0, overflowY: 'auto' }}>
                             {files.map((file, index) => (
                                 <ListItem key={index} secondaryAction={
                                     <IconButton edge="end" onClick={() => removeFile(index)}><Delete /></IconButton>
@@ -121,13 +124,13 @@ const PdfMerger: React.FC = () => {
                         onClick={handleMerge}
                         disabled={files.length < 2 || loading}
                         startIcon={<MergeType />}
-                        sx={{ mt: 3, py: 1.5 }}
+                        sx={{ mt: 2, py: 1.25, flexShrink: 0 }}
                     >
                         {loading ? 'Merging...' : `Merge ${files.length} PDFs`}
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

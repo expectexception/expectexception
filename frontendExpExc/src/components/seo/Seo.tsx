@@ -4,6 +4,11 @@ import { useLocation } from 'react-router-dom';
 
 import toolsData from '../../data/tools.json';
 
+export interface HowToStep {
+    name: string;
+    text: string;
+}
+
 interface SeoProps {
     title: string;
     description?: string;
@@ -13,19 +18,21 @@ interface SeoProps {
     date?: string;
     author?: string;
     structuredData?: object;
-    toolId?: number; // New prop for auto-SEO
+    toolId?: number;
+    howToSteps?: HowToStep[];
 }
 
 const Seo: React.FC<SeoProps> = ({
     title,
     description,
     keywords = [],
-    image = '/og-image.jpg', // Default OG image
+    image = '/og-image.jpg',
     type = 'website',
     date,
     author = 'ExpectException',
     structuredData,
-    toolId
+    toolId,
+    howToSteps,
 }) => {
     const location = useLocation();
     // Use window.location.origin ONLY for localhost development
@@ -96,6 +103,24 @@ const Seo: React.FC<SeoProps> = ({
         };
     }
 
+    // HowTo JSON-LD (for tools with steps — shown as rich results in Google)
+    const howToJsonLd = howToSteps && howToSteps.length > 0 ? {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": `How to use ${title}`,
+        "description": finalDescription,
+        "step": howToSteps.map((step, i) => ({
+            "@type": "HowToStep",
+            "position": i + 1,
+            "name": step.name,
+            "text": step.text,
+        })),
+        "tool": {
+            "@type": "HowToTool",
+            "name": title,
+        },
+    } : null;
+
     return (
         <Helmet>
             {/* Standard Meta Tags */}
@@ -111,7 +136,7 @@ const Seo: React.FC<SeoProps> = ({
             <meta property="og:type" content={type} />
             <meta property="og:url" content={currentUrl} />
             <meta property="og:title" content={title} />
-            <meta property="og:description" content={description} />
+            <meta property="og:description" content={finalDescription} />
             <meta property="og:image" content={imageUrl} />
             <meta property="og:site_name" content="ExpectException" />
 
@@ -119,13 +144,20 @@ const Seo: React.FC<SeoProps> = ({
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:url" content={currentUrl} />
             <meta name="twitter:title" content={title} />
-            <meta name="twitter:description" content={description} />
+            <meta name="twitter:description" content={finalDescription} />
             <meta name="twitter:image" content={imageUrl} />
 
-            {/* Structured Data JSON-LD */}
+            {/* Primary Structured Data JSON-LD */}
             <script type="application/ld+json">
                 {JSON.stringify(finalJsonLd)}
             </script>
+
+            {/* HowTo Structured Data (rich results) */}
+            {howToJsonLd && (
+                <script type="application/ld+json">
+                    {JSON.stringify(howToJsonLd)}
+                </script>
+            )}
         </Helmet>
     );
 };

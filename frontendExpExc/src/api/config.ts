@@ -15,7 +15,13 @@ const getBaseUrl = () => {
     return 'http://localhost:8000';
 };
 
+const getHeavyBaseUrl = () => {
+    if (process.env.REACT_APP_HEAVY_API_BASE_URL) return process.env.REACT_APP_HEAVY_API_BASE_URL;
+    return getBaseUrl();
+};
+
 const API_BASE_URL = getBaseUrl();
+const HEAVY_API_BASE_URL = getHeavyBaseUrl();
 const WS_BASE_URL = API_BASE_URL.replace('http', 'ws');
 
 // Create axios instance with default config
@@ -34,6 +40,26 @@ apiClient.interceptors.request.use(
         if (isReactSnap()) {
             return Promise.reject(new axios.Cancel('ReactSnap prerender: request skipped'));
         }
+
+        // Dynamic routing for heavy AI/ML endpoints
+        if (config.url) {
+            const isHeavy = [
+                '/api/chatbot',
+                '/api/ai-detector',
+                '/api/services/audio-separator',
+                '/api/services/background-remover',
+                '/api/services/image-upscaler',
+                '/api/services/pdf-to-doc',
+                '/api/services/doc-to-pdf',
+                '/api/services/yt-downloader',
+                '/api/services/image-to-text',
+            ].some(path => config.url?.startsWith(path));
+
+            if (isHeavy) {
+                config.baseURL = HEAVY_API_BASE_URL;
+            }
+        }
+
         // Get token from localStorage if available
         const token = localStorage.getItem('accessToken');
         if (token) {
@@ -92,5 +118,5 @@ apiClient.interceptors.response.use(
     }
 );
 
-export { apiClient, API_BASE_URL, WS_BASE_URL };
+export { apiClient, API_BASE_URL, HEAVY_API_BASE_URL, WS_BASE_URL };
 export default apiClient;

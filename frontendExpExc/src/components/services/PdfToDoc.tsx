@@ -1,7 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import {
-    Container,
-    Grid,
     Card,
     CardContent,
     Typography,
@@ -15,11 +13,11 @@ import {
     Select,
     MenuItem,
     Chip,
+    useTheme,
     alpha,
     Switch,
     FormControlLabel,
     Collapse,
-    IconButton,
     Tooltip,
 } from '@mui/material';
 import {
@@ -37,6 +35,7 @@ import {
     Info,
 } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 
@@ -53,6 +52,7 @@ interface ConversionResult {
 }
 
 const PdfToDoc: React.FC = () => {
+    const theme = useTheme();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [outputFormat, setOutputFormat] = useState('docx');
     const [loading, setLoading] = useState(false);
@@ -138,15 +138,19 @@ const PdfToDoc: React.FC = () => {
         const interval = setInterval(async () => {
             attempts++;
             try {
-                const res = await apiClient.get(`${endpoints.services.pdfToDoc}/status/${taskId}/`);
+                // endpoints.services.pdfToDoc already has a trailing slash; avoid a double slash here.
+                const res = await apiClient.get(`${endpoints.services.pdfToDoc}status/${taskId}/`);
                 const { status: taskStatus, ...resultData } = res.data;
+                // Celery's native AsyncResult.state is uppercase (PENDING/STARTED/SUCCESS/FAILURE);
+                // our own cached result uses lowercase ('success'/'failed'). Normalize before comparing.
+                const normalizedStatus = (taskStatus || '').toLowerCase();
 
                 // Update progress label based on state
                 if (attempts < 5) setProgressLabel('Uploading & queuing...');
                 else if (ocrEnabled && attempts < 20) setProgressLabel('Running OCR (this may take a while)...');
                 else setProgressLabel('Converting document...');
 
-                if (taskStatus === 'success') {
+                if (normalizedStatus === 'success') {
                     clearInterval(interval);
                     setProgress(100);
                     setProgressLabel('Done!');
@@ -155,7 +159,7 @@ const PdfToDoc: React.FC = () => {
                         : resultData.file_url;
                     setResult({ ...resultData, file_url: fileUrl });
                     setLoading(false);
-                } else if (taskStatus === 'failed') {
+                } else if (normalizedStatus === 'failed' || normalizedStatus === 'failure') {
                     clearInterval(interval);
                     setError(resultData.error || 'Conversion process failed.');
                     setLoading(false);
@@ -192,7 +196,6 @@ const PdfToDoc: React.FC = () => {
 
         try {
             const response = await apiClient.post(endpoints.services.pdfToDoc, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
                 timeout: 30000, // 30s for upload
             });
 
@@ -248,23 +251,21 @@ const PdfToDoc: React.FC = () => {
     ];
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={PictureAsPdf}
+            title="PDF to Word Converter"
+            subtitle="Convert standard and scanned PDFs to editable documents with high accuracy"
+            maxWidth="md"
+        >
             <Seo
                 title="Advanced PDF to Word Converter with OCR"
                 toolId={8}
             />
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                PDF to Word Converter
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
-                Convert standard and scanned PDFs to editable documents with high accuracy
-            </Typography>
-
             {error && (
                 <Alert
                     severity="error"
-                    sx={{ mb: 3 }}
+                    sx={{ mb: 1.5, flexShrink: 0 }}
                     onClose={() => setError(null)}
                     icon={<ErrorIcon />}
                 >
@@ -275,7 +276,7 @@ const PdfToDoc: React.FC = () => {
             {result && (
                 <Alert
                     severity="success"
-                    sx={{ mb: 3 }}
+                    sx={{ mb: 1.5, flexShrink: 0 }}
                     icon={<CheckCircle />}
                     action={
                         <Button color="inherit" size="small" onClick={handleDownload} startIcon={<Download />}>
@@ -287,335 +288,269 @@ const PdfToDoc: React.FC = () => {
                 </Alert>
             )}
 
-            <Grid container spacing={4}>
-                {/* Upload Section */}
-                <Grid item xs={12} md={7}>
-                    <Card>
-                        <CardContent sx={{ p: 4 }}>
-                            {/* Drag & Drop Zone */}
+            <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+                <Card sx={{ flex: 1.4 }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                        {/* Drag & Drop Zone */}
+                        <Box
+                            onDragEnter={handleDrag}
+                            onDragLeave={handleDrag}
+                            onDragOver={handleDrag}
+                            onDrop={handleDrop}
+                            sx={{
+                                border: '2px dashed',
+                                borderColor: dragActive ? 'primary.main' : 'divider',
+                                borderRadius: 3,
+                                p: { xs: 2.5, sm: 3 },
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                bgcolor: dragActive
+                                    ? alpha(theme.palette.primary.main, 0.05)
+                                    : selectedFile
+                                        ? alpha(theme.palette.secondary.main, 0.05)
+                                        : 'transparent',
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                    borderColor: 'primary.main',
+                                    bgcolor: alpha(theme.palette.primary.main, 0.02),
+                                },
+                            }}
+                        >
+                            <input
+                                accept=".pdf,application/pdf"
+                                style={{ display: 'none' }}
+                                id="pdf-upload"
+                                type="file"
+                                onChange={handleFileSelect}
+                            />
+                            <label htmlFor="pdf-upload" style={{ cursor: 'pointer', display: 'block' }}>
+                                {selectedFile ? (
+                                    <Box>
+                                        <PictureAsPdf sx={{ fontSize: 44, color: 'error.main', mb: 1 }} />
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                            {selectedFile.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {formatBytes(selectedFile.size)}
+                                        </Typography>
+                                        <Button
+                                            variant="text"
+                                            size="small"
+                                            sx={{ mt: 0.5 }}
+                                            onClick={(e) => { e.preventDefault(); handleReset(); }}
+                                        >
+                                            Change file
+                                        </Button>
+                                    </Box>
+                                ) : (
+                                    <Box>
+                                        <CloudUpload sx={{ fontSize: 44, color: 'primary.main', mb: 1, opacity: 0.8 }} />
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                            Drop your PDF here
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                            or click to browse files
+                                        </Typography>
+                                        <Chip
+                                            label={`Max ${formatBytes(MAX_FILE_SIZE)}`}
+                                            size="small"
+                                            variant="outlined"
+                                        />
+                                    </Box>
+                                )}
+                            </label>
+                        </Box>
+
+                        {/* Progress Bar */}
+                        {loading && (
+                            <Box sx={{ mt: 2 }}>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={progress}
+                                    sx={{
+                                        height: 8,
+                                        borderRadius: 4,
+                                        '& .MuiLinearProgress-bar': { borderRadius: 4 }
+                                    }}
+                                />
+                                <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
+                                    {progressLabel} {Math.round(progress)}%
+                                </Typography>
+                            </Box>
+                        )}
+
+                        {/* Convert Button */}
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            size="large"
+                            onClick={handleConvert}
+                            disabled={!selectedFile || loading}
+                            startIcon={loading ? null : <Description />}
+                            sx={{
+                                mt: 2,
+                                py: 1.25,
+                                borderRadius: 2,
+                                fontWeight: 600,
+                            }}
+                        >
+                            {loading ? 'Processing...' : `Convert to ${outputFormat.toUpperCase()}`}
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                <Card sx={{ flex: 1, overflowY: 'auto' }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
+                            Settings
+                        </Typography>
+
+                        <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                            <InputLabel>Output Format</InputLabel>
+                            <Select
+                                value={outputFormat}
+                                label="Output Format"
+                                onChange={(e) => setOutputFormat(e.target.value)}
+                            >
+                                {outputFormats.map((format) => (
+                                    <MenuItem key={format.value} value={format.value}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            {format.icon}
+                                            {format.label}
+                                        </Box>
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                        {/* Advanced Settings */}
+                        <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
                             <Box
-                                onDragEnter={handleDrag}
-                                onDragLeave={handleDrag}
-                                onDragOver={handleDrag}
-                                onDrop={handleDrop}
+                                onClick={() => setShowAdvanced(!showAdvanced)}
                                 sx={{
-                                    border: '2px dashed',
-                                    borderColor: dragActive ? 'primary.main' : 'divider',
-                                    borderRadius: 3,
-                                    p: 6,
-                                    textAlign: 'center',
-                                    cursor: 'pointer',
-                                    bgcolor: dragActive
-                                        ? alpha('#3b82f6', 0.05)
-                                        : selectedFile
-                                            ? alpha('#10b981', 0.05)
-                                            : 'transparent',
-                                    transition: 'all 0.2s',
-                                    '&:hover': {
-                                        borderColor: 'primary.main',
-                                        bgcolor: alpha('#3b82f6', 0.02),
-                                    },
+                                    p: 1.5,
+                                    bgcolor: 'action.hover',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    cursor: 'pointer'
                                 }}
                             >
-                                <input
-                                    accept=".pdf,application/pdf"
-                                    style={{ display: 'none' }}
-                                    id="pdf-upload"
-                                    type="file"
-                                    onChange={handleFileSelect}
-                                />
-                                <label htmlFor="pdf-upload" style={{ cursor: 'pointer', display: 'block' }}>
-                                    {selectedFile ? (
-                                        <Box>
-                                            <PictureAsPdf sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
-                                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                                {selectedFile.name}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {formatBytes(selectedFile.size)}
-                                            </Typography>
-                                            <Button
-                                                variant="text"
-                                                size="small"
-                                                sx={{ mt: 1 }}
-                                                onClick={(e) => { e.preventDefault(); handleReset(); }}
-                                            >
-                                                Change file
-                                            </Button>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Settings fontSize="small" color="action" />
+                                    <Typography variant="subtitle2" fontWeight={600}>
+                                        Advanced Options
+                                    </Typography>
+                                </Box>
+                                {showAdvanced ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+                            </Box>
+                            <Collapse in={showAdvanced}>
+                                <Box sx={{ p: 1.5 }}>
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                checked={ocrEnabled}
+                                                onChange={(e) => setOcrEnabled(e.target.checked)}
+                                                color="primary"
+                                            />
+                                        }
+                                        label={
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                <Typography variant="body2">Enable OCR (Scanned Docs)</Typography>
+                                                <Tooltip title="Use for scanned documents (images as PDF). Runs pytesseract to extract text before converting. Slower but needed for image-only PDFs.">
+                                                    <Info fontSize="small" color="action" sx={{ fontSize: 16 }} />
+                                                </Tooltip>
+                                            </Box>
+                                        }
+                                    />
+                                    {ocrEnabled && (
+                                        <Box sx={{ mt: 1.5 }}>
+                                            <FormControl fullWidth size="small">
+                                                <InputLabel>OCR Language</InputLabel>
+                                                <Select
+                                                    value={ocrLanguage}
+                                                    label="OCR Language"
+                                                    onChange={(e) => setOcrLanguage(e.target.value)}
+                                                >
+                                                    {ocrLanguages.map(lang => (
+                                                        <MenuItem key={lang.value} value={lang.value}>
+                                                            {lang.label}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                            <Alert severity="info" sx={{ mt: 1, py: 0.25 }}>
+                                                OCR adds ~1-3 min but makes scanned text fully editable.
+                                            </Alert>
                                         </Box>
-                                    ) : (
-                                        <Box>
-                                            <CloudUpload sx={{ fontSize: 64, color: 'primary.main', mb: 2, opacity: 0.8 }} />
-                                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                                                Drop your PDF here
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                                or click to browse files
-                                            </Typography>
+                                    )}
+                                </Box>
+                            </Collapse>
+                        </Box>
+
+                        {/* Result Info */}
+                        {result && (
+                            <Box sx={{ mt: 2 }}>
+                                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                    Conversion Details
+                                </Typography>
+                                <Stack spacing={1} sx={{ mt: 1 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Typography variant="body2" color="text.secondary">Original Size</Typography>
+                                        <Typography variant="body2" fontWeight={600}>
+                                            {result.original_size ? formatBytes(result.original_size) : formatBytes(selectedFile?.size || 0)}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Typography variant="body2" color="text.secondary">Converted Size</Typography>
+                                        <Typography variant="body2" fontWeight={600}>{formatBytes(result.converted_size)}</Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Typography variant="body2" color="text.secondary">Output Format</Typography>
+                                        <Chip label={result.format} size="small" color="primary" />
+                                    </Box>
+                                    {result.engine_used && (
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <Typography variant="body2" color="text.secondary">Engine</Typography>
                                             <Chip
-                                                label={`Max ${formatBytes(MAX_FILE_SIZE)}`}
+                                                label={result.engine_used === 'pdf2docx' ? 'pdf2docx (high quality)' : result.engine_used}
                                                 size="small"
+                                                color={result.engine_used === 'pdf2docx' ? 'success' : 'default'}
                                                 variant="outlined"
                                             />
                                         </Box>
                                     )}
-                                </label>
-                            </Box>
+                                    {result.ocr_used && (
+                                        <Chip label="OCR applied" size="small" color="info" sx={{ alignSelf: 'flex-start' }} />
+                                    )}
+                                </Stack>
 
-                            {/* Progress Bar */}
-                            {loading && (
-                                <Box sx={{ mt: 3 }}>
-                                    <LinearProgress
-                                        variant="determinate"
-                                        value={progress}
-                                        sx={{
-                                            height: 8,
-                                            borderRadius: 4,
-                                            '& .MuiLinearProgress-bar': { borderRadius: 4 }
-                                        }}
-                                    />
-                                    <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
-                                        {progressLabel} {Math.round(progress)}%
-                                    </Typography>
-                                </Box>
-                            )}
-
-                            {/* Convert Button */}
-                            <Button
-                                fullWidth
-                                variant="contained"
-                                size="large"
-                                onClick={handleConvert}
-                                disabled={!selectedFile || loading}
-                                startIcon={loading ? null : <Description />}
-                                sx={{
-                                    mt: 3,
-                                    py: 1.5,
-                                    borderRadius: 2,
-                                    fontWeight: 600,
-                                }}
-                            >
-                                {loading ? 'Processing...' : `Convert to ${outputFormat.toUpperCase()}`}
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                {/* Options Section */}
-                <Grid item xs={12} md={5}>
-                    <Card sx={{ height: '100%' }}>
-                        <CardContent sx={{ p: 4 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                                Settings
-                            </Typography>
-
-                            <FormControl fullWidth sx={{ mb: 3 }}>
-                                <InputLabel>Output Format</InputLabel>
-                                <Select
-                                    value={outputFormat}
-                                    label="Output Format"
-                                    onChange={(e) => setOutputFormat(e.target.value)}
+                                <Button
+                                    fullWidth
+                                    variant="contained"
+                                    color="success"
+                                    onClick={handleDownload}
+                                    startIcon={<Download />}
+                                    sx={{ mt: 2, py: 1, borderRadius: 2 }}
                                 >
-                                    {outputFormats.map((format) => (
-                                        <MenuItem key={format.value} value={format.value}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                {format.icon}
-                                                {format.label}
-                                            </Box>
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                                    Download {result.format}
+                                </Button>
 
-                            {/* Advanced Settings */}
-                            <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
-                                <Box
-                                    onClick={() => setShowAdvanced(!showAdvanced)}
-                                    sx={{
-                                        p: 2,
-                                        bgcolor: 'action.hover',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        cursor: 'pointer'
-                                    }}
+                                <Button
+                                    fullWidth
+                                    variant="outlined"
+                                    onClick={handleReset}
+                                    startIcon={<Refresh />}
+                                    sx={{ mt: 1, borderRadius: 2 }}
                                 >
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Settings fontSize="small" color="action" />
-                                        <Typography variant="subtitle2" fontWeight={600}>
-                                            Advanced Options
-                                        </Typography>
-                                    </Box>
-                                    {showAdvanced ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
-                                </Box>
-                                <Collapse in={showAdvanced}>
-                                    <Box sx={{ p: 2 }}>
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={ocrEnabled}
-                                                    onChange={(e) => setOcrEnabled(e.target.checked)}
-                                                    color="primary"
-                                                />
-                                            }
-                                            label={
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                    <Typography variant="body2">Enable OCR (Scanned Docs)</Typography>
-                                                    <Tooltip title="Use for scanned documents (images as PDF). Runs pytesseract to extract text before converting. Slower but needed for image-only PDFs.">
-                                                        <Info fontSize="small" color="action" sx={{ fontSize: 16 }} />
-                                                    </Tooltip>
-                                                </Box>
-                                            }
-                                        />
-                                        {ocrEnabled && (
-                                            <Box sx={{ mt: 2 }}>
-                                                <FormControl fullWidth size="small">
-                                                    <InputLabel>OCR Language</InputLabel>
-                                                    <Select
-                                                        value={ocrLanguage}
-                                                        label="OCR Language"
-                                                        onChange={(e) => setOcrLanguage(e.target.value)}
-                                                    >
-                                                        {ocrLanguages.map(lang => (
-                                                            <MenuItem key={lang.value} value={lang.value}>
-                                                                {lang.label}
-                                                            </MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
-                                                <Alert severity="info" sx={{ mt: 1.5, py: 0.5 }}>
-                                                    OCR adds ~1-3 min but makes scanned text fully editable.
-                                                </Alert>
-                                            </Box>
-                                        )}
-                                    </Box>
-                                </Collapse>
+                                    Convert Another
+                                </Button>
                             </Box>
-
-                            {/* Result Info */}
-                            {result && (
-                                <Box sx={{ mt: 4 }}>
-                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                        Conversion Details
-                                    </Typography>
-                                    <Stack spacing={1.5} sx={{ mt: 2 }}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Typography variant="body2" color="text.secondary">Original Size</Typography>
-                                            <Typography variant="body2" fontWeight={600}>
-                                                {result.original_size ? formatBytes(result.original_size) : formatBytes(selectedFile?.size || 0)}
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Typography variant="body2" color="text.secondary">Converted Size</Typography>
-                                            <Typography variant="body2" fontWeight={600}>{formatBytes(result.converted_size)}</Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Typography variant="body2" color="text.secondary">Output Format</Typography>
-                                            <Chip label={result.format} size="small" color="primary" />
-                                        </Box>
-                                        {result.engine_used && (
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                <Typography variant="body2" color="text.secondary">Engine</Typography>
-                                                <Chip
-                                                    label={result.engine_used === 'pdf2docx' ? 'pdf2docx (high quality)' : result.engine_used}
-                                                    size="small"
-                                                    color={result.engine_used === 'pdf2docx' ? 'success' : 'default'}
-                                                    variant="outlined"
-                                                />
-                                            </Box>
-                                        )}
-                                        {result.ocr_used && (
-                                            <Chip label="OCR applied" size="small" color="info" sx={{ alignSelf: 'flex-start' }} />
-                                        )}
-                                    </Stack>
-
-                                    <Button
-                                        fullWidth
-                                        variant="contained"
-                                        color="success"
-                                        size="large"
-                                        onClick={handleDownload}
-                                        startIcon={<Download />}
-                                        sx={{ mt: 3, py: 1.5, borderRadius: 2 }}
-                                    >
-                                        Download {result.format}
-                                    </Button>
-
-                                    <Button
-                                        fullWidth
-                                        variant="outlined"
-                                        onClick={handleReset}
-                                        startIcon={<Refresh />}
-                                        sx={{ mt: 2, borderRadius: 2 }}
-                                    >
-                                        Convert Another
-                                    </Button>
-                                </Box>
-                            )}
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
-
-            {/* Features */}
-            <Box sx={{ mt: 6 }}>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
-                    Why Use Our Converter?
-                </Typography>
-                <Grid container spacing={3} sx={{ mt: 2 }}>
-                    {[
-                        {
-                            title: 'High Accuracy',
-                            description: 'Preserve formatting, tables, images, and text layout accurately.',
-                            icon: <CheckCircle />,
-                        },
-                        {
-                            title: 'OCR Technology',
-                            description: 'Advanced Optical Character Recognition for scanned documents.',
-                            icon: <Settings />,
-                        },
-                        {
-                            title: 'Secure Processing',
-                            description: 'Files are processed securely and automatically deleted after conversion.',
-                            icon: <CloudUpload />,
-                        },
-                        {
-                            title: 'Multiple Formats',
-                            description: 'Support for DOCX, DOC, ODT, RTF, and plain text formats.',
-                            icon: <Description />,
-                        },
-                    ].map((feature, index) => (
-                        <Grid item xs={12} sm={6} md={3} key={index}>
-                            <Card sx={{ height: '100%' }}>
-                                <CardContent>
-                                    <Box
-                                        sx={{
-                                            width: 48,
-                                            height: 48,
-                                            borderRadius: 2,
-                                            bgcolor: 'primary.light',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: 'primary.main',
-                                            mb: 2,
-                                        }}
-                                    >
-                                        {feature.icon}
-                                    </Box>
-                                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                                        {feature.title}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {feature.description}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
+                        )}
+                    </CardContent>
+                </Card>
             </Box>
-        </Container>
+        </ServicePageShell>
     );
 };
 

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-    Container,
     Card,
     CardContent,
     Typography,
@@ -17,6 +16,7 @@ import {
 } from '@mui/material';
 import { ExpandMore, Dns } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 
@@ -83,113 +83,113 @@ const DnsLookup: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={Dns}
+            title="DNS Lookup + Propagation Check"
+            subtitle="Check A/AAAA/CNAME/MX/TXT records across multiple resolvers to debug DNS issues."
+            maxWidth="lg"
+        >
             <Seo
                 title="DNS Lookup + Propagation Check"
                 toolId={27}
             />
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                DNS Lookup + Propagation Check
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Check A/AAAA/CNAME/MX/TXT records across multiple resolvers to debug DNS issues.
-            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, gap: 2 }}>
+                {error && <Alert severity="error" sx={{ flexShrink: 0 }}>{error}</Alert>}
 
-            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                <Card sx={{ flexShrink: 0 }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                            <TextField
+                                fullWidth
+                                label="Domain or URL"
+                                placeholder="example.com"
+                                value={domain}
+                                onChange={(e) => setDomain(e.target.value)}
+                            />
+                            <Button
+                                variant="contained"
+                                onClick={handleLookup}
+                                startIcon={<Dns />}
+                                disabled={loading || !domain.trim()}
+                                sx={{ minWidth: { xs: '100%', md: 220 } }}
+                            >
+                                Lookup
+                            </Button>
+                        </Stack>
 
-            <Card sx={{ mb: 3 }}>
-                <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
-                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                        <TextField
-                            fullWidth
-                            label="Domain or URL"
-                            placeholder="example.com"
-                            value={domain}
-                            onChange={(e) => setDomain(e.target.value)}
-                        />
-                        <Button
-                            variant="contained"
-                            onClick={handleLookup}
-                            startIcon={<Dns />}
-                            disabled={loading || !domain.trim()}
-                            sx={{ minWidth: { xs: '100%', md: 220 } }}
-                        >
-                            Lookup
-                        </Button>
-                    </Stack>
+                        {loading && <LinearProgress sx={{ mt: 2 }} />}
+                    </CardContent>
+                </Card>
 
-                    {loading && <LinearProgress sx={{ mt: 2 }} />}
-                </CardContent>
-            </Card>
-
-            {result && (
-                <>
-                    {Array.isArray(result.diagnosis) && result.diagnosis.length > 0 && (
-                        <Alert severity="info" sx={{ mb: 3 }}>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {result.diagnosis.map((d, i) => (
-                                    <Chip key={i} label={d} size="small" />
-                                ))}
-                            </Box>
-                        </Alert>
-                    )}
-
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                        Results for <Box component="span" sx={{ fontFamily: 'monospace' }}>{result.domain}</Box>
-                    </Typography>
-
-                    {Object.entries(result.results || {}).map(([resolverName, data]) => {
-                        const resolverErrors = result.meta?.errors?.[resolverName] || {};
-                        const hasErrors = Object.keys(resolverErrors).length > 0;
-
-                        return (
-                        <Accordion key={resolverName} defaultExpanded>
-                            <AccordionSummary expandIcon={<ExpandMore />}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                    <Typography sx={{ fontWeight: 700 }}>{resolverName}</Typography>
-                                    {hasErrors && <Chip size="small" color="warning" label="partial errors" />}
+                {result && (
+                    <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                        {Array.isArray(result.diagnosis) && result.diagnosis.length > 0 && (
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                    {result.diagnosis.map((d, i) => (
+                                        <Chip key={i} label={d} size="small" />
+                                    ))}
                                 </Box>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                {hasErrors && (
-                                    <Alert severity="warning" sx={{ mb: 2 }}>
-                                        {Object.entries(resolverErrors).map(([rt, err]) => (
-                                            <Box key={rt} sx={{ fontFamily: 'monospace' }}>
-                                                {rt}: {err}
-                                            </Box>
-                                        ))}
-                                    </Alert>
-                                )}
-                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                                    <Box>
-                                        <Typography variant="subtitle2">A</Typography>
-                                        {renderList(data.A || [])}
+                            </Alert>
+                        )}
+
+                        <Typography variant="subtitle1" sx={{ mb: 1.5 }}>
+                            Results for <Box component="span" sx={{ fontFamily: 'monospace' }}>{result.domain}</Box>
+                        </Typography>
+
+                        {Object.entries(result.results || {}).map(([resolverName, data]) => {
+                            const resolverErrors = result.meta?.errors?.[resolverName] || {};
+                            const hasErrors = Object.keys(resolverErrors).length > 0;
+
+                            return (
+                            <Accordion key={resolverName} defaultExpanded>
+                                <AccordionSummary expandIcon={<ExpandMore />}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                        <Typography sx={{ fontWeight: 700 }}>{resolverName}</Typography>
+                                        {hasErrors && <Chip size="small" color="warning" label="partial errors" />}
                                     </Box>
-                                    <Box>
-                                        <Typography variant="subtitle2">AAAA</Typography>
-                                        {renderList(data.AAAA || [])}
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    {hasErrors && (
+                                        <Alert severity="warning" sx={{ mb: 2 }}>
+                                            {Object.entries(resolverErrors).map(([rt, err]) => (
+                                                <Box key={rt} sx={{ fontFamily: 'monospace' }}>
+                                                    {rt}: {err}
+                                                </Box>
+                                            ))}
+                                        </Alert>
+                                    )}
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                                        <Box>
+                                            <Typography variant="subtitle2">A</Typography>
+                                            {renderList(data.A || [])}
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="subtitle2">AAAA</Typography>
+                                            {renderList(data.AAAA || [])}
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="subtitle2">CNAME</Typography>
+                                            {renderList(data.CNAME || [])}
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="subtitle2">MX</Typography>
+                                            {renderList((data.MX || []).map((m) => `${m.preference} ${m.exchange}`))}
+                                        </Box>
+                                        <Box sx={{ gridColumn: { xs: 'auto', md: '1 / -1' } }}>
+                                            <Typography variant="subtitle2">TXT</Typography>
+                                            {renderList(data.TXT || [])}
+                                        </Box>
                                     </Box>
-                                    <Box>
-                                        <Typography variant="subtitle2">CNAME</Typography>
-                                        {renderList(data.CNAME || [])}
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="subtitle2">MX</Typography>
-                                        {renderList((data.MX || []).map((m) => `${m.preference} ${m.exchange}`))}
-                                    </Box>
-                                    <Box sx={{ gridColumn: { xs: 'auto', md: '1 / -1' } }}>
-                                        <Typography variant="subtitle2">TXT</Typography>
-                                        {renderList(data.TXT || [])}
-                                    </Box>
-                                </Box>
-                            </AccordionDetails>
-                        </Accordion>
-                        );
-                    })}
-                </>
-            )}
-        </Container>
+                                </AccordionDetails>
+                            </Accordion>
+                            );
+                        })}
+                    </Box>
+                )}
+            </Box>
+        </ServicePageShell>
     );
 };
 

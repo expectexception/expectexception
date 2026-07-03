@@ -51,6 +51,8 @@ def verify_google_token(credential: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+from django.db import transaction
+
 def get_or_create_google_user(google_data: Dict[str, Any]) -> User:
     """Find an existing user by Google ID or email, or create a new one.
     
@@ -65,44 +67,53 @@ def get_or_create_google_user(google_data: Dict[str, Any]) -> User:
     Returns:
         User instance (created or existing).
     """
+    if not google_data.get('email_verified', False):
+        raise ValueError("Google account email is not verified.")
+
     google_id = google_data['sub']
     email = google_data['email']
 
-    # 1. Try to find by google_id (fastest path for returning users)
-    try:
-        user = User.objects.get(google_id=google_id)
-        # Update avatar in case it changed
-        if google_data.get('picture') and user.avatar_url != google_data['picture']:
-            user.avatar_url = google_data['picture']
-            user.save(update_fields=['avatar_url'])
-        logger.info("Existing Google user found: %s", email)
-        return user
-    except User.DoesNotExist:
-        pass
+    with transaction.atomic():
+        # 1. Try to find by google_id (fastest path for returning users)
+        user = User.objects.select_for_update().filter(google_id=google_id).first()
+        if user:
+            # Update avatar in case it changed
+            if google_data.get('picture') and user.avatar_url != google_data['picture']:
+                user.avatar_url = google_data['picture']
+                user.save(update_fields=['avatar_url'])
+            if hasattr(user, 'profile') and not user.profile.email_verified:
+                user.profile.email_verified = True
+                user.profile.save(update_fields=['email_verified'])
+            logger.info("Existing Google user found: %s", email)
+            return user
 
-    # 2. Try to find by email (user registered with email, now linking Google)
-    try:
-        user = User.objects.get(email=email)
-        # Link Google account to existing user
-        user.google_id = google_id
-        user.auth_provider = 'google'
-        if google_data.get('picture') and not user.avatar_url:
-            user.avatar_url = google_data['picture']
-        user.save(update_fields=['google_id', 'auth_provider', 'avatar_url'])
-        logger.info("Linked Google account to existing user: %s", email)
-        return user
-    except User.DoesNotExist:
-        pass
+        # 2. Try to find by email (user registered with email, now linking Google)
+        user = User.objects.select_for_update().filter(email=email).first()
+        if user:
+            # Link Google account to existing user
+            user.google_id = google_id
+            user.auth_provider = 'google'
+            if google_data.get('picture') and not user.avatar_url:
+                user.avatar_url = google_data['picture']
+            user.save(update_fields=['google_id', 'auth_provider', 'avatar_url'])
+            if hasattr(user, 'profile') and not user.profile.email_verified:
+                user.profile.email_verified = True
+                user.profile.save(update_fields=['email_verified'])
+            logger.info("Linked Google account to existing user: %s", email)
+            return user
 
-    # 3. Create a brand-new user
-    user = User.objects.create_user(
-        email=email,
-        password=None,  # Google users don't need a password
-        first_name=google_data.get('first_name', ''),
-        last_name=google_data.get('last_name', ''),
-        google_id=google_id,
-        avatar_url=google_data.get('picture', ''),
-        auth_provider='google',
-    )
-    logger.info("Created new Google user: %s", email)
-    return user
+        # 3. Create a brand-new user
+        user = User.objects.create_user(
+            email=email,
+            password=None,  # Google users don't need a password
+            first_name=google_data.get('first_name', ''),
+            last_name=google_data.get('last_name', ''),
+            google_id=google_id,
+            avatar_url=google_data.get('picture', ''),
+            auth_provider='google',
+        )
+        if hasattr(user, 'profile'):
+            user.profile.email_verified = True
+            user.profile.save(update_fields=['email_verified'])
+        logger.info("Created new Google user: %s", email)
+        return user

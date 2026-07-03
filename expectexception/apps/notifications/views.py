@@ -119,3 +119,48 @@ class VapidPublicKeyView(views.APIView):
             )
         
         return Response({'publicKey': vapid_key})
+
+
+# ── In-App Notifications ──────────────────────────────────────────────────────
+from rest_framework.permissions import IsAuthenticated
+from .models import InAppNotification
+
+
+class InAppNotificationListView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        notifs = InAppNotification.objects.filter(recipient=request.user).order_by('-created_at')[:50]
+        unread_count = notifs.filter(is_read=False).count()
+        data = [
+            {
+                'id': n.id,
+                'type': n.notification_type,
+                'title': n.title,
+                'body': n.body,
+                'url': n.url,
+                'is_read': n.is_read,
+                'created_at': n.created_at,
+                'sender': getattr(n.sender, 'first_name', None) or getattr(n.sender, 'email', None) if n.sender else None,
+            }
+            for n in notifs
+        ]
+        return Response({'notifications': data, 'unread_count': unread_count})
+
+    def patch(self, request):
+        """Mark all as read."""
+        InAppNotification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+        return Response({'marked_read': True})
+
+
+class InAppNotificationDetailView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            n = InAppNotification.objects.get(pk=pk, recipient=request.user)
+        except InAppNotification.DoesNotExist:
+            return Response({'error': 'Not found'}, status=404)
+        n.is_read = True
+        n.save(update_fields=['is_read'])
+        return Response({'is_read': True})

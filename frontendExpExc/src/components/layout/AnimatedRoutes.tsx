@@ -24,6 +24,7 @@ const LoadingFallback = () => (
 // Pages - Lazy loaded
 const HomePage = lazy(() => import('../../pages/HomePage'));
 const ServicesPage = lazy(() => import('../../pages/ServicesPage'));
+const SandboxPage = lazy(() => import('../../pages/SandboxPage'));
 const BlogPage = lazy(() => import('../../pages/BlogPage'));
 const BlogDetailPage = lazy(() => import('../../pages/BlogDetailPage'));
 const DownloadHubPage = lazy(() => import('../../pages/DownloadHubPage'));
@@ -46,6 +47,12 @@ const SecretSharerPage = lazy(() => import('../../pages/SecretSharerPage'));
 const HirePage = lazy(() => import('../../pages/HirePage'));
 const EstimatorPage = lazy(() => import('../../pages/EstimatorPage'));
 const ChatbotPage = lazy(() => import('../../pages/ChatbotPage'));
+const CommunityPage = lazy(() => import('../../pages/CommunityPage'));
+const NewThreadPage = lazy(() => import('../../pages/NewThreadPage'));
+const ThreadDetailPage = lazy(() => import('../../pages/ThreadDetailPage'));
+const CommunityStatsPage = lazy(() => import('../../pages/CommunityStatsPage'));
+const SharedResultPage = lazy(() => import('../../pages/SharedResultPage'));
+const EmbedPage = lazy(() => import('../../pages/EmbedPage'));
 
 
 // Service components - Lazy loaded
@@ -86,8 +93,27 @@ const PasswordGenerator = lazy(() => import('../services/PasswordGenerator'));
 const TextDiffChecker = lazy(() => import('../services/TextDiffChecker'));
 const CaseConverter = lazy(() => import('../services/CaseConverter'));
 const HtmlEntityCodec = lazy(() => import('../services/HtmlEntityCodec'));
+const NumberBaseConverter = lazy(() => import('../services/NumberBaseConverter'));
+const JsonToCsv = lazy(() => import('../services/JsonToCsv'));
+const UrlEncoderDecoder = lazy(() => import('../services/UrlEncoderDecoder'));
+const JwtDecoder = lazy(() => import('../services/JwtDecoder'));
+const CronExplainer = lazy(() => import('../services/CronExplainer'));
+const ColorPaletteGenerator = lazy(() => import('../services/ColorPaletteGenerator'));
+const CssBoxShadowGenerator = lazy(() => import('../services/CssBoxShadowGenerator'));
+const HttpStatusCodes = lazy(() => import('../services/HttpStatusCodes'));
+const JsonToTypescript = lazy(() => import('../services/JsonToTypescript'));
+const FaviconGenerator = lazy(() => import('../services/FaviconGenerator'));
 
-
+// Sandbox games - lazy loaded (all frontend-only, no backend, no auth gate)
+const SnakeGame = lazy(() => import('../sandbox/SnakeGame'));
+const Game2048 = lazy(() => import('../sandbox/Game2048'));
+const TicTacToe = lazy(() => import('../sandbox/TicTacToe'));
+const ParticlePlayground = lazy(() => import('../sandbox/ParticlePlayground'));
+const FallingSand = lazy(() => import('../sandbox/FallingSand'));
+const WordGuess = lazy(() => import('../sandbox/WordGuess'));
+const SlidingPuzzle = lazy(() => import('../sandbox/SlidingPuzzle'));
+const ReactionTest = lazy(() => import('../sandbox/ReactionTest'));
+const AimTrainer = lazy(() => import('../sandbox/AimTrainer'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -185,12 +211,42 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/text-diff" element={<PageTransition><TextDiffChecker /></PageTransition>} />
                     <Route path="/services/case-converter" element={<PageTransition><CaseConverter /></PageTransition>} />
                     <Route path="/services/html-entity-codec" element={<PageTransition><HtmlEntityCodec /></PageTransition>} />
+                    <Route path="/services/number-base-converter" element={<PageTransition><NumberBaseConverter /></PageTransition>} />
+                    <Route path="/services/json-csv" element={<PageTransition><JsonToCsv /></PageTransition>} />
+                    <Route path="/services/url-encode-decode" element={<PageTransition><UrlEncoderDecoder /></PageTransition>} />
+                    <Route path="/services/jwt-decoder" element={<PageTransition><JwtDecoder /></PageTransition>} />
+                    <Route path="/services/cron-explainer" element={<PageTransition><CronExplainer /></PageTransition>} />
+                    <Route path="/services/color-palette" element={<PageTransition><ColorPaletteGenerator /></PageTransition>} />
+                    <Route path="/services/css-box-shadow" element={<PageTransition><CssBoxShadowGenerator /></PageTransition>} />
+                    <Route path="/services/http-status-codes" element={<PageTransition><HttpStatusCodes /></PageTransition>} />
+                    <Route path="/services/json-to-typescript" element={<PageTransition><JsonToTypescript /></PageTransition>} />
+                    <Route path="/services/favicon-generator" element={<PageTransition><FaviconGenerator /></PageTransition>} />
 
+                    {/* Sandbox - public, frontend-only mini games */}
+                    <Route path="/sandbox" element={<PageTransition><SandboxPage /></PageTransition>} />
+                    <Route path="/sandbox/snake" element={<PageTransition><SnakeGame /></PageTransition>} />
+                    <Route path="/sandbox/2048" element={<PageTransition><Game2048 /></PageTransition>} />
+                    <Route path="/sandbox/tic-tac-toe" element={<PageTransition><TicTacToe /></PageTransition>} />
+                    <Route path="/sandbox/particles" element={<PageTransition><ParticlePlayground /></PageTransition>} />
+                    <Route path="/sandbox/falling-sand" element={<PageTransition><FallingSand /></PageTransition>} />
+                    <Route path="/sandbox/word-guess" element={<PageTransition><WordGuess /></PageTransition>} />
+                    <Route path="/sandbox/sliding-puzzle" element={<PageTransition><SlidingPuzzle /></PageTransition>} />
+                    <Route path="/sandbox/reaction-test" element={<PageTransition><ReactionTest /></PageTransition>} />
+                    <Route path="/sandbox/aim-trainer" element={<PageTransition><AimTrainer /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />
                     <Route path="/services/secret-sharer" element={<PageTransition>{withAuthGuard(<SecretSharerPage />, '/services/secret-sharer', toolAccess, 'Secret Sharer')}</PageTransition>} />
                     <Route path="/services/secret-sharer/:id" element={<PageTransition><SecretSharerPage /></PageTransition>} />
+
+                    {/* Community Forum */}
+                    <Route path="/community" element={<PageTransition><CommunityPage /></PageTransition>} />
+                    <Route path="/community/new" element={<PageTransition><NewThreadPage /></PageTransition>} />
+                    <Route path="/community/thread/:id/:slug" element={<PageTransition><ThreadDetailPage /></PageTransition>} />
+                    <Route path="/community/thread/:id" element={<PageTransition><ThreadDetailPage /></PageTransition>} />
+                    <Route path="/community/stats" element={<PageTransition><CommunityStatsPage /></PageTransition>} />
+                    <Route path="/share/:shortId" element={<PageTransition><SharedResultPage /></PageTransition>} />
+                    <Route path="/embed/:toolSlug" element={<EmbedPage />} />
 
                     {/* Blog */}
                     <Route path="/blogs" element={<PageTransition><BlogPage /></PageTransition>} />

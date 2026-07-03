@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Container,
   Grid,
   Card,
   CardContent,
@@ -18,6 +17,7 @@ import {
   Alert,
   Tabs,
   Tab,
+  useTheme,
 } from '@mui/material';
 import {
   Download,
@@ -26,9 +26,9 @@ import {
   CopyAll,
   QrCode as QrCodeIcon,
   Link as LinkIcon,
-  Palette,
 } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 import { QRCodeSVG } from 'qrcode.react';
 import { saveAs } from 'file-saver';
 import html2canvas from 'html2canvas';
@@ -40,30 +40,27 @@ interface TabPanelProps {
 }
 
 const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
-  <div hidden={value !== index} style={{ paddingTop: 20 }}>
+  <div hidden={value !== index} style={{ paddingTop: 12 }}>
     {value === index && children}
   </div>
 );
 
 const QrGenerator: React.FC = () => {
+  const theme = useTheme();
   const [url, setUrl] = useState('https://expectexception.com');
-  const [size, setSize] = useState(256);
+  const [size, setSize] = useState(220);
   const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [includeMargin, setIncludeMargin] = useState(true);
   const [tabValue, setTabValue] = useState(0);
-  const [logo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-
-
-  // Client-side generation, no backend call needed.
-  // We can just rely on the state (url, fgColor, bgColor) to render the QR code directly.
-
+  // Client-side generation, no backend call needed — the QR code is rendered
+  // entirely in the browser from local state (url, fgColor, bgColor, size).
 
   const qrRef = React.useRef<HTMLDivElement>(null);
 
-  const handleDownload = async (format: 'png' | 'svg') => {
+  const handleDownload = async () => {
     if (!qrRef.current) return;
     try {
       const canvas = await html2canvas(qrRef.current);
@@ -104,53 +101,48 @@ const QrGenerator: React.FC = () => {
 
   const presetColors = [
     { label: 'Black', value: '#000000' },
-    { label: 'Blue', value: '#2563eb' },
-    { label: 'Green', value: '#10b981' },
-    { label: 'Purple', value: '#7c3aed' },
-    { label: 'Red', value: '#ef4444' },
+    { label: 'Primary', value: theme.palette.primary.main },
+    { label: 'Secondary', value: theme.palette.secondary.main },
   ];
 
   const presetSizes = [
     { label: 'Small', value: 128 },
-    { label: 'Medium', value: 256 },
-    { label: 'Large', value: 384 },
-    { label: 'XLarge', value: 512 },
+    { label: 'Medium', value: 220 },
+    { label: 'Large', value: 320 },
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <ServicePageShell
+      icon={QrCodeIcon}
+      title="QR Code Generator"
+      subtitle="Convert any URL or text into a customizable QR code"
+      maxWidth="md"
+    >
       <Seo
         title="Free QR Code Generator - Custom & High Quality"
         toolId={10}
       />
 
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-        QR Code Generator
-      </Typography>
-      <Typography variant="subtitle1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
-        Convert any URL or text into a customizable QR code
-      </Typography>
-
       {error && (
-        <Alert severity="info" sx={{ mb: 3 }} onClose={() => setError(null)}>
+        <Alert severity="info" sx={{ mb: 1.5, flexShrink: 0 }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
 
-      <Grid container spacing={4}>
+      <Grid container spacing={2} sx={{ flex: 1, minHeight: 0 }}>
         {/* Left Column - QR Preview */}
-        <Grid item xs={12} md={5}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 4, textAlign: 'center' }}>
+        <Grid item xs={12} sm={5} sx={{ display: 'flex' }}>
+          <Card sx={{ width: '100%' }}>
+            <CardContent sx={{ p: 2.5, textAlign: 'center' }}>
               <Box
                 ref={qrRef}
                 sx={{
-                  p: 4,
+                  p: 2,
                   bgcolor: 'white',
                   borderRadius: 2,
                   border: '1px solid',
                   borderColor: 'divider',
-                  mb: 3,
+                  mb: 2,
                   display: 'inline-block',
                 }}
               >
@@ -161,60 +153,31 @@ const QrGenerator: React.FC = () => {
                     fgColor={fgColor}
                     bgColor={bgColor}
                     includeMargin={includeMargin}
-                    level="H" // Make it high error correction by default or configurable? The UI has config.
+                    level="H"
                   />
                 ) : (
                   <Box sx={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Typography variant="caption">Enter Text/URL</Typography>
                   </Box>
                 )}
-                {logo && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      width: size * 0.2,
-                      height: size * 0.2,
-                      bgcolor: 'white',
-                      borderRadius: '50%',
-                      p: 1,
-                    }}
-                  >
-                    {/* Logo placeholder */}
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: '100%',
-                        bgcolor: 'primary.main',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                      }}
-                    >
-                      <QrCodeIcon />
-                    </Box>
-                  </Box>
-                )}
               </Box>
 
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
                 Scan this QR code with any smartphone camera
               </Typography>
 
-              <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 3 }}>
+              <Stack direction="row" spacing={1.5} justifyContent="center">
                 <Button
                   variant="contained"
+                  size="small"
                   startIcon={<Download />}
-                  onClick={() => handleDownload('png')}
+                  onClick={handleDownload}
                 >
                   Download PNG
                 </Button>
                 <Button
                   variant="outlined"
+                  size="small"
                   startIcon={<Share />}
                   onClick={handleShare}
                 >
@@ -226,45 +189,47 @@ const QrGenerator: React.FC = () => {
         </Grid>
 
         {/* Right Column - Controls */}
-        <Grid item xs={12} md={7}>
-          <Card>
-            <CardContent>
-              <Tabs value={tabValue} onChange={(_, value) => setTabValue(value)} sx={{ mb: 3 }}>
-                <Tab label="Basic" />
-                <Tab label="Advanced" />
-                <Tab label="Appearance" />
+        <Grid item xs={12} sm={7} sx={{ display: 'flex', minHeight: 0 }}>
+          <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto', p: 2.5 }}>
+              <Tabs value={tabValue} onChange={(_, value) => setTabValue(value)} sx={{ mb: 2, minHeight: 36 }}>
+                <Tab label="Basic" sx={{ minHeight: 36, py: 0.5 }} />
+                <Tab label="Advanced" sx={{ minHeight: 36, py: 0.5 }} />
+                <Tab label="Appearance" sx={{ minHeight: 36, py: 0.5 }} />
               </Tabs>
 
               <TabPanel value={tabValue} index={0}>
                 <TextField
                   fullWidth
+                  size="small"
                   label="URL or Text"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://example.com"
                   InputProps={{
                     startAdornment: (
-                      <LinkIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                      <LinkIcon sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />
                     ),
                     endAdornment: (
                       <Tooltip title="Copy URL">
-                        <IconButton onClick={handleCopyUrl}>
-                          <CopyAll />
+                        <IconButton size="small" onClick={handleCopyUrl}>
+                          <CopyAll fontSize="small" />
                         </IconButton>
                       </Tooltip>
                     ),
                   }}
-                  sx={{ mb: 3 }}
+                  sx={{ mb: 2 }}
                 />
 
-                <Typography gutterBottom sx={{ mb: 2, fontWeight: 600 }}>
+                <Typography variant="body2" gutterBottom sx={{ fontWeight: 600 }}>
                   Size
                 </Typography>
-                <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
+                <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: 1 }}>
                   {presetSizes.map((preset) => (
                     <Chip
                       key={preset.value}
                       label={preset.label}
+                      size="small"
                       onClick={() => setSize(preset.value)}
                       color={size === preset.value ? 'primary' : 'default'}
                       variant={size === preset.value ? 'filled' : 'outlined'}
@@ -275,11 +240,10 @@ const QrGenerator: React.FC = () => {
                   value={size}
                   onChange={(_, value) => setSize(value as number)}
                   min={64}
-                  max={512}
-                  step={32}
-                  marks
+                  max={400}
+                  step={16}
                   valueLabelDisplay="auto"
-                  sx={{ mb: 4 }}
+                  size="small"
                 />
               </TabPanel>
 
@@ -292,29 +256,22 @@ const QrGenerator: React.FC = () => {
                     />
                   }
                   label="Include margin around QR code"
-                  sx={{ mb: 3 }}
+                  sx={{ mb: 2 }}
                 />
 
-                <Typography gutterBottom sx={{ mb: 2, fontWeight: 600 }}>
-                  Error Correction Level
+                <Typography variant="body2" sx={{ mb: 2 }} color="text.secondary">
+                  Error correction is fixed at level H (high) for maximum scan
+                  reliability, allowing the code to remain readable even if
+                  partially damaged or obscured.
                 </Typography>
-                <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-                  {['L', 'M', 'Q', 'H'].map((level) => (
-                    <Chip
-                      key={level}
-                      label={`Level ${level}`}
-                      color="primary"
-                      variant="outlined"
-                    />
-                  ))}
-                </Stack>
 
                 <Button
+                  size="small"
                   startIcon={<Refresh />}
                   variant="outlined"
                   onClick={() => {
                     setUrl('https://expectexception.com');
-                    setSize(256);
+                    setSize(220);
                     setFgColor('#000000');
                     setBgColor('#ffffff');
                   }}
@@ -324,21 +281,18 @@ const QrGenerator: React.FC = () => {
               </TabPanel>
 
               <TabPanel value={tabValue} index={2}>
-                <Typography gutterBottom sx={{ mb: 2, fontWeight: 600 }}>
-                  Colors
-                </Typography>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary" gutterBottom display="block">
                       Foreground Color
                     </Typography>
-                    <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                    <Stack direction="row" spacing={1} sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
                       {presetColors.map((color) => (
                         <Tooltip key={color.value} title={color.label}>
                           <Box
                             sx={{
-                              width: 32,
-                              height: 32,
+                              width: 28,
+                              height: 28,
                               borderRadius: '50%',
                               bgcolor: color.value,
                               cursor: 'pointer',
@@ -352,28 +306,24 @@ const QrGenerator: React.FC = () => {
                     </Stack>
                     <TextField
                       type="color"
+                      size="small"
                       value={fgColor}
                       onChange={(e) => setFgColor(e.target.value)}
                       fullWidth
-                      sx={{
-                        '& .MuiInputBase-input': {
-                          height: 50,
-                          borderRadius: 1,
-                        },
-                      }}
+                      sx={{ '& .MuiInputBase-input': { height: 36, borderRadius: 1 } }}
                     />
                   </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary" gutterBottom display="block">
                       Background Color
                     </Typography>
-                    <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                    <Stack direction="row" spacing={1} sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
                       {presetColors.map((color) => (
                         <Tooltip key={color.value} title={color.label}>
                           <Box
                             sx={{
-                              width: 32,
-                              height: 32,
+                              width: 28,
+                              height: 28,
                               borderRadius: '50%',
                               bgcolor: color.value,
                               cursor: 'pointer',
@@ -387,105 +337,20 @@ const QrGenerator: React.FC = () => {
                     </Stack>
                     <TextField
                       type="color"
+                      size="small"
                       value={bgColor}
                       onChange={(e) => setBgColor(e.target.value)}
                       fullWidth
-                      sx={{
-                        '& .MuiInputBase-input': {
-                          height: 50,
-                          borderRadius: 1,
-                        },
-                      }}
+                      sx={{ '& .MuiInputBase-input': { height: 36, borderRadius: 1 } }}
                     />
                   </Grid>
                 </Grid>
-
-                <Box sx={{ mt: 4 }}>
-                  <Typography gutterBottom sx={{ mb: 2, fontWeight: 600 }}>
-                    Add Logo (Optional)
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    startIcon={<Palette />}
-                    onClick={() => {
-                      // Implement logo upload logic
-                    }}
-                  >
-                    Upload Logo
-                  </Button>
-                </Box>
               </TabPanel>
-
-              <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Tip:</strong> Higher error correction levels allow the QR code to still work if it gets damaged,
-                  but they also make the QR code more complex.
-                </Typography>
-              </Box>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
-
-      {/* Usage Examples */}
-      <Box sx={{ mt: 6 }}>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
-          Common Use Cases
-        </Typography>
-        <Grid container spacing={3} sx={{ mt: 2 }}>
-          {[
-            {
-              title: 'Business Cards',
-              description: 'Add QR codes to digital business cards for instant contact sharing.',
-              color: 'primary',
-            },
-            {
-              title: 'WiFi Sharing',
-              description: 'Generate QR codes for WiFi credentials for easy network access.',
-              color: 'secondary',
-            },
-            {
-              title: 'Payment Links',
-              description: 'Create QR codes for payment links and donation pages.',
-              color: 'success',
-            },
-            {
-              title: 'Event Tickets',
-              description: 'Generate unique QR codes for event tickets and registrations.',
-              color: 'warning',
-            },
-          ].map((useCase, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 2,
-                      bgcolor: `${useCase.color}.light`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: `${useCase.color}.main`,
-                      mb: 2,
-                    }}
-                  >
-                    <QrCodeIcon />
-                  </Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    {useCase.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {useCase.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-    </Container >
+    </ServicePageShell>
   );
 };
 

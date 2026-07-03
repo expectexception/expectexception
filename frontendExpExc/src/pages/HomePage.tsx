@@ -70,7 +70,7 @@ const BorderBeam: React.FC<{ activeColor?: string }> = ({ activeColor }) => {
         inset: 0,
         borderRadius: 'inherit',
         border: '1.5px solid transparent',
-        background: `linear-gradient(90deg, ${color}, #00e5ff) border-box`,
+        background: `linear-gradient(90deg, ${color}, ${theme.palette.secondary.main}) border-box`,
         WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
         WebkitMaskComposite: 'xor',
         maskComposite: 'exclude',
@@ -270,7 +270,7 @@ const PhysicsSandbox: React.FC = () => {
         vx: (Math.random() - 0.5) * 8,
         vy: (Math.random() - 2) * 4,
         radius: Math.random() * 12 + 8,
-        color: Math.random() > 0.4 ? primaryColor : '#00e5ff',
+        color: Math.random() > 0.4 ? primaryColor : theme.palette.secondary.main,
       });
       if (balls.length > 35) balls.shift();
     };
@@ -365,10 +365,10 @@ const PhysicsSandbox: React.FC = () => {
 
 // --- Main HomePage Component ---
 
-const skillsData = [
+const getSkillsData = (primaryColor: string, secondaryColor: string) => [
   {
     category: 'Frontend Engineering',
-    color: '#3dfc55', // Neon Green
+    color: primaryColor, // Neon Green
     icon: <Code sx={{ fontSize: 24 }} />,
     level: 95,
     desc: 'Crafting pixel-perfect, highly interactive, and responsive user interfaces using modern web frameworks.',
@@ -376,7 +376,7 @@ const skillsData = [
   },
   {
     category: 'Backend Systems',
-    color: '#00e5ff', // Neon Cyan
+    color: secondaryColor, // Neon Cyan
     icon: <Terminal sx={{ fontSize: 24 }} />,
     level: 90,
     desc: 'Designing robust, scalable, and high-performance server architectures, RESTful APIs, and database schemas.',
@@ -409,7 +409,7 @@ interface AgenticWorkflowVisualizerProps {
 const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ activeStep, simulationActive }) => {
   const theme = useTheme();
   const primaryColor = theme.palette.primary.main;
-  const secondaryColor = '#00e5ff'; // Cyan
+  const secondaryColor = theme.palette.secondary.main; // Cyan
   
   const nodes = [
     { step: 0, label: 'Planning Agent', color: primaryColor, icon: '📋', desc: 'Step 1: Analyze & Plan' },
@@ -597,6 +597,7 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
 const HomePage: React.FC = () => {
   const theme = useTheme();
   const { primaryColor, setPrimaryColor, resetTheme } = useCustomTheme();
+  const skillsData = getSkillsData(theme.palette.primary.main, theme.palette.secondary.main);
   const [latestPosts, setLatestPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [services, setServices] = useState<any[]>(staticServices);
@@ -725,7 +726,7 @@ const HomePage: React.FC = () => {
   const appSchema = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "ExpectException Portfolio & Developer Tools",
+    "name": "ExpectException - Developer Tools & Creative Engineering",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Web",
     "offers": {
@@ -733,7 +734,7 @@ const HomePage: React.FC = () => {
       "price": "0",
       "priceCurrency": "USD"
     },
-    "description": "Premium developer portfolio showcasing advanced frontend, backend, and AI capabilities, coupled with an active suite of free utility applications.",
+    "description": "A premium showcase of advanced frontend, backend, and AI engineering, coupled with an active suite of free utility applications.",
   };
 
   useEffect(() => {
@@ -822,9 +823,9 @@ const HomePage: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', pb: 8, bgcolor: '#050505', color: '#ffffff' }}>
       <Seo
-        title="Premium Portfolio & Developer Tools"
-        description="Explore the premium portfolio of RJT, showcasing advanced frontend interactive canvases, custom web engineering, and a functional suite of developer tools."
-        keywords={['portfolio', 'developer portfolio', 'frontend engineer', 'react developer', 'creative frontend', 'expectexception', 'interactive canvas']}
+        title="Premium Developer Tools & Creative Engineering"
+        description="Explore RJT's interactive frontend canvases, custom web engineering, and a functional suite of developer tools."
+        keywords={['developer tools', 'web engineer', 'frontend engineer', 'react developer', 'creative frontend', 'expectexception', 'interactive canvas']}
         structuredData={appSchema}
       />
 
@@ -867,7 +868,7 @@ const HomePage: React.FC = () => {
               display: 'inline-block',
             }}
           >
-            EXPECT EXCEPTION • CREATIVE PORTFOLIO • FULL STACK • AI SOLUTIONS • EXPECT EXCEPTION • CREATIVE PORTFOLIO • FULL STACK • AI SOLUTIONS •
+            EXPECT EXCEPTION • CREATIVE ENGINEERING • FULL STACK • AI SOLUTIONS • EXPECT EXCEPTION • CREATIVE ENGINEERING • FULL STACK • AI SOLUTIONS •
           </motion.div>
         </Box>
 
@@ -1685,14 +1686,14 @@ const HomePage: React.FC = () => {
                   overflow: 'hidden',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    borderColor: alpha('#3dfc55', 0.25),
-                    boxShadow: `0 15px 35px -10px ${alpha('#3dfc55', 0.15)}`,
+                    borderColor: alpha(theme.palette.primary.main, 0.25),
+                    boxShadow: `0 15px 35px -10px ${alpha(theme.palette.primary.main, 0.15)}`,
                   },
                   '&:hover .border-beam-overlay': {
                     opacity: 1,
                   }
                 }}>
-                  <BorderBeam activeColor="#3dfc55" />
+                  <BorderBeam activeColor={theme.palette.primary.main} />
                   <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: 3.5 }}>
                     {/* Live Preview Header */}
                     <Box sx={{ 
@@ -1720,14 +1721,14 @@ const HomePage: React.FC = () => {
                       to="/services/image-compressor"
                       variant="contained"
                       size="small"
-                      sx={{ 
+                      sx={{
                         alignSelf: 'flex-start',
-                        bgcolor: '#3dfc55',
+                        bgcolor: 'primary.main',
                         color: '#000000',
                         fontWeight: 750,
                         borderRadius: '20px',
                         px: 3,
-                        '&:hover': { bgcolor: alpha('#3dfc55', 0.8) }
+                        '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.8) }
                       }}
                     >
                       Open Compressor
@@ -1751,14 +1752,14 @@ const HomePage: React.FC = () => {
                   overflow: 'hidden',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    borderColor: alpha('#00e5ff', 0.25),
-                    boxShadow: `0 15px 35px -10px ${alpha('#00e5ff', 0.15)}`,
+                    borderColor: alpha(theme.palette.secondary.main, 0.25),
+                    boxShadow: `0 15px 35px -10px ${alpha(theme.palette.secondary.main, 0.15)}`,
                   },
                   '&:hover .border-beam-overlay': {
                     opacity: 1,
                   }
                 }}>
-                  <BorderBeam activeColor="#00e5ff" />
+                  <BorderBeam activeColor={theme.palette.secondary.main} />
                   <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: 3.5 }}>
                     {/* Live Preview Header */}
                     <Box sx={{ 
@@ -1786,14 +1787,14 @@ const HomePage: React.FC = () => {
                       to="/services/pdf-merger"
                       variant="contained"
                       size="small"
-                      sx={{ 
+                      sx={{
                         alignSelf: 'flex-start',
-                        bgcolor: '#00e5ff',
+                        bgcolor: 'secondary.main',
                         color: '#000000',
                         fontWeight: 750,
                         borderRadius: '20px',
                         px: 3,
-                        '&:hover': { bgcolor: alpha('#00e5ff', 0.8) }
+                        '&:hover': { bgcolor: alpha(theme.palette.secondary.main, 0.8) }
                       }}
                     >
                       Open Merger
@@ -2080,7 +2081,7 @@ const HomePage: React.FC = () => {
             </TableHead>
             <TableBody>
               {[
-                { year: '2026', title: 'Excellence in Web Engineering', provider: 'ExpectException', category: 'Portfolio Showcase' },
+                { year: '2026', title: 'Excellence in Web Engineering', provider: 'ExpectException', category: 'Engineering Showcase' },
                 { year: '2025', title: 'Advanced AI & Chatbot Integrator', provider: 'ExpExc platform', category: 'AI Automation' },
                 { year: '2025', title: 'Full Stack Development Certification', provider: 'Developer Alliance', category: 'Mastery' },
                 { year: '2024', title: 'Technical Leadership Award', provider: 'Open Source Guild', category: 'Contribution' },

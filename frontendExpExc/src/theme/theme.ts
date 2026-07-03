@@ -17,34 +17,41 @@ declare module '@mui/material/styles' {
   }
 }
 
-export const getTheme = (primaryColor: string = '#3dfc55'): Theme => {
+export const getTheme = (primaryColor: string = '#3dfc55', colorMode: 'dark' | 'light' = 'dark'): Theme => {
+  const isDark = colorMode === 'dark';
+  const bg = isDark ? '#050505' : '#f5f5f5';
+  const paper = isDark ? '#0d0e12' : '#ffffff';
+  const textPrimary = isDark ? '#ffffff' : '#0a0a0a';
+  const textSecondary = isDark ? '#94a3b8' : '#64748b';
+  const dividerColor = isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.12);
+
   return createTheme({
     palette: {
-      mode: 'dark',
+      mode: colorMode,
       primary: {
         main: primaryColor,
         light: alpha(primaryColor, 0.8),
         dark: alpha(primaryColor, 1.2),
-        contrastText: '#000000', // Black text on neon background for premium contrast
+        contrastText: isDark ? '#000000' : '#ffffff',
       },
       secondary: {
-        main: '#00e5ff', // Neon Cyan
+        main: '#00e5ff',
         contrastText: '#000000',
       },
       background: {
-        default: '#050505', // Ultra-dark background
-        paper: '#0d0e12',   // Premium charcoal card background
+        default: bg,
+        paper: paper,
       },
       glass: {
-        light: alpha('#0d0e12', 0.6),
-        main: alpha('#050505', 0.7),
-        dark: alpha('#010102', 0.8),
+        light: alpha(paper, 0.6),
+        main: alpha(bg, 0.7),
+        dark: alpha(bg, 0.9),
       },
       text: {
-        primary: '#ffffff', // Pure white text
-        secondary: '#94a3b8', // Cool slate grey text
+        primary: textPrimary,
+        secondary: textSecondary,
       },
-      divider: alpha('#ffffff', 0.08),
+      divider: dividerColor,
       action: {
         hover: alpha(primaryColor, 0.08),
         selected: alpha(primaryColor, 0.12),
@@ -85,9 +92,9 @@ export const getTheme = (primaryColor: string = '#3dfc55'): Theme => {
       MuiCssBaseline: {
         styleOverrides: {
           body: {
-            backgroundColor: '#050505',
-            color: '#ffffff',
-            scrollbarColor: `${alpha(primaryColor, 0.3)} #050505`,
+            backgroundColor: bg,
+            color: textPrimary,
+            scrollbarColor: `${alpha(primaryColor, 0.3)} ${bg}`,
             '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
               width: '8px',
               height: '8px',
@@ -96,7 +103,7 @@ export const getTheme = (primaryColor: string = '#3dfc55'): Theme => {
               borderRadius: 8,
               backgroundColor: alpha(primaryColor, 0.3),
               minHeight: 24,
-              border: '2px solid #050505',
+              border: `2px solid ${bg}`,
               '&:hover': {
                 backgroundColor: primaryColor,
               },

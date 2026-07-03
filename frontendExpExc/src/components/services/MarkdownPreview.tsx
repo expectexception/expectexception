@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
-    Container, Card, CardContent, Typography, TextField, Box, Grid
+    Card, CardContent, Typography, TextField, Box, Grid,
 } from '@mui/material';
 import { Article } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 import { isReactSnap } from '../../utils/isReactSnap';
@@ -14,7 +15,6 @@ const MarkdownPreview: React.FC = () => {
     const [loading, setLoading] = useState(false);
 
     // Convert on change with debounce
-
     React.useEffect(() => {
         if (isReactSnap()) {
             return;
@@ -39,39 +39,41 @@ const MarkdownPreview: React.FC = () => {
 
         return () => clearTimeout(timer);
     }, [markdown]);
+
     return (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={Article}
+            title="Markdown Preview"
+            subtitle="Write Markdown and see live HTML preview"
+            maxWidth="md"
+        >
             <Seo
                 title="Live Markdown Preview & Editor - GitHub Flavor"
                 toolId={23}
             />
 
-
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                Markdown Preview
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Write Markdown and see live HTML preview
-            </Typography>
-
-            <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                    <Card sx={{ height: '100%' }}>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+            <Grid container spacing={2} sx={{ flex: 1, minHeight: 0 }}>
+                <Grid item xs={12} md={6} sx={{ display: 'flex', minHeight: { xs: 220, md: 0 } }}>
+                    <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                        <CardContent sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, p: 2 }}>
+                            <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, flexShrink: 0 }}>
                                 Markdown
                             </Typography>
                             <TextField
                                 fullWidth
                                 multiline
-                                rows={25}
                                 value={markdown}
                                 onChange={(e) => setMarkdown(e.target.value)}
                                 placeholder="Write your markdown here..."
                                 sx={{
+                                    flex: 1,
+                                    minHeight: 0,
+                                    '& .MuiInputBase-root': { height: '100%', alignItems: 'flex-start' },
                                     '& .MuiInputBase-input': {
                                         fontFamily: 'monospace',
-                                        fontSize: '0.9rem',
+                                        fontSize: '0.85rem',
+                                        height: '100% !important',
+                                        overflowY: 'auto !important',
                                     },
                                 }}
                             />
@@ -79,18 +81,21 @@ const MarkdownPreview: React.FC = () => {
                     </Card>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
-                    <Card sx={{ height: '100%' }}>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                                Preview
+                <Grid item xs={12} md={6} sx={{ display: 'flex', minHeight: { xs: 220, md: 0 } }}>
+                    <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                        <CardContent sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, p: 2 }}>
+                            <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, flexShrink: 0 }}>
+                                Preview {loading && '(updating...)'}
                             </Typography>
                             <Box
                                 sx={{
-                                    minHeight: 500,
+                                    flex: 1,
+                                    minHeight: 0,
+                                    overflowY: 'auto',
                                     p: 2,
                                     borderRadius: 1,
-                                    bgcolor: 'grey.50',
+                                    bgcolor: 'rgba(255,255,255,0.04)',
+                                    border: '1px solid rgba(255,255,255,0.08)',
                                     '& h1, & h2, & h3, & h4': {
                                         mt: 2,
                                         mb: 1,
@@ -99,7 +104,7 @@ const MarkdownPreview: React.FC = () => {
                                     '& p': { mb: 1.5 },
                                     '& ul, & ol': { pl: 3 },
                                     '& code': {
-                                        bgcolor: 'grey.200',
+                                        bgcolor: 'rgba(255,255,255,0.08)',
                                         px: 0.5,
                                         py: 0.25,
                                         borderRadius: 0.5,
@@ -107,7 +112,7 @@ const MarkdownPreview: React.FC = () => {
                                         fontSize: '0.85em',
                                     },
                                     '& pre': {
-                                        bgcolor: 'grey.900',
+                                        bgcolor: 'rgba(0,0,0,0.4)',
                                         color: 'grey.100',
                                         p: 2,
                                         borderRadius: 1,
@@ -133,7 +138,7 @@ const MarkdownPreview: React.FC = () => {
                                             borderColor: 'divider',
                                             p: 1,
                                         },
-                                        '& th': { bgcolor: 'grey.100' },
+                                        '& th': { bgcolor: 'rgba(255,255,255,0.06)' },
                                     },
                                 }}
                                 dangerouslySetInnerHTML={{ __html: html }}
@@ -142,7 +147,7 @@ const MarkdownPreview: React.FC = () => {
                     </Card>
                 </Grid>
             </Grid>
-        </Container>
+        </ServicePageShell>
     );
 };
 

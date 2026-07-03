@@ -1,6 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-    Container,
     Grid,
     Card,
     CardContent,
@@ -14,6 +13,7 @@ import {
     FormControlLabel,
     Switch,
     Chip,
+    useTheme,
     alpha,
 } from '@mui/material';
 import {
@@ -27,6 +27,7 @@ import {
 import Seo from '../seo/Seo';
 import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';
+import ServicePageShell from './ServicePageShell';
 
 interface UpscaleResult {
     success: boolean;
@@ -44,6 +45,7 @@ interface UpscaleResult {
 }
 
 const ImageUpscaler: React.FC = () => {
+    const theme = useTheme();
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [scale, setScale] = useState(2);
@@ -54,310 +56,7 @@ const ImageUpscaler: React.FC = () => {
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<UpscaleResult | null>(null);
-    const [open, setOpen] = useState(false);
-    const deferredPrompt: any = null; // Replace with actual deferredPrompt logic
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selected = event.target.files?.[0];
         if (!selected) return;
@@ -435,37 +134,21 @@ const ImageUpscaler: React.FC = () => {
         setError(null);
     };
 
-    useEffect(() => {
-        if (!deferredPrompt) {
-            setOpen(false);
-            return;
-        }
-
-        const cooldownMs = 86400000;
-        const last = Number(localStorage.getItem('pwaPromptLastDismissed') || 0);
-        if (Date.now() - last < cooldownMs) return;
-
-        const timer = setTimeout(() => setOpen(true), 2000);
-        return () => clearTimeout(timer);
-    }, [deferredPrompt]);
-
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={AutoFixHigh}
+            title="AI Image Upscaler & Enhancer"
+            subtitle="Enlarge images up to 4x with clarity boosts, noise reduction, and smart color preservation."
+            maxWidth="md"
+        >
             <Seo
                 title="AI Image Upscaler - Enhance & Enlarge Photos Online"
-                description="Upscale low-resolution photos up to 4× while smoothing noise and sharpening fine details."
+                description="Upscale low-resolution photos up to 4x while smoothing noise and sharpening fine details."
                 toolId={24}
             />
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                AI Image Upscaler & Enhancer
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Enlarge images up to 4× with clarity boosts, noise reduction, and smart color preservation.
-            </Typography>
-
             {error && (
-                <Alert severity="error" sx={{ mb: 3 }} icon={<ErrorIcon />} onClose={() => setError(null)}>
+                <Alert severity="error" sx={{ mb: 2, flexShrink: 0 }} icon={<ErrorIcon />} onClose={() => setError(null)}>
                     {error}
                 </Alert>
             )}
@@ -473,7 +156,7 @@ const ImageUpscaler: React.FC = () => {
             {result && (
                 <Alert
                     severity="success"
-                    sx={{ mb: 3 }}
+                    sx={{ mb: 2, flexShrink: 0 }}
                     icon={<CheckCircle />}
                     action={
                         <Button size="small" color="inherit" startIcon={<Download />} href={result.file_url} target="_blank">
@@ -481,14 +164,14 @@ const ImageUpscaler: React.FC = () => {
                         </Button>
                     }
                 >
-                    Upscaled from {result.original_size} to {result.upscaled_size} at {result.scale.toFixed(1)}×
+                    Upscaled from {result.original_size} to {result.upscaled_size} at {result.scale.toFixed(1)}x
                 </Alert>
             )}
 
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={7}>
-                    <Card>
-                        <CardContent sx={{ p: 4 }}>
+            <Grid container spacing={2.5} sx={{ flex: 1, minHeight: 0 }}>
+                <Grid item xs={12} md={7} sx={{ display: 'flex' }}>
+                    <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                             <Box
                                 onDrop={handleDrop}
                                 onDragOver={handleDrag}
@@ -497,10 +180,10 @@ const ImageUpscaler: React.FC = () => {
                                     border: '2px dashed',
                                     borderColor: preview ? 'success.light' : 'divider',
                                     borderRadius: 3,
-                                    p: 4,
+                                    p: 2.5,
                                     textAlign: 'center',
                                     cursor: 'pointer',
-                                    bgcolor: preview ? alpha('#22c55e', 0.06) : alpha('#3b82f6', 0.03),
+                                    bgcolor: preview ? alpha(theme.palette.success.main, 0.06) : alpha(theme.palette.primary.main, 0.03),
                                 }}
                             >
                                 <input
@@ -512,10 +195,10 @@ const ImageUpscaler: React.FC = () => {
                                 />
                                 <label htmlFor="upscale-upload" style={{ display: 'block', cursor: 'pointer' }}>
                                     {preview ? (
-                                        <Box component="img" src={preview} alt="preview" sx={{ maxHeight: 320, maxWidth: '100%', borderRadius: 2 }} />
+                                        <Box component="img" src={preview} alt="preview" sx={{ maxHeight: 220, maxWidth: '100%', objectFit: 'contain', borderRadius: 2 }} />
                                     ) : (
                                         <>
-                                            <CloudUpload sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+                                            <CloudUpload sx={{ fontSize: 56, color: theme.palette.primary.main, mb: 1.5 }} />
                                             <Typography variant="h6" sx={{ fontWeight: 600 }}>
                                                 Drop an image or click to upload
                                             </Typography>
@@ -528,7 +211,7 @@ const ImageUpscaler: React.FC = () => {
                             </Box>
 
                             {loading && (
-                                <Box sx={{ mt: 3 }}>
+                                <Box sx={{ mt: 2.5 }}>
                                     <LinearProgress variant="determinate" value={progress} />
                                     <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1 }}>
                                         Enhancing... {progress}%
@@ -536,7 +219,7 @@ const ImageUpscaler: React.FC = () => {
                                 </Box>
                             )}
 
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2.5 }}>
                                 <Button
                                     fullWidth
                                     variant="contained"
@@ -555,16 +238,16 @@ const ImageUpscaler: React.FC = () => {
                     </Card>
                 </Grid>
 
-                <Grid item xs={12} md={5}>
-                    <Card sx={{ height: '100%' }}>
-                        <CardContent sx={{ p: 4 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+                <Grid item xs={12} md={5} sx={{ display: 'flex' }}>
+                    <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2.5 }}>
                                 Enhancement Settings
                             </Typography>
 
-                            <Box sx={{ mb: 4 }}>
+                            <Box sx={{ mb: 3 }}>
                                 <Typography variant="subtitle2" gutterBottom>
-                                    Scale ({scale}×)
+                                    Scale ({scale}x)
                                 </Typography>
                                 <Slider
                                     value={scale}
@@ -576,9 +259,9 @@ const ImageUpscaler: React.FC = () => {
                                 />
                             </Box>
 
-                            <Box sx={{ mb: 4 }}>
+                            <Box sx={{ mb: 3 }}>
                                 <Typography variant="subtitle2" gutterBottom>
-                                    Sharpness Boost ({sharpness.toFixed(2)}×)
+                                    Sharpness Boost ({sharpness.toFixed(2)}x)
                                 </Typography>
                                 <Slider
                                     value={sharpness}
@@ -599,8 +282,8 @@ const ImageUpscaler: React.FC = () => {
                                 label="Gently boost color vibrance"
                             />
 
-                            <Stack direction="row" spacing={1} sx={{ mt: 3, flexWrap: 'wrap', gap: 1 }}>
-                                <Chip icon={<ZoomOutMap />} label="Up to 4×" />
+                            <Stack direction="row" spacing={1} sx={{ mt: 2.5, flexWrap: 'wrap', gap: 1 }}>
+                                <Chip icon={<ZoomOutMap />} label="Up to 4x" />
                                 <Chip icon={<AutoFixHigh />} label="Smart sharpening" />
                                 <Chip icon={<Download />} label="High-quality PNG/JPG" />
                             </Stack>
@@ -608,222 +291,8 @@ const ImageUpscaler: React.FC = () => {
                     </Card>
                 </Grid>
             </Grid>
-        </Container>
+        </ServicePageShell>
     );
 };
 
 export default ImageUpscaler;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

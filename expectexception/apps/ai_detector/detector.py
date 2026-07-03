@@ -147,8 +147,7 @@ class ModelManager:
             logger.info(f"Loading model: {model_name} on device: {self._device_name}")
             
             if not _HAS_TRANSFORMERS:
-                self._model_status[model_name] = "error: transformers not installed"
-                logger.warning("Cannot load detection models: `transformers` package is missing")
+                self._model_status[model_name] = "unavailable: transformers not installed"
                 return None
 
             try:

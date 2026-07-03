@@ -70,7 +70,7 @@ const BorderBeam: React.FC<{ activeColor?: string }> = ({ activeColor }) => {
         inset: 0,
         borderRadius: 'inherit',
         border: '1.5px solid transparent',
-        background: `linear-gradient(90deg, ${color}, #00e5ff) border-box`,
+        background: `linear-gradient(90deg, ${color}, ${theme.palette.secondary.main}) border-box`,
         WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
         WebkitMaskComposite: 'xor',
         maskComposite: 'exclude',
@@ -229,7 +229,7 @@ const BlogPage: React.FC = () => {
                     sx={{
                         fontWeight: 900,
                         fontSize: { xs: '2.25rem', sm: '3rem', md: '4rem' },
-                        background: `linear-gradient(45deg, ${primaryColor}, #00e5ff)`,
+                        background: `linear-gradient(45deg, ${primaryColor}, ${theme.palette.secondary.main})`,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                         letterSpacing: '-0.02em',

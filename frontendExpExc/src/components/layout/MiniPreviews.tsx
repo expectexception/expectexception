@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, alpha } from '@mui/material';
+import { Box, Typography, alpha, useTheme } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartToy, Photo, FileCopy, Link } from '@mui/icons-material';
 
 // --- AI Chatbot Mini Preview ---
 export const ChatbotPreview: React.FC = () => {
+  const theme = useTheme();
   const [messages, setMessages] = useState<Array<{ sender: 'user' | 'ai', text: string }>>([]);
   const [step, setStep] = useState(0);
 
@@ -41,14 +42,14 @@ export const ChatbotPreview: React.FC = () => {
             style={{
               alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               maxWidth: '85%',
-              background: msg.sender === 'user' ? '#1e293b' : 'rgba(61, 252, 85, 0.1)',
-              border: msg.sender === 'user' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(61, 252, 85, 0.2)',
+              background: msg.sender === 'user' ? '#1e293b' : alpha(theme.palette.primary.main, 0.1),
+              border: msg.sender === 'user' ? '1px solid rgba(255,255,255,0.05)' : `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
               padding: '6px 12px',
               borderRadius: msg.sender === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
             }}
           >
-            <Typography variant="caption" sx={{ 
-              color: msg.sender === 'user' ? '#ffffff' : '#3dfc55', 
+            <Typography variant="caption" sx={{
+              color: msg.sender === 'user' ? '#ffffff' : 'primary.main',
               fontSize: '0.72rem', 
               fontFamily: 'monospace',
               display: 'flex',
@@ -67,6 +68,7 @@ export const ChatbotPreview: React.FC = () => {
 
 // --- Image Compressor Mini Preview ---
 export const CompressorPreview: React.FC = () => {
+  const theme = useTheme();
   return (
     <Box sx={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       {/* Background Graphic (Representing an image) */}
@@ -88,8 +90,8 @@ export const CompressorPreview: React.FC = () => {
             right: 0,
             width: '100%',
             background: '#0d0e12',
-            borderLeft: '2px solid #3dfc55',
-            boxShadow: '-5px 0 15px rgba(61, 252, 85, 0.2)',
+            borderLeft: `2px solid ${theme.palette.primary.main}`,
+            boxShadow: `-5px 0 15px ${alpha(theme.palette.primary.main, 0.2)}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -105,12 +107,12 @@ export const CompressorPreview: React.FC = () => {
             ease: 'easeInOut'
           }}
         >
-          <Photo sx={{ fontSize: 40, color: '#3dfc55', opacity: 0.8, filter: 'drop-shadow(0 0 15px rgba(61, 252, 85, 0.4))' }} />
-          <Typography variant="caption" sx={{ position: 'absolute', top: 6, right: 8, fontSize: '0.65rem', color: '#3dfc55', fontFamily: 'monospace', fontWeight: 700 }}>
+          <Photo sx={{ fontSize: 40, color: 'primary.main', opacity: 0.8, filter: `drop-shadow(0 0 15px ${alpha(theme.palette.primary.main, 0.4)})` }} />
+          <Typography variant="caption" sx={{ position: 'absolute', top: 6, right: 8, fontSize: '0.65rem', color: 'primary.main', fontFamily: 'monospace', fontWeight: 700 }}>
             COMPRESSED: 150 KB
           </Typography>
-          <Box sx={{ position: 'absolute', bottom: 6, right: 8, px: 0.75, py: 0.25, bgcolor: 'rgba(61, 252, 85, 0.15)', border: '1px solid #3dfc55', borderRadius: 0.5 }}>
-            <Typography variant="caption" sx={{ color: '#3dfc55', fontSize: '0.6rem', fontWeight: 800 }}>-88%</Typography>
+          <Box sx={{ position: 'absolute', bottom: 6, right: 8, px: 0.75, py: 0.25, bgcolor: alpha(theme.palette.primary.main, 0.15), border: '1px solid', borderColor: 'primary.main', borderRadius: 0.5 }}>
+            <Typography variant="caption" sx={{ color: 'primary.main', fontSize: '0.6rem', fontWeight: 800 }}>-88%</Typography>
           </Box>
         </motion.div>
       </Box>
@@ -120,6 +122,7 @@ export const CompressorPreview: React.FC = () => {
 
 // --- PDF Merger Mini Preview ---
 export const PdfPreview: React.FC = () => {
+  const theme = useTheme();
   return (
     <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
       {/* File 1 */}
@@ -193,9 +196,9 @@ export const PdfPreview: React.FC = () => {
           color: '#ffffff',
         }}
         animate={{
-          borderColor: ['rgba(255,255,255,0.15)', '#3dfc55', 'rgba(255,255,255,0.15)'],
+          borderColor: ['rgba(255,255,255,0.15)', theme.palette.primary.main, 'rgba(255,255,255,0.15)'],
           scale: [1, 1.15, 1],
-          boxShadow: ['0 0 0px transparent', '0 0 15px rgba(61, 252, 85, 0.3)', '0 0 0px transparent'],
+          boxShadow: ['0 0 0px transparent', `0 0 15px ${alpha(theme.palette.primary.main, 0.3)}`, '0 0 0px transparent'],
         }}
         transition={{
           repeat: Infinity,
@@ -214,7 +217,7 @@ export const PdfPreview: React.FC = () => {
             ease: 'easeInOut'
           }}
         >
-          <FileCopy sx={{ color: '#3dfc55', fontSize: 20 }} />
+          <FileCopy sx={{ color: 'primary.main', fontSize: 20 }} />
         </motion.div>
       </motion.div>
     </Box>
@@ -223,6 +226,7 @@ export const PdfPreview: React.FC = () => {
 
 // --- URL Converter Mini Preview ---
 export const UrlPreview: React.FC = () => {
+  const theme = useTheme();
   const [urlState, setUrlState] = useState(0);
 
   useEffect(() => {
@@ -276,16 +280,16 @@ export const UrlPreview: React.FC = () => {
           py: 0.75, 
           px: 1.5, 
           borderRadius: 1, 
-          bgcolor: 'rgba(61, 252, 85, 0.06)', 
-          border: '1px solid rgba(61, 252, 85, 0.2)',
+          bgcolor: alpha(theme.palette.primary.main, 0.06),
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <Typography variant="caption" sx={{ fontFamily: 'monospace', color: '#3dfc55', fontSize: '0.68rem', fontWeight: 700 }}>
+          <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', fontSize: '0.68rem', fontWeight: 700 }}>
             expexc.co/url-conv
           </Typography>
-          <Typography variant="caption" sx={{ color: '#3dfc55', fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase' }}>
+          <Typography variant="caption" sx={{ color: 'primary.main', fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase' }}>
             Copied!
           </Typography>
         </Box>

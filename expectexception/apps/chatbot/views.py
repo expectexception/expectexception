@@ -257,11 +257,29 @@ async def chat(request):
             else:
                 llm_messages = messages
 
-            async for chunk in ollama_service.chat_async(llm_messages):
-                if chunk:
-                    full_response += chunk
-                    chunk_count += 1
-                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+            STREAM_DEADLINE = start_time + 45  # 45-second hard deadline
+            try:
+                async for chunk in ollama_service.chat_async(llm_messages):
+                    if chunk:
+                        full_response += chunk
+                        chunk_count += 1
+                        yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                    if time.time() > STREAM_DEADLINE:
+                        logger.warning("Chatbot stream hit 45s deadline — truncating")
+                        break
+            except Exception as stream_err:
+                logger.error(f"Ollama stream error: {stream_err}")
+                if not full_response:
+                    fallback = (
+                        "I'm temporarily unavailable right now. Here are some tools you might be looking for:\n\n"
+                        "• **PDF tools** → /services/pdf-to-doc, /services/pdf-merger\n"
+                        "• **Image tools** → /services/background-remover, /services/image-upscaler\n"
+                        "• **Developer tools** → /services/jwt-decoder, /services/json-formatter\n"
+                        "• **Community** → /community for Q&A\n\n"
+                        "Try again in a moment — I'll be back shortly."
+                    )
+                    full_response = fallback
+                    yield f"data: {json.dumps({'chunk': fallback})}\n\n"
 
             generation_time = time.time() - start_time
             logger.info(f"Generated response in {generation_time:.2f}s with {chunk_count} chunks")
@@ -274,7 +292,8 @@ async def chat(request):
 
         except Exception as e:
             logger.error(f"Async Stream Error: {e}", exc_info=True)
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            fallback = "I'm temporarily unavailable. Please try again in a moment."
+            yield f"data: {json.dumps({'chunk': fallback, 'done': True, 'final': fallback})}\n\n"
 
     response = StreamingHttpResponse(event_generator(), content_type='text/event-stream')
     response['X-Accel-Buffering'] = 'no'

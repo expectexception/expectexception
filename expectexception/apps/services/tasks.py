@@ -274,3 +274,121 @@ def run_uptime_scheduler_task():
     return "Keep-alive ping completed. Scheduled next in 15s."
 
 
+@shared_task(bind=True, time_limit=120, soft_time_limit=100, name='apps.services.tasks.remove_background_task')
+def remove_background_task(self, input_path: str, quality_preset: str, output_format: str) -> dict:
+    """Async background removal via rembg."""
+    import io
+    from PIL import Image
+    try:
+        from rembg import remove, new_session
+        session = new_session('u2net', providers=['CPUExecutionProvider'])
+
+        QUALITY_PRESETS = {
+            'fast': {'max_dimension': 1024, 'quality': 75},
+            'balanced': {'max_dimension': 2048, 'quality': 90},
+            'best': {'max_dimension': 4096, 'quality': 95},
+        }
+        preset = QUALITY_PRESETS.get(quality_preset, QUALITY_PRESETS['balanced'])
+        max_dim = preset['max_dimension']
+        quality = preset['quality']
+
+        with open(input_path, 'rb') as f:
+            input_data = f.read()
+
+        img = Image.open(io.BytesIO(input_data))
+        if img.width > max_dim or img.height > max_dim:
+            ratio = min(max_dim / img.width, max_dim / img.height)
+            img = img.resize((int(img.width * ratio), int(img.height * ratio)), Image.LANCZOS)
+
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format='PNG')
+        img_bytes.seek(0)
+
+        result = remove(img_bytes.read(), session=session)
+        result_img = Image.open(io.BytesIO(result))
+
+        output_dir = os.path.join(settings.MEDIA_ROOT, 'bg_removed')
+        os.makedirs(output_dir, exist_ok=True)
+        ext = '.png' if output_format == 'png' else '.jpg'
+        filename = f"bg_removed_{uuid.uuid4().hex[:8]}{ext}"
+        output_path = os.path.join(output_dir, filename)
+
+        if output_format in ('jpg', 'jpeg') and result_img.mode == 'RGBA':
+            bg = Image.new('RGB', result_img.size, (255, 255, 255))
+            bg.paste(result_img, mask=result_img.split()[3])
+            bg.save(output_path, 'JPEG', quality=quality)
+        else:
+            result_img.save(output_path, 'PNG', optimize=True)
+
+        try:
+            os.remove(input_path)
+        except Exception:
+            pass
+
+        file_url = f"{settings.MEDIA_URL}bg_removed/{filename}"
+        return {'success': True, 'file_url': file_url, 'filename': filename}
+
+    except Exception as exc:
+        try:
+            os.remove(input_path)
+        except Exception:
+            pass
+        raise self.retry(exc=exc, max_retries=0)
+
+
+@shared_task(bind=True, time_limit=60, soft_time_limit=50, name='apps.services.tasks.upscale_image_task')
+def upscale_image_task(self, input_path: str, scale: float, sharpness: float, denoise: bool, boost_color: bool) -> dict:
+    """Async image upscaling task."""
+    import io
+    from PIL import Image, ImageFilter, ImageEnhance
+    try:
+        with open(input_path, 'rb') as f:
+            image = Image.open(io.BytesIO(f.read()))
+            image.load()
+
+        source_mode = image.mode
+        if image.mode not in ('RGB', 'RGBA'):
+            image = image.convert('RGB')
+
+        new_size = (int(image.width * scale), int(image.height * scale))
+        upscaled = image.resize(new_size, Image.LANCZOS)
+
+        if denoise:
+            upscaled = upscaled.filter(ImageFilter.SMOOTH_MORE)
+        if sharpness != 1.0:
+            upscaled = ImageEnhance.Sharpness(upscaled).enhance(sharpness)
+        if boost_color:
+            upscaled = ImageEnhance.Color(upscaled).enhance(1.05)
+            upscaled = ImageEnhance.Contrast(upscaled).enhance(1.03)
+
+        output_dir = os.path.join(settings.MEDIA_ROOT, 'enhanced')
+        os.makedirs(output_dir, exist_ok=True)
+        output_format = 'PNG' if upscaled.mode == 'RGBA' else 'JPEG'
+        ext = '.png' if output_format == 'PNG' else '.jpg'
+        filename = f"upscaled_{uuid.uuid4().hex[:8]}{ext}"
+        output_path = os.path.join(output_dir, filename)
+        upscaled.save(output_path, format=output_format, quality=95)
+
+        try:
+            os.remove(input_path)
+        except Exception:
+            pass
+
+        file_url = f"{settings.MEDIA_URL}enhanced/{filename}"
+        return {
+            'success': True,
+            'file_url': file_url,
+            'filename': filename,
+            'original_size': f"{image.width}x{image.height}",
+            'upscaled_size': f"{upscaled.width}x{upscaled.height}",
+            'output_format': output_format,
+        }
+
+    except Exception as exc:
+        try:
+            os.remove(input_path)
+        except Exception:
+            pass
+        raise self.retry(exc=exc, max_retries=0)
+
+

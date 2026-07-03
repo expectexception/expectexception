@@ -120,7 +120,7 @@ const HirePage: React.FC = () => {
             icon: <Code sx={{ fontSize: 40 }} />,
             desc: 'End-to-end web applications from concept to deployment. Complete solutions with modern tech stacks.',
             features: ['Complete Apps', 'Database Design', 'API Integration', 'DevOps & CI/CD'],
-            color: '#00e5ff',
+            color: theme.palette.secondary.main,
         },
         {
             title: 'AI Chatbot Development',

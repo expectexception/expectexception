@@ -5,8 +5,6 @@ import {
     Button,
     Card,
     CardContent,
-    Chip,
-    Container,
     LinearProgress,
     Stack,
     TextField,
@@ -15,7 +13,7 @@ import {
     Accordion,
     AccordionSummary,
     AccordionDetails,
-    Divider
+    Divider,
 } from '@mui/material';
 import {
     ExpandMore,
@@ -24,11 +22,10 @@ import {
     Dns,
     Http,
     Language,
-    CheckCircle,
     Warning,
-    Error as ErrorIcon
 } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 
@@ -79,19 +76,15 @@ const WebsiteDiagnostics: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={Speed}
+            title="Website Health Scanner"
+            subtitle="Comprehensive analysis of Security, Performance, DNS, and Server Configuration."
+            maxWidth="md"
+        >
             <Seo title="Website Diagnostics - Full Health Scan" toolId={28} />
 
-            <Box sx={{ mb: 4, textAlign: 'center' }}>
-                <Typography variant="h3" gutterBottom sx={{ fontWeight: 800 }}>
-                    Website Health Scanner
-                </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
-                    Comprehensive analysis of Security, Performance, DNS, and Server Configuration.
-                </Typography>
-            </Box>
-
-            <Card sx={{ mb: 4, p: 2 }}>
+            <Card sx={{ mb: 2, p: 2, flexShrink: 0 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                     <TextField
                         fullWidth
@@ -117,7 +110,7 @@ const WebsiteDiagnostics: React.FC = () => {
             </Card>
 
             {result && (
-                <Stack spacing={4}>
+                <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pr: 0.5 }}>
                     {/* Score Overview */}
                     <Card sx={{ p: 3, textAlign: 'center', position: 'relative', overflow: 'visible' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
@@ -256,7 +249,7 @@ const WebsiteDiagnostics: React.FC = () => {
                             <AccordionDetails>
                                 <Typography variant="subtitle2" gutterBottom>Redirect Chain:</Typography>
                                 {result.checks.redirects?.hops?.map((hop: any, i: number) => (
-                                    <Box key={i} sx={{ mb: 1, pl: 2, borderLeft: '2px solid #ccc' }}>
+                                    <Box key={i} sx={{ mb: 1, pl: 2, borderLeft: '2px solid', borderColor: 'divider' }}>
                                         <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                                             {hop.status} {hop.url}
                                         </Typography>
@@ -288,7 +281,7 @@ const WebsiteDiagnostics: React.FC = () => {
 
                 </Stack>
             )}
-        </Container>
+        </ServicePageShell>
     );
 };
 

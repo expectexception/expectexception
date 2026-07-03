@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Container,
     Grid,
     Card,
     CardContent,
@@ -11,17 +10,16 @@ import {
     Stack,
     LinearProgress,
     Alert,
-    Chip,
+    useTheme,
     alpha,
     Paper,
     IconButton,
 } from '@mui/material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 import {
     Download,
     Link as LinkIcon,
-    Clear,
-    CheckCircle,
     Error as ErrorIcon,
     Info,
     Favorite as FavoriteIcon,
@@ -31,6 +29,8 @@ import { endpoints } from '../../api/endpoints';
 import { useAuth } from '../../context/AuthContext';
 
 const UrlDownloader: React.FC = () => {
+    const theme = useTheme();
+    const primary = theme.palette.primary.main;
     const [url, setUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -38,7 +38,31 @@ const UrlDownloader: React.FC = () => {
     const [success, setSuccess] = useState<string | null>(null);
     const [fileInfo, setFileInfo] = useState<any>(null);
     const [isFavorite, setIsFavorite] = useState(false);
+    const [serviceId, setServiceId] = useState<number | null>(null);
     const { token } = useAuth();
+
+    // Resolve this tool's Service id (needed for the favorite toggle endpoint) and
+    // whether it's already favorited by the current user.
+    useEffect(() => {
+        if (!token) return;
+        let cancelled = false;
+
+        Promise.all([
+            apiClient.get(endpoints.services.tools),
+            apiClient.get(endpoints.services.dashboard.favorites),
+        ]).then(([toolsRes, favRes]) => {
+            if (cancelled) return;
+            const tools = Array.isArray(toolsRes.data) ? toolsRes.data : toolsRes.data?.results || [];
+            const match = tools.find((s: any) => s.path === '/services/url-downloader');
+            if (match) {
+                setServiceId(match.id);
+                const favs = Array.isArray(favRes.data) ? favRes.data : favRes.data?.results || [];
+                setIsFavorite(favs.some((f: any) => f.service?.id === match.id));
+            }
+        }).catch(() => { /* favorites are a non-critical enhancement */ });
+
+        return () => { cancelled = true; };
+    }, [token]);
 
     const handleInspect = async () => {
         if (!url) {
@@ -130,17 +154,10 @@ const UrlDownloader: React.FC = () => {
     };
 
     const handleToggleFavorite = async () => {
-        if (!token) return;
+        if (!token || !serviceId) return;
         try {
-            // Assuming service_id logic is handled or we pass a known ID. 
-            // For demo, we are just toggling local state mostly, but trying to call API
-            // We need to know the Service ID for UrlDownloader. Let's assume it's fetched or known.
-            // For now, let's skip the API call if we don't have the ID, or hardcode if known.
-            // But to avoid errors, we'll just toggle UI.
-            setIsFavorite(!isFavorite);
-
-            // Real implementation would look like:
-            // await apiClient.post(endpoints.dashboard.toggleFavorite, { service_id: <ID> });
+            const resp = await apiClient.post(endpoints.services.dashboard.toggleFavorite, { service_id: serviceId });
+            setIsFavorite(resp.data?.status === 'added');
         } catch (err) {
             console.error(err);
         }
@@ -149,186 +166,122 @@ const UrlDownloader: React.FC = () => {
 
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={Download}
+            title="URL Downloader"
+            subtitle="Inspect and download files directly from any public URL."
+            maxWidth="sm"
+        >
             <Seo
                 title="Universal URL Downloader - Fast & Secure File Saving"
                 toolId={1}
             />
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                URL Downloader
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
-                Download files directly from any public URL
-            </Typography>
-
-            {error && (
-                <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)} icon={<ErrorIcon />}>
-                    {error}
-                </Alert>
-            )}
-
-            {success && (
-                <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess(null)} icon={<CheckCircle />}>
-                    {success}
-                </Alert>
-            )}
-
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={8}>
-                    <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h5" gutterBottom>
-                                Inspector
-                            </Typography>
-                            <IconButton onClick={handleToggleFavorite} color={isFavorite ? 'error' : 'default'}>
-                                <FavoriteIcon />
+            <Card sx={{
+                background: 'rgba(13, 14, 18, 0.4)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                borderRadius: '20px',
+                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                p: 3,
+                overflowY: 'auto',
+            }}>
+                <CardContent sx={{ p: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                            Inspector
+                        </Typography>
+                        {!!token && (
+                            <IconButton onClick={handleToggleFavorite} color={isFavorite ? 'error' : 'default'} disabled={!serviceId} size="small">
+                                <FavoriteIcon fontSize="small" />
                             </IconButton>
-                        </Box>
-
-                        <TextField
-                            fullWidth
-                            label="File URL"
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                            placeholder="https://example.com/file.pdf"
-                            disabled={loading}
-                            InputProps={{
-                                startAdornment: <LinkIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                            }}
-                            sx={{ mb: 3 }}
-                        />
-
-                        {loading && (
-                            <Box sx={{ mb: 3 }}>
-                                <Typography variant="body2" color="text.secondary" gutterBottom>
-                                    Downloading... {progress}%
-                                </Typography>
-                                <LinearProgress variant="determinate" value={progress} />
-                            </Box>
                         )}
+                    </Box>
 
-                        {fileInfo && (
-                            <Paper variant="outlined" sx={{ mb: 3, p: 2, bgcolor: 'action.hover' }}>
-                                <Typography variant="subtitle2" gutterBottom>File Details:</Typography>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12}>
-                                        <Typography variant="body2"><strong>Name:</strong> {fileInfo.filename}</Typography>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <Typography variant="body2"><strong>Type:</strong> {fileInfo.content_type || 'Unknown'}</Typography>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <Typography variant="body2"><strong>Size:</strong> {fileInfo.content_length ? (fileInfo.content_length / 1024 / 1024).toFixed(2) + ' MB' : 'Unknown'}</Typography>
-                                    </Grid>
-                                </Grid>
-                            </Paper>
-                        )}
+                    {error && (
+                        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)} icon={<ErrorIcon />}>
+                            {error}
+                        </Alert>
+                    )}
 
-                        <Stack direction="row" spacing={2}>
-                            {!fileInfo ? (
-                                <Button
-                                    variant="contained"
-                                    size="large"
-                                    onClick={handleInspect}
-                                    disabled={loading || !url}
-                                    startIcon={<Info />}
-                                >
-                                    {loading ? 'Inspecting...' : 'Inspect URL'}
-                                </Button>
-                            ) : (
-                                <Button
-                                    variant="contained"
-                                    size="large"
-                                    onClick={handleDownloadFile}
-                                    disabled={loading}
-                                    startIcon={<Download />}
-                                    color="success"
-                                >
-                                    {loading ? 'Downloading...' : 'Download File'}
-                                </Button>
-                            )}
+                    {success && (
+                        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
+                            {success}
+                        </Alert>
+                    )}
 
-                            <Button variant="outlined" onClick={handleReset} disabled={loading}>
-                                Reset
-                            </Button>
-                        </Stack>
+                    <TextField
+                        fullWidth
+                        label="File URL"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        placeholder="https://example.com/file.pdf"
+                        disabled={loading}
+                        InputProps={{
+                            startAdornment: <LinkIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                        }}
+                        sx={{ mb: 2 }}
+                    />
 
-
-                    </Paper>
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                    <Card sx={{ bgcolor: alpha('#2563eb', 0.05) }}>
-                        <CardContent>
-                            <Box
-                                sx={{
-                                    width: 48,
-                                    height: 48,
-                                    borderRadius: 2,
-                                    bgcolor: 'primary.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'white',
-                                    mb: 2,
-                                }}
-                            >
-                                <Info />
-                            </Box>
-                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                                How it works
+                    {loading && (
+                        <Box sx={{ mb: 2 }}>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                                Downloading... {progress}%
                             </Typography>
-                            <Stack spacing={2} sx={{ mt: 2 }}>
-                                <Typography variant="body2" color="text.secondary">
-                                    1. Paste the direct URL of the file
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    2. Click the Check button
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    3. View file metadata
-                                </Typography>
-                            </Stack>
+                            <LinearProgress variant="determinate" value={progress} />
+                        </Box>
+                    )}
 
-                            <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-                                <Typography variant="caption" color="text.secondary">
-                                    <strong>Note:</strong> This tool checks public URLs.
-                                </Typography>
-                            </Box>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
+                    {fileInfo && (
+                        <Paper variant="outlined" sx={{ mb: 2, p: 2, bgcolor: alpha(primary, 0.05) }}>
+                            <Typography variant="subtitle2" gutterBottom>File Details:</Typography>
+                            <Grid container spacing={1}>
+                                <Grid item xs={12}>
+                                    <Typography variant="body2"><strong>Name:</strong> {fileInfo.filename}</Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Typography variant="body2"><strong>Type:</strong> {fileInfo.content_type || 'Unknown'}</Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Typography variant="body2"><strong>Size:</strong> {fileInfo.content_length ? (fileInfo.content_length / 1024 / 1024).toFixed(2) + ' MB' : 'Unknown'}</Typography>
+                                </Grid>
+                            </Grid>
+                        </Paper>
+                    )}
 
-            {/* Supported File Types */}
-            <Box sx={{ mt: 6 }}>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
-                    Supported File Types
-                </Typography>
-                <Grid container spacing={2} sx={{ mt: 2 }}>
-                    {[
-                        { type: 'Images', examples: 'JPG, PNG, GIF, SVG' },
-                        { type: 'Documents', examples: 'PDF, DOC, TXT, CSV' },
-                        { type: 'Archives', examples: 'ZIP, RAR, TAR, GZ' },
-                        { type: 'Media', examples: 'MP3, MP4, AVI, MOV' },
-                    ].map((category, index) => (
-                        <Grid item xs={12} sm={6} md={3} key={index}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                                        {category.type}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {category.examples}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-            </Box>
-        </Container>
+                    <Stack direction="row" spacing={2}>
+                        {!fileInfo ? (
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                size="large"
+                                onClick={handleInspect}
+                                disabled={loading || !url}
+                                startIcon={<Info />}
+                            >
+                                {loading ? 'Inspecting...' : 'Inspect URL'}
+                            </Button>
+                        ) : (
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                size="large"
+                                onClick={handleDownloadFile}
+                                disabled={loading}
+                                startIcon={<Download />}
+                                color="success"
+                            >
+                                {loading ? 'Downloading...' : 'Download File'}
+                            </Button>
+                        )}
+
+                        <Button variant="outlined" onClick={handleReset} disabled={loading}>
+                            Reset
+                        </Button>
+                    </Stack>
+                </CardContent>
+            </Card>
+        </ServicePageShell>
     );
 };
 

@@ -2,11 +2,89 @@ import logging
 import time
 import uuid
 import json
+from django.core.cache import cache
+from django.http import JsonResponse
 from django.db import connection, reset_queries
 from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
 
 logger = logging.getLogger('apps.services.requests')
+
+# Paths that should be rate-limited (POST only) and their limits (requests, seconds)
+RATE_LIMIT_RULES = {
+    '/api/services/background-remover/': (5, 60),
+    '/api/services/image-upscaler/': (5, 60),
+    '/api/services/image-to-text/': (10, 60),
+    '/api/services/pdf-to-doc/': (10, 60),
+    '/api/services/doc-to-pdf/': (10, 60),
+    '/api/services/pdf-merger/': (10, 60),
+    '/api/services/pdf-splitter/': (10, 60),
+    '/api/services/image-to-pdf/': (10, 60),
+    '/api/services/yt-downloader/': (5, 60),
+    '/api/services/url-downloader/': (10, 60),
+    '/api/services/audio-separator/': (3, 60),
+    '/api/ai-detector/': (10, 60),
+}
+
+
+def _get_client_ip(request):
+    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+    return xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR', '0.0.0.0')
+
+
+def _is_pro_user(request):
+    """Check if the authenticated user has a pro tier subscription."""
+    user = getattr(request, 'user', None)
+    if not user or not user.is_authenticated:
+        return False
+    # Cache the tier lookup per user for 60s to avoid per-request DB hits
+    cache_key = f'user_tier:{user.pk}'
+    tier = cache.get(cache_key)
+    if tier is None:
+        try:
+            tier = user.subscription.tier if hasattr(user, 'subscription') else 'free'
+        except Exception:
+            tier = 'free'
+        cache.set(cache_key, tier, timeout=60)
+    return tier == 'pro'
+
+
+class RateLimitMiddleware(MiddlewareMixin):
+    """
+    Redis-backed rate limiter with tier support.
+    Pro users get 10× the free limit on all heavy endpoints.
+    """
+
+    def process_request(self, request):
+        if request.method != 'POST':
+            return None
+        path = request.path
+        rule = None
+        for prefix, limits in RATE_LIMIT_RULES.items():
+            if path.startswith(prefix):
+                rule = limits
+                break
+        if rule is None:
+            return None
+
+        max_requests, window = rule
+        # Pro users get 10x the free quota
+        if _is_pro_user(request):
+            max_requests *= 10
+
+        ip = _get_client_ip(request)
+        cache_key = f'rl:{path}:{ip}'
+        count = cache.get(cache_key, 0)
+        if count >= max_requests:
+            remaining_hint = f'Upgrade to Pro for higher limits.' if not _is_pro_user(request) else ''
+            return JsonResponse(
+                {'error': f'Rate limit exceeded. Max {max_requests} requests per {window}s. {remaining_hint}'.strip()},
+                status=429,
+            )
+        # Atomically initialize the counter to 1 if it does not exist; increment if it does.
+        if not cache.add(cache_key, 1, timeout=window):
+            cache.incr(cache_key)
+        return None
 
 
 class ProLevelLoggingMiddleware(MiddlewareMixin):

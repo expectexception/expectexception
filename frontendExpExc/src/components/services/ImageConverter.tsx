@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import {
-    Container, Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
-    FormControl, InputLabel, Select, MenuItem, alpha
+    Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
+    FormControl, InputLabel, Select, MenuItem, useTheme
 } from '@mui/material';
-import { Image, CloudUpload, Download, Transform } from '@mui/icons-material';
+import { CloudUpload, Download, Transform } from '@mui/icons-material';
 import Seo from '../seo/Seo';
 import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';
+import ServicePageShell from './ServicePageShell';
 
 const ImageConverter: React.FC = () => {
+    const theme = useTheme();
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [outputFormat, setOutputFormat] = useState('png');
@@ -60,46 +62,40 @@ const ImageConverter: React.FC = () => {
     ];
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
-            <Seo
-                title="Online Image Converter - JPG, PNG, WebP, SVG, GIF"
-                toolId={19}
-            />
+        <ServicePageShell
+            icon={Transform}
+            title="Image Format Converter"
+            subtitle="Convert images between PNG, JPG, WebP, GIF, and more"
+            maxWidth="md"
+        >
+            <Seo title="Online Image Converter - JPG, PNG, WebP, SVG, GIF" toolId={19} />
 
+            <Card sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                    {result && (
+                        <Alert severity="success" sx={{ mb: 2 }} action={
+                            <Button color="inherit" size="small" href={result.file_url} target="_blank" startIcon={<Download />}>
+                                Download {result.format}
+                            </Button>
+                        }>Converted to {result.format} successfully!</Alert>
+                    )}
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                Image Format Converter
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Convert images between PNG, JPG, WebP, GIF, and more
-            </Typography>
-
-            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-            {result && (
-                <Alert severity="success" sx={{ mb: 3 }} action={
-                    <Button color="inherit" size="small" href={result.file_url} target="_blank" startIcon={<Download />}>
-                        Download {result.format}
-                    </Button>
-                }>Converted to {result.format} successfully!</Alert>
-            )}
-
-            <Card>
-                <CardContent sx={{ p: 4 }}>
-                    <Box sx={{ border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: 4, textAlign: 'center', mb: 3 }}>
-                        <input accept="image/*" style={{ display: 'none' }} id="image-upload" type="file" onChange={handleFileSelect} />
-                        <label htmlFor="image-upload" style={{ cursor: 'pointer' }}>
+                    <Box sx={{ border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: 2.5, textAlign: 'center', mb: 2.5 }}>
+                        <input accept="image/*" style={{ display: 'none' }} id="image-convert-upload" type="file" onChange={handleFileSelect} />
+                        <label htmlFor="image-convert-upload" style={{ cursor: 'pointer' }}>
                             {preview ? (
-                                <Box component="img" src={preview} sx={{ maxWidth: '100%', maxHeight: 300, borderRadius: 2 }} />
+                                <Box component="img" src={preview} sx={{ maxWidth: '100%', maxHeight: 180, objectFit: 'contain', borderRadius: 2 }} />
                             ) : (
                                 <>
-                                    <CloudUpload sx={{ fontSize: 48, color: 'primary.main' }} />
+                                    <CloudUpload sx={{ fontSize: 40, color: theme.palette.primary.main }} />
                                     <Typography variant="h6">Upload image</Typography>
                                 </>
                             )}
                         </label>
                     </Box>
 
-                    <FormControl fullWidth sx={{ mb: 3 }}>
+                    <FormControl fullWidth sx={{ mb: 2.5 }}>
                         <InputLabel>Output Format</InputLabel>
                         <Select value={outputFormat} label="Output Format" onChange={(e) => setOutputFormat(e.target.value)}>
                             {formats.map(f => (
@@ -122,13 +118,13 @@ const ImageConverter: React.FC = () => {
                         onClick={handleConvert}
                         disabled={!file || loading}
                         startIcon={<Transform />}
-                        sx={{ py: 1.5 }}
+                        sx={{ py: 1.25 }}
                     >
                         {loading ? 'Converting...' : `Convert to ${outputFormat.toUpperCase()}`}
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

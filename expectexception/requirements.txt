@@ -49,3 +49,9 @@ django-unfold>=0.23.0
 # Google OAuth
 google-auth>=2.25.0
 google-auth-oauthlib>=1.2.0
+
+# Error tracking
+sentry-sdk[django]>=1.40.0
+
+# Rate limiting
+django-ratelimit>=4.1.0

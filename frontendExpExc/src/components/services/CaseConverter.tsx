@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Container, Card, CardContent, Box, Typography, TextField, Button, Grid } from '@mui/material';
+import { Card, CardContent, Box, Typography, TextField, Button, Grid } from '@mui/material';
 import { TextFormat, ContentCopy } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from './ServicePageHero';
+import ServicePageShell from './ServicePageShell';
 
 const toTitleCase = (s: string) => s.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.substring(1).toLowerCase());
 const toSentenceCase = (s: string) => s.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, (c) => c.toUpperCase());
@@ -32,13 +32,13 @@ const CaseConverter: React.FC = () => {
     const copy = (value: string) => navigator.clipboard.writeText(value);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <ServicePageShell
+            icon={TextFormat}
+            title="Case Converter"
+            subtitle="Convert text between camelCase, snake_case, kebab-case, Title Case, and more - entirely in your browser."
+            maxWidth="md"
+        >
             <Seo title="Case Converter - camelCase, snake_case, Title Case & More" toolId={35} />
-            <ServicePageHero
-                icon={TextFormat}
-                title="Case Converter"
-                subtitle="Convert text between camelCase, snake_case, kebab-case, Title Case, and more - entirely in your browser."
-            />
 
             <Card sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
@@ -46,7 +46,10 @@ const CaseConverter: React.FC = () => {
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: 3,
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <TextField
@@ -86,7 +89,7 @@ const CaseConverter: React.FC = () => {
                     </Grid>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import {
-    Container, Card, CardContent, Box, Typography, Button, Slider,
+    Card, CardContent, Box, Typography, Button, Slider,
     ToggleButtonGroup, ToggleButton, Snackbar,
 } from '@mui/material';
 import { Article, ContentCopy } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from './ServicePageHero';
+import ServicePageShell from './ServicePageShell';
 
 const WORDS = ('lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore ' +
     'et dolore magna aliqua enim ad minim veniam quis nostrud exercitation ullamco laboris nisi aliquip ex ea ' +
@@ -54,13 +54,13 @@ const LoremIpsumGenerator: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <ServicePageShell
+            icon={Article}
+            title="Lorem Ipsum Generator"
+            subtitle="Generate placeholder text for mockups and layouts - entirely client-side, no server round-trip."
+            maxWidth="md"
+        >
             <Seo title="Lorem Ipsum Generator - Free Placeholder Text" toolId={30} />
-            <ServicePageHero
-                icon={Article}
-                title="Lorem Ipsum Generator"
-                subtitle="Generate placeholder text for mockups and layouts - entirely client-side, no server round-trip."
-            />
 
             <Card sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
@@ -68,7 +68,10 @@ const LoremIpsumGenerator: React.FC = () => {
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: 3,
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box sx={{ mb: 3 }}>
@@ -122,7 +125,7 @@ const LoremIpsumGenerator: React.FC = () => {
                 onClose={() => setSnackbar(false)}
                 message="Copied to clipboard!"
             />
-        </Container>
+        </ServicePageShell>
     );
 };
 

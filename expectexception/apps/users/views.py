@@ -169,3 +169,53 @@ class GoogleAuthView(APIView):
 
         logger.info("Google login successful for: %s", user.email)
         return Response(data, status=status.HTTP_200_OK)
+
+
+# ── API Key Management ────────────────────────────────────────────────────────
+from django.utils import timezone as tz
+from rest_framework.views import APIView as _APIView
+from rest_framework.permissions import IsAuthenticated as _IsAuth
+from .models import APIKey
+
+
+class APIKeyListCreateView(_APIView):
+    permission_classes = [_IsAuth]
+
+    def get(self, request):
+        keys = APIKey.objects.filter(user=request.user, is_active=True)
+        data = [
+            {
+                'id': k.id,
+                'name': k.name,
+                'masked_key': k.masked_key,
+                'scope': k.scope,
+                'created_at': k.created_at,
+                'last_used_at': k.last_used_at,
+                'expires_at': k.expires_at,
+            }
+            for k in keys
+        ]
+        return Response(data)
+
+    def post(self, request):
+        name = request.data.get('name', 'My Key')
+        scope = request.data.get('scope', 'full')
+        if scope not in ('read', 'full'):
+            scope = 'full'
+        if APIKey.objects.filter(user=request.user, is_active=True).count() >= 10:
+            return Response({'error': 'Maximum 10 active API keys allowed.'}, status=400)
+        key = APIKey.objects.create(user=request.user, name=name, scope=scope)
+        return Response({'id': key.id, 'name': key.name, 'key': key.key, 'scope': key.scope}, status=201)
+
+
+class APIKeyDeleteView(_APIView):
+    permission_classes = [_IsAuth]
+
+    def delete(self, request, pk):
+        try:
+            key = APIKey.objects.get(pk=pk, user=request.user)
+        except APIKey.DoesNotExist:
+            return Response({'error': 'Not found'}, status=404)
+        key.is_active = False
+        key.save(update_fields=['is_active'])
+        return Response({'deleted': True})

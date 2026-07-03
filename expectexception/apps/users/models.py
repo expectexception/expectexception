@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils import timezone
+from django.conf import settings
 
 
 class UserManager(BaseUserManager):
@@ -50,3 +51,67 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 
+
+
+import secrets
+
+class APIKey(models.Model):
+    """Programmatic API access key for authenticated users."""
+    SCOPE_CHOICES = [
+        ('read', 'Read Only'),
+        ('full', 'Full Access'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='api_keys')
+    name = models.CharField(max_length=100, help_text="Friendly name, e.g. 'My Script'")
+    key = models.CharField(max_length=64, unique=True, db_index=True)
+    scope = models.CharField(max_length=20, choices=SCOPE_CHOICES, default='full')
+    is_active = models.BooleanField(default=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True, help_text="Leave blank for no expiry")
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = secrets.token_urlsafe(48)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.email} — {self.name}"
+
+    @property
+    def masked_key(self):
+        return f"{self.key[:8]}...{self.key[-4:]}"
+
+
+class Subscription(models.Model):
+    """Simple tier system for rate-limit differentiation. No payment logic."""
+    TIER_FREE = 'free'
+    TIER_PRO = 'pro'
+    TIER_CHOICES = [(TIER_FREE, 'Free'), (TIER_PRO, 'Pro')]
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='subscription'
+    )
+    tier = models.CharField(max_length=20, choices=TIER_CHOICES, default=TIER_FREE, db_index=True)
+    started_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True, help_text='None = no expiry')
+    notes = models.TextField(blank=True, help_text='Admin notes (e.g. promo, paid invoice)')
+
+    class Meta:
+        db_table = 'user_subscriptions'
+
+    def __str__(self):
+        return f"{self.user.email} [{self.tier}]"
+
+    @property
+    def is_active_pro(self):
+        from django.utils import timezone
+        if self.tier != self.TIER_PRO:
+            return False
+        if self.expires_at and self.expires_at < timezone.now():
+            return False
+        return True

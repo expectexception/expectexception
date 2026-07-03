@@ -1,4 +1,5 @@
 import os
+import sentry_sdk
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
@@ -6,6 +7,16 @@ from django.utils.translation import gettext_lazy as _
 from django.urls import reverse_lazy
 
 load_dotenv()
+
+SENTRY_DSN = os.getenv('SENTRY_DSN', '')
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.05,
+        environment=os.getenv('ENVIRONMENT', 'production'),
+        send_default_pii=False,
+    )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -57,6 +68,7 @@ INSTALLED_APPS = [
     'apps.secret_sharer',
     'apps.contact',
     'apps.chatbot',
+    'apps.community',
     'django.contrib.sites',
     'django.contrib.sitemaps',
 ]
@@ -74,6 +86,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.services.middleware.ProLevelLoggingMiddleware',
+    'apps.services.middleware.RateLimitMiddleware',
     'apps.services.security.SecurityHeadersMiddleware',  # Add security headers
 ]
 
@@ -333,6 +346,14 @@ CELERY_TASK_ROUTES = {
 CELERY_TASK_ANNOTATIONS = {
     'ai_detector.analyze_image': {
         'rate_limit': '10/m',  # Max 10 tasks per minute per worker
+    },
+}
+
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    'weekly-digest': {
+        'task': 'notifications.send_weekly_digest',
+        'schedule': crontab(hour=9, minute=0, day_of_week='sunday'),
     },
 }
 
@@ -630,3 +651,14 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+# Feature flags and environment configurations
+FEATURE_FLAGS = {
+    'TWO_FACTOR_AUTH': os.getenv('FEATURE_2FA_ENABLED', 'False').lower() in ('true', '1', 'yes'),
+    'OLLAMA_ENABLED': os.getenv('FEATURE_OLLAMA_ENABLED', 'True').lower() in ('true', '1', 'yes'),
+    'HEAVY_AI_SERVICES': os.getenv('FEATURE_HEAVY_AI_ENABLED', 'True').lower() in ('true', '1', 'yes'),
+    'YT_DOWNLOADER': os.getenv('FEATURE_YT_DOWNLOADER_ENABLED', 'True').lower() in ('true', '1', 'yes'),
+    'CELERY_BEAT': os.getenv('FEATURE_CELERY_BEAT_ENABLED', 'True').lower() in ('true', '1', 'yes'),
+}
+
+CHATBOT_MODEL = os.getenv('CHATBOT_MODEL', 'qwen3:4b')

@@ -4809,3 +4809,22 @@ class UptimeTriggerDetailView(APIView):
         return Response(remaining)
 
 
+
+
+class CeleryTaskStatusView(APIView):
+    """Generic Celery task status polling endpoint."""
+    permission_classes = [AllowAny]
+
+    def get(self, request, task_id):
+        from celery.result import AsyncResult
+        result = AsyncResult(task_id)
+        state = result.state
+        if state == 'PENDING':
+            return Response({'status': 'pending'})
+        if state == 'STARTED' or state == 'PROGRESS':
+            return Response({'status': 'processing', 'info': result.info})
+        if state == 'SUCCESS':
+            return Response({'status': 'done', 'result': result.result})
+        if state == 'FAILURE':
+            return Response({'status': 'failed', 'error': str(result.result)}, status=500)
+        return Response({'status': state.lower()})

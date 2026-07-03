@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import {
-    Container, Card, CardContent, Box, Typography, Button, Slider,
-    FormControlLabel, Checkbox, Snackbar, LinearProgress,
+    Card, CardContent, Box, Typography, Button, Slider,
+    FormControlLabel, Checkbox, Snackbar, LinearProgress, useTheme,
 } from '@mui/material';
 import { VpnKey, ContentCopy, Refresh } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from './ServicePageHero';
+import ServicePageShell from './ServicePageShell';
 
 const LOWER = 'abcdefghijklmnopqrstuvwxyz';
 const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -37,6 +37,7 @@ const scorePassword = (pwd: string): number => {
 };
 
 const PasswordGenerator: React.FC = () => {
+    const theme = useTheme();
     const [length, setLength] = useState(16);
     const [lower, setLower] = useState(true);
     const [upper, setUpper] = useState(true);
@@ -49,7 +50,7 @@ const PasswordGenerator: React.FC = () => {
 
     const score = useMemo(() => scorePassword(password), [password]);
     const scoreLabel = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong', 'Excellent'][score];
-    const scoreColor = score <= 1 ? '#ef4444' : score <= 3 ? '#f59e0b' : '#3dfc55';
+    const scoreColor = score <= 1 ? theme.palette.error.main : score <= 3 ? theme.palette.warning.main : theme.palette.primary.main;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(password);
@@ -57,13 +58,12 @@ const PasswordGenerator: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <ServicePageShell
+            icon={VpnKey}
+            title="Password Generator"
+            subtitle="Generate cryptographically random passwords locally using your browser's Web Crypto API - never sent anywhere."
+        >
             <Seo title="Secure Password Generator - Free Online Tool" toolId={33} />
-            <ServicePageHero
-                icon={VpnKey}
-                title="Password Generator"
-                subtitle="Generate cryptographically random passwords locally using your browser's Web Crypto API - never sent anywhere."
-            />
 
             <Card sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
@@ -71,7 +71,8 @@ const PasswordGenerator: React.FC = () => {
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: 3,
+                overflowY: 'auto',
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box sx={{
@@ -116,7 +117,7 @@ const PasswordGenerator: React.FC = () => {
             </Card>
 
             <Snackbar open={snackbar} autoHideDuration={2000} onClose={() => setSnackbar(false)} message="Password copied to clipboard!" />
-        </Container>
+        </ServicePageShell>
     );
 };
 

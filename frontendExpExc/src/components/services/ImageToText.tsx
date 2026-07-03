@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Container, Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
-    TextField, FormControl, InputLabel, Select, MenuItem, alpha
+    Card, CardContent, Typography, Button, Box, Alert, LinearProgress,
+    TextField, FormControl, InputLabel, Select, MenuItem, useTheme
 } from '@mui/material';
-import { Image, CloudUpload, TextFields, ContentCopy } from '@mui/icons-material';
+import { CloudUpload, TextFields, ContentCopy } from '@mui/icons-material';
 import Seo from '../seo/Seo';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
+import ServicePageShell from './ServicePageShell';
 
 const ImageToText: React.FC = () => {
+    const theme = useTheme();
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [language, setLanguage] = useState('eng');
@@ -120,47 +122,48 @@ const ImageToText: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Seo
-                title="Image to Text (OCR) - Extract Text from Photos Free"
-                toolId={14}
-            />
+        <ServicePageShell
+            icon={TextFields}
+            title="Image to Text (OCR)"
+            subtitle="Extract text from images using AI-powered OCR"
+            maxWidth="md"
+        >
+            <Seo title="Image to Text (OCR) - Extract Text from Photos Free" toolId={14} />
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                Image to Text (OCR)
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Extract text from images using AI-powered OCR
-            </Typography>
-
-            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-            {warning && <Alert severity="warning" sx={{ mb: 3 }}>{warning}</Alert>}
+            {error && <Alert severity="error" sx={{ mb: 2, flexShrink: 0 }}>{error}</Alert>}
+            {warning && <Alert severity="warning" sx={{ mb: 2, flexShrink: 0 }}>{warning}</Alert>}
 
             <Box
                 sx={{
                     display: 'flex',
-                    gap: { xs: 2, sm: 3 },
+                    gap: { xs: 2, sm: 2.5 },
                     flexDirection: { xs: 'column', md: 'row' },
+                    flex: 1,
+                    minHeight: 0,
                 }}
             >
                 {/* Left: Upload */}
-                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 300 } }}>
-                    <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
-                        <Box sx={{ border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: { xs: 2, sm: 4 }, textAlign: 'center', mb: 3 }}>
-                            <input accept="image/*" style={{ display: 'none' }} id="image-upload" type="file" onChange={handleFileSelect} />
-                            <label htmlFor="image-upload" style={{ cursor: 'pointer' }}>
+                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 280 }, display: 'flex', flexDirection: 'column' }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 2.5 }, display: 'flex', flexDirection: 'column', flex: 1 }}>
+                        <Box sx={{
+                            border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: 2,
+                            textAlign: 'center', mb: 2, flex: 1, minHeight: 140, display: 'flex',
+                            alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <input accept="image/*" style={{ display: 'none' }} id="image-to-text-upload" type="file" onChange={handleFileSelect} />
+                            <label htmlFor="image-to-text-upload" style={{ cursor: 'pointer' }}>
                                 {preview ? (
-                                    <Box component="img" src={preview} sx={{ maxWidth: '100%', maxHeight: 300, borderRadius: 2 }} />
+                                    <Box component="img" src={preview} sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 2 }} />
                                 ) : (
                                     <>
-                                        <CloudUpload sx={{ fontSize: 48, color: 'primary.main' }} />
+                                        <CloudUpload sx={{ fontSize: 40, color: theme.palette.primary.main }} />
                                         <Typography variant="h6">Upload image</Typography>
                                     </>
                                 )}
                             </label>
                         </Box>
 
-                        <FormControl fullWidth sx={{ mb: 3 }}>
+                        <FormControl fullWidth sx={{ mb: 2, flexShrink: 0 }}>
                             <InputLabel>Language</InputLabel>
                             <Select value={language} label="Language" onChange={(e) => setLanguage(e.target.value)}>
                                 {availableLanguages.map(lang => (
@@ -178,7 +181,7 @@ const ImageToText: React.FC = () => {
                             onClick={handleExtract}
                             disabled={!file || loading}
                             startIcon={<TextFields />}
-                            sx={{ py: 1.5 }}
+                            sx={{ py: 1.25, flexShrink: 0 }}
                         >
                             {loading ? 'Extracting...' : 'Extract Text'}
                         </Button>
@@ -186,9 +189,9 @@ const ImageToText: React.FC = () => {
                 </Card>
 
                 {/* Right: Result */}
-                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 300 } }}>
-                    <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 280 }, display: 'flex', flexDirection: 'column' }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 2.5 }, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexShrink: 0 }}>
                             <Typography variant="h6">Extracted Text</Typography>
                             {result && (
                                 <Button size="small" startIcon={<ContentCopy />} onClick={handleCopy}>
@@ -199,21 +202,25 @@ const ImageToText: React.FC = () => {
                         <TextField
                             fullWidth
                             multiline
-                            rows={15}
                             value={result?.text || ''}
                             placeholder="Extracted text will appear here..."
                             InputProps={{ readOnly: true }}
-                            sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace' } }}
+                            sx={{
+                                flex: 1,
+                                minHeight: 0,
+                                '& .MuiInputBase-root': { height: '100%', alignItems: 'flex-start' },
+                                '& .MuiInputBase-input': { fontFamily: 'monospace', height: '100% !important', overflow: 'auto !important' },
+                            }}
                         />
                         {result && (
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1, flexShrink: 0 }}>
                                 {result.characters} characters extracted
                             </Typography>
                         )}
                     </CardContent>
                 </Card>
             </Box>
-        </Container>
+        </ServicePageShell>
     );
 };
 

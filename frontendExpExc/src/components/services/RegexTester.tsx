@@ -6,7 +6,6 @@ import {
   Button,
   Card,
   CardContent,
-  Container,
   FormControlLabel,
   Grid,
   Stack,
@@ -14,8 +13,9 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { ContentCopy, Refresh } from '@mui/icons-material';
+import { ContentCopy, Refresh, FindReplace } from '@mui/icons-material';
 import Seo from '../seo/Seo';
+import ServicePageShell from './ServicePageShell';
 
 type RegexMatch = {
   index: number;
@@ -25,6 +25,69 @@ type RegexMatch = {
 
 const DEFAULT_PATTERN = '(\\w+)@(\\w+\\.)+\\w+';
 const DEFAULT_TEXT = `Emails:\n- alice@example.com\n- bob.smith@sub.domain.org\n\nNot emails:\n- alice(at)example.com\n- bob@domain`;
+
+const cheatSheetSections: Array<{ title: string; items: Array<{ pattern: string; meaning: string }> }> = [
+  {
+    title: 'Character Classes',
+    items: [
+      { pattern: '.', meaning: 'Any character' },
+      { pattern: '\\d', meaning: 'Digit (0-9)' },
+      { pattern: '\\w', meaning: 'Word char' },
+      { pattern: '\\s', meaning: 'Whitespace' },
+      { pattern: '[abc]', meaning: 'One of a, b, c' },
+      { pattern: '[^abc]', meaning: 'Not a, b, c' },
+      { pattern: '[a-z]', meaning: 'Range' },
+    ],
+  },
+  {
+    title: 'Quantifiers',
+    items: [
+      { pattern: '*', meaning: '0 or more' },
+      { pattern: '+', meaning: '1 or more' },
+      { pattern: '?', meaning: '0 or 1' },
+      { pattern: '{n}', meaning: 'Exactly n' },
+      { pattern: '{n,}', meaning: 'At least n' },
+      { pattern: '{n,m}', meaning: 'Between n and m' },
+      { pattern: '*?, +?, ??', meaning: 'Lazy versions' },
+    ],
+  },
+  {
+    title: 'Anchors',
+    items: [
+      { pattern: '^', meaning: 'Start of string/line' },
+      { pattern: '$', meaning: 'End of string/line' },
+      { pattern: '\\b', meaning: 'Word boundary' },
+    ],
+  },
+  {
+    title: 'Groups & Alternation',
+    items: [
+      { pattern: '(...)', meaning: 'Capturing group' },
+      { pattern: '(?:...)', meaning: 'Non-capturing group' },
+      { pattern: '|', meaning: 'Alternation (OR)' },
+    ],
+  },
+  {
+    title: 'Lookarounds',
+    items: [
+      { pattern: '(?=...)', meaning: 'Positive lookahead' },
+      { pattern: '(?!...)', meaning: 'Negative lookahead' },
+      { pattern: '(?<=...)', meaning: 'Positive lookbehind' },
+      { pattern: '(?<!...)', meaning: 'Negative lookbehind' },
+    ],
+  },
+  {
+    title: 'Flags',
+    items: [
+      { pattern: 'g', meaning: 'Global (find all)' },
+      { pattern: 'i', meaning: 'Case-insensitive' },
+      { pattern: 'm', meaning: 'Multiline' },
+      { pattern: 's', meaning: 'DotAll' },
+      { pattern: 'u', meaning: 'Unicode mode' },
+      { pattern: 'y', meaning: 'Sticky' },
+    ],
+  },
+];
 
 const RegexTester: React.FC = () => {
   const [pattern, setPattern] = useState(DEFAULT_PATTERN);
@@ -185,86 +248,21 @@ const RegexTester: React.FC = () => {
     await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
   };
 
-  const cheatSheetSections: Array<{ title: string; items: Array<{ pattern: string; meaning: string; example?: string }> }> = [
-    {
-      title: 'Character Classes',
-      items: [
-        { pattern: '.', meaning: 'Any character (except newline unless /s)', example: 'a.c matches abc' },
-        { pattern: '\\d', meaning: 'Digit (0-9)', example: '\\d{4} matches 2025' },
-        { pattern: '\\w', meaning: 'Word char (A-Z a-z 0-9 _)', example: '\\w+ matches user_name' },
-        { pattern: '\\s', meaning: 'Whitespace', example: '\\s+ matches spaces/tabs' },
-        { pattern: '[abc]', meaning: 'One of a, b, c', example: 'gr[ae]y matches gray/grey' },
-        { pattern: '[^abc]', meaning: 'Not a, b, c', example: '[^0-9] matches non-digits' },
-        { pattern: '[a-z]', meaning: 'Range', example: '[a-f] matches hex letters' },
-      ],
-    },
-    {
-      title: 'Quantifiers',
-      items: [
-        { pattern: '*', meaning: '0 or more', example: 'a* matches "", a, aaaa' },
-        { pattern: '+', meaning: '1 or more', example: 'a+ matches a, aa' },
-        { pattern: '?', meaning: '0 or 1', example: 'colou?r matches color/colour' },
-        { pattern: '{n}', meaning: 'Exactly n', example: '\\d{2} matches 42' },
-        { pattern: '{n,}', meaning: 'At least n', example: 'a{2,} matches aa, aaa' },
-        { pattern: '{n,m}', meaning: 'Between n and m', example: '\\d{1,3} matches 7, 42, 999' },
-        { pattern: '*?, +?, ??', meaning: 'Lazy versions', example: '.*? is minimal match' },
-      ],
-    },
-    {
-      title: 'Anchors',
-      items: [
-        { pattern: '^', meaning: 'Start of string/line (with /m)', example: '^Hello' },
-        { pattern: '$', meaning: 'End of string/line (with /m)', example: 'world$' },
-        { pattern: '\\b', meaning: 'Word boundary', example: '\\bcat\\b matches "cat" not "concatenate"' },
-      ],
-    },
-    {
-      title: 'Groups & Alternation',
-      items: [
-        { pattern: '(...)', meaning: 'Capturing group', example: '(\\d+)-(\\d+)' },
-        { pattern: '(?:...)', meaning: 'Non-capturing group', example: '(?:https?)://' },
-        { pattern: '|', meaning: 'Alternation (OR)', example: 'cat|dog' },
-      ],
-    },
-    {
-      title: 'Lookarounds (JS supports)',
-      items: [
-        { pattern: '(?=...)', meaning: 'Positive lookahead', example: 'q(?=u) matches q in "quick"' },
-        { pattern: '(?!...)', meaning: 'Negative lookahead', example: 'q(?!u) matches q in "Iraq"' },
-        { pattern: '(?<=...)', meaning: 'Positive lookbehind', example: '(?<=#)\\w+ matches tag in #hello' },
-        { pattern: '(?<!...)', meaning: 'Negative lookbehind', example: '(?<!#)\\w+' },
-      ],
-    },
-    {
-      title: 'Flags (JavaScript)',
-      items: [
-        { pattern: 'g', meaning: 'Global (find all matches)' },
-        { pattern: 'i', meaning: 'Case-insensitive' },
-        { pattern: 'm', meaning: 'Multiline (^ and $ work per line)' },
-        { pattern: 's', meaning: 'DotAll (. matches newline)' },
-        { pattern: 'u', meaning: 'Unicode mode' },
-        { pattern: 'y', meaning: 'Sticky (match at lastIndex)' },
-      ],
-    },
-  ];
-
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <ServicePageShell
+      icon={FindReplace}
+      title="Regex Tester + Cheat Sheet"
+      subtitle="Test JavaScript regular expressions against text and learn common patterns."
+      maxWidth="lg"
+    >
       <Seo title="Regex Tester + Cheat Sheet" toolId={24} />
 
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-        Regex Tester + Cheat Sheet
-      </Typography>
-      <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-        Test JavaScript regular expressions against text and learn common patterns.
-      </Typography>
-
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
+      <Grid container spacing={2} sx={{ flex: 1, minHeight: 0 }}>
+        <Grid item xs={12} md={6} sx={{ display: 'flex', minHeight: 0 }}>
+          <Card sx={{ display: 'flex', flexDirection: 'column', width: '100%', minHeight: 0 }}>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto' }}>
               {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
+                <Alert severity="error" sx={{ mb: 2, flexShrink: 0 }}>
                   {error}
                 </Alert>
               )}
@@ -275,13 +273,13 @@ const RegexTester: React.FC = () => {
                 value={pattern}
                 onChange={(e) => setPattern(e.target.value)}
                 placeholder={'e.g. ^(\\w+)$'}
-                sx={{ mb: 2 }}
+                sx={{ mb: 2, flexShrink: 0 }}
                 InputProps={{
                   sx: { fontFamily: 'monospace' },
                 }}
               />
 
-              <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap' }}>
+              <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap', flexShrink: 0 }}>
                 <FormControlLabel control={<Switch checked={flagGlobal} onChange={(e) => setFlagGlobal(e.target.checked)} />} label="g" />
                 <FormControlLabel control={<Switch checked={flagIgnoreCase} onChange={(e) => setFlagIgnoreCase(e.target.checked)} />} label="i" />
                 <FormControlLabel control={<Switch checked={flagMultiline} onChange={(e) => setFlagMultiline(e.target.checked)} />} label="m" />
@@ -293,17 +291,24 @@ const RegexTester: React.FC = () => {
               <TextField
                 fullWidth
                 multiline
-                minRows={14}
                 label="Text"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Paste text to test your regex..."
-                InputProps={{
-                  sx: { fontFamily: 'monospace', fontSize: '0.9rem' },
+                sx={{
+                  flex: 1,
+                  minHeight: 0,
+                  '& .MuiInputBase-root': { height: '100%', alignItems: 'flex-start' },
+                  '& .MuiInputBase-input': {
+                    fontFamily: 'monospace',
+                    fontSize: '0.9rem',
+                    height: '100% !important',
+                    overflowY: 'auto !important',
+                  },
                 }}
               />
 
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2 }}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2, flexShrink: 0 }}>
                 <Button variant="outlined" startIcon={<Refresh />} onClick={handleReset}>
                   Reset Example
                 </Button>
@@ -319,14 +324,14 @@ const RegexTester: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+        <Grid item xs={12} md={6} sx={{ display: 'flex', minHeight: 0 }}>
+          <Card sx={{ display: 'flex', flexDirection: 'column', width: '100%', minHeight: 0 }}>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto' }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5, flexShrink: 0 }}>
                 Results
               </Typography>
 
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, flexShrink: 0 }}>
                 {regex ? (
                   matches.length ? (
                     <>
@@ -343,12 +348,15 @@ const RegexTester: React.FC = () => {
 
               <Box
                 sx={{
-                  mb: 3,
+                  mb: 2,
                   p: 2,
                   borderRadius: 2,
                   bgcolor: (theme) => alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.08 : 0.04),
                   border: '1px solid',
                   borderColor: 'divider',
+                  flexShrink: 0,
+                  maxHeight: '30%',
+                  overflowY: 'auto',
                 }}
               >
                 {highlightedText || (
@@ -369,80 +377,70 @@ const RegexTester: React.FC = () => {
                 )}
               </Box>
 
-              <Stack spacing={1.5}>
-                {matches.slice(0, 50).map((m, idx) => (
-                  <Box
-                    key={`${m.index}-${idx}`}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                      #{idx + 1} @ {m.index}: <b>{m.text || '(empty)'}</b>
-                    </Typography>
-                    {!!m.groups.length && (
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                        Groups: {m.groups.map((g, i) => `(${i + 1}) ${g ?? ''}`).join(' · ')}
+              <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                <Stack spacing={1.5}>
+                  {matches.slice(0, 50).map((m, idx) => (
+                    <Box
+                      key={`${m.index}-${idx}`}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                        #{idx + 1} @ {m.index}: <b>{m.text || '(empty)'}</b>
                       </Typography>
-                    )}
-                  </Box>
-                ))}
+                      {!!m.groups.length && (
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                          Groups: {m.groups.map((g, i) => `(${i + 1}) ${g ?? ''}`).join(' · ')}
+                        </Typography>
+                      )}
+                    </Box>
+                  ))}
 
-                {matches.length > 50 && (
-                  <Typography variant="caption" color="text.secondary">
-                    Showing first 50 matches.
+                  {matches.length > 50 && (
+                    <Typography variant="caption" color="text.secondary">
+                      Showing first 50 matches.
+                    </Typography>
+                  )}
+                </Stack>
+
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1.5 }}>
+                    Cheat Sheet
                   </Typography>
-                )}
-              </Stack>
+                  <Grid container spacing={1.5}>
+                    {cheatSheetSections.map((section) => (
+                      <Grid key={section.title} item xs={12} sm={6}>
+                        <Box sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                          <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.75 }}>
+                            {section.title}
+                          </Typography>
+                          <Stack spacing={0.5}>
+                            {section.items.map((item) => (
+                              <Box key={`${section.title}-${item.pattern}`} sx={{ display: 'flex', gap: 1 }}>
+                                <Typography variant="caption" sx={{ fontFamily: 'monospace', minWidth: 64, flexShrink: 0 }}>
+                                  {item.pattern}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {item.meaning}
+                                </Typography>
+                              </Box>
+                            ))}
+                          </Stack>
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
-
-      <Box sx={{ mt: 6 }}>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800 }}>
-          Cheat Sheet
-        </Typography>
-
-        <Grid container spacing={3} sx={{ mt: 1 }}>
-          {cheatSheetSections.map((section) => (
-            <Grid key={section.title} item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                    {section.title}
-                  </Typography>
-
-                  <Stack spacing={1}>
-                    {section.items.map((item) => (
-                      <Box key={`${section.title}-${item.pattern}`}>
-                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                          {item.pattern}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {item.meaning}
-                          {item.example ? (
-                            <>
-                              {' '}
-                              <Box component="span" sx={{ fontFamily: 'monospace' }}>
-                                ({item.example})
-                              </Box>
-                            </>
-                          ) : null}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-    </Container>
+    </ServicePageShell>
   );
 };
 

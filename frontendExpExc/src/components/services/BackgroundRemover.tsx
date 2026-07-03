@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import {
-    Container, Card, CardContent, Typography, Button, Box, Alert, LinearProgress, alpha
+    Card, CardContent, Typography, Button, Box, Alert, LinearProgress, useTheme
 } from '@mui/material';
-import { Image, CloudUpload, Download, AutoFixHigh } from '@mui/icons-material';
+import { AutoFixHigh, CloudUpload, Download } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import apiClient from '../../api/config';
+import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';
+import ServicePageShell from './ServicePageShell';
 
 const BackgroundRemover: React.FC = () => {
+    const theme = useTheme();
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -34,7 +36,11 @@ const BackgroundRemover: React.FC = () => {
 
         try {
             const response = await apiClient.post(endpoints.services.backgroundRemove, formData);
-            setResult(response.data);
+            const data = response.data;
+            if (data.file_url && !data.file_url.startsWith('http')) {
+                data.file_url = `${API_BASE_URL}${data.file_url}`;
+            }
+            setResult(data);
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to remove background');
         } finally {
@@ -43,36 +49,34 @@ const BackgroundRemover: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
-            <Seo
-                title="AI Background Remover - Transparent Images in Seconds"
-                toolId={6}
-            />
+        <ServicePageShell
+            icon={AutoFixHigh}
+            title="Background Remover"
+            subtitle="Remove backgrounds from images with AI"
+            maxWidth="md"
+        >
+            <Seo title="AI Background Remover - Transparent Images in Seconds" toolId={6} />
 
+            <Card sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                <CardContent sx={{ p: { xs: 2, sm: 3 }, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                Background Remover
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
-                Remove backgrounds from images with AI
-            </Typography>
-
-            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-
-            <Card>
-                <CardContent sx={{ p: 4 }}>
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap', flex: 1, minHeight: 0 }}>
                         {/* Original */}
-                        <Box sx={{ flex: 1, minWidth: 200 }}>
+                        <Box sx={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column' }}>
                             <Typography variant="subtitle2" gutterBottom>Original</Typography>
-                            <Box sx={{ border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: 3, textAlign: 'center', minHeight: 200 }}>
-                                <input accept="image/*" style={{ display: 'none' }} id="image-upload" type="file" onChange={handleFileSelect} />
-                                <label htmlFor="image-upload" style={{ cursor: 'pointer' }}>
+                            <Box sx={{
+                                border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: 2,
+                                textAlign: 'center', flex: 1, minHeight: 160, display: 'flex',
+                                alignItems: 'center', justifyContent: 'center',
+                            }}>
+                                <input accept="image/*" style={{ display: 'none' }} id="bg-remove-upload" type="file" onChange={handleFileSelect} />
+                                <label htmlFor="bg-remove-upload" style={{ cursor: 'pointer' }}>
                                     {preview ? (
-                                        <Box component="img" src={preview} sx={{ maxWidth: '100%', maxHeight: 250, borderRadius: 2 }} />
+                                        <Box component="img" src={preview} sx={{ maxWidth: '100%', maxHeight: 220, objectFit: 'contain', borderRadius: 2 }} />
                                     ) : (
                                         <>
-                                            <CloudUpload sx={{ fontSize: 48, color: 'primary.main' }} />
+                                            <CloudUpload sx={{ fontSize: 40, color: theme.palette.primary.main }} />
                                             <Typography>Upload image</Typography>
                                         </>
                                     )}
@@ -81,29 +85,33 @@ const BackgroundRemover: React.FC = () => {
                         </Box>
 
                         {/* Result */}
-                        <Box sx={{ flex: 1, minWidth: 200 }}>
+                        <Box sx={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column' }}>
                             <Typography variant="subtitle2" gutterBottom>Result</Typography>
                             <Box sx={{
                                 border: '2px dashed',
                                 borderColor: result ? 'success.main' : 'divider',
                                 borderRadius: 3,
-                                p: 3,
+                                p: 2,
                                 textAlign: 'center',
-                                minHeight: 200,
+                                flex: 1,
+                                minHeight: 160,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 background: result ? 'repeating-conic-gradient(#80808020 0% 25%, transparent 0% 50%) 50% / 20px 20px' : undefined
                             }}>
                                 {result ? (
-                                    <Box component="img" src={result.file_url} sx={{ maxWidth: '100%', maxHeight: 250, borderRadius: 2 }} />
+                                    <Box component="img" src={result.file_url} sx={{ maxWidth: '100%', maxHeight: 220, objectFit: 'contain', borderRadius: 2 }} />
                                 ) : (
-                                    <Typography color="text.secondary" sx={{ pt: 8 }}>Result will appear here</Typography>
+                                    <Typography color="text.secondary">Result will appear here</Typography>
                                 )}
                             </Box>
                         </Box>
                     </Box>
 
-                    {loading && <LinearProgress sx={{ mt: 3 }} />}
+                    {loading && <LinearProgress sx={{ mt: 2 }} />}
 
-                    <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+                    <Box sx={{ display: 'flex', gap: 2, mt: 2, flexShrink: 0 }}>
                         <Button
                             fullWidth
                             variant="contained"
@@ -111,7 +119,7 @@ const BackgroundRemover: React.FC = () => {
                             onClick={handleRemove}
                             disabled={!file || loading}
                             startIcon={<AutoFixHigh />}
-                            sx={{ py: 1.5 }}
+                            sx={{ py: 1.25 }}
                         >
                             {loading ? 'Processing...' : 'Remove Background'}
                         </Button>
@@ -122,7 +130,7 @@ const BackgroundRemover: React.FC = () => {
                                 href={result.file_url}
                                 target="_blank"
                                 startIcon={<Download />}
-                                sx={{ py: 1.5 }}
+                                sx={{ py: 1.25 }}
                             >
                                 Download
                             </Button>
@@ -130,7 +138,7 @@ const BackgroundRemover: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

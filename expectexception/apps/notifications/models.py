@@ -95,3 +95,40 @@ class NotificationLog(models.Model):
         self.status = 'failed'
         self.error_message = str(error)
         self.save(update_fields=['status', 'error_message'])
+
+
+class InAppNotification(models.Model):
+    """In-app notification for community events (replies, votes, accepted answers)."""
+    TYPE_CHOICES = [
+        ('reply', 'New Reply'),
+        ('vote', 'Vote Received'),
+        ('accepted', 'Answer Accepted'),
+        ('mention', 'Mention'),
+    ]
+
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notifications'
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='sent_notifications'
+    )
+    notification_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    body = models.TextField(blank=True)
+    url = models.CharField(max_length=500, blank=True, help_text="Frontend path to navigate to")
+    is_read = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', 'is_read', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.notification_type} for {self.recipient}"

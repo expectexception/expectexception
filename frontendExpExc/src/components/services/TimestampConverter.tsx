@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Container, Card, CardContent, Box, Typography, TextField, Button, Grid, Divider } from '@mui/material';
+import { Card, CardContent, Box, Typography, TextField, Button, Grid, Divider } from '@mui/material';
 import { Schedule, ContentCopy } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from './ServicePageHero';
+import ServicePageShell from './ServicePageShell';
 
 const TimestampConverter: React.FC = () => {
     const [epoch, setEpoch] = useState(Math.floor(Date.now() / 1000).toString());
@@ -31,13 +31,13 @@ const TimestampConverter: React.FC = () => {
     const copy = (text: string) => navigator.clipboard.writeText(text);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <ServicePageShell
+            icon={Schedule}
+            title="Timestamp Converter"
+            subtitle="Convert between Unix epoch time and human-readable dates - computed locally in your browser."
+            maxWidth="md"
+        >
             <Seo title="Unix Timestamp / Epoch Converter - Free Online Tool" toolId={32} />
-            <ServicePageHero
-                icon={Schedule}
-                title="Timestamp Converter"
-                subtitle="Convert between Unix epoch time and human-readable dates - computed locally in your browser."
-            />
 
             <Card sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
@@ -45,7 +45,10 @@ const TimestampConverter: React.FC = () => {
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: 3,
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Button variant="outlined" onClick={useNow} sx={{ mb: 3 }}>Use Current Time</Button>
@@ -105,7 +108,7 @@ const TimestampConverter: React.FC = () => {
                     </Typography>
                 </CardContent>
             </Card>
-        </Container>
+        </ServicePageShell>
     );
 };
 

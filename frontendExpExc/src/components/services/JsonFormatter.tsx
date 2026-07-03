@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-    Container,
     Grid,
     Card,
     CardContent,
@@ -11,21 +10,20 @@ import {
     Stack,
     Alert,
     alpha,
+    useTheme,
 } from '@mui/material';
 import {
     Code,
     CheckCircle,
     Error as ErrorIcon,
     ContentCopy,
-    Download,
     Refresh,
 } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-
-
-
+import ServicePageShell from './ServicePageShell';
 
 const JsonFormatter: React.FC = () => {
+    const theme = useTheme();
     const [input, setInput] = useState('');
     const [output, setOutput] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -95,23 +93,26 @@ const JsonFormatter: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
+        <ServicePageShell
+            icon={Code}
+            title="JSON Formatter & Validator"
+            subtitle="Format, validate, and minify JSON data with ease - entirely in your browser."
+            maxWidth="lg"
+            howToSteps={[
+                { name: 'Paste or type your JSON', text: 'Paste raw JSON text into the left editor panel. It can be minified, formatted, or even partially broken.' },
+                { name: 'Format or validate', text: 'Click Format to auto-indent and beautify your JSON, or Validate to check for syntax errors with highlighted line numbers.' },
+                { name: 'Copy or minify', text: 'Use the copy button to copy the result, or switch to minify mode to compress the JSON for production use.' },
+            ]}
+        >
             <Seo
                 title="JSON Formatter & Validator - Beautify & Minify"
                 toolId={7}
             />
 
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-                JSON Formatter & Validator
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
-                Format, validate, and minify JSON data with ease
-            </Typography>
-
             {error && (
                 <Alert
                     severity={error.includes('Copied') ? 'success' : 'error'}
-                    sx={{ mb: 3 }}
+                    sx={{ mb: 1.5, flexShrink: 0 }}
                     onClose={() => setError(null)}
                     icon={error.includes('Copied') ? <CheckCircle /> : <ErrorIcon />}
                 >
@@ -119,12 +120,12 @@ const JsonFormatter: React.FC = () => {
                 </Alert>
             )}
 
-            <Grid container spacing={4}>
+            <Grid container spacing={2} sx={{ flex: 1, minHeight: 0 }}>
                 {/* Left Column - Input */}
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Grid item xs={12} md={6} sx={{ display: 'flex', minHeight: 0 }}>
+                    <Card sx={{ display: 'flex', flexDirection: 'column', width: '100%', minHeight: 0 }}>
+                        <CardContent sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexShrink: 0 }}>
                                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                                     Input JSON
                                 </Typography>
@@ -140,19 +141,23 @@ const JsonFormatter: React.FC = () => {
                             <TextField
                                 fullWidth
                                 multiline
-                                rows={20}
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder='Paste your JSON here...\n\nExample:\n{\n  "name": "value"\n}'
+                                placeholder={'Paste your JSON here...\n\nExample:\n{\n  "name": "value"\n}'}
                                 sx={{
+                                    flex: 1,
+                                    minHeight: 0,
+                                    '& .MuiInputBase-root': { height: '100%', alignItems: 'flex-start' },
                                     '& .MuiInputBase-input': {
                                         fontFamily: 'monospace',
                                         fontSize: '0.9rem',
+                                        height: '100% !important',
+                                        overflowY: 'auto !important',
                                     },
                                 }}
                             />
 
-                            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                            <Stack direction="row" spacing={1.5} sx={{ mt: 1.5, flexShrink: 0, flexWrap: 'wrap' }}>
                                 <Button variant="contained" onClick={handleFormat} startIcon={<Code />}>
                                     Format
                                 </Button>
@@ -171,10 +176,10 @@ const JsonFormatter: React.FC = () => {
                 </Grid>
 
                 {/* Right Column - Output */}
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Grid item xs={12} md={6} sx={{ display: 'flex', minHeight: 0 }}>
+                    <Card sx={{ display: 'flex', flexDirection: 'column', width: '100%', minHeight: 0 }}>
+                        <CardContent sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexShrink: 0 }}>
                                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                                     Output
                                 </Typography>
@@ -193,22 +198,26 @@ const JsonFormatter: React.FC = () => {
                             <TextField
                                 fullWidth
                                 multiline
-                                rows={20}
                                 value={output}
                                 InputProps={{
                                     readOnly: true,
                                 }}
                                 placeholder="Formatted JSON will appear here..."
                                 sx={{
+                                    flex: 1,
+                                    minHeight: 0,
+                                    '& .MuiInputBase-root': { height: '100%', alignItems: 'flex-start' },
                                     '& .MuiInputBase-input': {
                                         fontFamily: 'monospace',
                                         fontSize: '0.9rem',
-                                        bgcolor: alpha('#000', 0.02),
+                                        height: '100% !important',
+                                        overflowY: 'auto !important',
+                                        bgcolor: alpha(theme.palette.primary.main, 0.02),
                                     },
                                 }}
                             />
 
-                            <Box sx={{ mt: 3 }}>
+                            <Box sx={{ mt: 1.5, flexShrink: 0 }}>
                                 <Typography variant="body2" color="text.secondary" gutterBottom>
                                     Indent Size:
                                 </Typography>
@@ -229,66 +238,7 @@ const JsonFormatter: React.FC = () => {
                     </Card>
                 </Grid>
             </Grid>
-
-            {/* Features */}
-            <Box sx={{ mt: 6 }}>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
-                    Features
-                </Typography>
-                <Grid container spacing={3} sx={{ mt: 2 }}>
-                    {[
-                        {
-                            title: 'Format & Beautify',
-                            description: 'Make your JSON readable with proper indentation and line breaks.',
-                            icon: <Code />,
-                        },
-                        {
-                            title: 'Validate',
-                            description: 'Check if your JSON is valid and identify syntax errors.',
-                            icon: <CheckCircle />,
-                        },
-                        {
-                            title: 'Minify',
-                            description: 'Remove whitespace to reduce file size for production.',
-                            icon: <Download />,
-                        },
-                        {
-                            title: 'Error Detection',
-                            description: 'Get detailed error messages to fix invalid JSON quickly.',
-                            icon: <ErrorIcon />,
-                        },
-                    ].map((feature, index) => (
-                        <Grid item xs={12} sm={6} md={3} key={index}>
-                            <Card sx={{ height: '100%' }}>
-                                <CardContent>
-                                    <Box
-                                        sx={{
-                                            width: 48,
-                                            height: 48,
-                                            borderRadius: 2,
-                                            bgcolor: 'primary.light',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: 'primary.main',
-                                            mb: 2,
-                                        }}
-                                    >
-                                        {feature.icon}
-                                    </Box>
-                                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                                        {feature.title}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {feature.description}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-            </Box>
-        </Container>
+        </ServicePageShell>
     );
 };
 

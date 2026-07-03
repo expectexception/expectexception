@@ -3,13 +3,14 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from django.contrib.sitemaps.views import sitemap
-from .sitemaps import StaticSitemap, BlogSitemap, ToolsSitemap
+from .sitemaps import StaticSitemap, BlogSitemap, ToolsSitemap, CommunityThreadSitemap
 from django.http import HttpResponse
 
 sitemaps = {
     'static': StaticSitemap,
     'blog': BlogSitemap,
     'tools': ToolsSitemap,
+    'community': CommunityThreadSitemap,
 }
 
 def robots_txt(request):
@@ -29,6 +30,7 @@ urlpatterns = [
     path('api/secret-sharer/', include('apps.secret_sharer.urls')),
     path('api/contact/', include('apps.contact.urls')),
     path('api/chatbot/', include('apps.chatbot.urls')),
+    path('api/community/', include('apps.community.urls')),
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='docs'),
