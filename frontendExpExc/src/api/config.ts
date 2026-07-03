@@ -2,21 +2,31 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 
 const isReactSnap = () => typeof navigator !== 'undefined' && navigator.userAgent === 'ReactSnap';
 
-// Get base URL from environment variable or use default
-// Get base URL - support dynamic origin for production while keeping localhost default for dev
-const getBaseUrl = () => {
-    if (process.env.REACT_APP_API_BASE_URL) return process.env.REACT_APP_API_BASE_URL;
-    if (typeof window !== 'undefined') {
-        const origin = window.location.origin;
-        if (!origin.includes('localhost') && !origin.includes('127.0.0.1')) {
-            return origin;
-        }
+// API_BASE_URL: basic CRUD/auth/blog/community → Render HA backend
+// HEAVY_API_BASE_URL: chatbot/AI/video → local GPU server via Cloudflare tunnel
+const getBaseUrl = (): string => {
+    if (process.env.REACT_APP_API_BASE_URL) {
+        return process.env.REACT_APP_API_BASE_URL;
     }
-    return 'http://localhost:8000';
+    // Dev fallback
+    if (typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        return 'http://localhost:8000';
+    }
+    // Production: env var MUST be set. Log a clear error so it's immediately visible.
+    console.error(
+        '[config.ts] REACT_APP_API_BASE_URL is not set. ' +
+        'All API calls will fail. Set this env var in your Vercel project settings ' +
+        'to your Render backend URL (e.g. https://expectexception-api.onrender.com).'
+    );
+    return 'https://expectexception-api.onrender.com';
 };
 
-const getHeavyBaseUrl = () => {
-    if (process.env.REACT_APP_HEAVY_API_BASE_URL) return process.env.REACT_APP_HEAVY_API_BASE_URL;
+const getHeavyBaseUrl = (): string => {
+    if (process.env.REACT_APP_HEAVY_API_BASE_URL) {
+        return process.env.REACT_APP_HEAVY_API_BASE_URL;
+    }
+    // Heavy services fall back to the same base URL if no dedicated GPU server is configured.
     return getBaseUrl();
 };
 
