@@ -53,16 +53,26 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # ---------------------------------------------------------------------------
-# Database — Render managed Postgres via DATABASE_URL
-# ---------------------------------------------------------------------------
-
-DATABASES = {
-    'default': dj_database_url.config(
-        env='DATABASE_URL',
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# Django requires a SQL database for core tables (auth, sessions, etc.).
+# We use SQLite if DATABASE_URL is not set or contains a MongoDB URI.
+_db_url = os.getenv('DATABASE_URL')
+if _db_url and not _db_url.startswith('mongodb'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=_db_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Use SQLite. If a persistent disk is mounted at /data on Render, use it to persist data.
+    _sqlite_dir = '/data' if os.path.exists('/data') else BASE_DIR
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(str(_sqlite_dir), 'db.sqlite3'),
+        }
+    }
 
 # ---------------------------------------------------------------------------
 # Redis — Render Redis or Upstash via REDIS_URL
