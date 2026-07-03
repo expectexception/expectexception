@@ -4,7 +4,6 @@ djangorestframework>=3.14
 djangorestframework-simplejwt>=5.2
 django-cors-headers
 python-dotenv
-psycopg2-binary
 Pillow
 django-filter
 drf-spectacular

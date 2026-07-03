@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libreoffice \
         ffmpeg \
         gcc \
-        libpq-dev \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
