@@ -15,7 +15,13 @@ def get_mongodb_client():
 
     uri = os.getenv('MONGODB_ATLAS_URI')
     if not uri:
-        logger.info("MONGODB_ATLAS_URI not set. MongoDB Atlas integration is disabled.")
+        # Fallback to DATABASE_URL if it is configured as a MongoDB connection string
+        db_url = os.getenv('DATABASE_URL')
+        if db_url and db_url.startswith('mongodb'):
+            uri = db_url
+
+    if not uri:
+        logger.info("MongoDB Atlas URI not set. MongoDB Atlas integration is disabled.")
         return None
 
     try:
