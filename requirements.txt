@@ -11,7 +11,6 @@ drf-spectacular
 yt-dlp
 celery>=5.3
 redis==5.0.1
-onnxruntime-gpu  # GPU acceleration for background removal (rembg)
 django-storages[boto3]
 boto3
 moto
@@ -26,17 +25,12 @@ deep-translator
 asgiref
 
 # AI Image Detector dependencies
-transformers>=4.35.0
-torch>=2.0.0
-torchvision>=0.15.0
-accelerate>=0.24.0
 numpy>=1.24.0
 pandas>=2.0.0
 django-redis>=5.4.0
 
 # New tools dependencies
 PyPDF2>=3.0.0
-rembg>=2.0.50
 pytesseract>=0.3.10
 markdown>=3.5.0
 dnspython>=2.6.1
