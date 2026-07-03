@@ -1,0 +1,51 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Create virtualenv and install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip setuptools wheel
+          if [ -d "expectexception" ]; then
+            .venv/bin/pip install -r expectexception/requirements.txt
+          else
+            .venv/bin/pip install -r requirements.txt
+          fi
+
+      - name: Run migrations and tests
+        env:
+          DEBUG: "True"
+          CELERY_TASK_ALWAYS_EAGER: "True"
+          REDIS_URL: "redis://localhost:6379/1"
+        run: |
+          if [ -d "expectexception" ]; then
+            cd expectexception
+            ../.venv/bin/python manage.py migrate
+            ../.venv/bin/python manage.py test --verbosity=2
+          else
+            .venv/bin/python manage.py migrate
+            .venv/bin/python manage.py test --verbosity=2
+          fi
