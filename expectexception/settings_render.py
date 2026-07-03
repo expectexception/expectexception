@@ -11,7 +11,6 @@ Inherits from settings.py and overrides only what is different for Render:
 """
 
 import os
-import dj_database_url
 from .settings import *  # noqa: F401, F403
 
 # ---------------------------------------------------------------------------
@@ -57,6 +56,7 @@ CORS_ALLOWED_ORIGINS = [
 # We use SQLite if DATABASE_URL is not set or contains a MongoDB URI.
 _db_url = os.getenv('DATABASE_URL')
 if _db_url and not _db_url.startswith('mongodb'):
+    import dj_database_url
     DATABASES = {
         'default': dj_database_url.config(
             default=_db_url,
