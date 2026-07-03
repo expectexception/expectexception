@@ -22,6 +22,7 @@ import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from '../components/auth/GoogleSignInButton';
+import Seo from '../components/seo/Seo';
 
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
@@ -96,6 +97,7 @@ const RegisterPage: React.FC = () => {
 
     return (
         <Container component="main" maxWidth="sm">
+            <Seo title="Create Account" description="Create a free ExpectException account to unlock personalized features, save bookmarks, and track your tool usage history." noIndex />
             <Box
                 sx={{
                     marginTop: 8,

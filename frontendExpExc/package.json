@@ -42,6 +42,8 @@
     "@types/react-dom": "^18.2.22",
     "@types/react-router-dom": "^5.3.3",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "axios": "^1.6.8",
     "dompurify": "^3.4.11",
     "file-saver": "^2.0.5",
