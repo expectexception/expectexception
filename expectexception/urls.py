@@ -22,14 +22,11 @@ urlpatterns = [
     path('api/auth/', include('apps.users.urls')),
     path('api/services/', include('apps.services.urls')),
     path('api/blog/', include('apps.blog.urls')),
-    path('api/videos/', include('apps.videos.urls')),
     path('api/profiles/', include('apps.profiles.urls')),
     path('api/notifications/', include('apps.notifications.urls')),
-    path('api/ai-detector/', include('apps.ai_detector.urls')),
     path('api/text-to-handwriting/', include('apps.text_to_handwriting.urls')),
     path('api/secret-sharer/', include('apps.secret_sharer.urls')),
     path('api/contact/', include('apps.contact.urls')),
-    path('api/chatbot/', include('apps.chatbot.urls')),
     path('api/community/', include('apps.community.urls')),
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -46,3 +43,13 @@ from django.conf.urls.static import static
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Conditionally register routes for heavy/optional apps that may be
+# excluded from INSTALLED_APPS on Render (e.g. videos, chatbot, ai_detector).
+_installed = set(settings.INSTALLED_APPS)
+if 'apps.videos' in _installed:
+    urlpatterns += [path('api/videos/', include('apps.videos.urls'))]
+if 'apps.chatbot' in _installed:
+    urlpatterns += [path('api/chatbot/', include('apps.chatbot.urls'))]
+if 'apps.ai_detector' in _installed:
+    urlpatterns += [path('api/ai-detector/', include('apps.ai_detector.urls'))]
