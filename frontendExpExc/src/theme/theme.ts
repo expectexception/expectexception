@@ -1,4 +1,4 @@
-import { createTheme, alpha, Theme } from '@mui/material/styles';
+import { createTheme, alpha, darken, Theme } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -31,7 +31,7 @@ export const getTheme = (primaryColor: string = '#3dfc55', colorMode: 'dark' | '
       primary: {
         main: primaryColor,
         light: alpha(primaryColor, 0.8),
-        dark: alpha(primaryColor, 1.2),
+        dark: darken(primaryColor, 0.2),
         contrastText: isDark ? '#000000' : '#ffffff',
       },
       secondary: {

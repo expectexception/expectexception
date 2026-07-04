@@ -398,70 +398,111 @@ const getSkillsData = (primaryColor: string, secondaryColor: string) => [
 interface AgenticWorkflowVisualizerProps {
   activeStep: number | null;
   simulationActive: boolean;
+  progresses: number[];
 }
 
-const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ activeStep, simulationActive }) => {
+// A single data packet traveling along a completed/active segment of the line.
+const FlowingPacket: React.FC<{ color: string; delay: number; xStartPct: number; xEndPct: number }> = ({ color, delay, xStartPct, xEndPct }) => (
+  <motion.circle
+    cy="4"
+    r="3.5"
+    fill={color}
+    style={{ filter: `drop-shadow(0 0 4px ${color})` }}
+    animate={{ cx: [`${xStartPct}%`, `${xEndPct}%`], opacity: [0, 1, 1, 0] }}
+    transition={{ duration: 1.4, repeat: Infinity, ease: 'linear', delay }}
+  />
+);
+
+const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ activeStep, simulationActive, progresses }) => {
   const theme = useTheme();
   const primaryColor = theme.palette.primary.main;
   const secondaryColor = theme.palette.secondary.main; // Cyan
-  
+
   const nodes = [
-    { step: 0, label: 'Planning Agent', color: primaryColor, icon: <PlanningAgentSvg />, desc: 'Step 1: Analyze & Plan' },
-    { step: 1, label: 'Coding Agent', color: secondaryColor, icon: <CodingAgentSvg />, desc: 'Step 2: Generate Code' },
-    { step: 2, label: 'Testing Agent', color: '#a855f7', icon: <TestingAgentSvg />, desc: 'Step 3: Verify & Test' },
-    { step: 3, label: 'Deploy Agent', color: '#f97316', icon: <DeployAgentSvg />, desc: 'Step 4: Package & Ship' },
+    { step: 0, label: 'Planning Agent', color: primaryColor, icon: <PlanningAgentSvg />, desc: 'Analyze & Plan' },
+    { step: 1, label: 'Coding Agent', color: secondaryColor, icon: <CodingAgentSvg />, desc: 'Generate Code' },
+    { step: 2, label: 'Testing Agent', color: '#a855f7', icon: <TestingAgentSvg />, desc: 'Verify & Test' },
+    { step: 3, label: 'Deploy Agent', color: '#f97316', icon: <DeployAgentSvg />, desc: 'Package & Ship' },
   ];
 
+  const RING_R = 37;
+  const RING_C = 2 * Math.PI * RING_R;
+
   return (
-    <Box sx={{ 
-      width: '100%', 
-      mb: 8, 
-      p: { xs: 3, md: 5 }, 
-      bgcolor: 'rgba(13, 14, 18, 0.4)', 
-      borderRadius: '24px', 
-      border: '1px solid rgba(255, 255, 255, 0.05)', 
-      position: 'relative', 
-      overflow: 'hidden' 
+    <Box sx={{
+      width: '100%',
+      mb: 8,
+      p: { xs: 3, md: 5 },
+      bgcolor: 'rgba(13, 14, 18, 0.4)',
+      borderRadius: '24px',
+      border: '1px solid rgba(255, 255, 255, 0.05)',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
       <BorderBeam activeColor={simulationActive ? primaryColor : undefined} />
-      
-      {/* Background Grid Pattern */}
-      <Box sx={{ 
-        position: 'absolute', 
-        inset: 0, 
-        opacity: 0.07, 
-        backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)', 
-        backgroundSize: '24px 24px', 
-        pointerEvents: 'none' 
-      }} />
 
-      <Typography variant="h5" fontWeight="800" sx={{ mb: 4, textAlign: 'center', color: '#ffffff', letterSpacing: '-0.01em' }}>
-        Live Execution Pipeline
-      </Typography>
-      
+      {/* Animated circuit-board background: slow-drifting dot grid + faint scanline */}
+      <motion.div
+        style={{
+          position: 'absolute',
+          inset: -24,
+          opacity: 0.08,
+          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px)',
+          backgroundSize: '26px 26px',
+          pointerEvents: 'none',
+        }}
+        animate={{ backgroundPosition: ['0px 0px', '26px 26px'] }}
+        transition={{ repeat: Infinity, duration: 6, ease: 'linear' }}
+      />
+      {simulationActive && (
+        <motion.div
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            height: '120px',
+            background: `linear-gradient(180deg, transparent, ${alpha(primaryColor, 0.05)}, transparent)`,
+            pointerEvents: 'none',
+          }}
+          animate={{ top: ['-10%', '110%'] }}
+          transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+        />
+      )}
+
+      <Stack direction="row" alignItems="center" justifyContent="center" spacing={1.5} sx={{ mb: 4 }}>
+        <motion.div
+          animate={{ opacity: simulationActive ? [1, 0.3, 1] : 0.4 }}
+          transition={{ repeat: simulationActive ? Infinity : 0, duration: 1.2 }}
+          style={{ width: 8, height: 8, borderRadius: '50%', background: simulationActive ? primaryColor : '#4b5563', boxShadow: simulationActive ? `0 0 8px ${primaryColor}` : 'none' }}
+        />
+        <Typography variant="h5" fontWeight="800" sx={{ textAlign: 'center', color: '#ffffff', letterSpacing: '-0.01em' }}>
+          Live Execution Pipeline
+        </Typography>
+      </Stack>
+
       {/* Pipeline Container */}
-      <Box sx={{ 
-        position: 'relative', 
-        display: 'flex', 
-        flexDirection: { xs: 'column', md: 'row' }, 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
+      <Box sx={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        alignItems: 'center',
+        justifyContent: 'space-between',
         px: { xs: 2, md: 6 },
         gap: { xs: 6, md: 2 }
       }}>
-        
-        {/* SVG connection lines for Desktop */}
-        <Box sx={{ 
-          position: 'absolute', 
-          left: 0, 
-          top: '30px', 
-          width: '100%', 
-          height: '4px', 
+
+        {/* SVG connection lines + flowing data packets for Desktop */}
+        <Box sx={{
+          position: 'absolute',
+          left: 0,
+          top: '37px',
+          width: '100%',
+          height: '8px',
           display: { xs: 'none', md: 'block' },
-          pointerEvents: 'none', 
-          zIndex: 1 
+          pointerEvents: 'none',
+          zIndex: 1
         }}>
-          <svg width="100%" height="4" style={{ overflow: 'visible' }}>
+          <svg width="100%" height="8" style={{ overflow: 'visible' }}>
             <defs>
               <linearGradient id="line-grad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor={primaryColor} />
@@ -469,18 +510,18 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
                 <stop offset="100%" stopColor="#a855f7" />
               </linearGradient>
             </defs>
-            
+
             {/* Base Line */}
-            <line x1="12.5%" y1="2" x2="87.5%" y2="2" stroke="rgba(255, 255, 255, 0.06)" strokeWidth="3" />
-            
-            {/* Animated Active Line */}
+            <line x1="12.5%" y1="4" x2="87.5%" y2="4" stroke="rgba(255, 255, 255, 0.06)" strokeWidth="3" />
+
+            {/* Filled Progress Line */}
             {simulationActive && activeStep !== null && (
-              <motion.line 
-                x1="12.5%" 
-                y1="2" 
-                x2={`${12.5 + (activeStep * 25)}%`} 
-                y2="2" 
-                stroke="url(#line-grad)" 
+              <motion.line
+                x1="12.5%"
+                y1="4"
+                x2={`${12.5 + (activeStep * 25)}%`}
+                y2="4"
+                stroke="url(#line-grad)"
                 strokeWidth="3.5"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
@@ -488,81 +529,120 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
                 style={{ filter: 'drop-shadow(0 0 6px ' + primaryColor + ')' }}
               />
             )}
+
+            {/* Flowing packets along each completed/active segment */}
+            {simulationActive && [0, 1, 2].map((segment) => {
+              const segIsLive = activeStep !== null && activeStep > segment;
+              if (!segIsLive) return null;
+              return (
+                <FlowingPacket
+                  key={segment}
+                  color={nodes[segment + 1].color}
+                  delay={segment * 0.3}
+                  xStartPct={12.5 + segment * 25}
+                  xEndPct={12.5 + (segment + 1) * 25}
+                />
+              );
+            })}
           </svg>
         </Box>
 
         {/* Nodes */}
-        {nodes.map((node, index) => {
+        {nodes.map((node) => {
           const isActive = activeStep === node.step;
           const isCompleted = activeStep !== null && activeStep > node.step;
-          
+          const progress = Math.max(0, Math.min(100, progresses[node.step] ?? 0));
+          const dashOffset = RING_C - (RING_C * progress) / 100;
+
           return (
-            <Box 
-              key={node.step} 
-              sx={{ 
-                position: 'relative', 
-                zIndex: 2, 
-                display: 'flex', 
-                flexDirection: 'column', 
+            <Box
+              key={node.step}
+              sx={{
+                position: 'relative',
+                zIndex: 2,
+                display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 flex: 1
               }}
             >
-              {/* Outer Pulsing Ring */}
-              <motion.div
-                animate={{
-                  scale: isActive ? [1, 1.15, 1] : 1,
-                  borderColor: isActive ? node.color : isCompleted ? alpha(node.color, 0.6) : 'rgba(255, 255, 255, 0.05)',
-                  boxShadow: isActive 
-                    ? `0 0 30px ${alpha(node.color, 0.4)}, inset 0 0 15px ${alpha(node.color, 0.2)}` 
-                    : isCompleted 
-                    ? `0 0 15px ${alpha(node.color, 0.1)}`
-                    : 'none'
-                }}
-                transition={{
-                  repeat: isActive ? Infinity : 0,
-                  duration: 2,
-                  ease: 'easeInOut'
-                }}
-                style={{
-                  width: '70px',
-                  height: '70px',
-                  borderRadius: '50%',
-                  background: '#0d0e12',
-                  border: '2px solid',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: isActive || isCompleted ? node.color : undefined,
-                  transition: 'all 0.3s ease',
-                  position: 'relative'
-                }}
-              >
-                {/* Active step progress border */}
+              <Box sx={{ position: 'relative', width: '84px', height: '84px' }}>
+                {/* Progress ring — reflects real simulation progress, not just decoration */}
+                <svg width="84" height="84" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
+                  <circle cx="42" cy="42" r={RING_R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
+                  {(isActive || isCompleted) && (
+                    <motion.circle
+                      cx="42" cy="42" r={RING_R} fill="none"
+                      stroke={node.color}
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={RING_C}
+                      animate={{ strokeDashoffset: isCompleted ? 0 : dashOffset }}
+                      transition={{ duration: 0.2 }}
+                      style={{ filter: `drop-shadow(0 0 4px ${alpha(node.color, 0.6)})` }}
+                    />
+                  )}
+                </svg>
+
+                {/* Node core */}
+                <motion.div
+                  animate={{
+                    boxShadow: isActive
+                      ? `0 0 30px ${alpha(node.color, 0.4)}, inset 0 0 15px ${alpha(node.color, 0.2)}`
+                      : isCompleted
+                      ? `0 0 15px ${alpha(node.color, 0.1)}`
+                      : 'none'
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: 7, left: 7,
+                    width: '70px',
+                    height: '70px',
+                    borderRadius: '50%',
+                    background: '#0d0e12',
+                    border: `2px solid ${isActive ? node.color : isCompleted ? alpha(node.color, 0.6) : 'rgba(255, 255, 255, 0.08)'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: isActive || isCompleted ? node.color : undefined,
+                    transition: 'border-color 0.3s ease',
+                  }}
+                >
+                  <Box sx={{ transform: 'scale(0.65)', display: 'flex' }}>
+                    {node.icon}
+                  </Box>
+                </motion.div>
+
+                {/* Status badge — completed check / active pulse */}
+                {isCompleted && (
+                  <Box sx={{
+                    position: 'absolute', top: -2, right: -2,
+                    width: 22, height: 22, borderRadius: '50%',
+                    bgcolor: '#0d0e12', border: `2px solid ${node.color}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: node.color,
+                  }}>
+                    <CheckCircle sx={{ fontSize: 14 }} />
+                  </Box>
+                )}
                 {isActive && (
                   <motion.div
+                    animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
+                    transition={{ repeat: Infinity, duration: 1 }}
                     style={{
-                      position: 'absolute',
-                      inset: -4,
-                      borderRadius: '50%',
-                      border: `2px solid ${node.color}`,
-                      borderTopColor: 'transparent',
-                      borderLeftColor: 'transparent',
+                      position: 'absolute', top: -2, right: -2,
+                      width: 18, height: 18, borderRadius: '50%',
+                      background: node.color, boxShadow: `0 0 10px ${node.color}`,
                     }}
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
                   />
                 )}
-                <Box sx={{ transform: 'scale(0.65)', display: 'flex' }}>
-                  {node.icon}
-                </Box>
-              </motion.div>
-              
-              <Typography 
-                variant="subtitle2" 
-                fontWeight="850" 
-                sx={{ 
-                  mt: 2, 
+              </Box>
+
+              <Typography
+                variant="subtitle2"
+                fontWeight="850"
+                sx={{
+                  mt: 2,
                   color: isActive ? '#ffffff' : isCompleted ? node.color : 'text.secondary',
                   letterSpacing: '0.02em',
                   fontSize: '0.9rem',
@@ -571,16 +651,16 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
               >
                 {node.label}
               </Typography>
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  mt: 0.5, 
+              <Typography
+                variant="caption"
+                sx={{
+                  mt: 0.5,
                   color: isActive ? node.color : 'text.secondary',
                   opacity: 0.7,
                   fontSize: '0.75rem'
                 }}
               >
-                {node.desc}
+                {isActive ? `${node.desc} — ${Math.round(progress)}%` : isCompleted ? 'Done' : node.desc}
               </Typography>
             </Box>
           );
@@ -1216,10 +1296,10 @@ const HomePage: React.FC = () => {
                     ExpectException
                   </Typography>
                   <Typography variant="subtitle1" color="primary.main" fontWeight="600" sx={{ mb: 2 }}>
-                    Full Stack Engineering & AI Studio
+                    Full-Stack Engineering & Applied AI Studio
                   </Typography>
                   <Typography variant="body2" color="#94a3b8" sx={{ maxWidth: '280px', mx: 'auto' }}>
-                    Engineering high-performance, exception-free digital solutions.
+                    Every tool on this platform is something we built, ship, and run ourselves.
                   </Typography>
                 </Box>
               </Box>
@@ -1234,16 +1314,16 @@ const HomePage: React.FC = () => {
               transition={{ duration: 0.6 }}
             >
               <Typography variant="h6" color="primary.main" fontWeight="700" sx={{ mb: 1, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                About Me
+                About Us
               </Typography>
               <Typography variant="h2" sx={{ fontWeight: 800, mb: 4, letterSpacing: '-0.02em' }}>
-                Specializing in Modern Web Technologies
+                An Engineering Studio Built to Ship, Not Just Prototype
               </Typography>
               <Typography variant="body1" sx={{ color: '#94a3b8', fontSize: '1.1rem', lineHeight: 1.8, mb: 4 }}>
-                I believe that a great frontend is more than just styling—it is a conversation between the user and code. My engineering focus centers around high performance, robust state management, responsive layouts, and seamless animations.
+                ExpectException is a full-stack engineering and applied-AI studio. We design and operate production systems — not demos — and this platform is the proof: every tool in our library is something we built, deployed, and maintain ourselves, running on real infrastructure with real users.
               </Typography>
               <Typography variant="body1" sx={{ color: '#94a3b8', fontSize: '1.1rem', lineHeight: 1.8, mb: 6 }}>
-                By pairing interactive React/TypeScript frontends with secure Django or Node.js backends, I construct full-stack solutions designed to scale. I also design and deploy custom AI automation systems and conversational agents that optimize workflows.
+                Beyond the free tools, we take on client work — React/TypeScript frontends paired with secure Django or Node.js backends, custom AI automation, and agentic workflows that plug real tools into conversational systems. If you're hiring or scoping a project, everything you can try on this site is our portfolio, live in production.
               </Typography>
 
               <Grid container spacing={4}>
@@ -1272,13 +1352,13 @@ const HomePage: React.FC = () => {
       <Container maxWidth="xl" sx={{ py: { xs: 8, md: 14 } }}>
         <Box sx={{ mb: 8, textAlign: 'center' }}>
           <Typography variant="h6" color="primary.main" fontWeight="700" sx={{ mb: 1, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            My Toolkit
+            Our Toolkit
           </Typography>
           <Typography variant="h2" sx={{ fontWeight: 800, mb: 2, letterSpacing: '-0.02em' }}>
-            Creative Skills & Core Proficiencies
+            The Stack Behind Everything We Ship
           </Typography>
           <Typography variant="h6" color="#94a3b8" sx={{ maxWidth: '700px', mx: 'auto', fontWeight: 400 }}>
-            An interactive breakdown of my engineering capabilities. Hover over each domain to see sub-technologies and proficiency levels.
+            An interactive breakdown of what we build with. Hover over each domain to see the specific technologies and depth.
           </Typography>
         </Box>
 
@@ -1596,7 +1676,7 @@ const HomePage: React.FC = () => {
                 Live Functional Products
               </Typography>
               <Typography variant="h6" color="#94a3b8" sx={{ maxWidth: '600px', fontWeight: 400 }}>
-                I build production-grade, client-side tools. Try them out in real-time right here.
+                We build production-grade, client-side tools. Try them out in real-time right here.
               </Typography>
             </Box>
             <Button
@@ -1857,17 +1937,17 @@ const HomePage: React.FC = () => {
                       <UrlPreview />
                     </Box>
                     <Typography variant="h5" fontWeight="800" sx={{ mb: 1.5, fontSize: '1.25rem' }}>
-                      URL Converter & Shortener
+                      URL Encoder & Decoder
                     </Typography>
                     <Typography variant="body2" color="#94a3b8" sx={{ mb: 4, lineHeight: 1.6, flexGrow: 1, fontSize: '0.875rem' }}>
-                      Transform messy tracking links into short, clean, sharing-optimized URLs instantly.
+                      Percent-encode or decode messy query strings and special characters instantly.
                     </Typography>
                     <Button
                       component={Link}
-                      to="/services/url-downloader"
+                      to="/services/url-encode-decode"
                       variant="contained"
                       size="small"
-                      sx={{ 
+                      sx={{
                         alignSelf: 'flex-start',
                         bgcolor: primaryColor,
                         color: '#000000',
@@ -1877,7 +1957,7 @@ const HomePage: React.FC = () => {
                         '&:hover': { bgcolor: alpha(primaryColor, 0.8) }
                       }}
                     >
-                      Open Converter
+                      Open Tool
                     </Button>
                   </CardContent>
                 </Card>
@@ -1902,7 +1982,11 @@ const HomePage: React.FC = () => {
             </Typography>
           </Box>
 
-          <AgenticWorkflowVisualizer activeStep={activeStep} simulationActive={simulationActive} />
+          <AgenticWorkflowVisualizer
+            activeStep={activeStep}
+            simulationActive={simulationActive}
+            progresses={[plannerProgress, coderProgress, testerProgress, deployerProgress]}
+          />
 
           <Grid container spacing={4} alignItems="stretch">
             {/* Left side: The 4 Agents Grid */}
