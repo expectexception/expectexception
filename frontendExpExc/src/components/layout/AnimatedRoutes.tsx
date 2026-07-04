@@ -79,6 +79,11 @@ const RegexTester = lazy(() => import('../services/RegexTester'));
 const KeypairGenerator = lazy(() => import('../services/KeypairGenerator'));
 const RedirectInspector = lazy(() => import('../services/RedirectInspector'));
 const DnsLookup = lazy(() => import('../services/DnsLookup'));
+const UnitConverter = lazy(() => import('../services/UnitConverter'));
+const ColorContrastChecker = lazy(() => import('../services/ColorContrastChecker'));
+const RandomDataGenerator = lazy(() => import('../services/RandomDataGenerator'));
+const TextEncryptor = lazy(() => import('../services/TextEncryptor'));
+const MarkdownTableGenerator = lazy(() => import('../services/MarkdownTableGenerator'));
 const WebsiteDiagnostics = lazy(() => import('../services/WebsiteDiagnostics'));
 const SpeedTest = lazy(() => import('../services/SpeedTest'));
 const AudioSeparator = lazy(() => import('../services/AudioSeparator'));
@@ -125,6 +130,10 @@ const Kaleidoscope = lazy(() => import('../sandbox/Kaleidoscope'));
 const GameOfLife = lazy(() => import('../sandbox/GameOfLife'));
 const Boids = lazy(() => import('../sandbox/Boids'));
 const Spirograph = lazy(() => import('../sandbox/Spirograph'));
+const Pong = lazy(() => import('../sandbox/Pong'));
+const Hangman = lazy(() => import('../sandbox/Hangman'));
+const RockPaperScissors = lazy(() => import('../sandbox/RockPaperScissors'));
+const FlappyBlocks = lazy(() => import('../sandbox/FlappyBlocks'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -208,6 +217,11 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/keypair-generator" element={<PageTransition>{withAuthGuard(<KeypairGenerator />, '/services/keypair-generator', toolAccess, 'Keypair Generator')}</PageTransition>} />
                     <Route path="/services/redirect-inspector" element={<PageTransition>{withAuthGuard(<RedirectInspector />, '/services/redirect-inspector', toolAccess, 'Redirect Inspector')}</PageTransition>} />
                     <Route path="/services/dns-lookup" element={<PageTransition>{withAuthGuard(<DnsLookup />, '/services/dns-lookup', toolAccess, 'DNS Lookup')}</PageTransition>} />
+                    <Route path="/services/unit-converter" element={<PageTransition><UnitConverter /></PageTransition>} />
+                    <Route path="/services/color-contrast-checker" element={<PageTransition><ColorContrastChecker /></PageTransition>} />
+                    <Route path="/services/random-data-generator" element={<PageTransition><RandomDataGenerator /></PageTransition>} />
+                    <Route path="/services/text-encryptor" element={<PageTransition><TextEncryptor /></PageTransition>} />
+                    <Route path="/services/markdown-table-generator" element={<PageTransition><MarkdownTableGenerator /></PageTransition>} />
                     <Route path="/services/website-diagnostics" element={<PageTransition>{withAuthGuard(<WebsiteDiagnostics />, '/services/website-diagnostics', toolAccess, 'Website Diagnostics')}</PageTransition>} />
                     <Route path="/services/speed-test" element={<PageTransition>{withAuthGuard(<SpeedTest />, '/services/speed-test', toolAccess, 'Speed Test')}</PageTransition>} />
                     <Route path="/services/audio-separator" element={<PageTransition>{withAuthGuard(<AudioSeparator />, '/services/audio-separator', toolAccess, 'Audio Separator')}</PageTransition>} />
@@ -255,6 +269,10 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/sandbox/game-of-life" element={<PageTransition><GameOfLife /></PageTransition>} />
                     <Route path="/sandbox/boids" element={<PageTransition><Boids /></PageTransition>} />
                     <Route path="/sandbox/spirograph" element={<PageTransition><Spirograph /></PageTransition>} />
+                    <Route path="/sandbox/pong" element={<PageTransition><Pong /></PageTransition>} />
+                    <Route path="/sandbox/hangman" element={<PageTransition><Hangman /></PageTransition>} />
+                    <Route path="/sandbox/rock-paper-scissors" element={<PageTransition><RockPaperScissors /></PageTransition>} />
+                    <Route path="/sandbox/flappy-blocks" element={<PageTransition><FlappyBlocks /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />
