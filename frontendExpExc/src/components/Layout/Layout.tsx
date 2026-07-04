@@ -22,6 +22,7 @@ import {
     Divider,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import BrandLogo from '../layout/BrandLogo';
 import {
     Menu as MenuIcon,
     Home,
@@ -35,7 +36,6 @@ import {
     Login,
     Logout,
     AppRegistration,
-    Code,
     AdminPanelSettings,
     ChatBubbleOutline,
     SportsEsports,
@@ -147,20 +147,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         }}>
             <Box sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
-                    <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 28,
-                        height: 28,
-                        borderRadius: '6px',
-                        border: '1.5px solid',
-                        borderColor: 'primary.main',
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        color: 'primary.main',
-                    }}>
-                        <Code sx={{ fontSize: 16 }} />
-                    </Box>
+                    <BrandLogo size={28} />
                     <Typography variant="h6" color="#ffffff" fontWeight="800" sx={{ letterSpacing: '-0.03em' }}>
                         Expect<span style={{ color: theme.palette.primary.main }}>Exception</span>
                     </Typography>
@@ -381,21 +368,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             {/* Logo */}
                             <Box sx={{ display: 'flex', alignItems: 'center', mr: { xs: 1, md: 4 }, flexShrink: 0 }}>
                                 <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', gap: 8 }}>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: 32,
-                                        height: 32,
-                                        borderRadius: '8px',
-                                        border: '2px solid',
-                                        borderColor: 'primary.main',
-                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                        color: 'primary.main',
-                                        boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.2)}`,
-                                    }}>
-                                        <Code sx={{ fontSize: 18 }} />
-                                    </Box>
+                                    <BrandLogo size={34} />
                                     <Typography
                                         variant="h6"
                                         sx={{
@@ -732,20 +705,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             <Grid item xs={12} md={4}>
                                 <Stack spacing={2.5}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: 32,
-                                            height: 32,
-                                            borderRadius: '8px',
-                                            border: '2px solid',
-                                            borderColor: 'primary.main',
-                                            bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                            color: 'primary.main',
-                                        }}>
-                                            <Code sx={{ fontSize: 18 }} />
-                                        </Box>
+                                        <BrandLogo size={32} />
                                         <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.02em', fontSize: '1.25rem', color: '#ffffff' }}>
                                             Expect<span style={{ color: theme.palette.primary.main }}>Exception</span>
                                         </Typography>
