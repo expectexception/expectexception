@@ -10,7 +10,13 @@ drf-spectacular
 yt-dlp
 celery>=5.3
 redis==5.0.1
-onnxruntime-gpu  # GPU acceleration for background removal (rembg)
+# CPU build: this box has no nvidia-container-toolkit/GPU passthrough
+# configured yet, and onnxruntime-gpu hard-fails at import (ImportError:
+# libcudart.so) rather than falling back to CPU like torch does — it
+# needs the CUDA runtime libs physically present to import at all. Once
+# GPU passthrough is set up, switch back to onnxruntime-gpu for real
+# acceleration; until then this is what makes rembg work at all.
+onnxruntime  # background removal (rembg)
 django-storages[boto3]
 boto3
 moto
