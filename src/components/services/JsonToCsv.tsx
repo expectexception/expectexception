@@ -62,7 +62,19 @@ const JsonToCsv: React.FC = () => {
         : 'name,age\nAlice,30\nBob,25';
 
     return (
-        <ServicePageShell icon={TableChart} title="JSON ↔ CSV Converter" subtitle="Convert between JSON arrays and CSV files — 100% in your browser" maxWidth="xl">
+        <ServicePageShell
+            icon={TableChart}
+            title="JSON ↔ CSV Converter"
+            subtitle="Convert between JSON arrays and CSV files — 100% in your browser"
+            maxWidth="xl"
+            seoTitle="JSON to CSV Converter Online — Free, Private & Bidirectional"
+            toolId={38}
+            keywords={['json to csv', 'csv to json', 'convert json to excel', 'json array to csv', 'online json csv converter', 'json to spreadsheet', 'export json to csv', 'csv converter online free']}
+            faq={[
+                { question: 'Is my data uploaded to a server?', answer: 'No. The JSON ↔ CSV conversion runs entirely in your browser — nothing is sent anywhere, so it is safe for sensitive data.' },
+                { question: 'Can I convert CSV back to JSON?', answer: 'Yes, the converter is bidirectional. Paste CSV and switch direction to get a clean JSON array of objects.' },
+            ]}
+        >
             <Card>
                 <CardContent sx={{ p: 3 }}>
                     <Stack direction="row" spacing={1} sx={{ mb: 3 }}>

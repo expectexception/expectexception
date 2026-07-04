@@ -92,7 +92,15 @@ const ColorPaletteGenerator: React.FC = () => {
     const analogous = [hslToHex((h - 30 + 360) % 360, s, l), hslToHex((h + 30) % 360, s, l)];
 
     return (
-        <ServicePageShell icon={Palette} title="Color Palette Generator" subtitle="Generate beautiful color palettes, shades, and harmonies from any color" maxWidth="xl">
+        <ServicePageShell
+            icon={Palette}
+            title="Color Palette Generator"
+            subtitle="Generate beautiful color palettes, shades, and harmonies from any color"
+            maxWidth="xl"
+            seoTitle="Color Palette Generator — Harmonies, Shades & Hex Codes"
+            toolId={42}
+            keywords={['color palette generator', 'hex color scheme', 'complementary colors', 'css color palette', 'random palette generator', 'color harmony tool', 'color shades generator', 'ui color palette']}
+        >
             <Card>
                 <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', gap: 2, mb: 4, alignItems: 'center', flexWrap: 'wrap' }}>

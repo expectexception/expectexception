@@ -52,6 +52,13 @@ const JwtDecoder: React.FC = () => {
             title="JWT Decoder"
             subtitle="Decode JSON Web Tokens in your browser — your token never leaves your device"
             maxWidth="lg"
+            seoTitle="JWT Decoder Online — Decode & Inspect JSON Web Tokens"
+            toolId={40}
+            keywords={['jwt decoder', 'decode jwt online', 'json web token decoder', 'jwt debugger', 'inspect jwt claims', 'jwt viewer', 'decode bearer token', 'jwt payload decoder']}
+            faq={[
+                { question: 'Is it safe to paste my JWT here?', answer: 'Yes. Decoding happens entirely in your browser with client-side JavaScript — your token is never transmitted to any server.' },
+                { question: 'Does this verify the JWT signature?', answer: 'This tool decodes and inspects the header and payload. It shows the algorithm and expiry but does not verify the signature, which requires the secret key.' },
+            ]}
             howToSteps={[
                 { name: 'Paste your JWT', text: 'Copy your JWT token from your app, API response, or cookie and paste it into the input field.' },
                 { name: 'Inspect decoded claims', text: 'The tool instantly decodes the header and payload showing algorithm, subject, issuer, and custom claims.' },

@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Container, Typography, useTheme, alpha } from '@mui/material';
 import type { ContainerProps } from '@mui/material';
 import type { SvgIconComponent } from '@mui/icons-material';
-import Seo, { HowToStep } from '../seo/Seo';
+import Seo, { HowToStep, FaqItem } from '../seo/Seo';
 
 interface ServicePageShellProps {
     icon: SvgIconComponent;
@@ -10,10 +10,18 @@ interface ServicePageShellProps {
     subtitle: string;
     maxWidth?: ContainerProps['maxWidth'];
     children: React.ReactNode;
+    /** Optional: keyword-rich <title> for search engines (defaults to `title`). */
+    seoTitle?: string;
     /** Optional: override default SEO description */
     seoDescription?: string;
+    /** Optional: tools.json id → SoftwareApplication schema + tool keywords */
+    toolId?: number;
+    /** Optional: extra high-intent keywords merged into the meta keywords */
+    keywords?: string[];
     /** Optional: HowTo steps for JSON-LD rich results */
     howToSteps?: HowToStep[];
+    /** Optional: FAQ entries → FAQPage rich result in Google */
+    faq?: FaqItem[];
 }
 
 /** App-bar-aware, single-viewport layout for tool pages: a compact inline
@@ -24,7 +32,8 @@ interface ServicePageShellProps {
  * the viewport. Replaces the old `ServicePageHero` + `py: 8` pattern, which
  * pushed every tool page well past one screen. */
 const ServicePageShell: React.FC<ServicePageShellProps> = ({
-    icon: Icon, title, subtitle, maxWidth = 'sm', children, seoDescription, howToSteps,
+    icon: Icon, title, subtitle, maxWidth = 'sm', children, seoTitle, seoDescription,
+    toolId, keywords, howToSteps, faq,
 }) => {
     const theme = useTheme();
     const primary = theme.palette.primary.main;
@@ -38,9 +47,12 @@ const ServicePageShell: React.FC<ServicePageShellProps> = ({
     return (
         <>
         <Seo
-            title={title}
+            title={seoTitle || title}
             description={seoDescription || subtitle}
+            toolId={toolId}
+            keywords={keywords}
             howToSteps={howToSteps}
+            faq={faq}
         />
         <Box sx={{
             minHeight: viewportHeight,
