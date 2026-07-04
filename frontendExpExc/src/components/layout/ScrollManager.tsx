@@ -69,7 +69,7 @@ const ScrollManager: React.FC = () => {
             // (index.css) so the jump is instant and the retry check is valid.
             let frames = 0;
             const restore = () => {
-                window.scrollTo({ top: target, left: 0, behavior: 'auto' });
+                window.scrollTo({ top: target, left: 0, behavior: 'instant' as ScrollBehavior });
                 if (Math.abs(window.scrollY - target) > 2 && frames < 20) {
                     frames += 1;
                     requestAnimationFrame(restore);
@@ -77,9 +77,15 @@ const ScrollManager: React.FC = () => {
             };
             requestAnimationFrame(restore);
         } else {
-            // New page / next step → start at the top. behavior:'auto' beats
-            // the CSS smooth-scroll so there's no visible slide from mid-page.
-            window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            // New page / next step → start at the top. 'auto' does NOT mean
+            // instant — per the ScrollToOptions spec it means "defer to the
+            // scroll-behavior CSS property", and index.css sets that to
+            // smooth globally. That silently turned every "scroll to top"
+            // into a multi-second glide (worse the taller the previous page
+            // was), which is what made navigation look like it dumped you
+            // near the footer instead of the top. 'instant' bypasses CSS
+            // and actually jumps immediately.
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
         }
     }, [location.key, location.hash, navType]);
 
