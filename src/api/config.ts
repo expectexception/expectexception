@@ -34,6 +34,31 @@ const API_BASE_URL = getBaseUrl();
 const HEAVY_API_BASE_URL = getHeavyBaseUrl();
 const WS_BASE_URL = API_BASE_URL.replace('http', 'ws');
 
+// FALLBACK_BASE_URL: the local server's Cloudflare Tunnel URL. It runs the
+// full app (not just heavy AI), so it can stand in for Render's light
+// endpoints (auth/blog/community/contact) too if Render is unreachable.
+// Optional — if unset, failover is simply disabled (requests just fail
+// normally, same as before this existed).
+const FALLBACK_BASE_URL = process.env.REACT_APP_LOCAL_FALLBACK_BASE_URL || '';
+
+// Simple circuit breaker: once we've confirmed Render is down, stop paying
+// the round-trip cost of trying it on every request for a cooldown window —
+// route straight to the fallback until it's worth checking Render again.
+const RENDER_DOWN_COOLDOWN_MS = 60_000;
+let renderDownUntil = 0;
+const isRenderMarkedDown = () => FALLBACK_BASE_URL !== '' && Date.now() < renderDownUntil;
+const markRenderDown = () => {
+    renderDownUntil = Date.now() + RENDER_DOWN_COOLDOWN_MS;
+};
+
+// A network error (no response at all) or a gateway-level failure means the
+// Render service itself is unreachable — as opposed to a normal 4xx/5xx
+// application error, which the fallback wouldn't help with anyway.
+const isRenderUnreachableError = (error: AxiosError) => {
+    if (!error.response) return true; // network error / timeout / CORS-on-dead-host
+    return [502, 503, 504].includes(error.response.status);
+};
+
 // Create axios instance with default config
 const apiClient: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -67,6 +92,11 @@ apiClient.interceptors.request.use(
 
             if (isHeavy) {
                 config.baseURL = HEAVY_API_BASE_URL;
+            } else if (isRenderMarkedDown()) {
+                // Render was confirmed unreachable recently — skip straight
+                // to the local fallback instead of paying for a request
+                // we already expect to fail.
+                config.baseURL = FALLBACK_BASE_URL;
             }
         }
 
@@ -96,6 +126,25 @@ apiClient.interceptors.response.use(
     async (error: AxiosError) => {
         const originalRequest: any = error.config;
 
+        // Render failover: only for requests that actually went to Render
+        // (not already the heavy or fallback URL), and only once per request.
+        const wentToRender = !originalRequest?.baseURL || originalRequest.baseURL === API_BASE_URL;
+        if (
+            FALLBACK_BASE_URL &&
+            wentToRender &&
+            !originalRequest?._fallbackRetried &&
+            isRenderUnreachableError(error)
+        ) {
+            markRenderDown();
+            originalRequest._fallbackRetried = true;
+            originalRequest.baseURL = FALLBACK_BASE_URL;
+            try {
+                return await apiClient(originalRequest);
+            } catch (fallbackError) {
+                return Promise.reject(fallbackError);
+            }
+        }
+
         // Handle 401 Unauthorized - token expired
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
@@ -104,7 +153,8 @@ apiClient.interceptors.response.use(
                 // Try to refresh token
                 const refreshToken = localStorage.getItem('refreshToken');
                 if (refreshToken) {
-                    const response = await axios.post(`${API_BASE_URL}/api/auth/token/refresh/`, {
+                    const refreshBaseUrl = isRenderMarkedDown() ? FALLBACK_BASE_URL : API_BASE_URL;
+                    const response = await axios.post(`${refreshBaseUrl}/api/auth/token/refresh/`, {
                         refresh: refreshToken,
                     });
 
@@ -128,5 +178,5 @@ apiClient.interceptors.response.use(
     }
 );
 
-export { apiClient, API_BASE_URL, HEAVY_API_BASE_URL, WS_BASE_URL };
+export { apiClient, API_BASE_URL, HEAVY_API_BASE_URL, WS_BASE_URL, FALLBACK_BASE_URL };
 export default apiClient;
