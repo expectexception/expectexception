@@ -8,6 +8,7 @@ import Seo from '../seo/Seo';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 import ServicePageShell from './ServicePageShell';
+import { useScrollToResult } from '../../hooks/useScrollToResult';
 
 const ImageToText: React.FC = () => {
     const theme = useTheme();
@@ -24,6 +25,7 @@ const ImageToText: React.FC = () => {
         requested_language?: string;
         warning?: string;
     } | null>(null);
+    const resultRef = useScrollToResult<HTMLDivElement>(result?.text ?? false);
 
     const [availableLanguages, setAvailableLanguages] = useState<Array<{ code: string; name: string }>>([
         { code: 'eng', name: 'English' },
@@ -189,7 +191,7 @@ const ImageToText: React.FC = () => {
                 </Card>
 
                 {/* Right: Result */}
-                <Card sx={{ flex: 1, minWidth: { xs: '100%', md: 280 }, display: 'flex', flexDirection: 'column' }}>
+                <Card ref={resultRef} sx={{ flex: 1, minWidth: { xs: '100%', md: 280 }, display: 'flex', flexDirection: 'column' }}>
                     <CardContent sx={{ p: { xs: 2, sm: 2.5 }, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexShrink: 0 }}>
                             <Typography variant="h6">Extracted Text</Typography>
