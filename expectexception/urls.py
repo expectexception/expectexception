@@ -39,10 +39,19 @@ urlpatterns = [
 ]
 
 from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import re_path
+from django.views.static import serve as serve_static
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# DEFAULT_FILE_STORAGE switches to Cloudinary when CLOUDINARY_URL is set
+# (see settings_render.py), so most media goes there instead of local disk.
+# But without CLOUDINARY_URL configured, or for anything that falls back to
+# local disk, Django's static() shortcut won't serve it — it silently
+# no-ops (returns []) whenever DEBUG=False, regardless of any surrounding
+# guard, and this runs DEBUG=False in production. Calling the underlying
+# view directly bypasses that no-op so local-disk media isn't a silent 404.
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve_static, {'document_root': settings.MEDIA_ROOT}),
+]
 
 # Conditionally register routes for heavy/optional apps that may be
 # excluded from INSTALLED_APPS on Render (e.g. videos, chatbot, ai_detector).
