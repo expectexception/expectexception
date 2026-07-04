@@ -392,3 +392,107 @@ def upscale_image_task(self, input_path: str, scale: float, sharpness: float, de
         raise self.retry(exc=exc, max_retries=0)
 
 
+
+
+# ---------------------------------------------------------------------------
+# Cross-instance Mongo mirror tasks (Render <-> local server failover sync).
+# Best-effort: mirror_to_mongo() already swallows its own errors and logs,
+# so these tasks never raise — a Mongo hiccup must never fail a save().
+# Queued on 'default' so they never compete with heavy AI/processing queues.
+# ---------------------------------------------------------------------------
+
+@shared_task(queue='default', name='apps.services.tasks.mirror_user_task')
+def mirror_user_task(user_id):
+    from django.contrib.auth import get_user_model
+    from .mongodb import mirror_to_mongo
+
+    User = get_user_model()
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return
+    mirror_to_mongo('users', user.id, {
+        'email': user.email,
+        'password': user.password,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'is_active': user.is_active,
+        'is_staff': user.is_staff,
+        'is_superuser': user.is_superuser,
+        'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+        'auth_provider': user.auth_provider,
+        'google_id': user.google_id,
+        'avatar_url': user.avatar_url,
+    })
+
+
+@shared_task(queue='default', name='apps.services.tasks.mirror_post_task')
+def mirror_post_task(post_id):
+    from apps.blog.models import Post
+    from .mongodb import mirror_to_mongo
+
+    try:
+        post = Post.objects.get(pk=post_id)
+    except Post.DoesNotExist:
+        return
+    mirror_to_mongo('blog_posts', post.id, {
+        'slug': post.slug,
+        'title': post.title,
+        'content': post.content,
+        'author_id': post.author_id,
+        'status': post.status,
+        'seo_title': post.seo_title,
+        'seo_description': post.seo_description,
+        'created_at': post.created_at.isoformat() if post.created_at else None,
+        'updated_at': post.updated_at.isoformat() if post.updated_at else None,
+        'published_at': post.published_at.isoformat() if post.published_at else None,
+    })
+
+
+@shared_task(queue='default', name='apps.services.tasks.mirror_thread_task')
+def mirror_thread_task(thread_id):
+    from apps.community.models import Thread
+    from .mongodb import mirror_to_mongo
+
+    try:
+        thread = Thread.objects.get(pk=thread_id)
+    except Thread.DoesNotExist:
+        return
+    mirror_to_mongo('community_threads', thread.id, {
+        'slug': thread.slug,
+        'title': thread.title,
+        'body': thread.body,
+        'author_id': thread.author_id,
+        'category_id': thread.category_id,
+        'tags': thread.tags,
+        'is_pinned': thread.is_pinned,
+        'is_closed': thread.is_closed,
+        'is_solved': thread.is_solved,
+        'created_at': thread.created_at.isoformat() if thread.created_at else None,
+        'updated_at': thread.updated_at.isoformat() if thread.updated_at else None,
+    })
+
+
+@shared_task(queue='default', name='apps.services.tasks.mirror_contact_inquiry_task')
+def mirror_contact_inquiry_task(inquiry_id):
+    from apps.contact.models import ContactInquiry
+    from .mongodb import mirror_to_mongo
+
+    try:
+        inquiry = ContactInquiry.objects.get(pk=inquiry_id)
+    except ContactInquiry.DoesNotExist:
+        return
+    mirror_to_mongo('contact_inquiries', inquiry.id, {
+        'name': inquiry.name,
+        'email': inquiry.email,
+        'subject': inquiry.subject,
+        'message': inquiry.message,
+        'inquiry_type': inquiry.inquiry_type,
+        'project_type': inquiry.project_type,
+        'budget': inquiry.budget,
+        'status': inquiry.status,
+        'ip_address': inquiry.ip_address,
+        'user_agent': inquiry.user_agent,
+        'source_page': inquiry.source_page,
+        'created_at': inquiry.created_at.isoformat() if inquiry.created_at else None,
+    })

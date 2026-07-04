@@ -13,30 +13,10 @@ from .serializers import ContactInquirySerializer
 
 logger = logging.getLogger(__name__)
 
-
-def mirror_contact_inquiry_to_mongo(inquiry):
-    """Mirror contact inquiry to MongoDB Atlas."""
-    try:
-        from apps.services.mongodb import get_mongodb_db
-        db = get_mongodb_db()
-        if db is not None:
-            db.contact_inquiries.insert_one({
-                'inquiry_id': inquiry.id,
-                'name': inquiry.name,
-                'email': inquiry.email,
-                'subject': inquiry.subject,
-                'message': inquiry.message,
-                'inquiry_type': inquiry.inquiry_type,
-                'project_type': inquiry.project_type,
-                'budget': inquiry.budget,
-                'ip_address': inquiry.ip_address,
-                'user_agent': inquiry.user_agent,
-                'source_page': inquiry.source_page,
-                'created_at': inquiry.created_at.isoformat() if inquiry.created_at else None,
-            })
-            logger.info(f"Successfully mirrored contact inquiry #{inquiry.id} to MongoDB Atlas.")
-    except Exception as e:
-        logger.error(f"Failed to mirror contact inquiry to MongoDB Atlas: {e}")
+# Mirroring ContactInquiry to MongoDB Atlas now happens automatically via the
+# post_save signal in apps/services/signals.py (mirror_contact_inquiry_task) —
+# every ContactInquiry save is mirrored, not just ones going through these
+# two views, so it no longer needs to be called explicitly here.
 
 
 def get_client_ip(request):
@@ -110,9 +90,6 @@ def submit_contact(request):
         # Send email notification
         send_notification_email(inquiry)
         
-        # Mirror to MongoDB Atlas
-        mirror_contact_inquiry_to_mongo(inquiry)
-        
         return Response({
             'success': True,
             'message': 'Thank you! Your message has been received. We\'ll get back to you soon.',
@@ -153,9 +130,6 @@ def submit_hire_inquiry(request):
         
         # Send email notification
         send_notification_email(inquiry)
-        
-        # Mirror to MongoDB Atlas
-        mirror_contact_inquiry_to_mongo(inquiry)
         
         return Response({
             'success': True,

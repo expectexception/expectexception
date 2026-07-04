@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from .models import Post, Tag, Comment, Like, Bookmark, PostSeries, PostDraft, PostRevision, MediaAsset
@@ -40,6 +41,24 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            return super().retrieve(request, *args, **kwargs)
+        except Http404:
+            # Cross-instance failover read-through: this post may have been
+            # created on the other instance (Render <-> local) and only
+            # exist there so far. Check the Mongo mirror before giving up.
+            # This is a best-effort degraded read (mirrored fields only),
+            # not a full model instance — see apps/services/mongodb.py.
+            from apps.services.mongodb import find_in_mongo
+            raw_id = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+            doc = find_in_mongo('blog_posts', int(raw_id)) if raw_id and str(raw_id).isdigit() else None
+            if not doc:
+                raise
+            doc.pop('_id', None)
+            doc['from_mongo_fallback'] = True
+            return Response(doc)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def publish(self, request, pk=None):

@@ -47,3 +47,49 @@ def get_mongodb_db():
         db_name = os.getenv('MONGODB_ATLAS_DB', 'expectexception')
         return client[db_name]
     return None
+
+
+def mirror_to_mongo(collection: str, doc_id, doc: dict) -> bool:
+    """Upsert `doc` into `collection` keyed by `doc_id`.
+
+    Used as the cross-instance sync layer between Render and the local
+    server: each writes to its own relational DB first (fast path, keeps
+    Django admin/permissions/serializers untouched), then best-effort
+    mirrors here so the other instance can look records up during a
+    failover. Never raises — failures are logged and swallowed so a Mongo
+    hiccup never breaks the request that triggered the mirror.
+    """
+    db = get_mongodb_db()
+    if db is None:
+        return False
+    try:
+        payload = {**doc, '_id': doc_id}
+        db[collection].replace_one({'_id': doc_id}, payload, upsert=True)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to mirror doc {doc_id!r} to Mongo collection '{collection}': {e}")
+        return False
+
+
+def find_in_mongo(collection: str, doc_id):
+    """Look up a single mirrored document by id. Returns None if not found/unavailable."""
+    db = get_mongodb_db()
+    if db is None:
+        return None
+    try:
+        return db[collection].find_one({'_id': doc_id})
+    except Exception as e:
+        logger.error(f"Failed to read doc {doc_id!r} from Mongo collection '{collection}': {e}")
+        return None
+
+
+def find_one_in_mongo(collection: str, query: dict):
+    """Look up a single mirrored document by an arbitrary query. Returns None if not found/unavailable."""
+    db = get_mongodb_db()
+    if db is None:
+        return None
+    try:
+        return db[collection].find_one(query)
+    except Exception as e:
+        logger.error(f"Failed to query Mongo collection '{collection}' with {query!r}: {e}")
+        return None
