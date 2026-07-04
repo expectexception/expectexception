@@ -218,5 +218,49 @@
         "tags": ["creative", "generative", "math"],
         "color": "info",
         "is_active": true
+    },
+    {
+        "id": 21,
+        "title": "Pong",
+        "description": "The original arcade classic. Move your mouse or finger to control the paddle - first to 7 wins against the AI.",
+        "icon": "SportsEsports",
+        "path": "/sandbox/pong",
+        "category": "classic",
+        "tags": ["classic", "arcade", "ai"],
+        "color": "secondary",
+        "is_active": true
+    },
+    {
+        "id": 22,
+        "title": "Hangman",
+        "description": "Guess the hidden word one letter at a time before six wrong guesses complete the drawing.",
+        "icon": "Spellcheck",
+        "path": "/sandbox/hangman",
+        "category": "puzzle",
+        "tags": ["puzzle", "word", "classic"],
+        "color": "warning",
+        "is_active": true
+    },
+    {
+        "id": 23,
+        "title": "Rock Paper Scissors",
+        "description": "Play against an AI that quietly learns your habits - favor one move too often and it starts countering you.",
+        "icon": "Casino",
+        "path": "/sandbox/rock-paper-scissors",
+        "category": "reaction",
+        "tags": ["reaction", "classic", "ai"],
+        "color": "primary",
+        "is_active": true
+    },
+    {
+        "id": 24,
+        "title": "Flappy Blocks",
+        "description": "Click, tap, or press space to flap and weave through the gaps. One hit and it's over.",
+        "icon": "Bolt",
+        "path": "/sandbox/flappy-blocks",
+        "category": "reaction",
+        "tags": ["reaction", "arcade", "score"],
+        "color": "success",
+        "is_active": true
     }
 ]
