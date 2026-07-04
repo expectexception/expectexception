@@ -873,8 +873,38 @@ const AIDetectorPage: React.FC = () => {
             maxWidth="lg"
         >
             <Seo
-                title="AI Image Detector - Forensic AI Generation Check"
+                title="AI Image Detector – Check If an Image Is AI Generated"
+                description="Upload any image and instantly detect if it was AI-generated using multi-model ensemble forensic analysis. Detects Midjourney, DALL-E, Stable Diffusion, and more. Free, no sign-up."
+                keywords={[
+                    'ai image detector free',
+                    'ai generated image checker',
+                    'deepfake detector online',
+                    'is this image ai generated',
+                    'midjourney image detector',
+                    'dall-e image detector',
+                    'stable diffusion detector',
+                    'ai photo detector',
+                    'detect ai art',
+                    'forensic image analysis online',
+                    'ela image forensics',
+                    'image authenticity checker',
+                    'chatgpt image detection',
+                ]}
                 toolId={3}
+                faq={[
+                    {
+                        question: 'How accurate is the AI image detector?',
+                        answer: 'Our detector uses an ensemble of multiple specialized ML models (including ELA forensics and deep-learning classifiers), achieving over 90% accuracy on images from Midjourney, DALL-E, Stable Diffusion, and other generators.',
+                    },
+                    {
+                        question: 'What image formats are supported?',
+                        answer: 'We support JPEG, PNG, WEBP, GIF, BMP, and TIFF files up to 50 MB.',
+                    },
+                    {
+                        question: 'Is the AI detector free?',
+                        answer: 'Yes, the tool is completely free. No account, no subscription, no watermarks.',
+                    },
+                ]}
             />
 
             {isAuthenticated && (

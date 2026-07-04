@@ -21,6 +21,7 @@ import { useDropzone } from 'react-dropzone';
 import Seo from '../seo/Seo';
 import ServicePageShell from './ServicePageShell';
 import apiClient, { API_BASE_URL } from '../../api/config';
+import { useScrollToResult } from '../../hooks/useScrollToResult';
 
 const AudioSeparator: React.FC = () => {
     const theme = useTheme();
@@ -31,6 +32,7 @@ const AudioSeparator: React.FC = () => {
     const [progress, setProgress] = useState(0);
     const [result, setResult] = useState<{ zip_url: string, vocals_url: string, accompaniment_url: string } | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const resultRef = useScrollToResult(!!result);
 
     // Backend returns MEDIA_URL-relative paths (e.g. "/media/audio_separator/...");
     // resolve them against the API host so playback/downloads work whenever the
@@ -227,7 +229,7 @@ const AudioSeparator: React.FC = () => {
 
                 {/* Results Area */}
                 {result && (
-                    <Grid container spacing={2}>
+                    <Grid container spacing={2} ref={resultRef}>
                         {/* Vocals Card */}
                         <Grid item xs={12} sm={6}>
                             <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.3)', borderTop: `4px solid ${primary}` }}>

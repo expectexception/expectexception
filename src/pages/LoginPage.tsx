@@ -22,6 +22,7 @@ import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from '../components/auth/GoogleSignInButton';
+import Seo from '../components/seo/Seo';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
@@ -87,6 +88,7 @@ const LoginPage: React.FC = () => {
 
     return (
         <Container component="main" maxWidth="sm">
+            <Seo title="Sign In" description="Sign in to your ExpectException account to access personalized features, bookmarks, and your tool history." noIndex />
             <Box
                 sx={{
                     marginTop: 8,

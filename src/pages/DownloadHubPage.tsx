@@ -49,6 +49,7 @@ import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import ResourceDetailsDialog from '../components/services/ResourceDetailsDialog';
 import { isReactSnap } from '../utils/isReactSnap';
+import Seo from '../components/seo/Seo';
 
 const DownloadHubPage: React.FC = () => {
   const { user } = useAuth();
@@ -222,6 +223,18 @@ const DownloadHubPage: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+      <Seo
+        title="Download Hub – Free Developer Resources, Templates & Tools"
+        description="Browse and download free developer resources, code templates, project starters, and tools. Organized by category. No login required for most files."
+        keywords={[
+          'free developer resources download',
+          'code templates free',
+          'project starter templates',
+          'free programming resources',
+          'developer tools download',
+          'free web templates',
+        ]}
+      />
       {/* Header */}
       <Box sx={{ mb: { xs: 3, sm: 4, md: 6 } }}>
         <Typography

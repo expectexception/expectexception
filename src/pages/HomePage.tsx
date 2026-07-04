@@ -24,19 +24,13 @@ import {
 } from '@mui/material';
 import {
   RocketLaunch,
-  Download,
-  QrCode,
   Code,
   ArrowForward,
   TrendingUp,
   Security,
   Speed,
   Newspaper,
-  VolumeUp,
-  Compress,
-  Movie,
   Psychology,
-  NetworkCheck,
   ColorLens,
   TouchApp,
   CheckCircle,
@@ -412,10 +406,10 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
   const secondaryColor = theme.palette.secondary.main; // Cyan
   
   const nodes = [
-    { step: 0, label: 'Planning Agent', color: primaryColor, icon: '📋', desc: 'Step 1: Analyze & Plan' },
-    { step: 1, label: 'Coding Agent', color: secondaryColor, icon: '💻', desc: 'Step 2: Generate Code' },
-    { step: 2, label: 'Testing Agent', color: '#a855f7', icon: '⚡', desc: 'Step 3: Verify & Test' },
-    { step: 3, label: 'Deploy Agent', color: '#f97316', icon: '🚀', desc: 'Step 4: Package & Ship' },
+    { step: 0, label: 'Planning Agent', color: primaryColor, icon: <PlanningAgentSvg />, desc: 'Step 1: Analyze & Plan' },
+    { step: 1, label: 'Coding Agent', color: secondaryColor, icon: <CodingAgentSvg />, desc: 'Step 2: Generate Code' },
+    { step: 2, label: 'Testing Agent', color: '#a855f7', icon: <TestingAgentSvg />, desc: 'Step 3: Verify & Test' },
+    { step: 3, label: 'Deploy Agent', color: '#f97316', icon: <DeployAgentSvg />, desc: 'Step 4: Package & Ship' },
   ];
 
   return (
@@ -539,7 +533,7 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '1.75rem',
+                  color: isActive || isCompleted ? node.color : undefined,
                   transition: 'all 0.3s ease',
                   position: 'relative'
                 }}
@@ -559,7 +553,9 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
                     transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
                   />
                 )}
-                {node.icon}
+                <Box sx={{ transform: 'scale(0.65)', display: 'flex' }}>
+                  {node.icon}
+                </Box>
               </motion.div>
               
               <Typography 
@@ -782,20 +778,6 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'Download': return <Download fontSize="medium" />;
-      case 'Movie': return <Movie fontSize="medium" />;
-      case 'QrCode': return <QrCode fontSize="medium" />;
-      case 'Code': return <Code fontSize="medium" />;
-      case 'VolumeUp': return <VolumeUp fontSize="medium" />;
-      case 'Compress': return <Compress fontSize="medium" />;
-      case 'Psychology': return <Psychology fontSize="medium" />;
-      case 'RocketLaunch': return <RocketLaunch fontSize="medium" />;
-      case 'NetworkCheck': return <NetworkCheck fontSize="medium" />;
-      default: return <Code fontSize="medium" />;
-    }
-  };
 
   const offerServices = [
     {
@@ -823,10 +805,40 @@ const HomePage: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', pb: 8, bgcolor: '#050505', color: '#ffffff' }}>
       <Seo
-        title="Premium Developer Tools & Creative Engineering"
-        description="Explore RJT's interactive frontend canvases, custom web engineering, and a functional suite of developer tools."
-        keywords={['developer tools', 'web engineer', 'frontend engineer', 'react developer', 'creative frontend', 'expectexception', 'interactive canvas']}
+        title="ExpectException – Free Developer Tools, AI Engineering & Portfolio"
+        description="ExpectException: free online tools (YouTube downloader, AI detector, PDF converter, OCR), developer blog, and a full-stack engineering & AI studio specializing in React, Django, AI & DevOps."
+        keywords={[
+          'expectexception',
+          'free developer tools',
+          'full stack developer portfolio',
+          'react django developer',
+          'ai engineer portfolio',
+          'youtube downloader free',
+          'ai image detector',
+          'pdf to word free',
+          'hire full stack developer',
+          'hire react developer',
+          'hire django developer',
+          'web developer for hire',
+          'ai automation engineer',
+          'devops engineer portfolio',
+          'creative frontend developer',
+        ]}
         structuredData={appSchema}
+        faq={[
+          {
+            question: 'What is ExpectException?',
+            answer: 'ExpectException is a free online toolkit offering 20+ developer utilities — YouTube downloader, AI image detector, PDF converter, image compressor, OCR, text-to-speech — plus a tech blog and a full-stack developer portfolio.',
+          },
+          {
+            question: 'Are all tools on ExpectException free?',
+            answer: 'Yes. Every tool is free with no registration, subscription, or hidden fee.',
+          },
+          {
+            question: 'Can I hire the developer behind ExpectException?',
+            answer: 'Yes! ExpectException is available for freelance and contract work in React, Django, Python, and AI/ML integrations. Visit the Hire page for rates and contact details.',
+          },
+        ]}
       />
 
       {/* --- HERO SECTION --- */}
@@ -993,7 +1005,7 @@ const HomePage: React.FC = () => {
                     fontSize: { xs: '1.05rem', sm: '1.25rem' }
                   }}
                 >
-                  Hi, I'm RJT. Specializing in modern web engineering, custom AI integrations, and high-performance interactive interfaces, I turn complex concepts into responsive, elegant digital experiences.
+                  We're ExpectException. Specializing in modern web engineering, custom AI integrations, and high-performance interactive interfaces, we turn complex concepts into responsive, elegant digital experiences.
                 </Typography>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
@@ -1200,9 +1212,11 @@ const HomePage: React.FC = () => {
                   }}>
                     <Code sx={{ fontSize: 48 }} />
                   </Box>
-                  <Typography variant="h4" fontWeight="800" gutterBottom>RJT</Typography>
+                  <Typography variant="h4" fontWeight="800" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' }, letterSpacing: '-0.02em' }}>
+                    ExpectException
+                  </Typography>
                   <Typography variant="subtitle1" color="primary.main" fontWeight="600" sx={{ mb: 2 }}>
-                    Full Stack Developer & AI Architect
+                    Full Stack Engineering & AI Studio
                   </Typography>
                   <Typography variant="body2" color="#94a3b8" sx={{ maxWidth: '280px', mx: 'auto' }}>
                     Engineering high-performance, exception-free digital solutions.
@@ -2048,6 +2062,67 @@ const HomePage: React.FC = () => {
               </Card>
             </Grid>
           </Grid>
+
+          {/* How the pipeline works — plain-English explanation of the flow */}
+          <Box sx={{ mt: { xs: 8, md: 12 } }}>
+            <Box sx={{ textAlign: 'center', mb: 6 }}>
+              <Typography variant="h6" color="primary.main" fontWeight="700" sx={{ mb: 1, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                How It Works
+              </Typography>
+              <Typography variant="h3" sx={{ fontWeight: 800, letterSpacing: '-0.02em', fontSize: { xs: '1.75rem', md: '2.5rem' } }}>
+                From a Single Prompt to Shipped Software
+              </Typography>
+            </Box>
+
+            <Grid container spacing={3}>
+              {[
+                { n: '01', title: 'You describe the goal', body: 'Give the system a plain-language objective — "build a landing page with a contact form", "add OCR to this pipeline". No tickets, no specs.' },
+                { n: '02', title: 'The Planner decomposes it', body: 'The planning agent breaks the goal into an ordered, dependency-aware task graph and picks the right tools and frameworks for each step.' },
+                { n: '03', title: 'The Coder builds each task', body: 'The coding agent implements every task against a strict design system and type-safe conventions, writing production-grade React, Django, or Node.js.' },
+                { n: '04', title: 'The Tester validates & loops back', body: 'Automated tests, security checks, and responsive validation run on every change. Failures are fed back to the coder to self-correct — not shipped.' },
+                { n: '05', title: 'The Deployer ships it', body: 'Once green, the deploy agent containers the app, wires up SSL/DNS, and rolls it out — then reports back so you can trigger the next objective.' },
+              ].map((step, i) => (
+                <Grid item xs={12} md key={step.n}>
+                  <Box sx={{
+                    height: '100%',
+                    p: 3,
+                    borderRadius: '16px',
+                    bgcolor: 'rgba(13, 14, 18, 0.4)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    position: 'relative',
+                    transition: 'transform 0.25s ease, border-color 0.25s ease',
+                    '&:hover': { transform: 'translateY(-4px)', borderColor: alpha(primaryColor, 0.4) },
+                  }}>
+                    <Typography sx={{ fontWeight: 900, fontSize: '2rem', color: alpha(primaryColor, 0.25), lineHeight: 1, mb: 1.5 }}>
+                      {step.n}
+                    </Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1 }}>{step.title}</Typography>
+                    <Typography variant="body2" color="#94a3b8" sx={{ lineHeight: 1.6 }}>{step.body}</Typography>
+                    {i < 4 && (
+                      <Box sx={{
+                        display: { xs: 'none', md: 'block' },
+                        position: 'absolute', right: -14, top: '50%', transform: 'translateY(-50%)',
+                        color: alpha(primaryColor, 0.5), fontSize: 22, zIndex: 1,
+                      }}>
+                        →
+                      </Box>
+                    )}
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+
+            <Box sx={{
+              mt: 4, p: { xs: 3, md: 4 }, borderRadius: '16px', textAlign: 'center',
+              bgcolor: alpha(primaryColor, 0.04), border: `1px solid ${alpha(primaryColor, 0.15)}`,
+            }}>
+              <Typography variant="body1" color="#cbd5e1" sx={{ maxWidth: 820, mx: 'auto', lineHeight: 1.7 }}>
+                <strong style={{ color: '#ffffff' }}>It's a loop, not a line.</strong> When the testing agent finds a bug or a
+                failing check, work flows back to the coding agent to fix it before anything reaches deployment — so the output
+                is verified, not just generated. That same orchestration is what powers the AI tooling across this platform.
+              </Typography>
+            </Box>
+          </Box>
         </Container>
       </Box>
 

@@ -68,7 +68,10 @@ const HttpStatusCodes: React.FC = () => {
             title="HTTP Status Code Reference"
             subtitle="Complete searchable reference for all HTTP status codes with descriptions and use cases."
             icon={InfoIcon}
+            seoTitle="HTTP Status Codes Reference — 200, 301, 404, 500 Meanings"
             seoDescription="Searchable HTTP status code reference. All 1xx-5xx codes explained with use cases."
+            toolId={44}
+            keywords={['http status codes', '404 meaning', '301 redirect', '500 error', 'rest api status codes', 'http response codes list', '403 forbidden', '502 bad gateway', 'http error codes']}
             howToSteps={[
                 { name: 'Search or filter', text: 'Type a code number, name, or keyword, or click a category chip.' },
                 { name: 'Read description', text: 'Each card shows what the status code means and when it occurs.' },
