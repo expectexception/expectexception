@@ -2062,6 +2062,67 @@ const HomePage: React.FC = () => {
               </Card>
             </Grid>
           </Grid>
+
+          {/* How the pipeline works — plain-English explanation of the flow */}
+          <Box sx={{ mt: { xs: 8, md: 12 } }}>
+            <Box sx={{ textAlign: 'center', mb: 6 }}>
+              <Typography variant="h6" color="primary.main" fontWeight="700" sx={{ mb: 1, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                How It Works
+              </Typography>
+              <Typography variant="h3" sx={{ fontWeight: 800, letterSpacing: '-0.02em', fontSize: { xs: '1.75rem', md: '2.5rem' } }}>
+                From a Single Prompt to Shipped Software
+              </Typography>
+            </Box>
+
+            <Grid container spacing={3}>
+              {[
+                { n: '01', title: 'You describe the goal', body: 'Give the system a plain-language objective — "build a landing page with a contact form", "add OCR to this pipeline". No tickets, no specs.' },
+                { n: '02', title: 'The Planner decomposes it', body: 'The planning agent breaks the goal into an ordered, dependency-aware task graph and picks the right tools and frameworks for each step.' },
+                { n: '03', title: 'The Coder builds each task', body: 'The coding agent implements every task against a strict design system and type-safe conventions, writing production-grade React, Django, or Node.js.' },
+                { n: '04', title: 'The Tester validates & loops back', body: 'Automated tests, security checks, and responsive validation run on every change. Failures are fed back to the coder to self-correct — not shipped.' },
+                { n: '05', title: 'The Deployer ships it', body: 'Once green, the deploy agent containers the app, wires up SSL/DNS, and rolls it out — then reports back so you can trigger the next objective.' },
+              ].map((step, i) => (
+                <Grid item xs={12} md key={step.n}>
+                  <Box sx={{
+                    height: '100%',
+                    p: 3,
+                    borderRadius: '16px',
+                    bgcolor: 'rgba(13, 14, 18, 0.4)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    position: 'relative',
+                    transition: 'transform 0.25s ease, border-color 0.25s ease',
+                    '&:hover': { transform: 'translateY(-4px)', borderColor: alpha(primaryColor, 0.4) },
+                  }}>
+                    <Typography sx={{ fontWeight: 900, fontSize: '2rem', color: alpha(primaryColor, 0.25), lineHeight: 1, mb: 1.5 }}>
+                      {step.n}
+                    </Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1 }}>{step.title}</Typography>
+                    <Typography variant="body2" color="#94a3b8" sx={{ lineHeight: 1.6 }}>{step.body}</Typography>
+                    {i < 4 && (
+                      <Box sx={{
+                        display: { xs: 'none', md: 'block' },
+                        position: 'absolute', right: -14, top: '50%', transform: 'translateY(-50%)',
+                        color: alpha(primaryColor, 0.5), fontSize: 22, zIndex: 1,
+                      }}>
+                        →
+                      </Box>
+                    )}
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+
+            <Box sx={{
+              mt: 4, p: { xs: 3, md: 4 }, borderRadius: '16px', textAlign: 'center',
+              bgcolor: alpha(primaryColor, 0.04), border: `1px solid ${alpha(primaryColor, 0.15)}`,
+            }}>
+              <Typography variant="body1" color="#cbd5e1" sx={{ maxWidth: 820, mx: 'auto', lineHeight: 1.7 }}>
+                <strong style={{ color: '#ffffff' }}>It's a loop, not a line.</strong> When the testing agent finds a bug or a
+                failing check, work flows back to the coding agent to fix it before anything reaches deployment — so the output
+                is verified, not just generated. That same orchestration is what powers the AI tooling across this platform.
+              </Typography>
+            </Box>
+          </Box>
         </Container>
       </Box>
 
