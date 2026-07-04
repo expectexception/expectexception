@@ -117,8 +117,8 @@ export const endpoints = {
         jwtVerify: '/api/services/jwt-verify/',
         websiteDiagnostics: '/api/services/website-diagnostics/',
         uptimeRobot: '/api/services/uptime-robot/',
-        uptimeTriggers: '/api/services/uptime-robot/triggers/',
-        uptimeTriggerDetail: (id: string) => `/api/services/uptime-robot/triggers/${id}/`,
+        uptimeMonitors: '/api/services/uptime-robot/monitors/',
+        uptimeMonitorDetail: (id: number | string) => `/api/services/uptime-robot/monitors/${id}/`,
         speedTest: '/services/speed-test',
         audioSeparator: '/api/audio-separator/process',
 

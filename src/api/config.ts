@@ -88,6 +88,7 @@ apiClient.interceptors.request.use(
                 '/api/services/doc-to-pdf',
                 '/api/services/yt-downloader',
                 '/api/services/image-to-text',
+                '/api/services/uptime-robot',
             ].some(path => config.url?.startsWith(path));
 
             if (isHeavy) {
