@@ -26,6 +26,10 @@ import {
   GpsFixed,
   Hearing,
   SportsEsports,
+  GridView,
+  Casino,
+  Pets,
+  Keyboard,
   Search,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
@@ -45,6 +49,10 @@ const ICONS: Record<string, React.ReactElement> = {
   GpsFixed: <GpsFixed fontSize="large" />,
   Hearing: <Hearing fontSize="large" />,
   SportsEsports: <SportsEsports fontSize="large" />,
+  GridView: <GridView fontSize="large" />,
+  Casino: <Casino fontSize="large" />,
+  Pets: <Pets fontSize="large" />,
+  Keyboard: <Keyboard fontSize="large" />,
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
