@@ -934,6 +934,118 @@ export const RocketToolSvg: React.FC = () => {
 // HomePage's tool grids (previously two separate MUI-icon switch statements
 // that had drifted out of sync with each other).
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Uptime Monitor type icons — one per UptimeMonitor.monitor_type.
+// ---------------------------------------------------------------------------
+
+export const PingRadarSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <circle cx="30" cy="30" r="4" fill={theme.palette.primary.main} />
+      {[1, 2, 3].map((i) => (
+        <motion.circle
+          key={i}
+          cx="30" cy="30"
+          stroke={theme.palette.primary.main}
+          strokeWidth="2"
+          fill="none"
+          initial={{ r: 6, opacity: 0.8 }}
+          animate={{ r: [6, 24], opacity: [0.8, 0] }}
+          transition={{ duration: 2.2, repeat: Infinity, delay: i * 0.6, ease: 'easeOut' }}
+        />
+      ))}
+    </svg>
+  );
+};
+
+export const PortPlugSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <rect x="10" y="24" width="18" height="12" rx="3" stroke="currentColor" strokeWidth="2" opacity="0.4" />
+      <line x1="16" y1="24" x2="16" y2="18" stroke="currentColor" strokeWidth="2" opacity="0.4" strokeLinecap="round" />
+      <line x1="22" y1="24" x2="22" y2="18" stroke="currentColor" strokeWidth="2" opacity="0.4" strokeLinecap="round" />
+      <motion.line
+        x1="28" y1="30" x2="46" y2="30"
+        stroke={theme.palette.primary.main}
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeDasharray="4 4"
+        animate={{ strokeDashoffset: [0, -16] }}
+        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.circle
+        cx="48" cy="30" r="4"
+        fill={theme.palette.primary.main}
+        animate={{ scale: [1, 1.25, 1], opacity: [1, 0.6, 1] }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+        style={{ filter: `drop-shadow(0 0 4px ${theme.palette.primary.main})` }}
+      />
+    </svg>
+  );
+};
+
+export const HeartbeatPulseSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <circle cx="30" cy="30" r="22" stroke="currentColor" strokeWidth="1.5" opacity="0.2" />
+      <motion.path
+        d="M10 30H20L24 20L30 40L34 26L38 30H50"
+        stroke={theme.palette.primary.main}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray="90"
+        initial={{ strokeDashoffset: 90 }}
+        animate={{ strokeDashoffset: [90, 0, 0, -90] }}
+        transition={{ duration: 2.4, repeat: Infinity, times: [0, 0.55, 0.85, 1], ease: 'linear' }}
+        style={{ filter: `drop-shadow(0 0 3px ${theme.palette.primary.main})` }}
+      />
+    </svg>
+  );
+};
+
+export const KeywordScanSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <rect x="10" y="12" width="34" height="36" rx="4" stroke="currentColor" strokeWidth="2" opacity="0.35" />
+      <line x1="16" y1="22" x2="38" y2="22" stroke="currentColor" strokeWidth="2" opacity="0.35" strokeLinecap="round" />
+      <motion.line
+        x1="16" y1="30" x2="34" y2="30"
+        stroke={theme.palette.primary.main}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        animate={{ opacity: [0.3, 1, 0.3] }}
+        transition={{ duration: 1.8, repeat: Infinity }}
+      />
+      <line x1="16" y1="38" x2="30" y2="38" stroke="currentColor" strokeWidth="2" opacity="0.35" strokeLinecap="round" />
+      <motion.g
+        animate={{ x: [0, 6, 0], y: [0, 4, 0] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <circle cx="40" cy="38" r="9" stroke={theme.palette.secondary.main} strokeWidth="2.5" fill="rgba(0,0,0,0.2)" />
+        <line x1="46.5" y1="44.5" x2="52" y2="50" stroke={theme.palette.secondary.main} strokeWidth="2.5" strokeLinecap="round" />
+      </motion.g>
+    </svg>
+  );
+};
+
+export const getMonitorTypeSvgIcon = (monitorType: string): React.ReactElement => {
+  switch (monitorType) {
+    case 'ping': return <PingRadarSvg />;
+    case 'port': return <PortPlugSvg />;
+    case 'ssl': return <PadlockToolSvg />;
+    case 'heartbeat': return <HeartbeatPulseSvg />;
+    case 'keyword': return <KeywordScanSvg />;
+    case 'http':
+    case 'https':
+    default: return <LinkToolSvg />;
+  }
+};
+
 export const getServiceSvgIcon = (iconName: string): React.ReactElement => {
   switch (iconName) {
     case 'Download': return <DownloadToolSvg />;

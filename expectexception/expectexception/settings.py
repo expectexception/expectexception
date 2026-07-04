@@ -359,6 +359,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'notifications.send_weekly_digest',
         'schedule': crontab(hour=9, minute=0, day_of_week='sunday'),
     },
+    'uptime-monitor-checks': {
+        'task': 'apps.services.tasks.run_uptime_monitors_task',
+        'schedule': 60.0,  # every minute; the task itself only actually
+                           # checks monitors whose own interval has elapsed
+    },
 }
 
 # Django cache configuration for AI detector

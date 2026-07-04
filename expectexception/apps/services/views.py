@@ -38,14 +38,17 @@ from django.http import HttpResponse, FileResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from django.db.models import Sum, Max, Q
 from django.contrib.auth import get_user_model
 User = get_user_model()
-from .models import Service, DownloadableResource, UserActivity, FavoriteTool, DownloadHistory, ToolUsage
+from .models import Service, DownloadableResource, UserActivity, FavoriteTool, DownloadHistory, ToolUsage, UptimeMonitor
 from .models import WebhookEndpoint, WebhookRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from .serializers import ServiceSerializer, DownloadableResourceSerializer, UserActivitySerializer, FavoriteToolSerializer, DownloadHistorySerializer
+from django.utils import timezone
+from django.core.cache import cache
+from .serializers import ServiceSerializer, DownloadableResourceSerializer, UserActivitySerializer, FavoriteToolSerializer, DownloadHistorySerializer, UptimeMonitorSerializer
 # VideoDownload & download_video_async are lazily imported below inside
 # YtDownloaderView so that this module loads cleanly when apps.videos is
 # excluded from INSTALLED_APPS (e.g. on Render).
@@ -4500,13 +4503,24 @@ class HealthCheckView(APIView):
             return 'unavailable'
 
 
+class UptimeRobotAnonThrottle(AnonRateThrottle):
+    rate = '15/minute'
+
+
+class UptimeRobotUserThrottle(UserRateThrottle):
+    rate = '40/minute'
+
+
 class UptimeRobotView(APIView):
     """
-    Simulation & live testing of UptimeRobot monitoring checks.
-    Provides diagnostic capabilities for different monitor types.
+    Instant, one-shot diagnostic check (not persisted) — anyone can run this,
+    same as Redirect Inspector/Website Diagnostics. Throttled since it's the
+    only unauthenticated attack surface left in this module; the recurring,
+    persisted monitors below (UptimeMonitor) require login.
     """
     permission_classes = [AllowAny]
     parser_classes = [JSONParser]
+    throttle_classes = [UptimeRobotAnonThrottle, UptimeRobotUserThrottle]
 
     def post(self, request):
         import time
@@ -4725,110 +4739,237 @@ class UptimeRobotView(APIView):
         return Response(result)
 
 
-from .scheduler import get_triggers, save_triggers
 import datetime
 
-class UptimeTriggersView(APIView):
-    permission_classes = [AllowAny]
+
+def _reject_on_render():
+    """Belt-and-suspenders backstop: these views only make sense on the
+    local server, which is the only instance running a Celery worker/beat
+    that will ever actually execute the checks. The frontend already routes
+    this endpoint's calls exclusively to the local server (api/config.ts's
+    isHeavy list); this guard just makes misdirected/manual requests fail
+    loudly instead of silently creating rows that never get checked."""
+    if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+        return Response(
+            {'error': 'Uptime monitoring only runs on the primary server, not this instance.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+    return None
+
+
+def run_monitor_check(monitor):
+    """Executes one real check for a monitor and updates it in place (caller
+    saves). Shared by the on-demand 'run_now' action and the recurring Celery
+    beat task so the two paths can't drift out of sync. Re-validates the
+    target immediately before connecting (not just at creation time) as a
+    defense against DNS-rebinding-style SSRF bypasses."""
+    import time as time_mod
+
+    now = timezone.now()
+    monitor_type = monitor.monitor_type
+
+    if monitor_type == 'heartbeat':
+        # Heartbeat monitors are a dead-man's-switch: an external cron/job
+        # pings UptimeHeartbeatReceiverView on its own schedule. "Checking"
+        # one here just means noticing it's gone quiet longer than its
+        # configured interval — never a new outbound request.
+        if monitor.last_run_at and (now - monitor.last_run_at).total_seconds() > monitor.interval_minutes * 60:
+            monitor.last_status = 'down'
+            monitor.push_log(f"No heartbeat received in over {monitor.interval_minutes} minute(s).", check_status='down')
+        return
+
+    try:
+        target = _validate_public_http_url(monitor.target if '://' in monitor.target else f"https://{monitor.target}")
+    except Exception as e:
+        monitor.last_status = 'down'
+        monitor.last_latency_ms = 0
+        monitor.push_log(f"Blocked target: {e}", check_status='down')
+        return
+
+    start_time = time_mod.time()
+    try:
+        headers = {'User-Agent': 'UptimeRobot/2.0 (compatible; ExpectException Monitor)'}
+        res = requests.get(target, headers=headers, timeout=12, verify=False)
+        latency = int((time_mod.time() - start_time) * 1000)
+
+        if monitor_type == 'keyword':
+            found = monitor.keyword.lower() in res.text.lower() if monitor.keyword else False
+            status_str = 'up' if found else 'down'
+            log_msg = f"HTTP {res.status_code} in {latency}ms — keyword {'found' if found else 'NOT found'}."
+        else:
+            status_str = 'up' if 200 <= res.status_code < 400 else 'down'
+            log_msg = f"HTTP {res.status_code} in {latency}ms."
+    except Exception as e:
+        latency = 0
+        status_str = 'down'
+        log_msg = f"Connection failed: {e}"
+
+    monitor.last_run_at = now
+    monitor.last_status = status_str
+    monitor.last_latency_ms = latency
+    monitor.push_log(log_msg, check_status=status_str)
+
+
+class UptimeMonitorListCreateView(APIView):
+    """Per-user recurring uptime monitors. Requires login — unlike the old
+    file-backed 'triggers' this replaces, every monitor belongs to exactly
+    one user and no one else can see, toggle, or delete it."""
+    permission_classes = [IsAuthenticated]
     parser_classes = [JSONParser]
 
     def get(self, request):
-        # Watchdog heartbeat check to guarantee background scheduler is running inside Celery
-        from django.core.cache import cache
+        blocked = _reject_on_render()
+        if blocked:
+            return blocked
+
+        # Watchdog: make sure the Celery beat task is actually alive.
         is_running = cache.get("last_celery_uptime_run")
         if not is_running:
             try:
-                from .tasks import run_uptime_scheduler_task
-                run_uptime_scheduler_task.delay()
+                from .tasks import run_uptime_monitors_task
+                run_uptime_monitors_task.delay()
             except Exception:
                 pass
 
-        triggers = get_triggers()
-        return Response(triggers)
+        monitors = UptimeMonitor.objects.filter(user=request.user)
+        serializer = UptimeMonitorSerializer(monitors, many=True, context={'request': request})
+        return Response({
+            'monitors': serializer.data,
+            'limit': UptimeMonitor.MAX_MONITORS_PER_USER,
+            'used': monitors.count(),
+        })
 
     def post(self, request):
-        import uuid
+        blocked = _reject_on_render()
+        if blocked:
+            return blocked
+
         name = (request.data.get('name') or '').strip()
+        monitor_type = (request.data.get('monitor_type') or request.data.get('type') or 'http').strip().lower()
         target = (request.data.get('target') or '').strip()
+        keyword = (request.data.get('keyword') or '').strip()
+        port = request.data.get('port')
         interval = request.data.get('interval_minutes') or 5
-        
-        if not name or not target:
-            return Response({'error': 'Name and Target URL/Host are required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        if not name:
+            return Response({'error': 'Name is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if monitor_type not in dict(UptimeMonitor.TYPE_CHOICES):
+            return Response({'error': f'Unsupported monitor type: {monitor_type}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        existing_count = UptimeMonitor.objects.filter(user=request.user).count()
+        if existing_count >= UptimeMonitor.MAX_MONITORS_PER_USER:
+            return Response(
+                {'error': f'Free plan limit reached ({UptimeMonitor.MAX_MONITORS_PER_USER} monitors). Pause or delete one first.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             interval = int(interval)
-            if interval < 1:
-                interval = 1
-        except ValueError:
-            return Response({'error': 'Interval must be a positive integer'}, status=status.HTTP_400_BAD_REQUEST)
+        except (TypeError, ValueError):
+            return Response({'error': 'Interval must be an integer'}, status=status.HTTP_400_BAD_REQUEST)
+        interval = max(UptimeMonitor.MIN_INTERVAL_MINUTES, min(UptimeMonitor.MAX_INTERVAL_MINUTES, interval))
 
-        triggers = get_triggers()
-        new_trigger = {
-            'id': f"trg-{uuid.uuid4().hex[:8]}",
-            'name': name,
-            'target': target,
-            'interval_minutes': interval,
-            'status': 'active',
-            'last_run': None,
-            'last_status': 'never',
-            'last_latency': 0,
-            'logs': [f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Auto-trigger keep-alive monitor registered successfully."]
-        }
-        triggers.append(new_trigger)
-        save_triggers(triggers)
-        return Response(new_trigger, status=status.HTTP_201_CREATED)
+        if monitor_type == 'port':
+            try:
+                port = int(port) if port else 80
+            except (TypeError, ValueError):
+                return Response({'error': 'Invalid port number'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            port = None
 
-class UptimeTriggerDetailView(APIView):
-    permission_classes = [AllowAny]
+        if monitor_type == 'keyword' and not keyword:
+            return Response({'error': 'Keyword is required for keyword monitors'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate the target up front so bad/unsafe input is rejected at
+        # creation time with a clear error, not silently stored and only
+        # discovered as a failure in the scheduled check later.
+        if monitor_type != 'heartbeat':
+            if not target:
+                return Response({'error': 'Target URL/host is required'}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                if monitor_type in ('http', 'https', 'keyword'):
+                    _validate_public_http_url(target if '://' in target else f"https://{target}")
+                else:
+                    _validate_public_hostname(target, port or 443)
+            except Exception as e:
+                return Response({'error': f'Unresolvable or blocked target: {e}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        monitor = UptimeMonitor.objects.create(
+            user=request.user,
+            name=name,
+            monitor_type=monitor_type,
+            target=target,
+            keyword=keyword,
+            port=port,
+            interval_minutes=interval,
+        )
+        monitor.push_log("Monitor registered successfully.")
+        monitor.save()
+
+        serializer = UptimeMonitorSerializer(monitor, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class UptimeMonitorDetailView(APIView):
+    permission_classes = [IsAuthenticated]
     parser_classes = [JSONParser]
 
-    def post(self, request, trigger_id):
-        action = request.data.get('action') or 'toggle'
-        triggers = get_triggers()
-        found = False
-        for trigger in triggers:
-            if trigger.get('id') == trigger_id:
-                found = True
-                if action == 'toggle':
-                    trigger['status'] = 'paused' if trigger.get('status') == 'active' else 'active'
-                elif action == 'run_now':
-                    import time, requests
-                    url = trigger.get('target', '')
-                    url = url if '://' in url else f"https://{url}"
-                    start_time = time.time()
-                    now = datetime.datetime.now()
-                    try:
-                        headers = {'User-Agent': 'UptimeRobot/2.0 (compatible; ExpectException Auto-Trigger Keep-Alive)'}
-                        res = requests.get(url, headers=headers, timeout=12, verify=False)
-                        latency = int((time.time() - start_time) * 1000)
-                        status_str = "up" if 200 <= res.status_code < 400 else "down"
-                        log_msg = f"On-demand: HTTP {res.status_code} in {latency}ms."
-                    except Exception as e:
-                        latency = 0
-                        status_str = "down"
-                        log_msg = f"On-demand connection failed: {str(e)}"
-                    
-                    trigger['last_run'] = now.strftime("%Y-%m-%d %H:%M:%S")
-                    trigger['last_status'] = status_str
-                    trigger['last_latency'] = latency
-                    
-                    logs = trigger.get('logs', [])
-                    logs.insert(0, f"[{now.strftime('%H:%M:%S')}] {log_msg}")
-                    trigger['logs'] = logs[:30]
-                
-                break
-        
-        if not found:
-            return Response({'error': 'Trigger not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        save_triggers(triggers)
-        return Response(triggers)
+    def _get_monitor(self, request, monitor_id):
+        return UptimeMonitor.objects.filter(user=request.user, id=monitor_id).first()
 
-    def delete(self, request, trigger_id):
-        triggers = get_triggers()
-        remaining = [t for t in triggers if t.get('id') != trigger_id]
-        save_triggers(remaining)
-        return Response(remaining)
+    def post(self, request, monitor_id):
+        blocked = _reject_on_render()
+        if blocked:
+            return blocked
+
+        monitor = self._get_monitor(request, monitor_id)
+        if not monitor:
+            return Response({'error': 'Monitor not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        action = request.data.get('action') or 'toggle'
+        if action == 'toggle':
+            monitor.status = 'paused' if monitor.status == 'active' else 'active'
+            monitor.push_log(f"Monitor {'paused' if monitor.status == 'paused' else 'resumed'}.")
+        elif action == 'run_now':
+            run_monitor_check(monitor)
+        else:
+            return Response({'error': f'Unknown action: {action}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        monitor.save()
+        serializer = UptimeMonitorSerializer(monitor, context={'request': request})
+        return Response(serializer.data)
+
+    def delete(self, request, monitor_id):
+        monitor = self._get_monitor(request, monitor_id)
+        if not monitor:
+            return Response({'error': 'Monitor not found'}, status=status.HTTP_404_NOT_FOUND)
+        monitor.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UptimeHeartbeatReceiverView(APIView):
+    """Public listener for heartbeat/dead-man's-switch monitors — external
+    cron jobs or scripts ping this on their own schedule with no auth (they
+    can't hold a user's JWT), identified only by the unguessable heartbeat_id."""
+    permission_classes = [AllowAny]
+    throttle_classes = [UptimeRobotAnonThrottle]
+
+    def _handle(self, request, heartbeat_id):
+        monitor = UptimeMonitor.objects.filter(heartbeat_id=heartbeat_id, monitor_type='heartbeat').first()
+        if not monitor:
+            return Response({'error': 'Unknown heartbeat id'}, status=status.HTTP_404_NOT_FOUND)
+        monitor.last_run_at = timezone.now()
+        monitor.last_status = 'up'
+        monitor.last_latency_ms = 0
+        monitor.push_log("Heartbeat received.", check_status='up')
+        monitor.save()
+        return Response({'status': 'ok'})
+
+    def get(self, request, heartbeat_id):
+        return self._handle(request, heartbeat_id)
+
+    def post(self, request, heartbeat_id):
+        return self._handle(request, heartbeat_id)
 
 
 

@@ -32,6 +32,15 @@ x-backend-image: &backend-image
   volumes:
     - ./apps:/app/apps                  # Backend Python source — changes apply without rebuild
     - ./expectexception:/app/expectexception  # Django settings & URLs
+    # db.sqlite3 was NOT shared before this — each of the 4 services had its
+    # own independent copy baked in at image-build time (COPY . /app/), so
+    # only `backend` (the one entrypoint.sh runs `migrate` in) ever saw
+    # schema/data changes. Confirmed live: worker-light/worker-heavy/beat
+    # were all still on a build-time-frozen snapshot, meaning every DB write
+    # a Celery task ever made (AI Detector results, download history, and
+    # now UptimeMonitor checks) landed in a file the API could never read
+    # back. One shared bind mount fixes all of it at once.
+    - ./db.sqlite3:/app/db.sqlite3
     - ./media:/app/media
     - ./logs:/app/logs
     - ./staticfiles:/app/staticfiles

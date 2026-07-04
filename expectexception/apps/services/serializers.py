@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Service, DownloadableResource, UserActivity, FavoriteTool, DownloadHistory
+from .models import Service, DownloadableResource, UserActivity, FavoriteTool, DownloadHistory, UptimeMonitor
 
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,3 +54,27 @@ class FavoriteToolSerializer(serializers.ModelSerializer):
     class Meta:
         model = FavoriteTool
         fields = ['id', 'service', 'service_id', 'created_at']
+
+
+class UptimeMonitorSerializer(serializers.ModelSerializer):
+    monitor_type_display = serializers.CharField(source='get_monitor_type_display', read_only=True)
+    heartbeat_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UptimeMonitor
+        fields = [
+            'id', 'name', 'monitor_type', 'monitor_type_display', 'target', 'keyword', 'port',
+            'interval_minutes', 'status', 'heartbeat_id', 'heartbeat_url',
+            'last_run_at', 'last_status', 'last_latency_ms', 'logs', 'created_at',
+        ]
+        read_only_fields = [
+            'id', 'monitor_type_display', 'heartbeat_id', 'heartbeat_url',
+            'last_run_at', 'last_status', 'last_latency_ms', 'logs', 'created_at',
+        ]
+
+    def get_heartbeat_url(self, obj):
+        if obj.monitor_type != 'heartbeat':
+            return None
+        request = self.context.get('request')
+        path = f"/api/services/uptime-robot/heartbeat/{obj.heartbeat_id}/"
+        return request.build_absolute_uri(path) if request else path

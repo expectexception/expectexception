@@ -130,8 +130,9 @@ class InAppNotificationListView(views.APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        notifs = InAppNotification.objects.filter(recipient=request.user).order_by('-created_at')[:50]
-        unread_count = notifs.filter(is_read=False).count()
+        qs = InAppNotification.objects.filter(recipient=request.user)
+        unread_count = qs.filter(is_read=False).count()
+        notifs = qs.order_by('-created_at')[:50]
         data = [
             {
                 'id': n.id,
