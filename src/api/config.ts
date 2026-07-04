@@ -17,9 +17,9 @@ const getBaseUrl = (): string => {
     console.error(
         '[config.ts] REACT_APP_API_BASE_URL is not set. ' +
         'All API calls will fail. Set this env var in your Vercel project settings ' +
-        'to your Render backend URL (e.g. https://expectexception-api.onrender.com).'
+        'to your Render backend URL (e.g. https://expectexception.onrender.com).'
     );
-    return 'https://expectexception-api.onrender.com';
+    return 'https://expectexception.onrender.com';
 };
 
 const getHeavyBaseUrl = (): string => {
