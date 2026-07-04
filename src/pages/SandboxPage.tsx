@@ -31,6 +31,7 @@ import {
   Pets,
   Keyboard,
   Search,
+  Circle,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -53,6 +54,7 @@ const ICONS: Record<string, React.ReactElement> = {
   Casino: <Casino fontSize="large" />,
   Pets: <Pets fontSize="large" />,
   Keyboard: <Keyboard fontSize="large" />,
+  Circle: <Circle fontSize="large" />,
 };
 
 const CATEGORY_LABELS: Record<string, string> = {

@@ -491,39 +491,67 @@ const ServicesPage: React.FC = () => {
                     }}>
                       <BorderBeam />
                       <CardContent sx={{ p: 3.5, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        {/* Service Header */}
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3.5 }}>
-                          <Box
-                            sx={{
-                              width: 52,
-                              height: 52,
-                              borderRadius: '12px',
-                              bgcolor: alpha(theme.palette[service.color as 'primary' | 'secondary']?.main || primaryColor, 0.1),
+                        {/* Live Preview — same animated-SVG-in-a-frame treatment as the homepage highlights */}
+                        <Box
+                          sx={{
+                            height: 108,
+                            mb: 3,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            borderRadius: 2,
+                            bgcolor: 'rgba(0,0,0,0.2)',
+                            border: '1px solid rgba(255, 255, 255, 0.03)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {/* Tinted animated grid backdrop */}
+                          <motion.div
+                            style={{
+                              position: 'absolute',
+                              inset: -20,
+                              opacity: 0.5,
+                              backgroundImage: `radial-gradient(${alpha(theme.palette[service.color as 'primary' | 'secondary']?.main || primaryColor, 0.35)} 1px, transparent 1px)`,
+                              backgroundSize: '18px 18px',
+                              pointerEvents: 'none',
+                            }}
+                            animate={{ backgroundPosition: ['0px 0px', '18px 18px'] }}
+                            transition={{ repeat: Infinity, duration: 8, ease: 'linear' }}
+                          />
+                          <Box sx={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: `radial-gradient(circle at 50% 50%, ${alpha(theme.palette[service.color as 'primary' | 'secondary']?.main || primaryColor, 0.12)}, transparent 70%)`,
+                            pointerEvents: 'none',
+                          }} />
+
+                          <motion.div
+                            variants={{ hover: { scale: 1.12 } }}
+                            style={{
+                              position: 'relative',
+                              color: theme.palette[service.color as 'primary' | 'secondary']?.main || primaryColor,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              color: theme.palette[service.color as 'primary' | 'secondary']?.main || primaryColor,
                             }}
                           >
-                            <motion.div
-                              variants={{ hover: { scale: 1.15, rotate: 8 } }}
-                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'scale(0.75)' }}
-                            >
-                              {getServiceSvgIcon(service.icon)}
-                            </motion.div>
-                          </Box>
-                          <Stack direction="row" alignItems="center" spacing={0.75}>
+                            {getServiceSvgIcon(service.icon)}
+                          </motion.div>
+
+                          {/* Bookmark / rating overlay */}
+                          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ position: 'absolute', top: 6, right: 6, bgcolor: 'rgba(0,0,0,0.35)', borderRadius: '20px', px: 0.75, py: 0.25 }}>
                             <Tooltip title={isBookmarked(service.id) ? 'Remove bookmark' : 'Bookmark tool'}>
                                 <IconButton
                                     size="small"
                                     onClick={(e) => { e.preventDefault(); toggleBookmark(service.id); }}
                                     sx={{ p: 0.5, color: isBookmarked(service.id) ? 'primary.main' : 'text.secondary' }}
                                 >
-                                    {isBookmarked(service.id) ? <Bookmark sx={{ fontSize: 18 }} /> : <BookmarkBorder sx={{ fontSize: 18 }} />}
+                                    {isBookmarked(service.id) ? <Bookmark sx={{ fontSize: 16 }} /> : <BookmarkBorder sx={{ fontSize: 16 }} />}
                                 </IconButton>
                             </Tooltip>
-                            <Star sx={{ color: 'warning.main', fontSize: 16 }} />
-                            <Typography variant="body2" fontWeight={700}>
+                            <Star sx={{ color: 'warning.main', fontSize: 14 }} />
+                            <Typography variant="caption" fontWeight={700}>
                               {service.popularity}%
                             </Typography>
                           </Stack>
