@@ -5,6 +5,7 @@ import { CustomThemeContextProvider } from './context/CustomThemeContext';
 import Layout from './components/Layout/Layout';
 import AnimatedRoutes from './components/layout/AnimatedRoutes';
 import AnimatedBackground from './components/layout/AnimatedBackground';
+import ScrollManager from './components/layout/ScrollManager';
 import { NotificationProvider } from './context/NotificationContext';
 import { AuthProvider } from './context/AuthContext';
 import NotificationPrompt from './components/NotificationPrompt';
@@ -26,6 +27,8 @@ function AppContent({ deferredPrompt, handleInstall, handleDismiss }: any) {
 
     return (
         <>
+            {/* Scroll to top on navigation / next-step, restore on Back/Forward */}
+            <ScrollManager />
             {/* Hide AnimatedBackground on chat page - it has its own StarBackground */}
             {!isChatPage && <AnimatedBackground />}
             <GATracker />

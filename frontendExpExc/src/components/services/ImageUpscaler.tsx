@@ -28,6 +28,7 @@ import Seo from '../seo/Seo';
 import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 import ServicePageShell from './ServicePageShell';
+import { useScrollToResult } from '../../hooks/useScrollToResult';
 
 interface UpscaleResult {
     success: boolean;
@@ -56,6 +57,7 @@ const ImageUpscaler: React.FC = () => {
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<UpscaleResult | null>(null);
+    const resultRef = useScrollToResult(!!result);
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selected = event.target.files?.[0];
@@ -155,6 +157,7 @@ const ImageUpscaler: React.FC = () => {
 
             {result && (
                 <Alert
+                    ref={resultRef}
                     severity="success"
                     sx={{ mb: 2, flexShrink: 0 }}
                     icon={<CheckCircle />}
