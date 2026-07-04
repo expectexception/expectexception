@@ -50,6 +50,7 @@ import { excerptFromHtml } from '../utils/text';
 import { useCustomTheme } from '../context/CustomThemeContext';
 import { WebDevSvg, BackendSvg, FullStackSvg, AiSvg, PlanningAgentSvg, CodingAgentSvg, TestingAgentSvg, DeployAgentSvg } from '../components/layout/AnimatedSvgs';
 import { ChatbotPreview, CompressorPreview, PdfPreview, UrlPreview } from '../components/layout/MiniPreviews';
+import BrandLogo from '../components/layout/BrandLogo';
 
 // --- Reusable Border Beam Effect ---
 const BorderBeam: React.FC<{ activeColor?: string }> = ({ activeColor }) => {
@@ -908,15 +909,15 @@ const HomePage: React.FC = () => {
         faq={[
           {
             question: 'What is ExpectException?',
-            answer: 'ExpectException is a free online toolkit offering 20+ developer utilities — YouTube downloader, AI image detector, PDF converter, image compressor, OCR, text-to-speech — plus a tech blog and a full-stack developer portfolio.',
+            answer: 'ExpectException is a free online toolkit with 50+ developer utilities — YouTube downloader, AI image detector, PDF converter, image compressor, OCR, text-to-speech — plus a technical blog and a sandbox of browser games.',
           },
           {
             question: 'Are all tools on ExpectException free?',
             answer: 'Yes. Every tool is free with no registration, subscription, or hidden fee.',
           },
           {
-            question: 'Can I hire the developer behind ExpectException?',
-            answer: 'Yes! ExpectException is available for freelance and contract work in React, Django, Python, and AI/ML integrations. Visit the Hire page for rates and contact details.',
+            question: 'Can I hire the team behind ExpectException?',
+            answer: "Yes — we take on freelance and contract work in React, Django, Python, and AI/ML integrations. Visit the Hire page for details and to get in touch.",
           },
         ]}
       />
@@ -1274,23 +1275,10 @@ const HomePage: React.FC = () => {
                   pointerEvents: 'none',
                 }
               }}>
-                {/* Abstract graphic representing a developer */}
+                {/* Brand mark */}
                 <Box sx={{ textAlign: 'center', p: 4 }}>
-                  <Box sx={{
-                    width: 100,
-                    height: 100,
-                    borderRadius: '50%',
-                    border: `3px solid ${primaryColor}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mx: 'auto',
-                    mb: 3,
-                    bgcolor: alpha(primaryColor, 0.05),
-                    boxShadow: `0 0 20px ${alpha(primaryColor, 0.2)}`,
-                    color: primaryColor,
-                  }}>
-                    <Code sx={{ fontSize: 48 }} />
+                  <Box sx={{ mx: 'auto', mb: 3, width: 100, display: 'flex', justifyContent: 'center' }}>
+                    <BrandLogo size={100} />
                   </Box>
                   <Typography variant="h4" fontWeight="800" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' }, letterSpacing: '-0.02em' }}>
                     ExpectException

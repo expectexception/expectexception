@@ -257,7 +257,7 @@ const HirePage: React.FC = () => {
                                     color="text.secondary"
                                     sx={{ mb: 5, fontSize: { xs: '1.05rem', sm: '1.25rem' }, fontWeight: 400, lineHeight: 1.6 }}
                                 >
-                                    From stunning interactive frontends to robust full-stack applications and custom AI systems—we build software engineered to scale.
+                                    We build frontends, backends, and the AI features in between. If you have a project in mind, tell us about it and we'll figure out the fastest path to shipping it.
                                 </Typography>
                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                     <Button
@@ -347,7 +347,7 @@ const HirePage: React.FC = () => {
                         Our Development Services
                     </Typography>
                     <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto', fontSize: { xs: '1rem', sm: '1.2rem' }, fontWeight: 400 }}>
-                        Expert development capabilities customized for your project goals.
+Pick one, or combine a few — most projects end up touching more than one of these.
                     </Typography>
                 </Box>
 
@@ -434,6 +434,81 @@ const HirePage: React.FC = () => {
                 </Grid>
             </Container>
 
+            {/* Who We Work With Section */}
+            <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+                <Box sx={{ textAlign: 'center', mb: 7 }}>
+                    <Typography variant="h6" color="primary.main" fontWeight="700" sx={{ mb: 1, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        Who This Is For
+                    </Typography>
+                    <Typography variant="h3" fontWeight={900} gutterBottom sx={{ fontSize: { xs: '2rem', sm: '2.5rem' }, letterSpacing: '-0.02em' }}>
+                        Not sure if we're a fit? Here's who usually reaches out.
+                    </Typography>
+                </Box>
+
+                <Grid container spacing={3.5}>
+                    {[
+                        {
+                            icon: <Rocket sx={{ fontSize: 30 }} />,
+                            title: 'Founders validating an idea',
+                            desc: "You need a working product to show users or investors, not a slide deck. We scope down to what actually needs to exist for a first version and build that.",
+                            color: primaryColor,
+                        },
+                        {
+                            icon: <IntegrationInstructions sx={{ fontSize: 30 }} />,
+                            title: 'Agencies needing extra hands',
+                            desc: 'A deadline is close and the team is stretched thin. We can slot into an existing codebase and ship a specific feature or module without a long ramp-up.',
+                            color: theme.palette.secondary.main,
+                        },
+                        {
+                            icon: <CloudQueue sx={{ fontSize: 30 }} />,
+                            title: 'Small teams drowning in manual work',
+                            desc: "Some process is still done by hand in a spreadsheet or over email. We build the automation or internal tool that gets it off someone's plate.",
+                            color: '#a855f7',
+                        },
+                        {
+                            icon: <SmartToy sx={{ fontSize: 30 }} />,
+                            title: 'Products that want to add AI',
+                            desc: 'You know you want an AI feature — a chatbot, a classifier, a content pipeline — but not exactly how to wire it into what already exists. That integration work is what we do most.',
+                            color: '#f97316',
+                        },
+                    ].map((persona, idx) => (
+                        <Grid item xs={12} sm={6} md={3} key={persona.title}>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: idx * 0.08 }}
+                            >
+                                <Card sx={{
+                                    height: '100%',
+                                    minHeight: 220,
+                                    p: 3,
+                                    background: 'rgba(13, 14, 18, 0.4)',
+                                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                                    transition: 'border-color 0.3s ease',
+                                    '&:hover': { borderColor: alpha(persona.color, 0.3) },
+                                }}>
+                                    <Box sx={{
+                                        width: 52, height: 52, borderRadius: 2,
+                                        bgcolor: alpha(persona.color, 0.1),
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        color: persona.color, mb: 2.5,
+                                    }}>
+                                        {persona.icon}
+                                    </Box>
+                                    <Typography variant="h6" fontWeight={800} sx={{ mb: 1.5, fontSize: '1.05rem' }}>
+                                        {persona.title}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem', lineHeight: 1.6 }}>
+                                        {persona.desc}
+                                    </Typography>
+                                </Card>
+                            </motion.div>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Container>
+
             {/* Process Section */}
             <Box sx={{ bgcolor: '#08090d', py: { xs: 8, md: 12 }, borderTop: '1px solid rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                 <Container maxWidth="lg">
@@ -442,7 +517,7 @@ const HirePage: React.FC = () => {
                             How We Work
                         </Typography>
                         <Typography variant="h6" color="text.secondary" sx={{ fontSize: { xs: '1rem', sm: '1.2rem' }, fontWeight: 400 }}>
-                            A streamlined, collaborative process for delivering exceptional results.
+                            No lengthy onboarding — a short call, a written scope, then we start building.
                         </Typography>
                     </Box>
 
