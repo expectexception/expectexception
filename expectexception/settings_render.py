@@ -24,7 +24,7 @@ _render_host = os.getenv('RENDER_EXTERNAL_HOSTNAME', '')
 ALLOWED_HOSTS = [
     'expectexception.com',
     'www.expectexception.com',
-    'expectexception-api.onrender.com',
+    'expectexception.onrender.com',
 ]
 if _render_host:
     ALLOWED_HOSTS.append(_render_host)
