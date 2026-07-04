@@ -67,6 +67,9 @@ import {
     Add,
     Lock,
     LockOpen,
+    Email,
+    Forum,
+    Reply,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '../../api/config';
@@ -128,6 +131,34 @@ interface ToolService {
     category: string;
     requires_login: boolean;
     is_active: boolean;
+}
+
+interface AdminInquiry {
+    id: number;
+    name: string;
+    email: string;
+    inquiry_type: string;
+    subject: string;
+    message: string;
+    project_type: string;
+    budget: string;
+    status: 'new' | 'read' | 'replied' | 'closed';
+    admin_notes: string;
+    source_page: string;
+    created_at: string;
+}
+
+interface AdminThread {
+    id: number;
+    title: string;
+    slug: string;
+    author: { username?: string; email?: string } | string;
+    is_pinned: boolean;
+    is_closed: boolean;
+    is_solved: boolean;
+    reply_count: number;
+    vote_count: number;
+    created_at: string;
 }
 
 // ============ Tab Panel Component ============
@@ -233,6 +264,8 @@ const AdminDashboardPage: React.FC = () => {
     const [ollamaStatus, setOllamaStatus] = useState<{ running: boolean; active_models: any[] }>({ running: false, active_models: [] });
     const [toolServices, setToolServices] = useState<ToolService[]>([]);
     const [toolAccessLoading, setToolAccessLoading] = useState<Record<number, boolean>>({});
+    const [inquiries, setInquiries] = useState<AdminInquiry[]>([]);
+    const [threads, setThreads] = useState<AdminThread[]>([]);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -241,6 +274,8 @@ const AdminDashboardPage: React.FC = () => {
     const [userDialog, setUserDialog] = useState<{ open: boolean; type: 'create' | 'edit'; data: Partial<AdminUser> }>({ open: false, type: 'create', data: {} });
     const [downloadDialog, setDownloadDialog] = useState<{ open: boolean; data: Partial<AdminDownload> }>({ open: false, data: {} });
     const [blogDialog, setBlogDialog] = useState<{ open: boolean; data: Partial<AdminBlog> }>({ open: false, data: {} });
+    const [inquiryDialog, setInquiryDialog] = useState<{ open: boolean; data: AdminInquiry | null }>({ open: false, data: null });
+    const [replyMessage, setReplyMessage] = useState('');
 
     const [autoRefreshLogs, setAutoRefreshLogs] = useState(true);
     const [selectedModel, setSelectedModel] = useState('');
@@ -323,6 +358,24 @@ const AdminDashboardPage: React.FC = () => {
         }
     }, []);
 
+    const fetchInquiries = useCallback(async () => {
+        try {
+            const response = await apiClient.get('/api/services/admin/inquiries/');
+            setInquiries(response.data.inquiries || []);
+        } catch (e) {
+            console.error('Failed to fetch inquiries:', e);
+        }
+    }, []);
+
+    const fetchThreads = useCallback(async () => {
+        try {
+            const response = await apiClient.get('/api/community/threads/');
+            setThreads(response.data?.results ?? response.data ?? []);
+        } catch (e) {
+            console.error('Failed to fetch threads:', e);
+        }
+    }, []);
+
     // Initial load
     useEffect(() => {
         const loadData = async () => {
@@ -335,11 +388,13 @@ const AdminDashboardPage: React.FC = () => {
                 fetchOllamaModels(),
                 fetchOllamaStatus(),
                 fetchToolServices(),
+                fetchInquiries(),
+                fetchThreads(),
             ]);
             setLoading(false);
         };
         loadData();
-    }, [fetchMetrics, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus, fetchToolServices]);
+    }, [fetchMetrics, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus, fetchToolServices, fetchInquiries, fetchThreads]);
 
     // Real-time metrics polling
     useEffect(() => {
@@ -386,6 +441,9 @@ const AdminDashboardPage: React.FC = () => {
             } else if (type === 'download') {
                 await apiClient.delete(`/api/services/admin/downloads/${id}/`);
                 setDownloads(downloads.filter(d => d.id !== id));
+            } else if (type === 'thread') {
+                await apiClient.delete(`/api/community/threads/${id}/`);
+                setThreads(threads.filter(t => t.id !== id));
             }
         } catch (e) {
             setError('Failed to delete item');
@@ -469,6 +527,47 @@ const AdminDashboardPage: React.FC = () => {
         }
     };
 
+    const handleInquiryStatusChange = async (id: number, newStatus: AdminInquiry['status']) => {
+        try {
+            await apiClient.patch(`/api/services/admin/inquiries/${id}/`, { status: newStatus });
+            setInquiries(inquiries.map(i => i.id === id ? { ...i, status: newStatus } : i));
+        } catch (e) {
+            setError('Failed to update inquiry status');
+        }
+    };
+
+    const handleReplySubmit = async () => {
+        if (!inquiryDialog.data || !replyMessage.trim()) return;
+        try {
+            await apiClient.post(`/api/services/admin/inquiries/${inquiryDialog.data.id}/reply/`, {
+                message: replyMessage,
+            });
+            setInquiries(inquiries.map(i => i.id === inquiryDialog.data!.id ? { ...i, status: 'replied' } : i));
+            setInquiryDialog({ open: false, data: null });
+            setReplyMessage('');
+        } catch (e: any) {
+            setError(e.response?.data?.error || 'Failed to send reply');
+        }
+    };
+
+    const handleThreadPin = async (id: number, currentValue: boolean) => {
+        try {
+            const res = await apiClient.post(`/api/community/threads/${id}/pin/`);
+            setThreads(threads.map(t => t.id === id ? { ...t, is_pinned: res.data.is_pinned } : t));
+        } catch (e) {
+            setError('Failed to update thread');
+        }
+    };
+
+    const handleThreadLock = async (id: number, currentValue: boolean) => {
+        try {
+            const res = await apiClient.post(`/api/community/threads/${id}/lock/`);
+            setThreads(threads.map(t => t.id === id ? { ...t, is_closed: res.data.is_closed } : t));
+        } catch (e) {
+            setError('Failed to update thread');
+        }
+    };
+
     // ============ Filter Functions ============
     const filteredUsers = users.filter(u =>
         u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -477,6 +576,16 @@ const AdminDashboardPage: React.FC = () => {
 
     const filteredBlogs = blogs.filter(b =>
         b.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredInquiries = inquiries.filter(i =>
+        i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.subject.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredThreads = threads.filter(t =>
+        t.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     // ============ Format Helpers ============
@@ -504,6 +613,8 @@ const AdminDashboardPage: React.FC = () => {
         { label: 'Logs', icon: <Terminal /> },
         { label: 'Ollama', icon: <Psychology /> },
         { label: 'Tool Access', icon: <Lock /> },
+        { label: 'Inquiries', icon: <Email /> },
+        { label: 'Threads', icon: <Forum /> },
     ];
 
     // ============ Render ============
@@ -1219,6 +1330,185 @@ const AdminDashboardPage: React.FC = () => {
                                     </Button>
                                 </Box>
                             </TabPanel>
+
+                            {/* ============ INQUIRIES TAB ============ */}
+                            <TabPanel value={activeTab} index={7}>
+                                <Box sx={{ mb: 3 }}>
+                                    <TextField
+                                        placeholder="Search inquiries..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        size="small"
+                                        sx={{
+                                            width: { xs: '100%', sm: 300 },
+                                            '& .MuiOutlinedInput-root': {
+                                                bgcolor: 'rgba(255,255,255,0.02)',
+                                                color: 'white',
+                                                '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+                                            },
+                                        }}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <Search sx={{ color: 'grey.500' }} />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                    />
+                                </Box>
+                                <TableContainer component={Paper} sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3 }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>From</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Subject</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Type</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Status</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Received</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Actions</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {filteredInquiries.map((inq) => (
+                                                <TableRow key={inq.id} hover sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Typography sx={{ color: 'white', fontWeight: 500 }}>{inq.name}</Typography>
+                                                        <Typography variant="caption" sx={{ color: 'grey.500' }}>{inq.email}</Typography>
+                                                    </TableCell>
+                                                    <TableCell sx={{ color: 'grey.300', borderColor: 'rgba(255,255,255,0.06)', maxWidth: 260 }}>
+                                                        <Typography noWrap sx={{ color: 'grey.300' }}>{inq.subject || inq.message}</Typography>
+                                                    </TableCell>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Chip label={inq.inquiry_type} size="small" sx={{ bgcolor: 'rgba(99, 102, 241, 0.15)', color: '#a5b4fc' }} />
+                                                    </TableCell>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Chip
+                                                            label={inq.status}
+                                                            size="small"
+                                                            sx={{
+                                                                bgcolor: inq.status === 'new' ? 'rgba(239, 68, 68, 0.15)'
+                                                                    : inq.status === 'replied' ? 'rgba(34, 197, 94, 0.15)'
+                                                                    : 'rgba(255,255,255,0.08)',
+                                                                color: inq.status === 'new' ? '#fca5a5'
+                                                                    : inq.status === 'replied' ? '#86efac'
+                                                                    : 'grey.400',
+                                                            }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell sx={{ color: 'grey.400', borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        {formatDate(inq.created_at)}
+                                                    </TableCell>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Tooltip title="View & reply">
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => {
+                                                                    setInquiryDialog({ open: true, data: inq });
+                                                                    setReplyMessage('');
+                                                                    if (inq.status === 'new') handleInquiryStatusChange(inq.id, 'read');
+                                                                }}
+                                                                sx={{ color: 'grey.500', '&:hover': { color: '#6366f1' } }}
+                                                            >
+                                                                <Reply fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                                <Typography variant="caption" sx={{ color: 'grey.600', mt: 2, display: 'block' }}>
+                                    Showing {filteredInquiries.length} of {inquiries.length} inquiries
+                                </Typography>
+                            </TabPanel>
+
+                            {/* ============ THREADS TAB (community moderation) ============ */}
+                            <TabPanel value={activeTab} index={8}>
+                                <Box sx={{ mb: 3 }}>
+                                    <TextField
+                                        placeholder="Search threads..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        size="small"
+                                        sx={{
+                                            width: { xs: '100%', sm: 300 },
+                                            '& .MuiOutlinedInput-root': {
+                                                bgcolor: 'rgba(255,255,255,0.02)',
+                                                color: 'white',
+                                                '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+                                            },
+                                        }}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <Search sx={{ color: 'grey.500' }} />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                    />
+                                </Box>
+                                <TableContainer component={Paper} sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3 }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Thread</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Author</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Replies</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Pinned</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Locked</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Actions</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {filteredThreads.map((thread) => (
+                                                <TableRow key={thread.id} hover sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)', maxWidth: 300 }}>
+                                                        <Typography sx={{ color: 'white', fontWeight: 500 }} noWrap>{thread.title}</Typography>
+                                                        {thread.is_solved && (
+                                                            <Chip label="Solved" size="small" sx={{ mt: 0.5, bgcolor: 'rgba(34, 197, 94, 0.15)', color: '#86efac' }} />
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell sx={{ color: 'grey.400', borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        {typeof thread.author === 'string' ? thread.author : (thread.author?.username || thread.author?.email || 'Unknown')}
+                                                    </TableCell>
+                                                    <TableCell sx={{ color: 'grey.400', borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        {thread.reply_count}
+                                                    </TableCell>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Switch
+                                                            checked={thread.is_pinned}
+                                                            onChange={() => handleThreadPin(thread.id, thread.is_pinned)}
+                                                            size="small"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Switch
+                                                            checked={thread.is_closed}
+                                                            onChange={() => handleThreadLock(thread.id, thread.is_closed)}
+                                                            size="small"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Tooltip title="Delete thread">
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => setDeleteDialog({ open: true, type: 'thread', id: thread.id, name: thread.title })}
+                                                                sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' } }}
+                                                            >
+                                                                <Delete fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                                <Typography variant="caption" sx={{ color: 'grey.600', mt: 2, display: 'block' }}>
+                                    Showing {filteredThreads.length} of {threads.length} threads
+                                </Typography>
+                            </TabPanel>
                         </motion.div>
                     </AnimatePresence>
                 )}
@@ -1365,6 +1655,67 @@ const AdminDashboardPage: React.FC = () => {
                     <DialogActions>
                         <Button onClick={() => setDownloadDialog({ ...downloadDialog, open: false })} sx={{ color: 'grey.500' }}>Cancel</Button>
                         <Button onClick={handleDownloadSubmit} variant="contained" sx={{ bgcolor: '#6366f1' }}>Save</Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Inquiry Detail / Reply Dialog — replying is always an explicit
+                    action taken here; nothing is ever emailed to the requester
+                    automatically on submission. */}
+                <Dialog
+                    open={inquiryDialog.open}
+                    onClose={() => setInquiryDialog({ open: false, data: null })}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{ sx: { bgcolor: '#1e293b', color: 'white' } }}
+                >
+                    <DialogTitle>Inquiry from {inquiryDialog.data?.name}</DialogTitle>
+                    <DialogContent>
+                        {inquiryDialog.data && (
+                            <>
+                                <Typography variant="caption" sx={{ color: 'grey.500' }}>
+                                    {inquiryDialog.data.email} • {inquiryDialog.data.inquiry_type}
+                                    {inquiryDialog.data.project_type && ` • ${inquiryDialog.data.project_type}`}
+                                    {inquiryDialog.data.budget && ` • Budget: ${inquiryDialog.data.budget}`}
+                                </Typography>
+                                {inquiryDialog.data.subject && (
+                                    <Typography sx={{ color: 'white', fontWeight: 600, mt: 2 }}>
+                                        {inquiryDialog.data.subject}
+                                    </Typography>
+                                )}
+                                <Typography sx={{ color: 'grey.300', mt: 1, whiteSpace: 'pre-wrap' }}>
+                                    {inquiryDialog.data.message}
+                                </Typography>
+                                <Divider sx={{ my: 2, borderColor: 'rgba(255,255,255,0.08)' }} />
+                                <TextField
+                                    label="Reply message"
+                                    fullWidth
+                                    multiline
+                                    minRows={4}
+                                    value={replyMessage}
+                                    onChange={(e) => setReplyMessage(e.target.value)}
+                                    placeholder="Write your reply — this will be emailed directly to the requester."
+                                    sx={{ mt: 1, textarea: { color: 'white' }, label: { color: 'grey.500' } }}
+                                />
+                            </>
+                        )}
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            onClick={() => inquiryDialog.data && handleInquiryStatusChange(inquiryDialog.data.id, 'closed')}
+                            sx={{ color: 'grey.500' }}
+                        >
+                            Mark closed
+                        </Button>
+                        <Button onClick={() => setInquiryDialog({ open: false, data: null })} sx={{ color: 'grey.500' }}>Cancel</Button>
+                        <Button
+                            onClick={handleReplySubmit}
+                            variant="contained"
+                            disabled={!replyMessage.trim()}
+                            startIcon={<Reply />}
+                            sx={{ bgcolor: '#6366f1', '&:hover': { bgcolor: '#4f46e5' } }}
+                        >
+                            Send Reply
+                        </Button>
                     </DialogActions>
                 </Dialog>
             </Container>
