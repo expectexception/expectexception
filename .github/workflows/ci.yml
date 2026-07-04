@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       redis:
         image: redis:alpine
@@ -48,4 +48,69 @@ jobs:
           else
             .venv/bin/python manage.py migrate
             .venv/bin/python manage.py test --verbosity=2
+          fi
+
+  # Mirrors the actual settings module + app set Render runs (trimmed
+  # INSTALLED_APPS, Cloudinary storage, SQLite/DATABASE_URL branching).
+  # The default `test` job above only ever exercises the full local
+  # settings.py, so it can't catch Render-only regressions (e.g. a package
+  # settings_render.py imports but requirements.txt doesn't list).
+  test-render:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Create virtualenv and install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip setuptools wheel
+          if [ -d "expectexception" ]; then
+            .venv/bin/pip install -r expectexception/requirements.txt
+          else
+            .venv/bin/pip install -r requirements.txt
+          fi
+
+      # Scoped to the apps settings_render.py actually installs (see
+      # INSTALLED_APPS there). Running `manage.py test` with no args would
+      # also discover apps.videos/apps.chatbot/apps.ai_detector (excluded on
+      # Render, so their models/imports 500 here) plus stray root-level
+      # debug scripts (test_import.py etc.) that aren't real Django tests.
+      - name: Check, migrate, collectstatic and test against settings_render
+        env:
+          DJANGO_SETTINGS_MODULE: "expectexception.settings_render"
+          DEBUG: "False"
+          SECURE_SSL_REDIRECT: "False"
+          CELERY_TASK_ALWAYS_EAGER: "True"
+          REDIS_URL: "redis://localhost:6379/1"
+          SECRET_KEY: "ci-test-secret-key"
+        run: |
+          RENDER_APPS="apps.users apps.blog apps.services apps.profiles apps.notifications apps.contact apps.community apps.secret_sharer apps.text_to_handwriting"
+          if [ -d "expectexception" ]; then
+            cd expectexception
+            ../.venv/bin/python manage.py check
+            ../.venv/bin/python manage.py migrate --noinput
+            ../.venv/bin/python manage.py collectstatic --noinput
+            ../.venv/bin/python manage.py test $RENDER_APPS --verbosity=2
+          else
+            .venv/bin/python manage.py check
+            .venv/bin/python manage.py migrate --noinput
+            .venv/bin/python manage.py collectstatic --noinput
+            .venv/bin/python manage.py test $RENDER_APPS --verbosity=2
           fi

@@ -50,3 +50,7 @@ sentry-sdk[django]>=1.40.0
 
 # Rate limiting
 django-ratelimit>=4.1.0
+
+# Cloudinary media storage (used on Render — ephemeral disk, see settings_render.py)
+cloudinary>=1.40.0
+django-cloudinary-storage>=0.3.0

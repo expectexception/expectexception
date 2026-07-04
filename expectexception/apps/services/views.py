@@ -46,8 +46,9 @@ from .models import WebhookEndpoint, WebhookRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .serializers import ServiceSerializer, DownloadableResourceSerializer, UserActivitySerializer, FavoriteToolSerializer, DownloadHistorySerializer
-from apps.videos.models import VideoDownload
-from apps.videos.tasks import download_video_async
+# VideoDownload & download_video_async are lazily imported below inside
+# YtDownloaderView so that this module loads cleanly when apps.videos is
+# excluded from INSTALLED_APPS (e.g. on Render).
 from apps.blog.models import Post
 from .log_analyzer import get_log_analysis
 from .utils import generate_qr_image
@@ -586,7 +587,17 @@ class YtDownloaderView(APIView):
 
                     # Get requested format/conversion (mp3, mp4, etc.)
                     convert_to = request.data.get('format')
-                    
+
+                    # Lazy import: apps.videos may be excluded from INSTALLED_APPS on Render
+                    try:
+                        from apps.videos.models import VideoDownload
+                        from apps.videos.tasks import download_video_async
+                    except ImportError:
+                        return Response(
+                            {'error': 'Video download service is not available on this server.'},
+                            status=status.HTTP_503_SERVICE_UNAVAILABLE
+                        )
+
                     # Create VideoDownload record and trigger background task
                     d = VideoDownload.objects.create(
                         url=url, 
@@ -801,7 +812,13 @@ class ServerStatusView(View):
 from apps.blog.permissions import IsAdminOrReadOnly
 from django.db.models import Sum, Max, Count
 from django.contrib.auth import get_user_model
-from apps.videos.models import VideoDownload
+# VideoDownload may not be available when apps.videos is excluded from INSTALLED_APPS
+try:
+    from apps.videos.models import VideoDownload as _VideoDownload
+    _videos_available = True
+except Exception:
+    _VideoDownload = None
+    _videos_available = False
 from .models import Service, DownloadableResource, DownloadHistory, FavoriteTool
 from .serializers import (
     ServiceSerializer, DownloadableResourceSerializer, 
@@ -915,10 +932,15 @@ class DownloadableResourceViewSet(viewsets.ModelViewSet):
         # 3. Active Users
         active_users = User.objects.filter(is_active=True).count()
         
-        # 4. Success Rate (from VideoDownload)
-        total_video_downloads = VideoDownload.objects.count()
-        successful_downloads = VideoDownload.objects.filter(status=VideoDownload.STATUS_DONE).count()
-        
+        # 4. Success Rate (from VideoDownload, if app is enabled)
+        if _videos_available:
+            VideoDownload = _VideoDownload
+            total_video_downloads = VideoDownload.objects.count()
+            successful_downloads = VideoDownload.objects.filter(status=VideoDownload.STATUS_DONE).count()
+        else:
+            total_video_downloads = 0
+            successful_downloads = 0
+
         if total_video_downloads > 0:
             success_rate = (successful_downloads / total_video_downloads) * 100
             success_rate_str = f"{success_rate:.1f}%"
