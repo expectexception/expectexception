@@ -114,7 +114,7 @@ const UrlDownloader: React.FC = () => {
             });
 
             // Create blob link to download
-            const blob = new Blob([response.data], { type: response.headers['content-type'] });
+            const blob = new Blob([response.data], { type: String(response.headers['content-type'] || 'application/octet-stream') });
             const downloadUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = downloadUrl;
