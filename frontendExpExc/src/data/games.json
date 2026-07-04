@@ -130,5 +130,49 @@
         "tags": ["classic", "arcade", "canvas"],
         "color": "warning",
         "is_active": true
+    },
+    {
+        "id": 13,
+        "title": "Minesweeper",
+        "description": "Clear the whole board without detonating a mine. Reveal cells, flag the danger, and beat your best time.",
+        "icon": "GridView",
+        "path": "/sandbox/minesweeper",
+        "category": "puzzle",
+        "tags": ["puzzle", "classic", "logic"],
+        "color": "info",
+        "is_active": true
+    },
+    {
+        "id": 14,
+        "title": "Connect Four",
+        "description": "Drop discs to line up four in a row before the AI does. Horizontal, vertical, or diagonal counts.",
+        "icon": "Casino",
+        "path": "/sandbox/connect-four",
+        "category": "classic",
+        "tags": ["classic", "ai", "strategy"],
+        "color": "primary",
+        "is_active": true
+    },
+    {
+        "id": 15,
+        "title": "Whack-a-Mole",
+        "description": "Tap the moles as fast as they pop up. Thirty seconds on the clock — rack up the highest score you can.",
+        "icon": "Pets",
+        "path": "/sandbox/whack-a-mole",
+        "category": "reaction",
+        "tags": ["reaction", "arcade", "score"],
+        "color": "success",
+        "is_active": true
+    },
+    {
+        "id": 16,
+        "title": "Typing Speed Test",
+        "description": "Type the sentence as fast and accurately as you can. Scores your net WPM and accuracy at the end.",
+        "icon": "Keyboard",
+        "path": "/sandbox/typing-test",
+        "category": "reaction",
+        "tags": ["reaction", "skill", "typing"],
+        "color": "secondary",
+        "is_active": true
     }
 ]

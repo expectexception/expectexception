@@ -117,6 +117,10 @@ const AimTrainer = lazy(() => import('../sandbox/AimTrainer'));
 const MemoryMatch = lazy(() => import('../sandbox/MemoryMatch'));
 const SimonSays = lazy(() => import('../sandbox/SimonSays'));
 const Breakout = lazy(() => import('../sandbox/Breakout'));
+const Minesweeper = lazy(() => import('../sandbox/Minesweeper'));
+const ConnectFour = lazy(() => import('../sandbox/ConnectFour'));
+const WhackAMole = lazy(() => import('../sandbox/WhackAMole'));
+const TypingTest = lazy(() => import('../sandbox/TypingTest'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -239,6 +243,10 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/sandbox/memory-match" element={<PageTransition><MemoryMatch /></PageTransition>} />
                     <Route path="/sandbox/simon-says" element={<PageTransition><SimonSays /></PageTransition>} />
                     <Route path="/sandbox/breakout" element={<PageTransition><Breakout /></PageTransition>} />
+                    <Route path="/sandbox/minesweeper" element={<PageTransition><Minesweeper /></PageTransition>} />
+                    <Route path="/sandbox/connect-four" element={<PageTransition><ConnectFour /></PageTransition>} />
+                    <Route path="/sandbox/whack-a-mole" element={<PageTransition><WhackAMole /></PageTransition>} />
+                    <Route path="/sandbox/typing-test" element={<PageTransition><TypingTest /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />
