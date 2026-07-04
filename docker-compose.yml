@@ -4,41 +4,68 @@ version: '3.8'
 # ExpectException - Docker Compose
 #
 # Architecture:
-#   Cloudflare Tunnel
-#     → localhost:8080 (system nginx - already running as systemd service)
-#     → localhost:8000 (this Gunicorn container - host network)
+#   Cloudflare Tunnel (~/.cloudflared/config.yml) routes
+#   expectexception.com / www / api / ytd → localhost:8000 (this Gunicorn
+#   container, host network) directly. The system nginx unit exists on this
+#   box but is disabled — it is NOT in the request path; don't assume the
+#   headers/rate-limiting/gzip in nginx-optimized.conf are actually applied.
 #
-# The system nginx (/etc/nginx/sites-enabled/...) handles:
-#   - SSL/TLS via Cloudflare tunnel
-#   - Static file serving from /home/rjt/expexcV2/frontendExpExc/build
-#   - Proxying /api/* → http://127.0.0.1:8000
-#
-# This compose file ONLY runs the Django/Gunicorn backend.
-# No Docker nginx is needed because the system nginx is already running.
+# Backend + Celery share one image. Two worker services split queues by
+# resource profile (see CELERY_TASK_ROUTES in settings.py):
+#   - worker-heavy: GPU/CPU-bound, low concurrency (audio separation, AI
+#     detection, image upscaling) — these shouldn't pile up concurrently.
+#   - worker-light: I/O-bound, higher concurrency (PDF/OCR conversion,
+#     background removal, yt-dlp downloads, cross-instance Mongo mirror
+#     tasks, uptime checks).
+# Previously NO Celery worker ran here at all in Docker/production — queued
+# tasks had nothing consuming them unless someone manually ran run_backend.sh.
 # ============================================================================
+
+x-backend-image: &backend-image
+  build: .
+  image: expectexception_backend  # one shared image for all 4 services — don't rebuild 4x
+  network_mode: "host"
+  environment:
+    - DJANGO_SETTINGS_MODULE=expectexception.settings
+  env_file:
+    - .env
+  volumes:
+    - ./apps:/app/apps                  # Backend Python source — changes apply without rebuild
+    - ./expectexception:/app/expectexception  # Django settings & URLs
+    # db.sqlite3 was NOT shared before this — each of the 4 services had its
+    # own independent copy baked in at image-build time (COPY . /app/), so
+    # only `backend` (the one entrypoint.sh runs `migrate` in) ever saw
+    # schema/data changes. Confirmed live: worker-light/worker-heavy/beat
+    # were all still on a build-time-frozen snapshot, meaning every DB write
+    # a Celery task ever made (AI Detector results, download history, and
+    # now UptimeMonitor checks) landed in a file the API could never read
+    # back. One shared bind mount fixes all of it at once.
+    - ./db.sqlite3:/app/db.sqlite3
+    - ./media:/app/media
+    - ./logs:/app/logs
+    - ./staticfiles:/app/staticfiles
+    - ../frontendExpExc/build:/frontendExpExc/build
+    # AI model caches, persisted across restarts. Without these, every
+    # container recreation re-downloads ~1.6GB total from scratch (AI
+    # Detector's 2 HF transformer models, demucs's 4 mdx checkpoint files,
+    # rembg's u2net model) — confirmed live: this took worker-heavy 500s+ of
+    # blocking preload on a fresh container each time, during which it
+    # couldn't consume ANY queued task (Celery's worker loop doesn't start
+    # until AppConfig.ready() finishes importing).
+    - ./cache/huggingface:/root/.cache/huggingface
+    - ./cache/torch:/root/.cache/torch
+    - ./cache/u2net:/root/.u2net
+  restart: unless-stopped
 
 services:
 
   # --------------------------------------------------------------------------
   # Django / Gunicorn Backend
-  # Binds to 0.0.0.0:8000 on host network (system nginx proxies to it)
+  # Binds to 0.0.0.0:8000 on host network (Cloudflare Tunnel proxies to it)
   # --------------------------------------------------------------------------
   backend:
-    build: .
+    <<: *backend-image
     container_name: expectexception-backend
-    network_mode: "host"
-    environment:
-      - DJANGO_SETTINGS_MODULE=expectexception.settings
-    env_file:
-      - .env
-    volumes:
-      - ./apps:/app/apps                  # Backend Python source — changes apply without rebuild
-      - ./expectexception:/app/expectexception  # Django settings & URLs
-      - ./media:/app/media
-      - ./logs:/app/logs
-      - ./staticfiles:/app/staticfiles
-      - ../frontendExpExc/build:/frontendExpExc/build
-    restart: unless-stopped
     healthcheck:
       # start_period is long because AI models are downloaded on cold start
       test: ["CMD", "curl", "-f", "-H", "X-Forwarded-Proto: https", "http://127.0.0.1:8000/api/schema/"]
@@ -46,3 +73,36 @@ services:
       timeout: 10s
       retries: 5
       start_period: 600s
+
+  # --------------------------------------------------------------------------
+  # Celery worker — heavy queues (GPU/CPU-bound, low concurrency on purpose)
+  # --------------------------------------------------------------------------
+  worker-heavy:
+    <<: *backend-image
+    container_name: expectexception-worker-heavy
+    entrypoint: []
+    command: >
+      sh -c "celery -A expectexception worker --loglevel=info
+      -Q ai_detection,audio_separator,image_upscaler
+      --concurrency=2 --hostname=worker-heavy@%h"
+
+  # --------------------------------------------------------------------------
+  # Celery worker — light queues (I/O-bound, higher concurrency)
+  # --------------------------------------------------------------------------
+  worker-light:
+    <<: *backend-image
+    container_name: expectexception-worker-light
+    entrypoint: []
+    command: >
+      sh -c "celery -A expectexception worker --loglevel=info
+      -Q pdf_convert,background_remover,yt_downloader,default,celery
+      --concurrency=8 --hostname=worker-light@%h"
+
+  # --------------------------------------------------------------------------
+  # Celery beat — scheduled tasks (e.g. weekly digest). Single instance only.
+  # --------------------------------------------------------------------------
+  beat:
+    <<: *backend-image
+    container_name: expectexception-beat
+    entrypoint: []
+    command: celery -A expectexception beat --loglevel=info

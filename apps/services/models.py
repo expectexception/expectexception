@@ -279,3 +279,63 @@ class WebhookRequest(models.Model):
 
     def __str__(self):
         return f"Request {self.id} -> {self.endpoint_id} @ {self.created_at}"
+
+
+class UptimeMonitor(models.Model):
+    """A recurring keep-alive/uptime check owned by one user. Replaces the
+    old anonymous, file-backed 'trigger' storage (apps/services/scheduler.py,
+    now removed) which had no ownership and no target validation."""
+
+    TYPE_CHOICES = [
+        ('http', 'HTTP(S)'),
+        ('keyword', 'Keyword Match'),
+        ('ping', 'Ping (TCP connect)'),
+        ('port', 'Port Check'),
+        ('ssl', 'SSL Certificate'),
+        ('heartbeat', 'Heartbeat Listener'),
+    ]
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('paused', 'Paused'),
+    ]
+
+    MAX_MONITORS_PER_USER = 10
+    MIN_INTERVAL_MINUTES = 1
+    MAX_INTERVAL_MINUTES = 60
+
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='uptime_monitors')
+    name = models.CharField(max_length=120)
+    monitor_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='http')
+    target = models.CharField(max_length=500, blank=True, help_text="URL or hostname; not used for heartbeat monitors")
+    keyword = models.CharField(max_length=200, blank=True)
+    port = models.IntegerField(null=True, blank=True)
+    interval_minutes = models.IntegerField(default=5)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+
+    heartbeat_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+    last_run_at = models.DateTimeField(null=True, blank=True)
+    last_status = models.CharField(max_length=10, default='never')
+    last_latency_ms = models.IntegerField(default=0)
+    logs = models.JSONField(default=list, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.get_monitor_type_display()}) — {self.user}"
+
+    def push_log(self, message: str, check_status: str = 'info', max_entries: int = 30):
+        """Prepend a structured log entry, capped to the most recent N.
+        check_status is 'up' | 'down' | 'info' (paused/registered/etc, not a
+        pass/fail result) — lets the frontend render a real color-coded
+        recent-check-history strip instead of string-sniffing message text."""
+        from django.utils import timezone
+        entry = {
+            'at': timezone.localtime().strftime('%H:%M:%S'),
+            'message': message,
+            'status': check_status,
+        }
+        self.logs = ([entry] + (self.logs or []))[:max_entries]

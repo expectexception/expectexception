@@ -22,8 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') + ['djangobackend', 'ytd.expectexception.com', 'expectexception.com', 'www.expectexception.com']
-CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost,http://127.0.0.1').split(',') + ['https://ytd.expectexception.com', 'https://expectexception.com', 'https://www.expectexception.com']
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') + ['djangobackend', 'ytd.expectexception.com', 'api.expectexception.com', 'expectexception.com', 'www.expectexception.com']
+CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost,http://127.0.0.1').split(',') + ['https://ytd.expectexception.com', 'https://api.expectexception.com', 'https://expectexception.com', 'https://www.expectexception.com']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Ensure upload directory exists
@@ -358,6 +358,11 @@ CELERY_BEAT_SCHEDULE = {
     'weekly-digest': {
         'task': 'notifications.send_weekly_digest',
         'schedule': crontab(hour=9, minute=0, day_of_week='sunday'),
+    },
+    'uptime-monitor-checks': {
+        'task': 'apps.services.tasks.run_uptime_monitors_task',
+        'schedule': 60.0,  # every minute; the task itself only actually
+                           # checks monitors whose own interval has elapsed
     },
 }
 

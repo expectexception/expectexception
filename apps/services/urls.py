@@ -59,8 +59,9 @@ from .views import (
     AudioSeparatorStatusView,
     HealthCheckView,
     UptimeRobotView,
-    UptimeTriggersView,
-    UptimeTriggerDetailView,
+    UptimeMonitorListCreateView,
+    UptimeMonitorDetailView,
+    UptimeHeartbeatReceiverView,
     CeleryTaskStatusView,
 )
 from .server_status_view import ServerStatusView, get_metrics_api # Updated import path
@@ -151,8 +152,9 @@ urlpatterns = [
     path('jwt-verify/', JwtVerifyView.as_view(), name='jwt-verify'),
     path('website-diagnostics/', WebsiteDiagnosticsView.as_view(), name='website-diagnostics'),
     path('uptime-robot/', UptimeRobotView.as_view(), name='uptime-robot'),
-    path('uptime-robot/triggers/', UptimeTriggersView.as_view(), name='uptime-triggers'),
-    path('uptime-robot/triggers/<str:trigger_id>/', UptimeTriggerDetailView.as_view(), name='uptime-trigger-detail'),
+    path('uptime-robot/monitors/', UptimeMonitorListCreateView.as_view(), name='uptime-monitors'),
+    path('uptime-robot/monitors/<int:monitor_id>/', UptimeMonitorDetailView.as_view(), name='uptime-monitor-detail'),
+    path('uptime-robot/heartbeat/<uuid:heartbeat_id>/', UptimeHeartbeatReceiverView.as_view(), name='uptime-heartbeat'),
 
     # Audio tools
     path('audio-separator/process', AudioSeparatorView.as_view(), name='audio-separator'),

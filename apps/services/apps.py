@@ -7,17 +7,9 @@ class ServicesConfig(AppConfig):
     def ready(self):
         from . import signals
         signals.connect()
-
-        # Prevent starting the scheduler during migration, testing or sitemap generation commands
-        import sys
-        if 'manage.py' in sys.argv and any(cmd in sys.argv for cmd in ['migrate', 'makemigrations', 'test', 'collectstatic', 'generate-sitemap']):
-            return
-
-        try:
-            from django.core.cache import cache
-            if not cache.get("last_celery_uptime_run"):
-                from .tasks import run_uptime_scheduler_task
-                run_uptime_scheduler_task.delay()
-        except Exception:
-            pass
+        # Uptime monitor checks run on a normal CELERY_BEAT_SCHEDULE entry
+        # (run_uptime_monitors_task, settings.py) — no manual kickoff needed
+        # here anymore. The old self-rescheduling task needed this bootstrap
+        # since nothing else would ever start its apply_async chain; a real
+        # Beat entry fires on its own regardless of what imports this app.
 

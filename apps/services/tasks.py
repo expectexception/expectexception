@@ -4,6 +4,7 @@ import zipfile
 import shutil
 import subprocess
 import time
+import datetime
 from celery import shared_task, current_task
 from django.conf import settings
 from django.core.cache import cache
@@ -190,88 +191,39 @@ def convert_pdf_task(self, input_path: str, output_format: str, ocr_enabled: boo
             logger.warning(f"Failed to clean up input file: {e}")
 
 
-@shared_task(name='apps.services.tasks.run_uptime_scheduler_task')
-def run_uptime_scheduler_task():
-    """Recurring Celery background worker loop that runs keep-alive triggers."""
+@shared_task(name='apps.services.tasks.run_uptime_monitors_task')
+def run_uptime_monitors_task():
+    """Periodic (CELERY_BEAT_SCHEDULE, every 1 minute) check of every active
+    per-user UptimeMonitor whose own interval has elapsed. Replaces the old
+    self-rescheduling run_uptime_scheduler_task (apply_async(countdown=15) on
+    itself) — a normal Beat entry means a single failed run doesn't silently
+    kill all future checks; Beat just fires again next minute regardless."""
     lock_key = "celery_uptime_scheduler_lock"
-    # Atomic cache check
     if cache.get(lock_key):
         return "Skipping: another worker is currently executing."
 
     cache.set(lock_key, "running", timeout=120)
-    # Set watchdog heartbeat
-    cache.set("last_celery_uptime_run", "active", timeout=45)
+    cache.set("last_celery_uptime_run", "active", timeout=90)
 
     try:
-        from .scheduler import get_triggers, save_triggers
-        import datetime
-        import requests
-        import time
+        from .models import UptimeMonitor
+        from .views import run_monitor_check
+        from django.utils import timezone
 
-        triggers = get_triggers()
-        modified = False
-        now = datetime.datetime.now()
+        now = timezone.now()
+        checked = 0
 
-        for trigger in triggers:
-            if trigger.get('status') != 'active':
-                continue
-
-            last_run_str = trigger.get('last_run')
-            interval = int(trigger.get('interval_minutes', 5))
-            
-            should_run = False
-            if not last_run_str:
-                should_run = True
-            else:
-                try:
-                    last_run_dt = datetime.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
-                    if now >= last_run_dt + datetime.timedelta(minutes=interval):
-                        should_run = True
-                except Exception:
-                    should_run = True
-
-            if should_run:
-                target = trigger.get('target', '')
-                if not target:
+        for monitor in UptimeMonitor.objects.filter(status='active'):
+            if monitor.monitor_type != 'heartbeat':
+                if monitor.last_run_at and now < monitor.last_run_at + datetime.timedelta(minutes=monitor.interval_minutes):
                     continue
-                
-                url = target if '://' in target else f"https://{target}"
-                
-                start_time = time.time()
-                try:
-                    headers = {
-                        'User-Agent': 'UptimeRobot/2.0 (compatible; ExpectException Auto-Trigger Keep-Alive)'
-                    }
-                    res = requests.get(url, headers=headers, timeout=12, verify=False)
-                    latency = int((time.time() - start_time) * 1000)
-                    status = "up" if 200 <= res.status_code < 400 else "down"
-                    log_msg = f"Auto-trigger: HTTP {res.status_code} received in {latency}ms."
-                except Exception as e:
-                    latency = 0
-                    status = "down"
-                    log_msg = f"Auto-trigger connection failed: {str(e)}"
+            run_monitor_check(monitor)
+            monitor.save()
+            checked += 1
 
-                trigger['last_run'] = now.strftime("%Y-%m-%d %H:%M:%S")
-                trigger['last_status'] = status
-                trigger['last_latency'] = latency
-                
-                logs = trigger.get('logs', [])
-                logs.insert(0, f"[{now.strftime('%H:%M:%S')}] {log_msg}")
-                trigger['logs'] = logs[:30]
-
-                modified = True
-
-        if modified:
-            save_triggers(triggers)
-
-    except Exception:
-        pass
+        return f"Checked {checked} monitor(s)."
     finally:
         cache.delete(lock_key)
-
-    # Schedule next run in 15 seconds
-    run_uptime_scheduler_task.apply_async(countdown=15)
-    return "Keep-alive ping completed. Scheduled next in 15s."
 
 
 @shared_task(bind=True, time_limit=120, soft_time_limit=100, name='apps.services.tasks.remove_background_task')

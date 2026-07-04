@@ -5,7 +5,7 @@ from django.utils.html import format_html
 from django.conf import settings
 from unfold.admin import ModelAdmin
 from unfold.decorators import display
-from .models import Service, DownloadableResource, UserActivity, DownloadHistory, FavoriteTool, LogAnalysis, ServerHealth, ToolUsage
+from .models import Service, DownloadableResource, UserActivity, DownloadHistory, FavoriteTool, LogAnalysis, ServerHealth, ToolUsage, UptimeMonitor
 from .log_analyzer import get_log_analysis
 
 @admin.register(Service)
@@ -155,3 +155,11 @@ class FavoriteToolAdmin(admin.ModelAdmin):
     list_display = ('user', 'service', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('user__email', 'service__title')
+
+
+@admin.register(UptimeMonitor)
+class UptimeMonitorAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'monitor_type', 'target', 'status', 'last_status', 'interval_minutes', 'last_run_at')
+    list_filter = ('monitor_type', 'status', 'last_status', 'created_at')
+    search_fields = ('name', 'target', 'user__email', 'user__username')
+    readonly_fields = ('heartbeat_id', 'created_at', 'last_run_at', 'last_status', 'last_latency_ms', 'logs')

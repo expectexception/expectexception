@@ -42,13 +42,16 @@ from django.conf import settings
 from django.urls import re_path
 from django.views.static import serve as serve_static
 
-# DEFAULT_FILE_STORAGE switches to Cloudinary when CLOUDINARY_URL is set
-# (see settings_render.py), so most media goes there instead of local disk.
-# But without CLOUDINARY_URL configured, or for anything that falls back to
-# local disk, Django's static() shortcut won't serve it — it silently
+# This server runs with DEBUG=False and no nginx in front of it (Cloudflare
+# Tunnel routes straight to gunicorn), so something still needs to serve
+# generated files (background-removed images, resized/converted images,
+# merged PDFs, etc.) or every service that returns a MEDIA_URL file_url
+# 404s in production. Django's static() shortcut won't do it — it silently
 # no-ops (returns []) whenever DEBUG=False, regardless of any surrounding
-# guard, and this runs DEBUG=False in production. Calling the underlying
-# view directly bypasses that no-op so local-disk media isn't a silent 404.
+# guard — so this calls the underlying view directly instead. Not a concern
+# for a single-instance deployment like this one; a horizontally-scaled
+# deployment would want S3/Cloudinary instead (Render already excludes
+# these apps).
 urlpatterns += [
     re_path(r'^media/(?P<path>.*)$', serve_static, {'document_root': settings.MEDIA_ROOT}),
 ]
