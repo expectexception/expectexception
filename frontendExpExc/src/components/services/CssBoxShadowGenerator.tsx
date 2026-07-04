@@ -50,7 +50,10 @@ const CssBoxShadowGenerator: React.FC = () => {
             title="CSS Box Shadow Generator"
             subtitle="Visually build CSS box-shadow values with live preview. Add multiple layers, control blur, spread, inset, and color with opacity."
             icon={LayersIcon}
+            seoTitle="CSS Box Shadow Generator — Visual Editor with Live Code"
             seoDescription="Generate CSS box-shadow code visually. Multi-layer shadows with live preview."
+            toolId={43}
+            keywords={['box shadow generator', 'css box shadow', 'drop shadow css', 'neumorphism generator', 'box shadow code', 'css shadow maker', 'multiple box shadows', 'inset shadow css']}
             howToSteps={[
                 { name: 'Adjust shadow settings', text: 'Use sliders to control X/Y offset, blur, spread, and color.' },
                 { name: 'Add layers', text: 'Click + to stack multiple shadow layers for depth effects.' },

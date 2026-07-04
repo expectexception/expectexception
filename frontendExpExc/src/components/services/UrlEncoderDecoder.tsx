@@ -29,7 +29,15 @@ const UrlEncoderDecoder: React.FC = () => {
     ];
 
     return (
-        <ServicePageShell icon={LinkIcon} title="URL Encoder / Decoder" subtitle="Safely encode and decode URL components — runs entirely in your browser" maxWidth="md">
+        <ServicePageShell
+            icon={LinkIcon}
+            title="URL Encoder / Decoder"
+            subtitle="Safely encode and decode URL components — runs entirely in your browser"
+            maxWidth="md"
+            seoTitle="URL Encoder / Decoder Online — Percent Encoding Tool"
+            toolId={39}
+            keywords={['url encode online', 'url decode', 'percent encoding', 'encodeuricomponent online', 'query string encoder', 'url escape characters', 'decode url online', 'uri encoder decoder']}
+        >
             <Card>
                 <CardContent sx={{ p: 3 }}>
                     <TextField

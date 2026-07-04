@@ -60,7 +60,19 @@ const CronExplainer: React.FC = () => {
     const explanation = useMemo(() => isValid ? explainCron(expression) : 'Enter a valid cron expression (5 fields)', [expression, isValid]);
 
     return (
-        <ServicePageShell icon={Schedule} title="Cron Expression Explainer" subtitle="Understand what any cron expression does in plain English" maxWidth="lg">
+        <ServicePageShell
+            icon={Schedule}
+            title="Cron Expression Explainer"
+            subtitle="Understand what any cron expression does in plain English"
+            maxWidth="lg"
+            seoTitle="Cron Expression Explainer — Translate Cron to Plain English"
+            toolId={41}
+            keywords={['cron expression explainer', 'cron to english', 'crontab generator', 'cron schedule parser', 'cron syntax', 'what does this cron do', 'cron job examples', 'cron expression generator']}
+            faq={[
+                { question: 'What is a cron expression?', answer: 'A cron expression is five (or six) fields — minute, hour, day of month, month, day of week — that define a repeating schedule for jobs on Unix-like systems.' },
+                { question: 'Does this support ranges and steps?', answer: 'Yes. It explains lists (1,15), ranges (1-5), steps (*/10) and wildcards (*) in plain English so you can verify a schedule before deploying it.' },
+            ]}
+        >
             <Card>
                 <CardContent sx={{ p: 3 }}>
                     <TextField

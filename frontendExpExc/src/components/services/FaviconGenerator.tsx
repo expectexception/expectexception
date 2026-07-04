@@ -66,7 +66,10 @@ const FaviconGenerator: React.FC = () => {
             title="Favicon Generator"
             subtitle="Upload any image and generate favicons in all standard sizes: 16×16 to 512×512."
             icon={ImageIcon}
+            seoTitle="Favicon Generator — Create Favicons from Any Image Free"
             seoDescription="Generate favicons in all sizes from any image. Download PNG files or favicon.ico for your website."
+            toolId={46}
+            keywords={['favicon generator', 'create favicon', 'ico generator', 'favicon from image', 'favicon maker online', 'favicon.ico generator', 'png to favicon', 'website icon generator']}
             howToSteps={[
                 { name: 'Upload an image', text: 'Upload any PNG, JPG, SVG or WebP image (square works best).' },
                 { name: 'Preview all sizes', text: 'See your favicon rendered at all standard sizes.' },

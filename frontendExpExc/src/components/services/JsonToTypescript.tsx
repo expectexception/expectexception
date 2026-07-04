@@ -64,7 +64,10 @@ const JsonToTypescript: React.FC = () => {
             title="JSON to TypeScript Types"
             subtitle="Paste any JSON and instantly generate TypeScript interfaces. Handles nested objects, arrays, and primitives automatically."
             icon={CodeIcon}
+            seoTitle="JSON to TypeScript — Generate Interfaces & Types from JSON"
             seoDescription="Convert JSON to TypeScript interfaces instantly. Supports nested objects and arrays."
+            toolId={45}
+            keywords={['json to typescript', 'generate typescript interface', 'json to type', 'typescript interface generator', 'json schema to types', 'json to ts', 'quicktype alternative', 'ts type from json']}
             howToSteps={[
                 { name: 'Paste your JSON', text: 'Paste any JSON object in the input panel.' },
                 { name: 'Set root interface name', text: 'Optionally change the root interface name (default: Root).' },

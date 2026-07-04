@@ -38,7 +38,20 @@ const NumberBaseConverter: React.FC = () => {
     }, []);
 
     return (
-        <ServicePageShell icon={SwapHoriz} title="Number Base Converter" subtitle="Convert between binary, octal, decimal, and hexadecimal" maxWidth="md">
+        <ServicePageShell
+            icon={SwapHoriz}
+            title="Number Base Converter"
+            subtitle="Convert between binary, octal, decimal, and hexadecimal"
+            maxWidth="md"
+            seoTitle="Number Base Converter — Binary, Octal, Decimal & Hex Online"
+            toolId={37}
+            keywords={['binary to decimal converter', 'hex to decimal', 'decimal to binary', 'base converter online', 'radix converter', 'hexadecimal converter', 'binary calculator', 'octal to decimal', 'number base conversion']}
+            howToSteps={[
+                { name: 'Enter a number', text: 'Type a value into any of the base fields (binary, octal, decimal or hex).' },
+                { name: 'Read every base instantly', text: 'The other bases update live as you type — no button to press.' },
+                { name: 'Copy the result', text: 'Click any value to copy the converted number to your clipboard.' },
+            ]}
+        >
             <Card>
                 <CardContent sx={{ p: 3 }}>
                     {error && <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>{error}</Alert>}
