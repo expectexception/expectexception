@@ -69,7 +69,7 @@
   "scripts": {
     "start": "react-scripts start",
     "dev": "react-scripts start",
-    "build": "CI=false GENERATE_SOURCEMAP=false react-scripts build && node scripts/generate-sitemap.js",
+    "build": "CI=false GENERATE_SOURCEMAP=false react-scripts build && node scripts/generate-sitemap.js && node scripts/generate-static-seo.js",
     "postinstall": "node scripts/patch-react-snap.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
