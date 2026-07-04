@@ -23,37 +23,17 @@ import {
 } from '@mui/material';
 import {
   Search,
-  Download,
-  QrCode,
   Code,
   Link as LinkIcon,
-  Movie,
   Sort,
   Star,
   TrendingUp,
-  VolumeUp,
-  Compress,
-  Psychology,
-  Description,
-  RecordVoiceOver,
-  Terminal,
-  MergeType,
-  PhotoSizeSelectActual,
-  EnhancedEncryption,
-  PictureAsPdf,
-  AutoFixHigh,
-  Fingerprint,
-  Create,
   Lock,
-  AltRoute,
-  Dns,
-  Speed,
-  Mic,
-  NetworkCheck,
   BookmarkBorder,
   Bookmark,
   History,
 } from '@mui/icons-material';
+import { getServiceSvgIcon } from '../components/layout/AnimatedSvgs';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../components/seo/Seo';
@@ -218,35 +198,6 @@ const ServicesPage: React.FC = () => {
     { label: 'Uptime', value: stats.uptime, icon: <LinkIcon /> },
   ];
 
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'Download': return <Download fontSize="large" />;
-      case 'Movie': return <Movie fontSize="large" />;
-      case 'QrCode': return <QrCode fontSize="large" />;
-      case 'Code': return <Code fontSize="large" />;
-      case 'VolumeUp': return <VolumeUp fontSize="large" />;
-      case 'Compress': return <Compress fontSize="large" />;
-      case 'Psychology': return <Psychology fontSize="large" />;
-      case 'Description': return <Description fontSize="large" />;
-      case 'Link': return <LinkIcon fontSize="large" />;
-      case 'RecordVoiceOver': return <RecordVoiceOver fontSize="large" />;
-      case 'Terminal': return <Terminal fontSize="large" />;
-      case 'MergeType': return <MergeType fontSize="large" />;
-      case 'PhotoSizeSelectActual': return <PhotoSizeSelectActual fontSize="large" />;
-      case 'EnhancedEncryption': return <EnhancedEncryption fontSize="large" />;
-      case 'PictureAsPdf': return <PictureAsPdf fontSize="large" />;
-      case 'AutoFixHigh': return <AutoFixHigh fontSize="large" />;
-      case 'Fingerprint': return <Fingerprint fontSize="large" />;
-      case 'Create': return <Create fontSize="large" />;
-      case 'Lock': return <Lock fontSize="large" />;
-      case 'AltRoute': return <AltRoute fontSize="large" />;
-      case 'Dns': return <Dns fontSize="large" />;
-      case 'Mic': return <Mic fontSize="large" />;
-      case 'Speed': return <Speed fontSize="large" />;
-      case 'NetworkCheck': return <NetworkCheck fontSize="large" />;
-      default: return <Code fontSize="large" />;
-    }
-  };
 
   const categories = [
     { label: 'All Tools', value: 'all', count: services.length },
@@ -520,7 +471,8 @@ const ServicesPage: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.3, delay: index * 0.04 }}
-                    whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                    whileHover="hover"
+                    variants={{ hover: { y: -6, transition: { duration: 0.2 } } }}
                     layout
                   >
                     <Card sx={{
@@ -554,10 +506,10 @@ const ServicesPage: React.FC = () => {
                             }}
                           >
                             <motion.div
-                              whileHover={{ scale: 1.2, rotate: 10 }}
-                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              variants={{ hover: { scale: 1.15, rotate: 8 } }}
+                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'scale(0.75)' }}
                             >
-                              {getIcon(service.icon)}
+                              {getServiceSvgIcon(service.icon)}
                             </motion.div>
                           </Box>
                           <Stack direction="row" alignItems="center" spacing={0.75}>
