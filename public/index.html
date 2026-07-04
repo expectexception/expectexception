@@ -156,16 +156,13 @@
     transition: opacity 0.5s ease-out;
   ">
     <div style="text-align: center;">
-      <!-- Logo -->
-      <img src="%PUBLIC_URL%/logo192.png" alt="ExpectException" style="
-          width: 110px;
-          height: 110px;
-          border-radius: 22px;
-          box-shadow: 0 0 40px rgba(61, 252, 85, 0.15);
-          animation: pulse 2s ease-in-out infinite;
-          margin-bottom: 24px;
-          border: 1px solid rgba(61, 252, 85, 0.2);
-        " />
+      <!-- Logo: inline animated SVG (brackets + blinking cursor), no image request -->
+      <svg width="110" height="110" viewBox="0 0 100 100" fill="none" style="margin-bottom: 24px; overflow: visible;">
+        <circle cx="50" cy="50" r="46" stroke="rgba(61,252,85,0.2)" stroke-width="2" style="transform-origin: 50px 50px; animation: brandRingBreathe 3s ease-in-out infinite;" />
+        <path d="M 40 26 L 15 50 L 40 74" stroke="#3dfc55" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="100" style="stroke-dashoffset: 100; animation: brandDrawIn 0.7s ease-out forwards;" />
+        <path d="M 60 26 L 85 50 L 60 74" stroke="#00e5ff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="100" style="stroke-dashoffset: 100; animation: brandDrawIn 0.7s ease-out 0.1s forwards;" />
+        <rect x="46" y="32" width="8" height="36" rx="4" fill="#3dfc55" style="filter: drop-shadow(0 0 4px #3dfc55); animation: brandCursorBlink 1.1s ease-in-out infinite;" />
+      </svg>
 
       <!-- App Name -->
       <h1 style="
@@ -178,7 +175,7 @@
         text-shadow: 0 0 15px rgba(61, 252, 85, 0.25);
         animation: fadeIn 0.8s ease-out;
       ">
-        ExpExc
+        Expect<span style="color: #3dfc55;">Exception</span>
       </h1>
 
       <!-- Tagline -->
@@ -226,6 +223,21 @@
       50% {
         transform: scale(1.05);
       }
+    }
+
+    @keyframes brandRingBreathe {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.04); opacity: 0.9; }
+    }
+
+    @keyframes brandDrawIn {
+      from { stroke-dashoffset: 100; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    @keyframes brandCursorBlink {
+      0%, 50% { opacity: 1; }
+      55%, 100% { opacity: 0; }
     }
 
     @keyframes fadeIn {
