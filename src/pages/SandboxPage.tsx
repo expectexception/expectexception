@@ -24,6 +24,8 @@ import {
   Extension,
   Bolt,
   GpsFixed,
+  Hearing,
+  SportsEsports,
   Search,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
@@ -41,6 +43,8 @@ const ICONS: Record<string, React.ReactElement> = {
   Extension: <Extension fontSize="large" />,
   Bolt: <Bolt fontSize="large" />,
   GpsFixed: <GpsFixed fontSize="large" />,
+  Hearing: <Hearing fontSize="large" />,
+  SportsEsports: <SportsEsports fontSize="large" />,
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
