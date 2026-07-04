@@ -24,19 +24,13 @@ import {
 } from '@mui/material';
 import {
   RocketLaunch,
-  Download,
-  QrCode,
   Code,
   ArrowForward,
   TrendingUp,
   Security,
   Speed,
   Newspaper,
-  VolumeUp,
-  Compress,
-  Movie,
   Psychology,
-  NetworkCheck,
   ColorLens,
   TouchApp,
   CheckCircle,
@@ -412,10 +406,10 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
   const secondaryColor = theme.palette.secondary.main; // Cyan
   
   const nodes = [
-    { step: 0, label: 'Planning Agent', color: primaryColor, icon: '📋', desc: 'Step 1: Analyze & Plan' },
-    { step: 1, label: 'Coding Agent', color: secondaryColor, icon: '💻', desc: 'Step 2: Generate Code' },
-    { step: 2, label: 'Testing Agent', color: '#a855f7', icon: '⚡', desc: 'Step 3: Verify & Test' },
-    { step: 3, label: 'Deploy Agent', color: '#f97316', icon: '🚀', desc: 'Step 4: Package & Ship' },
+    { step: 0, label: 'Planning Agent', color: primaryColor, icon: <PlanningAgentSvg />, desc: 'Step 1: Analyze & Plan' },
+    { step: 1, label: 'Coding Agent', color: secondaryColor, icon: <CodingAgentSvg />, desc: 'Step 2: Generate Code' },
+    { step: 2, label: 'Testing Agent', color: '#a855f7', icon: <TestingAgentSvg />, desc: 'Step 3: Verify & Test' },
+    { step: 3, label: 'Deploy Agent', color: '#f97316', icon: <DeployAgentSvg />, desc: 'Step 4: Package & Ship' },
   ];
 
   return (
@@ -539,7 +533,7 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '1.75rem',
+                  color: isActive || isCompleted ? node.color : undefined,
                   transition: 'all 0.3s ease',
                   position: 'relative'
                 }}
@@ -559,7 +553,9 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
                     transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
                   />
                 )}
-                {node.icon}
+                <Box sx={{ transform: 'scale(0.65)', display: 'flex' }}>
+                  {node.icon}
+                </Box>
               </motion.div>
               
               <Typography 
@@ -782,20 +778,6 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'Download': return <Download fontSize="medium" />;
-      case 'Movie': return <Movie fontSize="medium" />;
-      case 'QrCode': return <QrCode fontSize="medium" />;
-      case 'Code': return <Code fontSize="medium" />;
-      case 'VolumeUp': return <VolumeUp fontSize="medium" />;
-      case 'Compress': return <Compress fontSize="medium" />;
-      case 'Psychology': return <Psychology fontSize="medium" />;
-      case 'RocketLaunch': return <RocketLaunch fontSize="medium" />;
-      case 'NetworkCheck': return <NetworkCheck fontSize="medium" />;
-      default: return <Code fontSize="medium" />;
-    }
-  };
 
   const offerServices = [
     {
@@ -824,7 +806,7 @@ const HomePage: React.FC = () => {
     <Box sx={{ minHeight: '100vh', pb: 8, bgcolor: '#050505', color: '#ffffff' }}>
       <Seo
         title="ExpectException – Free Developer Tools, AI Engineering & Portfolio"
-        description="ExpectException: free online tools (YouTube downloader, AI detector, PDF converter, OCR), developer blog, and the full-stack engineering portfolio of RJT — React, Django, AI & DevOps specialist."
+        description="ExpectException: free online tools (YouTube downloader, AI detector, PDF converter, OCR), developer blog, and a full-stack engineering & AI studio specializing in React, Django, AI & DevOps."
         keywords={[
           'expectexception',
           'free developer tools',
@@ -854,7 +836,7 @@ const HomePage: React.FC = () => {
           },
           {
             question: 'Can I hire the developer behind ExpectException?',
-            answer: 'Yes! RJT is available for freelance and contract work in React, Django, Python, and AI/ML integrations. Visit the Hire page for rates and contact details.',
+            answer: 'Yes! ExpectException is available for freelance and contract work in React, Django, Python, and AI/ML integrations. Visit the Hire page for rates and contact details.',
           },
         ]}
       />
@@ -1023,7 +1005,7 @@ const HomePage: React.FC = () => {
                     fontSize: { xs: '1.05rem', sm: '1.25rem' }
                   }}
                 >
-                  Hi, I'm RJT. Specializing in modern web engineering, custom AI integrations, and high-performance interactive interfaces, I turn complex concepts into responsive, elegant digital experiences.
+                  We're ExpectException. Specializing in modern web engineering, custom AI integrations, and high-performance interactive interfaces, we turn complex concepts into responsive, elegant digital experiences.
                 </Typography>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
@@ -1230,9 +1212,11 @@ const HomePage: React.FC = () => {
                   }}>
                     <Code sx={{ fontSize: 48 }} />
                   </Box>
-                  <Typography variant="h4" fontWeight="800" gutterBottom>RJT</Typography>
+                  <Typography variant="h4" fontWeight="800" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' }, letterSpacing: '-0.02em' }}>
+                    ExpectException
+                  </Typography>
                   <Typography variant="subtitle1" color="primary.main" fontWeight="600" sx={{ mb: 2 }}>
-                    Full Stack Developer & AI Architect
+                    Full Stack Engineering & AI Studio
                   </Typography>
                   <Typography variant="body2" color="#94a3b8" sx={{ maxWidth: '280px', mx: 'auto' }}>
                     Engineering high-performance, exception-free digital solutions.
