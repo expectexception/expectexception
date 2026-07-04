@@ -36,6 +36,16 @@ x-backend-image: &backend-image
     - ./logs:/app/logs
     - ./staticfiles:/app/staticfiles
     - ../frontendExpExc/build:/frontendExpExc/build
+    # AI model caches, persisted across restarts. Without these, every
+    # container recreation re-downloads ~1.6GB total from scratch (AI
+    # Detector's 2 HF transformer models, demucs's 4 mdx checkpoint files,
+    # rembg's u2net model) — confirmed live: this took worker-heavy 500s+ of
+    # blocking preload on a fresh container each time, during which it
+    # couldn't consume ANY queued task (Celery's worker loop doesn't start
+    # until AppConfig.ready() finishes importing).
+    - ./cache/huggingface:/root/.cache/huggingface
+    - ./cache/torch:/root/.cache/torch
+    - ./cache/u2net:/root/.u2net
   restart: unless-stopped
 
 services:

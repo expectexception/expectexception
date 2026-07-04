@@ -57,6 +57,12 @@ django-unfold>=0.23.0
 # Audio source separation (vocals / instrumental split) — invoked as a CLI
 # subprocess by apps/services/tasks.py, not imported directly.
 demucs>=4.0.0
+# torchaudio (a demucs dependency, unpinned here) now requires torchcodec to
+# actually write output files — without it, `ta.save()` raises
+# ModuleNotFoundError at the very last step of separation, after demucs has
+# already spent minutes doing the actual CPU inference. Confirmed live: a
+# real audio file processed successfully end-to-end only after adding this.
+torchcodec
 
 # Google OAuth
 google-auth>=2.25.0
