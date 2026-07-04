@@ -224,7 +224,7 @@ export const PdfPreview: React.FC = () => {
   );
 };
 
-// --- URL Converter Mini Preview ---
+// --- URL Encoder / Decoder Mini Preview ---
 export const UrlPreview: React.FC = () => {
   const theme = useTheme();
   const [urlState, setUrlState] = useState(0);
@@ -239,12 +239,12 @@ export const UrlPreview: React.FC = () => {
   return (
     <Box sx={{ width: '100%', height: '100%', px: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1 }}>
       {/* Input Box */}
-      <Box sx={{ 
-        width: '100%', 
-        py: 0.75, 
-        px: 1.5, 
-        borderRadius: 1, 
-        bgcolor: '#111318', 
+      <Box sx={{
+        width: '100%',
+        py: 0.75,
+        px: 1.5,
+        borderRadius: 1,
+        bgcolor: '#111318',
         border: '1px solid rgba(255, 255, 255, 0.05)',
         display: 'flex',
         alignItems: 'center',
@@ -252,8 +252,8 @@ export const UrlPreview: React.FC = () => {
         overflow: 'hidden'
       }}>
         <Link sx={{ fontSize: 14, color: 'text.secondary' }} />
-        <Typography variant="caption" sx={{ 
-          fontFamily: 'monospace', 
+        <Typography variant="caption" sx={{
+          fontFamily: 'monospace',
           color: urlState === 0 ? '#ffffff' : '#888',
           fontSize: '0.65rem',
           whiteSpace: 'nowrap',
@@ -261,13 +261,13 @@ export const UrlPreview: React.FC = () => {
           overflow: 'hidden',
           width: '100%'
         }}>
-          {urlState === 0 
-            ? 'https://expectexception.com/tools/url-converter/' 
-            : 'Processing...'}
+          {urlState === 0
+            ? 'search?q=hello world&x=é'
+            : 'Encoding...'}
         </Typography>
       </Box>
 
-      {/* Output / Copy Action */}
+      {/* Output */}
       <motion.div
         animate={{
           y: urlState === 2 ? 0 : 5,
@@ -275,21 +275,22 @@ export const UrlPreview: React.FC = () => {
         }}
         transition={{ duration: 0.3 }}
       >
-        <Box sx={{ 
-          width: '100%', 
-          py: 0.75, 
-          px: 1.5, 
-          borderRadius: 1, 
+        <Box sx={{
+          width: '100%',
+          py: 0.75,
+          px: 1.5,
+          borderRadius: 1,
           bgcolor: alpha(theme.palette.primary.main, 0.06),
           border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          overflow: 'hidden',
         }}>
-          <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', fontSize: '0.68rem', fontWeight: 700 }}>
-            expexc.co/url-conv
+          <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', fontSize: '0.62rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            search%3Fq%3Dhello%20world
           </Typography>
-          <Typography variant="caption" sx={{ color: 'primary.main', fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase' }}>
+          <Typography variant="caption" sx={{ color: 'primary.main', fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', pl: 1 }}>
             Copied!
           </Typography>
         </Box>

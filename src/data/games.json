@@ -174,5 +174,49 @@
         "tags": ["reaction", "skill", "typing"],
         "color": "secondary",
         "is_active": true
+    },
+    {
+        "id": 17,
+        "title": "Kaleidoscope",
+        "description": "Draw anywhere and the stroke mirrors around the center with radial symmetry. One gesture, an instant mandala.",
+        "icon": "AutoAwesome",
+        "path": "/sandbox/kaleidoscope",
+        "category": "creative",
+        "tags": ["creative", "canvas", "symmetry"],
+        "color": "secondary",
+        "is_active": true
+    },
+    {
+        "id": 18,
+        "title": "Game of Life",
+        "description": "Click cells to seed a pattern, then watch Conway's four simple rules produce gliders, oscillators, and chaos.",
+        "icon": "GridView",
+        "path": "/sandbox/game-of-life",
+        "category": "creative",
+        "tags": ["creative", "simulation", "automaton"],
+        "color": "primary",
+        "is_active": true
+    },
+    {
+        "id": 19,
+        "title": "Boids",
+        "description": "Craig Reynolds' classic flocking algorithm - separation, alignment, and cohesion produce lifelike flocking from three simple rules.",
+        "icon": "Pets",
+        "path": "/sandbox/boids",
+        "category": "creative",
+        "tags": ["creative", "simulation", "generative"],
+        "color": "success",
+        "is_active": true
+    },
+    {
+        "id": 20,
+        "title": "Spirograph",
+        "description": "The math behind the classic toy: adjust the gear ratio and pen offset with sliders and watch the curve draw itself.",
+        "icon": "Circle",
+        "path": "/sandbox/spirograph",
+        "category": "creative",
+        "tags": ["creative", "generative", "math"],
+        "color": "info",
+        "is_active": true
     }
 ]
