@@ -135,7 +135,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'apps.users.authentication.JITMongoJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -333,9 +333,17 @@ AI_DETECTOR_MODELS = [
 # Default: 24 hours
 AI_DETECTOR_CACHE_TTL = 60 * 60 * 24
 
-# Celery task routing for AI detection
+# Celery task routing. Split so a `worker-heavy` service (low concurrency,
+# GPU/CPU-bound) and a `worker-light` service (higher concurrency, I/O-bound)
+# can each listen on their own queues instead of one worker serializing
+# everything on Celery's single default queue — see docker-compose.yml.
 CELERY_TASK_ROUTES = {
     'ai_detector.*': {'queue': 'ai_detection'},
+    'apps.services.tasks.process_audio_separator': {'queue': 'audio_separator'},
+    'apps.services.tasks.upscale_image_task': {'queue': 'image_upscaler'},
+    'apps.services.tasks.convert_pdf_task': {'queue': 'pdf_convert'},
+    'apps.services.tasks.remove_background_task': {'queue': 'background_remover'},
+    'apps.videos.tasks.download_video_async': {'queue': 'yt_downloader'},
 }
 
 # Celery task settings for AI detection

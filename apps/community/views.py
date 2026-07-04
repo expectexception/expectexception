@@ -1,10 +1,11 @@
 from django.utils import timezone
 from django.db.models import Q
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser
 
 from .models import Category, Thread, Reply, Vote, ThreadBookmark
 from rest_framework.views import APIView
@@ -58,7 +59,22 @@ class ThreadViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
+        try:
+            instance = self.get_object()
+        except Http404:
+            # Cross-instance failover read-through: this thread may have
+            # been created on the other instance (Render <-> local) and
+            # only exist there so far. Check the Mongo mirror before giving
+            # up. Best-effort degraded read (mirrored fields only), not a
+            # full model instance — see apps/services/mongodb.py.
+            from apps.services.mongodb import find_in_mongo
+            raw_id = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+            doc = find_in_mongo('community_threads', int(raw_id)) if raw_id and str(raw_id).isdigit() else None
+            if not doc:
+                raise
+            doc.pop('_id', None)
+            doc['from_mongo_fallback'] = True
+            return Response(doc)
         Thread.objects.filter(pk=instance.pk).update(view_count=instance.view_count + 1)
         instance.refresh_from_db()
         serializer = self.get_serializer(instance)
@@ -101,6 +117,29 @@ class ThreadViewSet(viewsets.ModelViewSet):
         thread.is_solved = not thread.is_solved
         thread.save()
         return Response({'is_solved': thread.is_solved})
+
+    def get_permissions(self):
+        # Deleting a thread is a moderation action, not an author right —
+        # previously this fell through to the class-level
+        # IsAuthenticatedOrReadOnly, so any authenticated user (not just
+        # staff or the author) could attempt to delete any thread.
+        if self.action == 'destroy':
+            return [IsAdminUser()]
+        return super().get_permissions()
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    def pin(self, request, pk=None):
+        thread = self.get_object()
+        thread.is_pinned = not thread.is_pinned
+        thread.save(update_fields=['is_pinned'])
+        return Response({'is_pinned': thread.is_pinned})
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    def lock(self, request, pk=None):
+        thread = self.get_object()
+        thread.is_closed = not thread.is_closed
+        thread.save(update_fields=['is_closed'])
+        return Response({'is_closed': thread.is_closed})
 
 
 class ReplyViewSet(viewsets.ModelViewSet):

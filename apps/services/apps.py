@@ -5,11 +5,14 @@ class ServicesConfig(AppConfig):
     name = 'apps.services'
 
     def ready(self):
+        from . import signals
+        signals.connect()
+
         # Prevent starting the scheduler during migration, testing or sitemap generation commands
         import sys
         if 'manage.py' in sys.argv and any(cmd in sys.argv for cmd in ['migrate', 'makemigrations', 'test', 'collectstatic', 'generate-sitemap']):
             return
-        
+
         try:
             from django.core.cache import cache
             if not cache.get("last_celery_uptime_run"):
