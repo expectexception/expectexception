@@ -8,6 +8,7 @@ from apps.profiles.models import Profile
 from .serializers import RegisterSerializer, UserSerializer, TokenPairSerializer, ProfileSerializer
 from .google_auth import verify_google_token, get_or_create_google_user
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -16,6 +17,28 @@ from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class EmailClaimTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Adds an `email` claim to login-issued tokens.
+
+    Render and the local server assign user pks independently, so a JWT's
+    numeric user_id can collide with a *different* real account on whichever
+    instance validates it. JITMongoJWTAuthentication cross-checks this claim
+    against the resolved user's email on every request (not just the
+    JIT-hydration fallback) to catch that collision — see
+    apps/users/authentication.py. RegisterView/GoogleAuthView get the same
+    claim via TokenPairSerializer.for_user().
+    """
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['email'] = user.email
+        return token
+
+
+class EmailClaimTokenObtainPairView(TokenObtainPairView):
+    serializer_class = EmailClaimTokenObtainPairSerializer
 
 
 class MeView(APIView):

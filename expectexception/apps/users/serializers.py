@@ -53,6 +53,10 @@ class TokenPairSerializer(serializers.Serializer):
     @staticmethod
     def for_user(user):
         refresh = RefreshToken.for_user(user)
+        # Embed email so JITMongoJWTAuthentication can detect cross-instance
+        # id collisions (Render/local assign pks independently) even when the
+        # pk already resolves to *some* local user — see apps/users/authentication.py.
+        refresh['email'] = user.email
         return {'access': str(refresh.access_token), 'refresh': str(refresh)}
 
 
