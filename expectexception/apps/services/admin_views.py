@@ -272,6 +272,99 @@ class AdminDownloadDetailView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# ============ Contact / "Connect" Inquiry Management ============
+# Submitting a contact/hire form only ever stores the inquiry and pings
+# CONTACT_EMAIL as an internal heads-up (see apps/contact/views.py) — it
+# never emails the requester back automatically. Replying is an explicit
+# admin action taken here, from the dashboard, after reviewing the request.
+
+class AdminInquiryListView(APIView):
+    """List all contact/hire inquiries for admin review."""
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        from apps.contact.models import ContactInquiry
+        qs = ContactInquiry.objects.all().order_by('-created_at')
+
+        status_filter = request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+
+        data = [{
+            'id': inq.id,
+            'name': inq.name,
+            'email': inq.email,
+            'inquiry_type': inq.inquiry_type,
+            'subject': inq.subject,
+            'message': inq.message,
+            'project_type': inq.project_type,
+            'budget': inq.budget,
+            'status': inq.status,
+            'admin_notes': inq.admin_notes,
+            'source_page': inq.source_page,
+            'created_at': inq.created_at.isoformat(),
+        } for inq in qs]
+        return Response({'inquiries': data, 'count': len(data)})
+
+
+class AdminInquiryDetailView(APIView):
+    """Update status/admin notes on a single inquiry (admin only)."""
+    permission_classes = [IsAdminUser]
+
+    def patch(self, request, pk):
+        from apps.contact.models import ContactInquiry
+        try:
+            inquiry = ContactInquiry.objects.get(pk=pk)
+        except ContactInquiry.DoesNotExist:
+            return Response({'error': 'Inquiry not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if 'status' in request.data:
+            inquiry.status = request.data['status']
+        if 'admin_notes' in request.data:
+            inquiry.admin_notes = request.data['admin_notes']
+        inquiry.save()
+        return Response({'message': 'Inquiry updated'})
+
+
+class AdminInquiryReplyView(APIView):
+    """Send an explicit email reply to an inquiry (admin only).
+
+    This is the only place a reply email is ever sent — there is no
+    automatic reply-to-customer flow on submission.
+    """
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, pk):
+        from django.core.mail import send_mail
+        from apps.contact.models import ContactInquiry
+
+        try:
+            inquiry = ContactInquiry.objects.get(pk=pk)
+        except ContactInquiry.DoesNotExist:
+            return Response({'error': 'Inquiry not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        message = request.data.get('message', '').strip()
+        if not message:
+            return Response({'error': 'message is required'}, status=status.HTTP_400_BAD_REQUEST)
+        subject = request.data.get('subject') or f"Re: {inquiry.subject or inquiry.get_inquiry_type_display()}"
+
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[inquiry.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            logger.error(f"Failed to send admin reply for inquiry #{inquiry.id}: {e}")
+            return Response({'error': f'Failed to send email: {e}'}, status=status.HTTP_502_BAD_GATEWAY)
+
+        inquiry.status = 'replied'
+        inquiry.save(update_fields=['status', 'updated_at'])
+        return Response({'message': 'Reply sent'})
+
+
 # ============ Ollama Model Management ============
 
 class OllamaModelsView(APIView):
