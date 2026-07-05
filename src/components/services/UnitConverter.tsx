@@ -70,6 +70,20 @@ const UnitConverter: React.FC = () => {
             icon={SwapHoriz}
             title="Unit Converter"
             subtitle="Convert length, weight, temperature, and volume between common units — instantly, entirely in your browser."
+            about="Converts values between common units across four categories — length, weight, temperature, and volume — with conversion happening instantly in your browser as you type. Length, weight, and volume conversions use a simple linear factor relative to a base unit (meters, kilograms, or liters); temperature uses proper Celsius/Fahrenheit/Kelvin formulas since temperature scales aren't simple multiples of each other. Nothing is sent to a server, so it keeps working offline once the page has loaded."
+            howToSteps={[
+                { name: 'Pick a category', text: 'Choose Length, Weight, Temperature, or Volume from the toggle buttons at the top.' },
+                { name: 'Enter a value', text: 'Type a number into the Value field.' },
+                { name: 'Choose the units', text: 'Select the From and To units from the two dropdowns.' },
+                { name: 'Read the result', text: 'The converted value updates instantly, along with a plain-language summary at the bottom (e.g. "1 Meters = 3.28084 Feet").' },
+                { name: 'Swap units', text: 'Click the rotated swap icon between the From and To fields to instantly flip which unit you convert from and to.' },
+            ]}
+            faq={[
+                { question: 'How accurate are the conversions?', answer: 'Length, weight, and volume conversions use standard conversion factors and round to 6 decimal places; temperature conversions round to 4 decimal places using the standard Celsius/Fahrenheit/Kelvin formulas.' },
+                { question: 'Why can\'t I mix units from different categories?', answer: 'Each category — length, weight, temperature, volume — has its own unit list because the underlying math is different; switching category resets both dropdowns to that category\'s units.' },
+                { question: 'Does this tool store or send my numbers anywhere?', answer: 'No — all conversion happens locally in your browser with plain JavaScript; nothing is transmitted or logged.' },
+                { question: 'What units are supported in each category?', answer: 'Length: meters, kilometers, centimeters, millimeters, miles, yards, feet, inches. Weight: kilograms, grams, milligrams, pounds, ounces, tons. Temperature: Celsius, Fahrenheit, Kelvin. Volume: liters, milliliters, US gallons, quarts, cups, fluid ounces.' },
+            ]}
         >
             <Seo title="Unit Converter - Length, Weight, Temperature & Volume" />
 

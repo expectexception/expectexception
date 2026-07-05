@@ -117,6 +117,20 @@ const QrGenerator: React.FC = () => {
       title="QR Code Generator"
       subtitle="Convert any URL or text into a customizable QR code"
       maxWidth="md"
+      about="Generates a scannable QR code from any URL or text you type, entirely in your browser using the qrcode.react library — nothing is sent to a server. You can resize it, change the foreground and background color, toggle the quiet-zone margin, and download it as a PNG (rendered client-side via html2canvas) or share it using your device's native share sheet. Error correction is fixed at the highest level (H), so the code keeps scanning even if part of it is damaged, obscured, or has a logo placed on top."
+      howToSteps={[
+        { name: 'Enter your content', text: 'Type or paste the URL or text you want encoded into the URL or Text field on the Basic tab.' },
+        { name: 'Set the size', text: 'Pick a preset (Small/Medium/Large) or drag the size slider (64-400px) to resize the code.' },
+        { name: 'Customize appearance', text: 'Switch to the Appearance tab to change the foreground and background colors using presets or the color picker.' },
+        { name: 'Adjust the margin', text: 'On the Advanced tab, toggle Include margin around QR code to add or remove the quiet-zone border.' },
+        { name: 'Save or share', text: "Click Download PNG to save the code as an image, or Share to send it via your device's share sheet (falls back to copying the page link)." },
+      ]}
+      faq={[
+        { question: 'Is any of my data sent to a server?', answer: 'No. The QR code is generated entirely client-side — the URL or text you enter never leaves your browser.' },
+        { question: 'What format does the download use?', answer: 'PNG, captured directly from the rendered QR code at whatever size you have set.' },
+        { question: 'Can I put a logo in the middle of the QR code?', answer: "Not through this tool's UI, but because error correction is fixed at level H (the highest setting), a code generated here can tolerate a logo or minor damage overlaid afterward in an image editor and still scan reliably." },
+        { question: 'Is there a limit to how much text I can encode?', answer: 'Longer text produces a denser QR code that can be harder to scan at small sizes — for long text, use a larger size setting or shorten the content (e.g. a short link) for the most reliable scanning.' },
+      ]}
     >
       <Seo
         title="Free QR Code Generator - Custom & High Quality"

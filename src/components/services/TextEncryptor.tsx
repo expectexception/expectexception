@@ -80,6 +80,19 @@ const TextEncryptor: React.FC = () => {
             icon={EnhancedEncryption}
             title="Text Encryptor"
             subtitle="AES-256-GCM encryption using your browser's native Web Crypto API — the passphrase and plaintext never leave your device."
+            about="Encrypts or decrypts text with AES-256-GCM using the browser's native Web Crypto API. Your passphrase is stretched into a full-strength 256-bit key with PBKDF2 (100,000 iterations, SHA-256), and a fresh random salt plus a fresh random IV are generated for every encryption and bundled together with the ciphertext into one base64 string — so decrypting later only requires the original passphrase, nothing else needs to be saved alongside it. All key derivation and encryption happens locally in your browser; the passphrase and plaintext are never transmitted anywhere."
+            howToSteps={[
+                { name: 'Choose Encrypt or Decrypt', text: 'Use the toggle at the top to pick a direction.' },
+                { name: 'Enter a passphrase', text: "This is the secret used to derive the encryption key — you'll need the exact same one to decrypt later." },
+                { name: 'Enter the text', text: 'Type the plaintext to encrypt, or paste the base64 ciphertext to decrypt.' },
+                { name: 'Run it and copy the result', text: 'Click "Encrypt" or "Decrypt", then use "Copy Result" to copy the output.' },
+            ]}
+            faq={[
+                { question: 'What happens if I enter the wrong passphrase when decrypting?', answer: 'AES-GCM authenticates the ciphertext, so a wrong passphrase (or edited/corrupted ciphertext) fails decryption outright and shows "Decryption failed — wrong passphrase or corrupted ciphertext" rather than returning garbled text.' },
+                { question: 'Do I need to store the salt or IV separately?', answer: "No — the salt and IV are randomly generated and stored as part of the base64 output itself, so you only need to keep the passphrase safe in order to decrypt it later." },
+                { question: 'Is my passphrase or text sent to a server?', answer: "No, everything — PBKDF2 key derivation and AES-GCM encryption/decryption — runs locally via the browser's Web Crypto API; nothing is transmitted." },
+                { question: 'Is it safe to reuse the same passphrase for multiple messages?', answer: 'Yes — because a new random salt and IV are generated on every encryption, encrypting the same text twice with the same passphrase produces two different, unrelated ciphertexts.' },
+            ]}
         >
             <Seo title="AES Text Encryptor & Decryptor - Free Online Tool" />
 

@@ -44,6 +44,19 @@ const UuidGenerator: React.FC = () => {
             icon={Fingerprint}
             title="UUID Generator"
             subtitle="Generate unique identifiers (UUIDs/GUIDs)"
+            about="Generates UUIDs (universally unique identifiers, also called GUIDs) in version 1 (time-based) or version 4 (random) format, in bulk — up to 100 at once. Generation for both versions happens on the backend, which returns the requested count as a JSON array. Useful for seeding database primary keys, generating test/mock IDs, or anywhere you need guaranteed-unique identifiers without coordinating with anyone else."
+            howToSteps={[
+                { name: 'Pick a version', text: 'Choose v1 (Time-based) or v4 (Random) from the Version toggle.' },
+                { name: 'Choose how many', text: 'Drag the Count slider to choose how many UUIDs to generate, from 1 to 100.' },
+                { name: 'Generate', text: 'Click Generate N UUIDs to request them.' },
+                { name: 'Copy what you need', text: 'Click the copy icon next to any individual UUID in the list, or click Copy All to copy the entire list (one per line) at once.' },
+            ]}
+            faq={[
+                { question: 'What is the difference between v1 and v4 UUIDs?', answer: 'v1 UUIDs are time-based — they encode the timestamp of creation, so they sort roughly chronologically but can leak information about when they were generated. v4 UUIDs are fully random and reveal nothing about their origin, which is why v4 is the more common default today.' },
+                { question: 'How many can I generate at once?', answer: 'Up to 100 per request, controlled by the Count slider.' },
+                { question: 'Is generation done in my browser or on a server?', answer: 'On the server — the tool calls a backend endpoint with your chosen version and count and gets the UUIDs back as JSON, so it does involve a network request (unlike, say, the Password Generator on this site, which is fully local).' },
+                { question: 'Are these guaranteed to be unique?', answer: "Practically, yes — the probability of a v4 collision is astronomically small, and v1 UUIDs combine a timestamp with additional bits specifically to avoid collisions between rapidly-generated IDs." },
+            ]}
         >
             <Seo
                 title="UUID / GUID Generator - v1 & v4 Random IDs"

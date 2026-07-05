@@ -50,6 +50,19 @@ const Base64Tool: React.FC = () => {
             title="Base64 Encoder/Decoder"
             subtitle="Encode text to Base64 or decode Base64 to text"
             maxWidth="md"
+            about="Converts text to and from Base64, the encoding scheme used to represent arbitrary data as plain ASCII — for example inside data URIs, email attachments, or HTTP Basic Auth headers. Unlike most other text tools on this site, the actual encode/decode step runs as a request to our backend rather than purely in your browser: pick a mode, enter your text, and press the button to get a result back. The Swap button drops the output back into the input and flips the mode, which is a quick way to round-trip a value and confirm it decodes back to the original."
+            howToSteps={[
+                { name: 'Choose Encode or Decode', text: 'Use the toggle buttons above the text boxes to pick which direction you want to convert.' },
+                { name: 'Enter your text', text: 'Type or paste the text (or Base64 string) into the left-hand input box.' },
+                { name: 'Run the conversion', text: 'Click "Encode →" or "Decode →" to send the request and show the result on the right.' },
+                { name: 'Copy or swap', text: 'Use "Copy" to copy the result, or "Swap" to move the output back into the input and flip modes for a round-trip check.' },
+            ]}
+            faq={[
+                { question: 'Is my text sent to a server?', answer: "Yes — unlike most tools on this site, Base64 conversion here is handled by a backend request rather than entirely in your browser. Only the text you enter is sent, and it's used solely to compute the encoded or decoded result." },
+                { question: 'What happens if I try to decode invalid Base64?', answer: 'The request fails and an error message (e.g. "Processing failed") appears in the red alert banner instead of a result.' },
+                { question: 'Can I encode a file, not just typed text?', answer: 'This tool works on text you type or paste into the box, not file uploads — paste the text content you want to encode instead.' },
+                { question: 'What is Base64 actually used for?', answer: 'It lets binary or arbitrary data be safely represented using only printable ASCII characters, which is why it shows up in data URIs, JWT tokens, email attachments, and API payloads that need to embed non-text data inside text formats like JSON or XML.' },
+            ]}
         >
             <Seo
                 title="Base64 Encoder & Decoder - Online Text & File Converter"

@@ -86,6 +86,19 @@ const RandomDataGenerator: React.FC = () => {
             title="Random Data Generator"
             subtitle="Generate plausible mock names, emails, phone numbers, addresses, and UUIDs for testing forms and demos — nothing leaves your browser."
             maxWidth="md"
+            about="Generates rows of plausible-looking but entirely fake test data — names, emails, phone numbers, street addresses, and UUIDs — by combining small built-in name/city/street lists with randomized numbers, all computed client-side with Math.random() and crypto.randomUUID(). Useful for populating a form, seeding a database, or building a demo without using real people's information. Output can be copied as JSON or downloaded as a CSV file."
+            howToSteps={[
+                { name: 'Pick your fields', text: 'Click the chips (Full Name, Email, Phone, Address, UUID) to toggle which columns get generated — selected chips turn green.' },
+                { name: 'Choose a row count', text: 'Pick how many rows to generate from the Rows dropdown (5, 10, 25, 50, or 100).' },
+                { name: 'Generate', text: 'Click Generate to produce a table of random rows using your selected fields.' },
+                { name: 'Export the data', text: 'Click Copy JSON to copy the rows as a JSON array, or Download CSV to save them as a .csv file.' },
+            ]}
+            faq={[
+                { question: 'Is this real personal data?', answer: 'No. Names are randomly combined from small built-in first/last-name lists, emails use fake placeholder domains (example.com, testmail.io, etc.), and phone numbers and addresses are randomly generated digits and streets — none of it corresponds to a real person.' },
+                { question: 'Does anything get sent to a server?', answer: 'No. All generation happens in your browser with Math.random() and crypto.randomUUID(); nothing is uploaded, and the data only exists in your browser tab until you copy or download it.' },
+                { question: 'What formats can I export to?', answer: 'Copy JSON copies a JSON array of row objects to your clipboard; Download CSV saves a comma-separated .csv file with a header row matching your selected fields.' },
+                { question: 'Can I generate more than 100 rows at once?', answer: 'Not from the dropdown — it caps at 5/10/25/50/100 per click, though you can click Generate repeatedly (each click replaces the previous rows, so export before generating again if you want to keep them).' },
+            ]}
         >
             <Seo title="Random Data Generator - Mock Test Data Online" />
 

@@ -53,6 +53,20 @@ const PdfSplitter: React.FC = () => {
             icon={ContentCut}
             title="PDF Splitter"
             subtitle="Extract pages from PDF files"
+            about="Extracts specific pages from a PDF and returns them as a new file. You upload a single PDF, describe which pages you want — all, a range like 1-5, or a specific list like 1,3,5 — and the server extracts those pages and packages them into a downloadable ZIP. Useful for pulling a few pages out of a large scanned document instead of sending the whole thing, or splitting a multi-section PDF into just the part you need."
+            howToSteps={[
+                { name: 'Upload a PDF', text: 'Drag your PDF onto the drop area or click it to browse and select a file.' },
+                { name: 'Specify pages to extract', text: 'Type which pages you want in the Pages to extract field — use "all", a range like "1-5", or a comma list like "1,3,5".' },
+                { name: 'Split the PDF', text: 'Click Split PDF to upload the file and extract the requested pages on the server.' },
+                { name: 'Check the result', text: 'The success message shows how many of the total pages were extracted.' },
+                { name: 'Download the ZIP', text: 'Click Download ZIP to save the extracted pages.' },
+            ]}
+            faq={[
+                { question: 'What format do I get back?', answer: 'Extracted pages are packaged into a ZIP file for download, even if you only extract a single page.' },
+                { question: 'What page syntax is supported?', answer: '"all" for every page, a range like "1-5", or a comma-separated list like "1,3,5" — these can be combined, e.g. "1-3,7".' },
+                { question: 'Can I split more than one PDF at a time?', answer: 'No, one PDF per split — upload a new file to run another extraction.' },
+                { question: 'Is the uploaded PDF kept afterward?', answer: "It's uploaded only long enough to extract the requested pages and generate your ZIP download; it isn't intended for long-term storage." },
+            ]}
         >
             <Seo
                 title="Split PDF Online - Extract Pages Free"

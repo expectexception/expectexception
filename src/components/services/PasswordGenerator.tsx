@@ -62,6 +62,19 @@ const PasswordGenerator: React.FC = () => {
             icon={VpnKey}
             title="Password Generator"
             subtitle="Generate cryptographically random passwords locally using your browser's Web Crypto API - never sent anywhere."
+            about="Generates random passwords using the browser's Web Crypto API (crypto.getRandomValues), a cryptographically secure random source — not Math.random(), which isn't safe for anything security-related. You control the length (6-64 characters) and which character sets to include (lowercase, uppercase, numbers, symbols), and a strength meter estimates quality based on length and character variety. Everything happens locally in your browser; the generated password is never transmitted anywhere."
+            howToSteps={[
+                { name: 'Choose your character types', text: 'Check or uncheck Lowercase (a-z), Uppercase (A-Z), Numbers (0-9), and Symbols (!@#$...) to control what the password can contain.' },
+                { name: 'Set the length', text: 'Drag the Length slider to anywhere between 6 and 64 characters.' },
+                { name: 'Generate a password', text: 'Click Generate to produce a new random password; the strength bar and label (Very Weak through Excellent) update immediately.' },
+                { name: 'Copy it', text: 'Click Copy to copy the password to your clipboard, or click Generate again for a different one.' },
+            ]}
+            faq={[
+                { question: 'Is this actually secure, or just random-looking?', answer: "It uses crypto.getRandomValues(), the Web Crypto API's cryptographically secure pseudorandom number generator — the same class of randomness used for real cryptographic keys — rather than Math.random(), which is predictable and unsuitable for secrets." },
+                { question: 'Does the site see or store my generated password?', answer: 'No. Generation happens entirely in your browser; the password is never sent to a server, logged, or stored anywhere. Closing or refreshing the tab discards it.' },
+                { question: 'What does the strength meter measure?', answer: "It's a simple heuristic based on length (8/12/16+ characters) and character variety (mixed case, numbers, symbols) — not a full entropy calculation. Longer passwords with symbols and mixed case will always score higher." },
+                { question: 'What happens if I uncheck every character type?', answer: "There's nothing left to build a password from, so the field shows \"Select at least one character type\" instead of generating anything — check at least one box to continue." },
+            ]}
         >
             <Seo title="Secure Password Generator - Free Online Tool" toolId={33} />
 
