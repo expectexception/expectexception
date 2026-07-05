@@ -1,9 +1,52 @@
+import logging
 import psutil
 import time
 import os
 from datetime import datetime
 from django.conf import settings
 from .gpu_utils import get_gpu_info
+
+logger = logging.getLogger(__name__)
+
+# Matches CELERY_TASK_ROUTES in settings.py — the default 'celery' queue
+# catches everything not explicitly routed (uptime monitor checks, mirror
+# tasks, etc).
+CELERY_QUEUES = ['celery', 'ai_detection', 'audio_separator', 'image_upscaler', 'pdf_convert', 'background_remover', 'yt_downloader']
+
+
+def get_celery_status() -> dict:
+    """Real worker/queue visibility — without this, "is the system under
+    load" was previously just a guess. Queue depth is read directly from
+    Redis (the broker) since Celery's inspect API reports what workers are
+    currently processing, not what's still waiting to be picked up; worker
+    liveness uses inspect's ping with a short timeout so a dead worker
+    doesn't hang this dashboard endpoint waiting for a response.
+    """
+    result = {'workers': [], 'queues': {}, 'error': None}
+
+    try:
+        from expectexception.celery import app as celery_app
+        inspect = celery_app.control.inspect(timeout=1.5)
+        pings = inspect.ping() or {}
+        active = inspect.active() or {}
+        result['workers'] = [
+            {'name': name, 'status': 'online', 'active_tasks': len(active.get(name, []))}
+            for name in pings.keys()
+        ]
+    except Exception as e:
+        logger.warning(f"Celery inspect failed: {e}")
+        result['error'] = 'Could not reach Celery workers'
+
+    try:
+        import redis
+        r = redis.from_url(settings.CELERY_BROKER_URL)
+        for queue_name in CELERY_QUEUES:
+            result['queues'][queue_name] = r.llen(queue_name)
+    except Exception as e:
+        logger.warning(f"Redis queue inspection failed: {e}")
+        result['error'] = result['error'] or 'Could not reach Redis broker'
+
+    return result
 
 
 def get_health_snapshot() -> dict:
@@ -86,5 +129,6 @@ def get_system_metrics():
         "runtime": {
             "uptime_seconds": int(time.time() - psutil.boot_time()),
             "environment": "Development" if settings.DEBUG else "Production"
-        }
+        },
+        "celery": get_celery_status(),
     }

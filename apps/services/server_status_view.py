@@ -29,10 +29,19 @@ class ServerStatusView(TemplateView):
         return context
 
 
-@staff_member_required
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
 def get_metrics_api(request):
     """
     API endpoint for polling real-time metrics.
+
+    Uses DRF's IsAdminUser (respects JWT Bearer auth) rather than
+    @staff_member_required (Django session-cookie auth only) — this is
+    consumed by the React admin dashboard via a Bearer token, which
+    session-based auth never recognizes. It was silently 302-redirecting
+    for every SPA request before this fix, since a redirect response
+    doesn't surface as an obvious error to a fetch/axios caller expecting
+    JSON — the dashboard tab likely looked broken with no clear reason why.
     """
     metrics = get_system_metrics()
-    return JsonResponse(metrics)
+    return Response(metrics)

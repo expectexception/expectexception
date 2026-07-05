@@ -37,7 +37,7 @@ from rest_framework.decorators import action
 from django.http import HttpResponse, FileResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from django.db.models import Sum, Max, Q
 from django.contrib.auth import get_user_model
@@ -46,6 +46,7 @@ from .models import Service, DownloadableResource, UserActivity, FavoriteTool, D
 from .models import WebhookEndpoint, WebhookRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from django.core.cache import cache
 from .serializers import ServiceSerializer, DownloadableResourceSerializer, UserActivitySerializer, FavoriteToolSerializer, DownloadHistorySerializer, UptimeMonitorSerializer
@@ -713,105 +714,6 @@ class YtDownloaderView(APIView):
         except Exception as e:
             logger.error(f"Failed to track download: {e}")
 
-class LogAnalysisView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        if not request.user.is_staff:
-            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
-            
-        log_file = os.path.join(settings.BASE_DIR, 'logs', 'requests.log')
-        state_file = os.path.join(settings.BASE_DIR, 'logs', 'requests_analysis.state.json')
-        analysis = get_log_analysis(log_file, state_file=state_file)
-        
-        if "error" in analysis:
-            return Response({'error': analysis['error']}, status=status.HTTP_400_BAD_REQUEST)
-            
-        return Response(analysis)
-
-class AnalyticsDashboardView(View):
-    """Dedicated full-page analytics dashboard"""
-    def get(self, request):
-        if not request.user.is_staff:
-            from django.http import HttpResponseForbidden
-            return HttpResponseForbidden("Access Denied")
-            
-        log_file = os.path.join(settings.BASE_DIR, 'logs', 'requests.log')
-        state_file = os.path.join(settings.BASE_DIR, 'logs', 'requests_analysis.state.json')
-        analysis = get_log_analysis(log_file, state_file=state_file)
-        
-        context = {
-            "analysis": analysis,
-            "title": "System Intelligence Dashboard"
-        }
-        return render(request, "admin/log_analysis.html", context)
-
-class ServerStatusView(View):
-    """Real-time server health monitoring dashboard"""
-    def get(self, request):
-        if not request.user.is_staff:
-            from django.http import HttpResponseForbidden
-            return HttpResponseForbidden("Access Denied")
-
-        is_json = request.GET.get('format') == 'json'
-
-        # CPU info
-        cpu_percent = psutil.cpu_percent(interval=1)
-        cpu_count = psutil.cpu_count()
-
-        # Memory info
-        memory = psutil.virtual_memory()
-        mem_data = {
-            'total': round(memory.total / (1024 ** 3), 2),
-            'available': round(memory.available / (1024 ** 3), 2),
-            'used': round(memory.used / (1024 ** 3), 2),
-            'percent': memory.percent
-        }
-
-        # Disk info
-        disk = psutil.disk_usage('/')
-        disk_data = {
-            'total': round(disk.total / (1024 ** 3), 2),
-            'used': round(disk.used / (1024 ** 3), 2),
-            'free': round(disk.free / (1024 ** 3), 2),
-            'percent': disk.percent
-        }
-
-        # Uptime
-        boot_time_ts = psutil.boot_time()
-        boot_time = datetime.datetime.fromtimestamp(boot_time_ts)
-        uptime = datetime.datetime.now() - boot_time
-        uptime_str = str(uptime).split('.')[0]
-
-        # Network info
-        addrs = psutil.net_if_addrs()
-        ip_info = []
-        for interface, snics in addrs.items():
-            for snic in snics:
-                if snic.family.name in ['AF_INET', 'AF_INET6']:
-                    ip_info.append({
-                        'interface': interface,
-                        'address': snic.address,
-                        'family': snic.family.name
-                    })
-
-        context = {
-            'cpu_percent': cpu_percent,
-            'cpu_count': cpu_count,
-            'memory': mem_data,
-            'disk': disk_data,
-            'uptime': uptime_str,
-            'boot_time': boot_time.strftime("%Y-%m-%d %H:%M:%S"),
-            'ip_info': ip_info,
-            'title': 'Server System Health'
-        }
-
-        if is_json:
-            from django.http import JsonResponse
-            return JsonResponse(context)
-            
-        return render(request, "admin/server_status.html", context)
-
 from apps.blog.permissions import IsAdminOrReadOnly
 from django.db.models import Sum, Max, Count
 from django.contrib.auth import get_user_model
@@ -857,11 +759,9 @@ class ToolAccessToggleView(APIView):
     POST /api/services/tool-access/toggle/
     Body: { "service_id": 5, "requires_login": true }
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def post(self, request):
-        if not request.user.is_staff:
-            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
 
         service_id = request.data.get('service_id')
         requires_login = request.data.get('requires_login')

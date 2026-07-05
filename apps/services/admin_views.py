@@ -130,6 +130,54 @@ class AdminUserDetailView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class AdminMongoStatusView(APIView):
+    """Read-only visibility into the MongoDB Atlas cross-instance mirror
+    (admin only). This is NOT the primary datastore — it's the
+    failover/mirror layer written to by mirror_to_mongo() and read by
+    JITMongoJWTAuthentication when a request lands on an instance that
+    doesn't have the row locally yet. Atlas already encrypts everything
+    here at rest and in transit by default; this view exists for
+    inspection (is the mirror actually populated? how stale is it?), not
+    as a general Mongo CRUD/admin tool.
+    """
+    permission_classes = [IsAdminUser]
+
+    # Fields never shown, even to admins — a viewer doesn't need to see a
+    # password hash on screen just because it's technically inspectable.
+    _EXCLUDE_FIELDS = {'password'}
+
+    COLLECTIONS = ['users', 'blog_posts', 'community_threads', 'contact_inquiries']
+
+    def get(self, request):
+        from .mongodb import get_mongodb_db
+
+        db = get_mongodb_db()
+        if db is None:
+            return Response({
+                'connected': False,
+                'message': 'MongoDB Atlas is not configured or unreachable (MONGODB_ATLAS_URI unset, or connection failed).',
+                'collections': {},
+            })
+
+        collections = {}
+        for name in self.COLLECTIONS:
+            try:
+                coll = db[name]
+                count = coll.count_documents({})
+                recent_docs = list(coll.find().sort('_id', -1).limit(5))
+                recent = [
+                    {k: v for k, v in doc.items() if k not in self._EXCLUDE_FIELDS}
+                    for doc in recent_docs
+                ]
+                for doc in recent:
+                    doc['_id'] = str(doc['_id'])
+                collections[name] = {'count': count, 'recent': recent}
+            except Exception as e:
+                collections[name] = {'count': None, 'recent': [], 'error': str(e)}
+
+        return Response({'connected': True, 'collections': collections})
+
+
 class AdminLogsView(APIView):
     """View backend logs (admin only)."""
     permission_classes = [IsAdminUser]
