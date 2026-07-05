@@ -32,6 +32,11 @@ import {
   Keyboard,
   Search,
   Circle,
+  ViewModule,
+  Grid3x3,
+  BubbleChart,
+  Stairs,
+  AltRoute,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -55,6 +60,11 @@ const ICONS: Record<string, React.ReactElement> = {
   Pets: <Pets fontSize="large" />,
   Keyboard: <Keyboard fontSize="large" />,
   Circle: <Circle fontSize="large" />,
+  ViewModule: <ViewModule fontSize="large" />,
+  Grid3x3: <Grid3x3 fontSize="large" />,
+  BubbleChart: <BubbleChart fontSize="large" />,
+  Stairs: <Stairs fontSize="large" />,
+  AltRoute: <AltRoute fontSize="large" />,
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
