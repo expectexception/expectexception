@@ -1033,6 +1033,180 @@ export const KeywordScanSvg: React.FC = () => {
   );
 };
 
+// ---------------------------------------------------------------------------
+// Small inline badge/status icons — sized for chip labels, inline text, and
+// list bullets (not the 60x60 hero-icon canvas the rest of this file uses).
+// Replaces raw emoji characters in UI copy with the same animated-SVG
+// language used everywhere else on the site.
+// ---------------------------------------------------------------------------
+
+export const RocketBadgeSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <motion.g
+        animate={{ y: [0, -1.5, 0] }}
+        transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+      >
+        <path d="M12 3C15 6 16 10 15 14L9 14C8 10 9 6 12 3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <circle cx="12" cy="8" r="1.4" fill={theme.palette.primary.main} />
+        <path d="M9 12L6 14.5V12L9 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" opacity="0.7" />
+        <path d="M15 12L18 14.5V12L15 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" opacity="0.7" />
+      </motion.g>
+      <motion.path
+        d="M10.5 14Q12 18.5 13.5 14"
+        stroke={theme.palette.primary.main}
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        animate={{ opacity: [0.3, 1, 0.3], scaleY: [0.8, 1.2, 0.8] }}
+        transition={{ repeat: Infinity, duration: 0.5 }}
+        style={{ originY: '14px' }}
+      />
+    </svg>
+  );
+};
+
+export const CheckBadgeSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <motion.circle
+        cx="12" cy="12" r="9.5"
+        stroke={theme.palette.success.main}
+        strokeWidth="1.6"
+        initial={{ opacity: 0.4 }}
+        animate={{ opacity: [0.4, 0.9, 0.4] }}
+        transition={{ duration: 2.2, repeat: Infinity }}
+      />
+      <motion.path
+        d="M7.5 12.5L10.3 15.3L16.5 9"
+        stroke={theme.palette.success.main}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+      />
+    </svg>
+  );
+};
+
+export const WarningBadgeSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <path d="M12 3.5L21.5 20H2.5L12 3.5Z" stroke={theme.palette.warning.main} strokeWidth="1.6" strokeLinejoin="round" />
+      <motion.line
+        x1="12" y1="10" x2="12" y2="14.5"
+        stroke={theme.palette.warning.main}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        animate={{ opacity: [1, 0.4, 1] }}
+        transition={{ duration: 1.4, repeat: Infinity }}
+      />
+      <motion.circle
+        cx="12" cy="17" r="1.1"
+        fill={theme.palette.warning.main}
+        animate={{ opacity: [1, 0.4, 1] }}
+        transition={{ duration: 1.4, repeat: Infinity }}
+      />
+    </svg>
+  );
+};
+
+export const ToolsBadgeSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <motion.path
+        d="M15 4.5L19.5 9L17 11.5L12.5 7L15 4.5Z"
+        stroke={theme.palette.primary.main}
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+        animate={{ rotate: [0, -8, 0] }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ originX: '16px', originY: '8px' }}
+      />
+      <path d="M12.5 7L5 14.5C4 15.5 4 17 5 18C6 19 7.5 19 8.5 18L16 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <motion.circle
+        cx="6.3" cy="17.7" r="1.1"
+        fill={theme.palette.primary.main}
+        animate={{ opacity: [0.4, 1, 0.4] }}
+        transition={{ duration: 1.6, repeat: Infinity }}
+      />
+    </svg>
+  );
+};
+
+export const LockBadgeSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <rect x="5.5" y="11" width="13" height="10" rx="2" stroke={theme.palette.text.secondary} strokeWidth="1.6" />
+      <motion.path
+        d="M8.5 11V8C8.5 5.5 10 4 12 4C14 4 15.5 5.5 15.5 8V11"
+        stroke={theme.palette.text.secondary}
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        initial={{ pathLength: 1 }}
+        animate={{ pathLength: [1, 1] }}
+      />
+      <circle cx="12" cy="15.5" r="1.3" fill={theme.palette.text.secondary} />
+    </svg>
+  );
+};
+
+export const OpenDotBadgeSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <motion.circle
+        cx="12" cy="12" r="4"
+        fill={theme.palette.success.main}
+        animate={{ scale: [1, 1.15, 1] }}
+        transition={{ duration: 1.6, repeat: Infinity }}
+      />
+      <motion.circle
+        cx="12" cy="12" r="7"
+        stroke={theme.palette.success.main}
+        strokeWidth="1.4"
+        fill="none"
+        animate={{ opacity: [0.6, 0, 0.6], scale: [1, 1.5, 1] }}
+        transition={{ duration: 1.6, repeat: Infinity }}
+      />
+    </svg>
+  );
+};
+
+export const BellBadgeSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <motion.g
+        animate={{ rotate: [0, 12, -12, 8, -8, 0] }}
+        transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 1.5, ease: 'easeInOut' }}
+        style={{ originX: '12px', originY: '5px' }}
+      >
+        <path
+          d="M12 3.5C9.5 3.5 8 5.5 8 8V11.5L6 15H18L16 11.5V8C16 5.5 14.5 3.5 12 3.5Z"
+          stroke={theme.palette.primary.main}
+          strokeWidth="1.7"
+          strokeLinejoin="round"
+        />
+        <path d="M10 17.5C10 18.6 10.9 19.5 12 19.5C13.1 19.5 14 18.6 14 17.5" stroke={theme.palette.primary.main} strokeWidth="1.7" strokeLinecap="round" />
+      </motion.g>
+      <motion.circle
+        cx="17" cy="6" r="2.6"
+        fill={theme.palette.secondary.main}
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ duration: 1.6, repeat: Infinity }}
+      />
+    </svg>
+  );
+};
+
 export const getMonitorTypeSvgIcon = (monitorType: string): React.ReactElement => {
   switch (monitorType) {
     case 'ping': return <PingRadarSvg />;

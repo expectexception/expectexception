@@ -124,8 +124,8 @@ const JwtDecoder: React.FC = () => {
                                     <Box sx={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'text.disabled', wordBreak: 'break-all' }}>{decoded.signature}</Box>
                                 </Paper>
 
-                                <Alert severity="info" sx={{ fontSize: '0.8rem' }}>
-                                    ⚠️ This decoder only decodes — it does NOT verify the signature. Never trust a JWT's claims without server-side signature verification.
+                                <Alert severity="warning" sx={{ fontSize: '0.8rem' }}>
+                                    This decoder only decodes — it does NOT verify the signature. Never trust a JWT's claims without server-side signature verification.
                                 </Alert>
                             </Stack>
                         </Box>

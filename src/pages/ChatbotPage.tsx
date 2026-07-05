@@ -786,7 +786,6 @@ const ChatbotPage: React.FC = () => {
                 signal: abortControllerRef.current.signal,
                 body: JSON.stringify({
                     message: text,
-                    model: 'qwen3:4b',
                     conversation_id: currentConversationId,
                     system_prompt: 'You are Daemon, a premium agentic assistant running inside ExpectException. Keep your tone highly technical, professional, and helpful. You have access to real backend tools (blog search, service listing, QR generation, system health checks, contact handoff) that run automatically when relevant.'
                 })
@@ -892,11 +891,11 @@ The backend is currently unreachable, so I can't run live tools or generate a re
                 fallbackResponse = `Greetings! I am **Daemon**, running in the background here. How can I assist you with your projects, architectures, or technical queries today?`;
                 setMood('happy');
             } else if (cleanText.includes('skill') || cleanText.includes('projects') || cleanText.includes('experience')) {
-                fallbackResponse = `### 🛠️ Developer Expertise & Core Stack
+                fallbackResponse = `### Developer Expertise & Core Stack
 The developer specializes in building high-performance, automated, and visually stunning web systems:
 - **Frontend**: Expert-level React, TypeScript, Next.js, and complex interactive UI designs.
 - **Backend & Automation**: Python (Django, FastAPI), Docker containerization, CI/CD, and server optimization.
-- **AI & Agents**: Custom LangChain/Ollama integrations, multi-model ensemble architectures, and vector search systems.`;
+- **AI & Agents**: Custom in-house LLM pipelines, multi-model ensemble architectures, and vector search systems.`;
                 setMood('idea');
             } else {
                 setMood('neutral');
@@ -1169,15 +1168,13 @@ The developer specializes in building high-performance, automated, and visually 
             <CleanStarBackground withNebula={true} />
             <Seo
                 title="Daemon – Free AI Agentic Chatbot with Tool-Calling"
-                description="Chat with Daemon, an agentic AI assistant powered by local LLMs (Ollama/Qwen). Ask it to write code, search the web, analyze files, and call real backend tools. Completely free."
+                description="Chat with Daemon, an agentic AI assistant built by ExpectException. Ask it to write code, search the web, analyze files, and call real backend tools. Completely free."
                 keywords={[
                     'free ai chatbot',
                     'agentic ai assistant',
-                    'local llm chatbot',
                     'ai with tool calling',
                     'free gpt alternative',
                     'ai assistant no signup',
-                    'qwen chatbot free',
                 ]}
             />
 

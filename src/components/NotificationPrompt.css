@@ -47,10 +47,15 @@
 }
 
 .notification-prompt-icon {
-    font-size: 48px;
-    text-align: center;
+    display: flex;
+    justify-content: center;
     margin-bottom: 16px;
     animation: bounce 0.6s ease-in-out infinite alternate;
+}
+
+.notification-prompt-icon svg {
+    width: 48px;
+    height: 48px;
 }
 
 @keyframes bounce {
@@ -92,6 +97,9 @@
     padding: 8px 0;
     font-size: 14px;
     color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .notification-prompt-actions {
@@ -140,8 +148,12 @@
     }
 
     .notification-prompt-icon {
-        font-size: 36px;
         margin-bottom: 12px;
+    }
+
+    .notification-prompt-icon svg {
+        width: 36px;
+        height: 36px;
     }
 
     .notification-prompt-content h3 {
@@ -189,8 +201,9 @@
         padding: 16px;
     }
 
-    .notification-prompt-icon {
-        font-size: 32px;
+    .notification-prompt-icon svg {
+        width: 32px;
+        height: 32px;
     }
 
     .notification-prompt-content h3 {

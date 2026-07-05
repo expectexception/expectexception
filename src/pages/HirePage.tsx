@@ -19,6 +19,7 @@ import {
     CircularProgress,
 } from '@mui/material';
 import Seo from '../components/seo/Seo';
+import { RocketBadgeSvg } from '../components/layout/AnimatedSvgs';
 import {
     Psychology,
     Chat,
@@ -225,7 +226,8 @@ const HirePage: React.FC = () => {
                                 transition={{ duration: 0.6 }}
                             >
                                 <Chip
-                                    label="🚀 Available for Projects"
+                                    icon={<RocketBadgeSvg />}
+                                    label="Available for Projects"
                                     sx={{
                                         bgcolor: alpha(primaryColor, 0.1),
                                         color: primaryColor,
@@ -234,6 +236,7 @@ const HirePage: React.FC = () => {
                                         borderStyle: 'solid',
                                         fontWeight: 700,
                                         mb: 3,
+                                        '& .MuiChip-icon': { color: primaryColor, ml: '10px' },
                                     }}
                                 />
                                 <Typography
