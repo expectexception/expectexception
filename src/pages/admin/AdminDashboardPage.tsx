@@ -678,7 +678,11 @@ const AdminDashboardPage: React.FC = () => {
         <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0f', position: 'relative' }}>
             <Seo title="Admin Dashboard" description="System administration and monitoring" />
 
-            <Container maxWidth="xl" sx={{ py: 4, position: 'relative', zIndex: 1 }}>
+            {/* pb reserves clearance so table rows/action switches in the last
+                visible row aren't covered by the fixed chat widget launcher
+                (bottom:24/right:24, ~84px footprint) when this page's tables
+                scroll near the bottom of the viewport. */}
+            <Container maxWidth="xl" sx={{ py: 4, pb: 14, position: 'relative', zIndex: 1 }}>
                 {/* Header */}
                 <Box sx={{ mb: 4 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
