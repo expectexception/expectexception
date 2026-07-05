@@ -22,8 +22,9 @@ class ContactInquiry(models.Model):
     
     # Sender info
     name = models.CharField(max_length=100)
-    email = models.EmailField()
-    
+    email = models.EmailField(blank=True, help_text='Optional if a phone number is provided instead')
+    phone = models.CharField(max_length=30, blank=True, help_text='Contact number for call-back inquiries (e.g. from the chatbot)')
+
     # Inquiry details
     inquiry_type = models.CharField(max_length=20, choices=INQUIRY_TYPES, default='general')
     subject = models.CharField(max_length=200, blank=True)

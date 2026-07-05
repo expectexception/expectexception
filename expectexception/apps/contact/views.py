@@ -37,7 +37,8 @@ def send_notification_email(inquiry):
 New {inquiry.get_inquiry_type_display()} Inquiry
 
 From: {inquiry.name}
-Email: {inquiry.email}
+Email: {inquiry.email or '(not provided)'}
+Phone: {inquiry.phone or '(not provided)'}
 Type: {inquiry.get_inquiry_type_display()}
 """
         if inquiry.subject:

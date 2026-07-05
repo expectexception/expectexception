@@ -13,6 +13,7 @@ class ContactInquiryAdmin(ModelAdmin):
         'id',
         'name',
         'email',
+        'phone',
         'inquiry_type_badge',
         'subject_preview',
         'status_badge',
@@ -29,6 +30,7 @@ class ContactInquiryAdmin(ModelAdmin):
     search_fields = [
         'name',
         'email',
+        'phone',
         'subject',
         'message',
         'project_type',
@@ -47,7 +49,7 @@ class ContactInquiryAdmin(ModelAdmin):
     
     fieldsets = (
         ('Sender Information', {
-            'fields': ('name', 'email')
+            'fields': ('name', 'email', 'phone')
         }),
         ('Inquiry Details', {
             'fields': ('inquiry_type', 'subject', 'message')
