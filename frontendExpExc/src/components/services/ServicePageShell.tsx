@@ -3,6 +3,7 @@ import { Box, Container, Typography, useTheme, alpha } from '@mui/material';
 import type { ContainerProps } from '@mui/material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Seo, { HowToStep, FaqItem } from '../seo/Seo';
+import ToolInfoSection from './ToolInfoSection';
 
 interface ServicePageShellProps {
     icon: SvgIconComponent;
@@ -18,10 +19,16 @@ interface ServicePageShellProps {
     toolId?: number;
     /** Optional: extra high-intent keywords merged into the meta keywords */
     keywords?: string[];
-    /** Optional: HowTo steps for JSON-LD rich results */
+    /** Optional: HowTo steps — rendered as a visible numbered list below the
+     * tool AND as JSON-LD rich-result data (single source of truth). */
     howToSteps?: HowToStep[];
-    /** Optional: FAQ entries → FAQPage rich result in Google */
+    /** Optional: FAQ entries — rendered as a visible accordion below the
+     * tool AND as FAQPage JSON-LD (single source of truth). */
     faq?: FaqItem[];
+    /** Optional: 2-4 sentence "about this tool" paragraph, rendered visibly
+     * below the tool. Real, indexable page content (not just SEO metadata) —
+     * this is what a bare/thin-looking tool page is usually missing. */
+    about?: string;
 }
 
 /** App-bar-aware, single-viewport layout for tool pages: a compact inline
@@ -33,7 +40,7 @@ interface ServicePageShellProps {
  * pushed every tool page well past one screen. */
 const ServicePageShell: React.FC<ServicePageShellProps> = ({
     icon: Icon, title, subtitle, maxWidth = 'sm', children, seoTitle, seoDescription,
-    toolId, keywords, howToSteps, faq,
+    toolId, keywords, howToSteps, faq, about,
 }) => {
     const theme = useTheme();
     const primary = theme.palette.primary.main;
@@ -123,6 +130,7 @@ const ServicePageShell: React.FC<ServicePageShellProps> = ({
                 </Box>
             </Container>
         </Box>
+        <ToolInfoSection maxWidth={maxWidth} about={about} howToSteps={howToSteps} faq={faq} />
         </>
     );
 };
