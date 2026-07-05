@@ -49,6 +49,19 @@ const ColorConverter: React.FC = () => {
             icon={Palette}
             title="Color Converter"
             subtitle="Convert colors between HEX, RGB, and HSL formats"
+            about="Color Converter takes a hex color and returns its equivalent RGB and HSL values. Somewhat unusually for a conversion this simple, the calculation actually runs on our backend — every time you enter a complete 6-digit hex code, the app posts it to our color-converter API, which does the HEX-to-RGB-to-HSL math in Python and sends the values back. There's no separate 'Convert' button: values update automatically as soon as you type or pick a valid color."
+            howToSteps={[
+                { name: 'Pick a color', text: 'Use the color swatch to pick a color, or type a 6-digit hex code directly into the HEX field.' },
+                { name: 'Read the values', text: 'Once a valid hex code is entered, the HEX, RGB, and HSL rows fill in automatically.' },
+                { name: 'Copy a value', text: 'Click Copy next to any row to copy that specific value to your clipboard.' },
+                { name: 'Check the components', text: 'Look at the R / G / B chips below the values for the individual 0-255 color channel numbers.' },
+            ]}
+            faq={[
+                { question: 'Do I need to type the # symbol?', answer: 'No — a plain 6-digit code like 3b82f6 or a code with the # prefix both work, as long as it\'s exactly 6 hex characters.' },
+                { question: 'Does it support 3-digit hex shortcuts like #fff?', answer: 'No — conversion only triggers automatically for a full 6-digit hex code.' },
+                { question: 'Can I convert from RGB or HSL instead of hex?', answer: 'Not in this UI — input is always a hex color; the tool outputs the matching RGB and HSL values alongside it.' },
+                { question: 'Is my color data stored anywhere?', answer: "The hex value is sent to our server just to compute the conversion and isn't saved or logged against your account." },
+            ]}
         >
             <Seo
                 title="Color Converter & Code Generator - HEX, RGB, HSL, CMYK"

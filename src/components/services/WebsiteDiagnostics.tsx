@@ -81,6 +81,19 @@ const WebsiteDiagnostics: React.FC = () => {
             title="Website Health Scanner"
             subtitle="Comprehensive analysis of Security, Performance, DNS, and Server Configuration."
             maxWidth="md"
+            about="Runs six checks against a URL in parallel from our server - TLS certificate validity, DNS records, security headers, redirect chain, page performance (time-to-first-byte and page size), and a scan of seven common ports (80, 443, 21, 22, 25, 53, 8080) - and rolls them into a single 0-100 score. The score starts at 100 and is docked for an invalid or missing TLS certificate, missing security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy), a slow time-to-first-byte, or a missing A/AAAA record, so it's meant as a fast triage view rather than an exhaustive security or performance audit."
+            howToSteps={[
+                { name: 'Enter the site URL', text: 'Type the full URL, including https://, into the Enter Website URL field.' },
+                { name: 'Click Diagnose', text: 'The server runs all six checks in parallel - this usually takes a few seconds since DNS, TLS, and HTTP headers are fetched at the same time.' },
+                { name: 'Read the score and critical issues', text: 'The large score at the top summarizes overall health; anything driving a major deduction, like an invalid TLS certificate, is called out under Critical Issues.' },
+                { name: 'Drill into each card', text: 'Security Headers, SSL/TLS, DNS Configuration, and Performance Snapshot each get their own card; expand Redirect Chain & Raw Headers or Port Scan for the full detail.' },
+            ]}
+            faq={[
+                { question: 'What does the score actually measure?', answer: "It's a deduction-based score starting at 100: -30 for an invalid or missing TLS certificate, -5 for each missing recommended security header, -10 for a time-to-first-byte over 1 second, and -20 for no A/AAAA record. It's a quick health signal, not a full security or performance audit." },
+                { question: 'Which ports does the port scan check?', answer: 'A fixed set of seven commonly relevant ports - 80, 443, 21 (FTP), 22 (SSH), 25 (SMTP), 53 (DNS), and 8080 - each with a short connect timeout. It is not a full port-range scan.' },
+                { question: "Why does my site show missing security headers even though it 'feels' secure?", answer: 'Headers like Content-Security-Policy or X-Frame-Options are opt-in - a site can serve perfectly functional pages over HTTPS without ever setting them. They guard against specific attack classes (clickjacking, certain injection vectors) rather than being required for the page to work.' },
+                { question: 'Does a low score mean the site is broken?', answer: 'Not necessarily. A site can score low here for missing optional security headers while working fine for visitors - check the Critical Issues list first, since that highlights what actually needs fixing (like an expired certificate) rather than optional hardening.' },
+            ]}
         >
             <Seo title="Website Diagnostics - Full Health Scan" toolId={28} />
 

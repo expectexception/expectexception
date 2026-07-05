@@ -114,6 +114,20 @@ const ImageResizer: React.FC = () => {
             title="Image Resizer"
             subtitle="Resize images to custom dimensions"
             maxWidth="md"
+            about="Image Resizer sends your image to the server, where Pillow resizes it with high-quality Lanczos resampling. Enter just a width or just a height with Maintain aspect ratio on and the other dimension is calculated automatically; enter both to fit the image within that box while keeping its proportions, or turn the toggle off to stretch to exact dimensions. The estimated file size shown before you click Resize Image is a rough client-side approximation based on the change in pixel area — the real output size (shown after resizing) can differ, especially for photos with a lot of fine detail."
+            howToSteps={[
+                { name: 'Upload an image', text: 'Click the upload box and select the image you want to resize.' },
+                { name: 'Enter dimensions', text: 'Type a new Width (px) and/or Height (px) — leave one blank to have it calculated automatically.' },
+                { name: 'Choose aspect ratio behavior', text: 'Leave Maintain aspect ratio on to preserve proportions, or turn it off to stretch to the exact width and height you entered.' },
+                { name: 'Resize', text: 'Click Resize Image to process it on the server.' },
+                { name: 'Download', text: 'Click Download in the success message to save the resized image.' },
+            ]}
+            faq={[
+                { question: 'What happens if I only enter a width or only a height?', answer: "With Maintain aspect ratio on, the missing dimension is calculated automatically from the original image's proportions, so the picture never looks stretched." },
+                { question: 'How accurate is the estimated file size?', answer: "It's a rough approximation calculated in your browser from how much the pixel area is shrinking or growing — the actual output size depends on image content and compression, and can differ from the estimate." },
+                { question: 'Does resizing change the image format?', answer: "No — the output keeps the original file's format (or falls back to PNG if the format can't be determined)." },
+                { question: 'Is there a maximum image size?', answer: 'There\'s no fixed limit enforced in this tool, though very large source images will naturally take longer to upload and process.' },
+            ]}
         >
             <Seo title="Resize Images Online - Pixel & Percentage Scaler" toolId={12} />
 

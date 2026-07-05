@@ -45,6 +45,19 @@ const HashGenerator: React.FC = () => {
             icon={Tag}
             title="Hash Generator"
             subtitle="Generate MD5, SHA-1, SHA-256, SHA-512 hashes"
+            about="Computes a cryptographic hash (checksum/digest) of any text you enter, in MD5, SHA-1, SHA-256, or SHA-512. Your text and chosen algorithm are sent to a backend endpoint that runs the actual hashing and returns the hex digest, shown with a one-click copy button. Handy for verifying file/text integrity, generating checksums, or confirming two pieces of text are byte-for-byte identical without eyeballing them."
+            howToSteps={[
+                { name: 'Enter your text', text: 'Type or paste the text you want to hash into the Text to hash field.' },
+                { name: 'Pick an algorithm', text: 'Choose MD5, SHA-1, SHA-256, or SHA-512 from the Algorithm dropdown.' },
+                { name: 'Generate the hash', text: 'Click Generate Hash to send the request and compute the digest.' },
+                { name: 'Copy the result', text: 'Use the Copy button next to the algorithm chip to copy the resulting hex digest to your clipboard.' },
+            ]}
+            faq={[
+                { question: 'Is MD5 or SHA-1 secure?', answer: "No — both are cryptographically broken for security purposes (practical collision attacks exist for each). They're included for compatibility with legacy systems or non-security checksums, not for anything where collision resistance matters." },
+                { question: 'Should I use this to hash passwords?', answer: "No. None of these algorithms are designed for password storage — they're fast, general-purpose digest functions, which makes them easy to brute-force. Password storage needs a slow, salted algorithm like bcrypt, scrypt, or Argon2, which this tool doesn't provide." },
+                { question: 'Is the text I hash sent anywhere?', answer: "Yes — hashing happens on the server: your text and chosen algorithm are sent to a backend API to compute the digest, so avoid pasting secrets you don't want leaving your browser." },
+                { question: 'Which algorithm should I use for integrity checks?', answer: 'SHA-256 is the modern default for checksums (what git and most package managers use today). SHA-512 gives a larger digest if you want one; MD5/SHA-1 are mainly useful for matching against old, existing hashes.' },
+            ]}
         >
             <Seo
                 title="Secure Hash Generator - MD5, SHA-1, SHA-256, SHA-512"

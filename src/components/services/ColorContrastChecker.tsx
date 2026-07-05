@@ -51,6 +51,19 @@ const ColorContrastChecker: React.FC = () => {
             icon={Contrast}
             title="Color Contrast Checker"
             subtitle="Check WCAG AA/AAA contrast ratios between a foreground and background color — for accessible text on any UI."
+            about="This checker computes the WCAG 2.1 contrast ratio between a foreground (text) color and a background color entirely in your browser — no image or data is uploaded anywhere. It converts both hex colors to relative luminance using the sRGB formula from the WCAG spec, then checks the resulting ratio against the four standard thresholds (AA/AAA, normal/large text) so you can confirm a color pairing is readable before shipping it in a UI."
+            howToSteps={[
+                { name: 'Set the foreground color', text: 'Enter a hex value in the Foreground (text) field, or use the built-in color swatch.' },
+                { name: 'Set the background color', text: 'Enter a hex value in the Background field.' },
+                { name: 'Read the sample', text: 'Check the live text preview rendered in your two colors to see how it actually looks.' },
+                { name: 'Check the ratio', text: 'Look at the contrast ratio and the AA/AAA pass/fail chips below it to see which accessibility levels the pairing meets.' },
+            ]}
+            faq={[
+                { question: 'What do AA and AAA mean?', answer: 'They\'re WCAG 2.1 conformance levels. AA is the widely-required baseline (4.5:1 for normal text, 3:1 for large text); AAA is a stricter standard (7:1 and 4.5:1 respectively) recommended for enhanced accessibility.' },
+                { question: "What counts as 'large text' for the large-text thresholds?", answer: 'WCAG defines large text as 18pt (24px) regular weight or 14pt (18.66px) bold — anything smaller is judged against the normal-text thresholds.' },
+                { question: 'Does passing this check mean my design is fully accessible?', answer: "It confirms color contrast specifically, which is one WCAG success criterion — it doesn't check other accessibility factors like focus order, alt text, or keyboard navigation." },
+                { question: 'What color formats does it accept?', answer: '3- and 6-digit hex codes (e.g. #fff or #39ff88), with or without the # prefix.' },
+            ]}
         >
             <Seo title="Color Contrast Checker - WCAG AA/AAA Accessibility Tool" />
 

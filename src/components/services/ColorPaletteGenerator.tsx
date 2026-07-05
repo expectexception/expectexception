@@ -100,6 +100,20 @@ const ColorPaletteGenerator: React.FC = () => {
             seoTitle="Color Palette Generator — Harmonies, Shades & Hex Codes"
             toolId={42}
             keywords={['color palette generator', 'hex color scheme', 'complementary colors', 'css color palette', 'random palette generator', 'color harmony tool', 'color shades generator', 'ui color palette']}
+            about="Picks apart a single hex color and expands it into everything you need for a UI color system: a lightness scale, Material-Design-style numbered shades (50–700), and three classic color-harmony schemes — complementary, triadic, and analogous — calculated by rotating hue in HSL space. Everything runs client-side in JavaScript; no color or palette is ever sent to a server. Useful for taking a single brand color and immediately seeing usable tints and shades for buttons, backgrounds, and hover states, or for finding a matching accent color without a color-theory reference."
+            howToSteps={[
+                { name: 'Pick a base color', text: 'Click the color swatch (or type a hex value) to choose your starting color — the tool defaults to a green (#3DFC55).' },
+                { name: 'Adjust the number of steps', text: 'Drag the Steps slider (5–20) to control how many swatches appear in the Lightness Scale row.' },
+                { name: 'Review the generated shades', text: 'Scroll through the Lightness Scale and Material Design Shades (50–700) rows to see tints and shades derived from your base color.' },
+                { name: 'Check color harmonies', text: 'Look at the Complementary, Triadic, and Analogous cards to see color combinations that pair well with your base color.' },
+                { name: 'Copy any hex code', text: 'Click any swatch to copy its hex value to your clipboard — a checkmark confirms the copy.' },
+            ]}
+            faq={[
+                { question: 'Does this tool send my color choices to a server?', answer: 'No. The palette, shades, and harmonies are all calculated in your browser using standard HSL math — nothing is uploaded or logged.' },
+                { question: 'How are the Material Design shades generated?', answer: 'They reuse the hue and saturation of your base color and apply eight fixed lightness levels (labeled 50 through 700), matching the numbering convention used by Material Design and many CSS frameworks.' },
+                { question: 'What is the difference between complementary, triadic, and analogous?', answer: 'Complementary is the color directly opposite your base on the color wheel (180° away). Triadic adds two colors 120° apart for a balanced three-color scheme. Analogous picks colors 30° on either side of your base for a subtler, more harmonious look.' },
+                { question: 'Can I type a color name instead of a hex code?', answer: 'Not directly — use the color swatch picker, which lets you choose visually and always stores the value as a hex code you can copy out.' },
+            ]}
         >
             <Card>
                 <CardContent sx={{ p: 3 }}>

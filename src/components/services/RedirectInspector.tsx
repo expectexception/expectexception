@@ -78,6 +78,19 @@ const RedirectInspector: React.FC = () => {
             title="Redirect Chain + Header Inspector"
             subtitle="Paste a URL to see every 301/302 hop and the final security/cache headers (CSP, CORS, HSTS)."
             maxWidth="lg"
+            about="Follows a URL's redirect chain (301/302/303/307/308) one hop at a time from our server, up to 10 hops, reporting the status code, timing, and Location header at each step, plus the security and caching headers - CSP, HSTS, CORS, Cache-Control, ETag - returned by the final destination. Because it runs server-side, it sees the full chain even in cases where a browser would silently follow redirects and hide the intermediate hops - useful for debugging redirect loops, verifying a domain migration's 301s land where expected, or checking whether a CDN is stripping headers you rely on."
+            howToSteps={[
+                { name: 'Paste the starting URL', text: 'Enter the URL you want to trace into the URL field, including the https:// scheme.' },
+                { name: 'Click Inspect', text: 'The server follows every redirect from that URL, one hop at a time, up to a 10-hop limit.' },
+                { name: 'Read the redirect chain table', text: 'Each row shows the hop number, status code, URL, Location header, and response time in milliseconds, ending at the final destination.' },
+                { name: 'Check the final headers', text: 'The Final Headers panel lists the last response\'s security and caching headers - use Copy JSON to grab them for a report or ticket.' },
+            ]}
+            faq={[
+                { question: 'What counts as a redirect hop?', answer: 'Any response with a 301, 302, 303, 307, or 308 status code and a Location header. The tool follows each one with a fresh request until it reaches a non-redirect response or hits the 10-hop limit.' },
+                { question: 'Why cap it at 10 hops?', answer: 'A long or looping redirect chain - a real and fairly common misconfiguration - would otherwise run indefinitely. 10 hops is enough to diagnose a normal chain while catching loops quickly.' },
+                { question: 'Why do headers like HSTS or CSP on the final response matter?', answer: 'These control whether browsers enforce HTTPS (Strict-Transport-Security), what content sources are allowed to load (Content-Security-Policy), and which cross-origin requests are permitted (Access-Control-Allow-Origin) - missing or misconfigured ones are a common source of browser security warnings or broken embeds.' },
+                { question: 'Does it work on internal or localhost URLs?', answer: "No - the tool only fetches public, internet-reachable HTTP(S) URLs and rejects localhost, private, and internal IP ranges as a safety measure." },
+            ]}
         >
             <Seo
                 title="Redirect Chain + Header Inspector"

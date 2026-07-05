@@ -129,6 +129,19 @@ const ImageToText: React.FC = () => {
             title="Image to Text (OCR)"
             subtitle="Extract text from images using AI-powered OCR"
             maxWidth="md"
+            about="Image to Text (OCR) extracts machine-readable text from a photo or screenshot using Tesseract OCR running on our server — the image is sent to the backend, read directly in memory, and the extracted text is returned; the image itself is never written to disk. The Language dropdown is populated dynamically from whatever Tesseract language packs are actually installed on the server, so the exact list can vary between deployments; if you pick a language that isn't installed, the backend automatically falls back to English and shows a warning."
+            howToSteps={[
+                { name: 'Upload an image', text: 'Click the upload box on the left and choose a photo or screenshot containing text.' },
+                { name: 'Pick a language', text: "Choose the text's language from the Language dropdown (defaults to English)." },
+                { name: 'Extract', text: 'Click Extract Text to run OCR on the server.' },
+                { name: 'Copy the result', text: 'Use the Copy button above the result box to copy the extracted text to your clipboard.' },
+            ]}
+            faq={[
+                { question: 'Which languages are supported?', answer: "It depends on which Tesseract language packs are installed on the server — the dropdown only lists what's actually available. If you request a language that isn't installed, the tool falls back to English and shows a warning." },
+                { question: 'How accurate is the text extraction?', answer: 'Accuracy depends heavily on image quality — sharp, high-contrast, horizontally-aligned text extracts best. Blurry photos, stylized fonts, or low-resolution screenshots produce more errors.' },
+                { question: 'Are my uploaded images stored?', answer: 'No — the image is read directly in memory to run OCR and is never saved to disk; only the extracted text is returned to you.' },
+                { question: 'Does it preserve formatting like tables or columns?', answer: "No, it returns plain text in reading order — layout, tables, and multi-column formatting aren't preserved." },
+            ]}
         >
             <Seo title="Image to Text (OCR) - Extract Text from Photos Free" toolId={14} />
 

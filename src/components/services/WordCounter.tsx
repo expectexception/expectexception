@@ -23,6 +23,18 @@ const WordCounter: React.FC = () => {
             title="Word & Character Counter"
             subtitle="Count words, characters, sentences, and paragraphs instantly - runs entirely in your browser."
             maxWidth="md"
+            about="Counts words, characters (with and without spaces), sentences, and paragraphs in real time as you type or paste text, and estimates reading time at 200 words per minute — a commonly cited average adult silent-reading speed. Sentences are estimated by counting runs of text ending in ., ! or ?, and paragraphs by splitting on line breaks, so unusual punctuation or formatting can shift the numbers slightly. All counting is computed locally in your browser as you type; nothing is saved or uploaded."
+            howToSteps={[
+                { name: 'Paste or type your text', text: 'Add your text into the main box.' },
+                { name: 'Watch the stats update', text: 'Word, character, sentence, and paragraph counts and reading time all recalculate instantly as you type.' },
+                { name: 'Use the numbers as needed', text: 'For example, checking a character limit or making sure a draft meets a word-count requirement.' },
+            ]}
+            faq={[
+                { question: 'How is reading time calculated?', answer: 'It divides the word count by 200 (a commonly cited average reading speed) and rounds up, with a minimum of 1 minute shown.' },
+                { question: 'How does it count sentences?', answer: 'It counts runs of characters ending in a period, exclamation mark, or question mark — abbreviations like "Dr." or decimal numbers can occasionally be miscounted as sentence breaks.' },
+                { question: 'Does the "Characters" count include spaces?', answer: 'There are two separate stats: "Characters" includes every character including whitespace, and "Characters (no spaces)" strips whitespace first before counting.' },
+                { question: 'Is my text stored or sent anywhere?', answer: 'No, all counting happens locally in your browser as you type; nothing is saved or uploaded.' },
+            ]}
         >
             <Seo title="Word & Character Counter - Free Online Tool" toolId={29} />
 

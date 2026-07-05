@@ -46,6 +46,19 @@ const MarkdownPreview: React.FC = () => {
             title="Markdown Preview"
             subtitle="Write Markdown and see live HTML preview"
             maxWidth="md"
+            about="Type or paste Markdown into the left pane and see it rendered as HTML in the right pane as you type, debounced by 300ms so it isn't converting on every keystroke. Conversion runs through a backend endpoint using a GitHub-Flavored Markdown parser (tables, fenced code blocks, task lists), so the text you're editing is sent over the network to be rendered rather than processed entirely offline in the browser. Useful for drafting README files, GitHub issues, or any Markdown-based content and checking exactly how it'll render before you publish it."
+            howToSteps={[
+                { name: 'Start from the example or clear it', text: 'The editor loads pre-filled with a sample document (a heading, a list, and a fenced code block) — select all and delete it, or just start typing your own content.' },
+                { name: 'Edit your Markdown', text: 'Type or paste your Markdown source into the left panel labeled Markdown.' },
+                { name: 'Watch the live preview', text: 'About 300ms after you stop typing, the right panel labeled Preview re-renders automatically; a (updating...) label appears briefly while the conversion request is in flight.' },
+                { name: 'Iterate before you publish', text: 'Adjust headings, tables, links, or code blocks and use the preview to confirm it renders the way you expect before pasting it into GitHub or a CMS.' },
+            ]}
+            faq={[
+                { question: 'Does this run in my browser or on a server?', answer: "Rendering happens on the server: each time you pause typing, your current Markdown text is sent to a backend endpoint that converts it to HTML with a GitHub-Flavored Markdown parser, and the HTML is sent back into the preview pane. It isn't a fully offline, client-only tool." },
+                { question: 'What Markdown syntax is supported?', answer: 'GitHub-Flavored Markdown — headings, bold/italic, lists, links, blockquotes, tables, and fenced code blocks. It matches what you would see rendered in a GitHub README or issue.' },
+                { question: 'Why does the preview update after a short delay instead of instantly?', answer: "Input is debounced by 300ms before a conversion request is sent, so it doesn't fire a network request on every keystroke — it waits until you pause typing." },
+                { question: 'Is my Markdown text stored anywhere?', answer: "It's sent to the conversion endpoint only to be rendered and returned as HTML for the preview — avoid pasting secrets or sensitive text you don't want leaving your browser." },
+            ]}
         >
             <Seo
                 title="Live Markdown Preview & Editor - GitHub Flavor"

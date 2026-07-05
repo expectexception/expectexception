@@ -142,6 +142,20 @@ const ImageUpscaler: React.FC = () => {
             title="AI Image Upscaler & Enhancer"
             subtitle="Enlarge images up to 4x with clarity boosts, noise reduction, and smart color preservation."
             maxWidth="md"
+            about="This tool enlarges an image by a chosen scale (1x–4x) and applies a set of enhancement filters on the server: Lanczos resampling for the resize itself, then optional noise smoothing, a sharpness boost, and a subtle color/contrast lift. It's classic image-processing rather than a neural super-resolution model — it makes existing detail look crisper at a larger size, but it can't invent detail that wasn't captured in the original photo, so results are best on modest scale factors and reasonably clean source images."
+            howToSteps={[
+                { name: 'Upload an image', text: 'Drop an image onto the upload area or click it to choose a PNG, JPG, or WEBP file (up to 25MB).' },
+                { name: 'Set the scale', text: 'Drag the Scale slider to choose how much to enlarge the image, from 1x up to 4x.' },
+                { name: 'Adjust enhancements', text: 'Tune the Sharpness Boost slider and toggle Smooth noise & artifacts / Gently boost color vibrance as needed.' },
+                { name: 'Upscale', text: 'Click Upscale Image to process it on the server.' },
+                { name: 'Download', text: 'Click Download in the success message to save the enlarged image.' },
+            ]}
+            faq={[
+                { question: 'Is this an AI upscaler?', answer: "It uses high-quality Lanczos resampling plus sharpening, denoising, and color filters — not a deep-learning super-resolution model. It enhances existing detail rather than generating new detail that wasn't in the original." },
+                { question: 'What is the maximum file size and scale?', answer: 'Uploads are capped at 25MB, and the scale slider goes up to 4x.' },
+                { question: 'What image formats are supported?', answer: 'PNG, JPG, and WEBP are supported for upload; the output is PNG if the source has transparency, otherwise JPEG at quality 95.' },
+                { question: 'Will this fix a blurry or low-resolution photo?', answer: "It can make a photo look sharper and larger, but it can't recover detail that was never captured — very blurry or heavily compressed source images will still look soft after upscaling." },
+            ]}
         >
             <Seo
                 title="AI Image Upscaler - Enhance & Enlarge Photos Online"

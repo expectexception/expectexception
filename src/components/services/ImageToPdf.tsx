@@ -58,6 +58,19 @@ const ImageToPdf: React.FC = () => {
             icon={PictureAsPdf}
             title="Image to PDF Converter"
             subtitle="Combine multiple images into a single PDF"
+            about="Image to PDF Converter combines multiple images into a single multi-page PDF, with each image becoming one page in the order it was added. The merge happens on the server using Pillow — images are opened, any transparency is flattened onto a white background (since PDF pages can't have an alpha channel), and the first image's dimensions set the page size for the rest. It's handy for turning a batch of scanned photos or screenshots into one shareable document instead of sending files individually."
+            howToSteps={[
+                { name: 'Add images', text: 'Click Add images and select one or more JPG, PNG, GIF, WEBP, or BMP files — repeat this to add more.' },
+                { name: 'Review the list', text: "Check the file list below the upload box and remove any image you don't want using its delete icon." },
+                { name: 'Convert', text: 'Click Convert N Images to PDF to build the PDF on the server.' },
+                { name: 'Download', text: 'Click Download PDF in the success message to save the combined file.' },
+            ]}
+            faq={[
+                { question: 'What order do the images appear in the PDF?', answer: 'Pages follow the order images were added to the list, top to bottom — remove and re-add an image if you need to change its position.' },
+                { question: 'Which image formats can I combine?', answer: 'JPG, PNG, GIF, WEBP, and BMP files are accepted based on their file extension.' },
+                { question: 'Is there a limit on how many images I can combine?', answer: "There's no fixed cap in the tool itself, but adding a very large batch will take longer to upload and convert." },
+                { question: 'What happens to transparent PNGs?', answer: "Since PDF pages don't support transparency, any transparent areas are filled with white before the page is added." },
+            ]}
         >
             <Seo
                 title="Convert Images to PDF - Combine Photos Online"

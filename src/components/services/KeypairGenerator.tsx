@@ -137,6 +137,20 @@ const KeypairGenerator: React.FC = () => {
             title="RSA/EC Keypair Generator"
             subtitle="Generate RSA or Elliptic Curve keypairs in your browser - private keys never leave your device."
             maxWidth="md"
+            about="Generates an RSA or Elliptic Curve (P-256/P-384/P-521) signing keypair entirely inside your browser using the WebCrypto API - nothing is uploaded, and there's intentionally no backend endpoint for this tool, since a private key that touches a server is a private key that could leak. Both keys are exported in PEM and JWK formats so you can drop them straight into common crypto libraries, JWT signing setups, or SSH/TLS tooling that expects either format."
+            howToSteps={[
+                { name: 'Choose a Key Type', text: 'Select RSA or EC (Elliptic Curve) from the Key Type dropdown.' },
+                { name: 'Pick a size or curve', text: 'For RSA, choose 2048/3072/4096 bits; for EC, choose the P-256, P-384, or P-521 curve.' },
+                { name: 'Click Generate Keypair', text: 'WebCrypto generates the keypair locally in your browser - no network request is made.' },
+                { name: 'Copy the format you need', text: 'Use the Copy button on any of the four panels (Public/Private PEM, Public/Private JWK) to grab that key in the format your application expects.' },
+                { name: 'Clear when done', text: 'Click Clear to wipe the generated keys from the page once you\'ve saved them somewhere safe.' },
+            ]}
+            faq={[
+                { question: 'Is my private key ever sent to a server?', answer: "No - generation, export, and formatting all happen in your browser's WebCrypto API. There's no backend endpoint this tool calls, so the private key never leaves your device unless you copy and paste it somewhere yourself." },
+                { question: 'Should I pick RSA or EC?', answer: 'EC (especially P-256) gives equivalent security to RSA at a much smaller key size and faster operations, and is well supported by modern TLS and SSH. RSA remains more universally compatible with older systems that lack elliptic curve support.' },
+                { question: "What's the difference between the PEM and JWK output?", answer: 'PEM is the base64-encoded, header/footer-wrapped format used by OpenSSL, TLS certificates, and most SSH/server tooling. JWK (JSON Web Key) is the format expected by JavaScript crypto libraries and JWT signing setups - generate whichever your target system expects.' },
+                { question: 'If I close the page, can I get my keys back?', answer: "No - nothing is stored anywhere, in memory or otherwise, once you navigate away. Copy both the public and private key to a secure location, like a password manager or an encrypted file, before leaving the page." },
+            ]}
         >
             <Seo title="RSA/EC Keypair Generator" toolId={25} />
 

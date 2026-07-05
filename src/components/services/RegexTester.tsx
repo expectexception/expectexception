@@ -254,6 +254,20 @@ const RegexTester: React.FC = () => {
       title="Regex Tester + Cheat Sheet"
       subtitle="Test JavaScript regular expressions against text and learn common patterns."
       maxWidth="lg"
+      about="Tests a JavaScript regular expression against a block of text and highlights every match live as you edit the pattern, text, or flags (g, i, m, s, u, y). It shows each match's position and captured groups, lets you export all matches as JSON, and includes a built-in cheat sheet covering character classes, quantifiers, anchors, groups, alternation, and lookarounds. Matching, highlighting, and JSON export all run locally using the browser's native RegExp engine; nothing is sent anywhere."
+      howToSteps={[
+        { name: 'Write your pattern', text: 'Enter a regular expression in the Pattern field (without the surrounding slashes) — it loads with an example email-matching pattern.' },
+        { name: 'Toggle flags', text: 'Switch on whichever flags you need — g (find all matches), i (case-insensitive), m (multiline), s (dotAll), u (unicode), y (sticky).' },
+        { name: 'Paste your test text', text: 'Enter or paste the text to test against in the Text field; matches are highlighted inline immediately.' },
+        { name: 'Review matches and groups', text: "Scroll the Results panel to see each match's index, matched text, and any captured groups, or check the built-in cheat sheet below for syntax reference." },
+        { name: 'Export matches', text: 'Click Copy Matches JSON to copy every match (with index, text, and groups) as a JSON array.' },
+      ]}
+      faq={[
+        { question: 'What regex flavor does this use?', answer: "Your browser's native JavaScript RegExp engine — the same one used in the browser console, Node.js, and client-side JS. It isn't identical to PCRE (PHP/Perl) or Python's re module; some syntax like recursive patterns or possessive quantifiers isn't supported." },
+        { question: 'Is there a limit on how many matches it will compute?', answer: 'Yes — it stops after 500 matches to avoid freezing the tab on a runaway pattern, and only the first 50 are displayed in the results list.' },
+        { question: 'Does my pattern or text get sent anywhere?', answer: "No, matching runs entirely client-side against the browser's built-in RegExp implementation — nothing is uploaded or logged." },
+        { question: 'What happens with zero-length matches (e.g. a pattern like x*)?', answer: "The tester detects them and manually advances past each one, so a pattern that could match an empty string won't cause the browser to hang in an infinite loop." },
+      ]}
     >
       <Seo title="Regex Tester + Cheat Sheet" toolId={24} />
 

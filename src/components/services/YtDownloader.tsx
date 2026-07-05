@@ -160,6 +160,20 @@ const YtDownloader: React.FC = () => {
             title="YouTube Downloader"
             subtitle="Download YouTube videos in various formats and qualities."
             maxWidth="md"
+            about="Fetches a video's title, thumbnail, and duration via Fetch Info, then processes the actual download as a background job on our server using yt-dlp - pick a resolution up to 4K, or an audio-only format (MP3/M4A) that gets extracted and transcoded server-side. The page polls the job's status every couple of seconds until it's ready, then gives you a direct file to save. Private, age-restricted, and sign-in-required videos aren't supported and will fail with an error, since the tool doesn't authenticate as a YouTube user - only download videos you have the rights to save."
+            howToSteps={[
+                { name: 'Paste the YouTube URL', text: 'Enter a youtube.com or youtu.be video link into the YouTube URL field.' },
+                { name: 'Click Fetch Info', text: "The tool validates the link and pulls the video's title, thumbnail, and duration before you commit to a download." },
+                { name: 'Pick Quality and Format', text: 'Choose a resolution from 360p up to 2160p (4K), and a format - MP4/WebM keep video, MP3/M4A extract audio only.' },
+                { name: 'Click Start Download', text: 'The server processes the request in the background; the status banner updates automatically until it finishes.' },
+                { name: 'Click Download File', text: 'Once processing completes, click the button that appears to save the file to your device.' },
+            ]}
+            faq={[
+                { question: 'Why does Start Download take a while instead of downloading instantly?', answer: 'The video is fetched and, for MP3/M4A, transcoded on our server first. That runs as a background job so the page can poll for status instead of holding a request open the whole time.' },
+                { question: "Why did my download fail with 'requires age verification' or 'private video'?", answer: "Age-restricted videos that require a signed-in YouTube account, and private or unlisted videos, aren't accessible to the downloader since it doesn't log in as a YouTube user - only publicly viewable videos will work." },
+                { question: "What's the difference between the MP4/WebM and MP3/M4A options?", answer: 'MP4 and WebM keep the video track at your chosen resolution. MP3 and M4A discard the video and extract just the audio, re-encoded server-side.' },
+                { question: 'Am I allowed to download any YouTube video?', answer: "Only download videos you own or otherwise have the right to save. Most content on YouTube is copyrighted, and downloading it may violate YouTube's Terms of Service or the creator's rights depending on how you use the file afterward - this tool doesn't grant any rights beyond what you already have." },
+            ]}
         >
             <Seo
                 title="YouTube Video Downloader - Free 4K Video & MP3 Converter"

@@ -61,6 +61,19 @@ const MarkdownTableGenerator: React.FC = () => {
             title="Markdown Table Generator"
             subtitle="Edit a grid and get valid GitHub-flavored markdown table syntax instantly — no manual pipes or dashes."
             maxWidth="md"
+            about="Build a Markdown table visually instead of hand-typing pipe (|) characters and header-divider dashes. Click into any header or cell to edit it directly, use the Column/Row buttons to resize the grid, and the tool continuously regenerates valid GitHub-Flavored Markdown table syntax — including escaping any literal | characters you type — in the output box below. Everything runs client-side as plain string building; nothing is sent to a server."
+            howToSteps={[
+                { name: 'Set up your grid', text: 'Use the Column and Row buttons (with + and − icons) to grow or shrink the table — it starts at a 3×3 grid.' },
+                { name: 'Edit the headers', text: 'Click directly on any Header 1, Header 2… cell at the top of the grid and type to rename it.' },
+                { name: 'Fill in cell values', text: 'Click any cell in the body of the table and type its content — each cell is edited in place.' },
+                { name: 'Copy the generated Markdown', text: 'The box below the grid updates live with the equivalent pipe-delimited Markdown table syntax; click Copy Markdown to copy it to your clipboard.' },
+            ]}
+            faq={[
+                { question: 'Do I need to type pipe characters or divider dashes myself?', answer: 'No — the tool generates the header row, the --- divider row, and every data row automatically from whatever you type into the grid cells.' },
+                { question: 'What happens if my cell text contains a | character?', answer: "It's automatically escaped as \\| in the generated Markdown so it doesn't break the table structure." },
+                { question: 'What if I leave a cell empty?', answer: 'Empty cells are rendered as a single space in the output so the pipe structure stays valid Markdown.' },
+                { question: 'Is the output GitHub-compatible?', answer: 'Yes — the output is standard GitHub-Flavored Markdown table syntax, so it renders correctly in GitHub READMEs, issues, PRs, and any other GFM-compatible renderer.' },
+            ]}
         >
             <Seo title="Markdown Table Generator - Free Online Tool" />
 

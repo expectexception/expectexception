@@ -37,6 +37,18 @@ const CaseConverter: React.FC = () => {
             title="Case Converter"
             subtitle="Convert text between camelCase, snake_case, kebab-case, Title Case, and more - entirely in your browser."
             maxWidth="md"
+            about="Paste or type text once and see it instantly transformed into eight naming conventions at the same time — UPPERCASE, lowercase, Title Case, Sentence case, camelCase, PascalCase, snake_case, and kebab-case — instead of running the same string through a converter eight separate times. Word boundaries for the programming-style cases are detected from spaces, hyphens, underscores, and the lowercase-to-uppercase 'hump' inside an existing identifier, so pasting something like myVariableName or my-variable-name still splits into the correct words before recasing. Everything runs locally using plain JavaScript string methods — nothing is uploaded."
+            howToSteps={[
+                { name: 'Enter your text', text: 'Type or paste text into the box at the top of the tool.' },
+                { name: 'Review all 8 conversions', text: 'Every casing style — UPPERCASE, camelCase, snake_case, and the rest — updates instantly below as you type.' },
+                { name: 'Copy the one you need', text: 'Click "Copy" under the specific case format you want to use.' },
+            ]}
+            faq={[
+                { question: 'How does it decide where one word ends and the next begins?', answer: 'It splits on spaces, hyphens (-), and underscores (_), and also on the boundary between a lowercase letter and the uppercase letter that follows it — so "myVariableName" and "my-variable-name" both resolve to the same set of words before being recased.' },
+                { question: 'Does it change punctuation or numbers inside words?', answer: 'No — punctuation and digits are preserved as-is; only the casing convention and word separators change.' },
+                { question: 'Is my text uploaded anywhere?', answer: "No, all conversions run entirely in your browser using JavaScript's built-in string methods; nothing is sent to a server." },
+                { question: "What's the difference between Title Case and Sentence case?", answer: 'Title Case capitalizes the first letter of every word. Sentence case only capitalizes the very first letter of the text and the first letter after sentence-ending punctuation (., !, ?), lowercasing everything else.' },
+            ]}
         >
             <Seo title="Case Converter - camelCase, snake_case, Title Case & More" toolId={35} />
 

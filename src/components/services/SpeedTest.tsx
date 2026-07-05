@@ -27,6 +27,7 @@ import {
 } from 'recharts';
 import Seo from '../seo/Seo';
 import ServicePageShell from './ServicePageShell';
+import ToolInfoSection from './ToolInfoSection';
 
 // @ts-ignore
 import ndt7 from '@m-lab/ndt7';
@@ -334,7 +335,23 @@ const SpeedTest: React.FC = () => {
         );
     };
 
+    const speedTestHowToSteps = [
+        { name: 'Click GO', text: 'Press the GO button in the center of the radar gauge to start the test.' },
+        { name: 'Watch the download phase', text: 'The gauge and live throughput graph track your download speed in Mbps as data streams in from the nearest M-Lab server.' },
+        { name: 'Watch the upload phase', text: 'Once download finishes, the test automatically switches to measuring upload throughput the same way.' },
+        { name: 'Read your results', text: 'Latency, Download Rate, and Upload Rate are shown in the right-hand panel once the test completes.' },
+        { name: 'Restart anytime', text: 'Click Restart Diagnostics to run the test again - useful for comparing results at different times of day.' },
+    ];
+
+    const speedTestFaq = [
+        { question: 'Why do results vary between runs?', answer: "Throughput depends on real network conditions at that moment - congestion on your local Wi-Fi, your ISP's peak-hour load, and which M-Lab server you're routed to can all shift the number. Running it a few times at different times of day gives a more representative picture than a single result." },
+        { question: "Does this test my connection to your website's server?", answer: "No - it measures your connection to M-Lab's public measurement infrastructure, not to us. That keeps the result comparable to other NDT7-based speed tests and independent of anything happening on our servers." },
+        { question: 'Why is upload usually slower than download?', answer: 'Most home internet plans, especially cable and DSL, are provisioned asymmetrically with far more downstream bandwidth than upstream, since typical browsing is download-heavy. That is a plan/ISP characteristic, not something this tool controls.' },
+        { question: "What counts as 'latency' here?", answer: 'The minimum round-trip time (RTT) observed between your browser and the M-Lab server during the download measurement, reported in milliseconds - lower is better, and it matters more than raw throughput for responsiveness in calls, gaming, etc.' },
+    ];
+
     return (
+        <>
         <Box sx={{
             minHeight: '90vh',
             bgcolor: '#050507',
@@ -343,7 +360,12 @@ const SpeedTest: React.FC = () => {
             position: 'relative',
             overflow: 'hidden'
         }}>
-            <Seo title="High-Speed Internet Diagnostics" description="Test your connection latency, download, and upload speeds with our premium cybernetic telemetry suite." />
+            <Seo
+                title="High-Speed Internet Diagnostics"
+                description="Test your connection latency, download, and upload speeds with our premium cybernetic telemetry suite."
+                howToSteps={speedTestHowToSteps}
+                faq={speedTestFaq}
+            />
 
             {/* Futuristic Tech Background grids */}
             <Box sx={{
@@ -638,6 +660,13 @@ const SpeedTest: React.FC = () => {
                 {error && <Alert severity="error" variant="filled" sx={{ mt: 4, borderRadius: '12px' }}>{error}</Alert>}
             </Container>
         </Box>
+        <ToolInfoSection
+            maxWidth="lg"
+            about="Measures your real download and upload throughput and round-trip latency using NDT7 (Network Diagnostic Tool version 7), the same open measurement protocol used by M-Lab - a nonprofit internet-measurement platform backed by Google and the Internet Society. The test runs entirely in your browser via WebSocket, streaming data to whichever M-Lab server is geographically closest to you rather than to our own servers, so results reflect your actual path to the public internet instead of a synthetic local benchmark. Latency is derived from TCP round-trip measurements taken during the download phase."
+            howToSteps={speedTestHowToSteps}
+            faq={speedTestFaq}
+        />
+        </>
     );
 };
 

@@ -67,6 +67,19 @@ const ImageConverter: React.FC = () => {
             title="Image Format Converter"
             subtitle="Convert images between PNG, JPG, WebP, GIF, and more"
             maxWidth="md"
+            about="Image Format Converter re-encodes an uploaded image into a different file format — PNG, JPG, WebP, GIF, BMP, TIFF, or ICO — using Pillow on the server, not in your browser. Converting to JPG (which has no alpha channel) automatically flattens any transparency onto a white background first, and every output is saved at quality 95 for near-lossless results. It's useful when a site or tool needs a specific format your image isn't already in — for example ICO for a favicon, or WebP for a smaller web asset."
+            howToSteps={[
+                { name: 'Upload an image', text: 'Click the upload box and choose an image file from your device.' },
+                { name: 'Pick the output format', text: 'Open the Output Format dropdown and select PNG, JPG, WebP, GIF, BMP, TIFF, or ICO.' },
+                { name: 'Convert', text: 'Click Convert to <format> to send the image to the server for re-encoding.' },
+                { name: 'Download', text: 'Use the Download button in the success message to save the converted file.' },
+            ]}
+            faq={[
+                { question: 'Which formats can I convert to?', answer: 'PNG, JPG, WebP, GIF, BMP, TIFF, and ICO are all supported as output formats; you can upload pretty much any common image format as the source.' },
+                { question: 'What happens to transparency when converting to JPG?', answer: "JPG doesn't support an alpha channel, so any transparent areas are filled with a white background before the image is saved." },
+                { question: 'Does conversion reduce image quality?', answer: 'Output is saved at quality 95, which is close to lossless for JPG/WebP; PNG, BMP, and TIFF outputs are effectively unaffected since those formats are lossless anyway.' },
+                { question: 'Are uploaded images stored?', answer: "Your image is sent to our server to be re-encoded, and the converted file is kept temporarily so you can download it — it isn't used for anything beyond generating that download." },
+            ]}
         >
             <Seo title="Online Image Converter - JPG, PNG, WebP, SVG, GIF" toolId={19} />
 

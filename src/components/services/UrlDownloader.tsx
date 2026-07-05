@@ -171,6 +171,19 @@ const UrlDownloader: React.FC = () => {
             title="URL Downloader"
             subtitle="Inspect and download files directly from any public URL."
             maxWidth="sm"
+            about="Looks up a file's type, size, and filename with a lightweight HEAD request when you click Inspect URL, then streams the file through our server to your browser when you click Download File - so your browser never connects to the origin server directly. That's useful for links that block hotlinking, force an unhelpful filename, or serve headers your browser mishandles, and it lets you confirm what you're about to download before committing to it."
+            howToSteps={[
+                { name: 'Paste the file URL', text: 'Enter the direct link to the file into the File URL field.' },
+                { name: 'Click Inspect URL', text: "The tool checks the file's type, size, and filename without downloading it yet." },
+                { name: 'Review the File Details card', text: 'Confirm the name, content type, and size before deciding whether to proceed.' },
+                { name: 'Click Download File', text: 'The server streams the file to your browser and a save dialog opens; use Reset to start over with a different URL.' },
+            ]}
+            faq={[
+                { question: 'Why inspect before downloading?', answer: "Inspecting shows the file's declared type and size before you spend time and bandwidth downloading it - handy for catching a mislabeled file or one that's much larger than expected." },
+                { question: 'Why does the download come from this site instead of the original URL?', answer: 'The file is proxied through our server rather than linked directly, since some origin servers block direct or hotlinked downloads, require a referer a plain link won\'t send, or serve a broken filename - streaming it server-side sidesteps all of that.' },
+                { question: 'Is there a file size limit?', answer: "There's no hard cap enforced by the tool itself, but very large files simply take longer since they're streamed in full through the server rather than redirected straight to the origin." },
+                { question: 'Can I download private or login-protected files?', answer: "Only URLs that are publicly reachable without signing in - the tool can't pass along cookies, tokens, or credentials from your browser session, so anything requiring authentication on the origin site will fail." },
+            ]}
         >
             <Seo
                 title="Universal URL Downloader - Fast & Secure File Saving"

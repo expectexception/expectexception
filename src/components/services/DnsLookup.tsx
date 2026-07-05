@@ -88,6 +88,19 @@ const DnsLookup: React.FC = () => {
             title="DNS Lookup + Propagation Check"
             subtitle="Check A/AAAA/CNAME/MX/TXT records across multiple resolvers to debug DNS issues."
             maxWidth="lg"
+            about="Queries three independent public DNS resolvers - Cloudflare (1.1.1.1), Google (8.8.8.8), and Quad9 (9.9.9.9) - directly from our server and returns the A, AAAA, CNAME, MX, and TXT records each one reports. Because the lookup runs server-side instead of through your ISP's resolver, you can tell whether a DNS change has actually propagated or whether some resolvers are still serving a cached record. It also automatically flags a few common misconfigurations: a domain with no A/AAAA record, a CNAME pointing at nothing, or a missing MX record that would cause email delivery to fail."
+            howToSteps={[
+                { name: 'Enter a domain', text: 'Type a domain name or full URL into the Domain or URL field - the tool strips the scheme and path automatically, e.g. example.com.' },
+                { name: 'Click Lookup', text: 'Press Lookup to query Cloudflare, Google, and Quad9 in parallel and pull back their current records.' },
+                { name: 'Check the diagnosis banner', text: 'If any resolver is missing an A/AAAA record, has an orphaned CNAME, or has no MX record, a summary chip appears above the results.' },
+                { name: 'Expand each resolver', text: "Each resolver's panel breaks its A, AAAA, CNAME, MX, and TXT answers out separately so you can compare them side by side." },
+            ]}
+            faq={[
+                { question: 'Why do results differ between resolvers?', answer: "DNS changes don't reach every resolver at once - caching (TTL) means one resolver might still serve an old record while another has already picked up the new one. Comparing Cloudflare, Google, and Quad9 side by side is a quick way to see if propagation is still in progress." },
+                { question: 'What does a missing MX record mean?', answer: "No MX record means there's no mail server configured to receive email for that domain - mail sent to it will bounce. This is unrelated to A/AAAA records, which only route web traffic." },
+                { question: 'Why would a CNAME show up but no A record?', answer: "A CNAME points a name at another hostname (an alias), but that target still needs to resolve to an A/AAAA record somewhere down the chain. If it doesn't, browsers have no IP address to connect to." },
+                { question: 'Does this use my own DNS resolver?', answer: "No - the lookup runs from our server against three fixed public resolvers, not whatever resolver your ISP or device uses, so the result reflects public internet visibility rather than your local cache." },
+            ]}
         >
             <Seo
                 title="DNS Lookup + Propagation Check"

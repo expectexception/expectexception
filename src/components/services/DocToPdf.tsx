@@ -61,6 +61,20 @@ const DocToPdf: React.FC = () => {
             icon={PictureAsPdf}
             title="Word to PDF Converter"
             subtitle="Convert DOC, DOCX, ODT, RTF files to PDF"
+            about="Converts Word-family documents — DOC, DOCX, ODT, RTF, and plain TXT — into PDF. Conversion happens on our server: the file you drop or select is uploaded, converted, and you get back a link to download the resulting PDF. Useful when you need a document to render identically everywhere (email attachments, printing, archiving) instead of relying on the recipient having the same word processor and fonts installed."
+            howToSteps={[
+                { name: 'Add your document', text: 'Drag a DOC, DOCX, ODT, RTF, or TXT file onto the upload area, or click it to browse and select one.' },
+                { name: 'Check the file details', text: 'Confirm the filename and size shown match the document you intended to convert.' },
+                { name: 'Start the conversion', text: 'Click Convert to PDF to upload the file and start the conversion.' },
+                { name: 'Wait for processing', text: 'A progress bar shows while the file uploads and converts on the server.' },
+                { name: 'Download the result', text: 'Once you see the success message, click Download to save the converted PDF.' },
+            ]}
+            faq={[
+                { question: 'What file formats are supported?', answer: 'DOC, DOCX, ODT, RTF, and TXT can all be uploaded and converted to PDF.' },
+                { question: 'What is the maximum file size?', answer: 'The upload dialog is set up for files up to about 50MB; larger files may be rejected.' },
+                { question: 'Is my document stored after conversion?', answer: "The file is uploaded to our server to perform the conversion and produce a downloadable PDF; it isn't intended for long-term storage, so download your result promptly." },
+                { question: 'Will formatting, images, and fonts be preserved?', answer: 'The converter aims to preserve layout, images, and text formatting from the source document, though very complex layouts — unusual fonts or embedded objects — can occasionally shift slightly in the PDF output.' },
+            ]}
         >
             <Seo
                 title="Convert Word to PDF Online - Fast & Free"
