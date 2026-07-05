@@ -5,7 +5,7 @@ from django.utils.html import format_html
 from django.conf import settings
 from unfold.admin import ModelAdmin
 from unfold.decorators import display
-from .models import Service, DownloadableResource, UserActivity, DownloadHistory, FavoriteTool, LogAnalysis, ServerHealth, ToolUsage, UptimeMonitor
+from .models import Service, DownloadableResource, UserActivity, DownloadHistory, FavoriteTool, LogAnalysis, ServerHealth, ToolUsage, UptimeMonitor, SeoKeywordOverride
 from .log_analyzer import get_log_analysis
 
 @admin.register(Service)
@@ -163,3 +163,10 @@ class UptimeMonitorAdmin(admin.ModelAdmin):
     list_filter = ('monitor_type', 'status', 'last_status', 'created_at')
     search_fields = ('name', 'target', 'user__email', 'user__username')
     readonly_fields = ('heartbeat_id', 'created_at', 'last_run_at', 'last_status', 'last_latency_ms', 'logs')
+
+
+@admin.register(SeoKeywordOverride)
+class SeoKeywordOverrideAdmin(ModelAdmin):
+    list_display = ('route', 'title', 'updated_at')
+    search_fields = ('route', 'title', 'description')
+    readonly_fields = ('updated_at',)

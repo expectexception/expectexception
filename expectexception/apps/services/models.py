@@ -339,3 +339,33 @@ class UptimeMonitor(models.Model):
             'status': check_status,
         }
         self.logs = ([entry] + (self.logs or []))[:max_entries]
+
+
+class SeoKeywordOverride(models.Model):
+    """Admin-editable SEO override for a single route. Every tool/game page's
+    title/description/keywords are otherwise hardcoded in the frontend
+    (tools.json, games.json, per-component Seo props) — this lets an admin
+    tune them without a code change + redeploy, for chasing trending search
+    terms. Consumed two ways: at runtime by the frontend Seo component, and
+    at build time by generate-static-seo.js (same pattern already used
+    there for fetching blog posts) so crawlers see the same override baked
+    into the static HTML, not just the client-side-rendered one."""
+    route = models.CharField(
+        max_length=200,
+        unique=True,
+        help_text="Route path, e.g. /services/hash-generator",
+    )
+    keywords = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of keyword strings, e.g. [\"free hash generator\", \"sha256 online\"]",
+    )
+    title = models.CharField(max_length=200, blank=True, help_text="Leave blank to keep the page's default title")
+    description = models.TextField(blank=True, help_text="Leave blank to keep the page's default description")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['route']
+
+    def __str__(self):
+        return self.route
