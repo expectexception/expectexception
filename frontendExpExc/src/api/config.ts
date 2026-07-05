@@ -2,11 +2,19 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 
 const isReactSnap = () => typeof navigator !== 'undefined' && navigator.userAgent === 'ReactSnap';
 
+// Every call site builds URLs as `${BASE_URL}/api/...` - if the env var a
+// host sets happens to include a trailing slash (an easy Vercel/Render
+// dashboard typo), that becomes a literal double slash (`..com//api/...`),
+// which several backends/proxies 404 on instead of normalizing. Strip it
+// once here so no base URL constant can ever carry a trailing slash,
+// regardless of how the env var was entered.
+const stripTrailingSlash = (url: string): string => url.replace(/\/+$/, '');
+
 // API_BASE_URL: basic CRUD/auth/blog/community → Render HA backend
 // HEAVY_API_BASE_URL: chatbot/AI/video → local GPU server via Cloudflare tunnel
 const getBaseUrl = (): string => {
     if (process.env.REACT_APP_API_BASE_URL) {
-        return process.env.REACT_APP_API_BASE_URL;
+        return stripTrailingSlash(process.env.REACT_APP_API_BASE_URL);
     }
     // Dev fallback
     if (typeof window !== 'undefined' &&
@@ -24,7 +32,7 @@ const getBaseUrl = (): string => {
 
 const getHeavyBaseUrl = (): string => {
     if (process.env.REACT_APP_HEAVY_API_BASE_URL) {
-        return process.env.REACT_APP_HEAVY_API_BASE_URL;
+        return stripTrailingSlash(process.env.REACT_APP_HEAVY_API_BASE_URL);
     }
     // Heavy services fall back to the same base URL if no dedicated GPU server is configured.
     return getBaseUrl();
@@ -39,7 +47,9 @@ const WS_BASE_URL = API_BASE_URL.replace('http', 'ws');
 // endpoints (auth/blog/community/contact) too if Render is unreachable.
 // Optional — if unset, failover is simply disabled (requests just fail
 // normally, same as before this existed).
-const FALLBACK_BASE_URL = process.env.REACT_APP_LOCAL_FALLBACK_BASE_URL || '';
+const FALLBACK_BASE_URL = process.env.REACT_APP_LOCAL_FALLBACK_BASE_URL
+    ? stripTrailingSlash(process.env.REACT_APP_LOCAL_FALLBACK_BASE_URL)
+    : '';
 
 // Simple circuit breaker: once we've confirmed Render is down, stop paying
 // the round-trip cost of trying it on every request for a cooldown window —
