@@ -25,8 +25,16 @@ def get_mongodb_client():
         return None
 
     try:
-        # Use a 3-second timeout for selection to fail quickly in server start/requests
-        _mongo_client = MongoClient(uri, serverSelectionTimeoutMS=3000)
+        # 10s timeout: 3s was tried first but proved too aggressive on this
+        # network path — replica-set member discovery against Atlas
+        # genuinely took longer than that here, so every connection
+        # attempt was hitting the timeout and silently failing (confirmed
+        # live: same URI succeeds at 15s, fails at 3s). Every caller of
+        # mirror_to_mongo()/find_in_mongo() already treats a failed
+        # connection as "mirror unavailable" and swallows it, so this was
+        # failing quietly rather than loudly — the entire cross-instance
+        # mirror had likely been a no-op on this server this whole time.
+        _mongo_client = MongoClient(uri, serverSelectionTimeoutMS=10000)
         # Force a connection check by pinging the admin database
         _mongo_client.admin.command('ping')
         logger.info("Successfully connected to MongoDB Atlas!")
