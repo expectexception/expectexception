@@ -69,6 +69,14 @@ const ServicePageShell: React.FC<ServicePageShellProps> = ({
                     gap: { xs: 2, sm: 2.5 },
                     maxHeight: viewportHeight,
                     width: '100%',
+                    // maxHeight alone doesn't clip: with the default
+                    // `overflow: visible`, content taller than this box
+                    // doesn't scroll or get contained — it paints straight
+                    // through the box's bottom edge and into whatever's
+                    // next in the DOM (the site Footer), rendering as
+                    // "content hidden behind the footer" on any tool page
+                    // whose output doesn't fit in one mobile screen.
+                    overflowY: 'auto',
                 }}
             >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
