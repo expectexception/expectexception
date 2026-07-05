@@ -6,6 +6,7 @@ import { User } from '../types';
 
 interface AuthContextType {
     isAuthenticated: boolean;
+    isInitializing: boolean;
     user: User | null;
     token: string | null;
     login: (access: string, refresh: string) => void;
@@ -18,6 +19,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    // Starts true so route guards can tell "we haven't checked localStorage
+    // yet" apart from "we checked and there's no token" — without this,
+    // isAuthenticated's default of false looks identical to a confirmed
+    // logged-out state during the one tick before checkAuth()'s effect
+    // resolves, and a guard checking it immediately (e.g. AdminGuard) redirects
+    // an actually-logged-in user to /login on every hard refresh, which then
+    // never self-corrects since the redirect already navigated away.
+    const [isInitializing, setIsInitializing] = useState(true);
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
 
@@ -43,6 +52,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setToken(null);
             setUser(null);
         }
+        setIsInitializing(false);
     };
 
     const login = async (access: string, refresh: string) => {
@@ -85,7 +95,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, token, login, loginWithGoogle, logout, checkAuth }}>
+        <AuthContext.Provider value={{ isAuthenticated, isInitializing, user, token, login, loginWithGoogle, logout, checkAuth }}>
             {children}
         </AuthContext.Provider>
     );

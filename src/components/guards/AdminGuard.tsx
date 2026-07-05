@@ -13,10 +13,14 @@ interface AdminGuardProps {
  * Shows loading state while checking auth, redirects to home if not authorized.
  */
 const AdminGuard: React.FC<AdminGuardProps> = ({ children }) => {
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, isInitializing, user } = useAuth();
 
-    // Still loading auth state
-    if (isAuthenticated && !user) {
+    // Still loading auth state — checked before isAuthenticated itself,
+    // since isAuthenticated defaults to false until the initial localStorage
+    // check resolves. Checking isAuthenticated first would redirect an
+    // actually-logged-in user to /login on every hard refresh, before
+    // checkAuth() ever got a chance to run.
+    if (isInitializing || (isAuthenticated && !user)) {
         return (
             <Box
                 sx={{
