@@ -159,11 +159,18 @@ const ServicesPage: React.FC = () => {
           return withoutApi.endsWith('/') ? withoutApi.slice(0, -1) : withoutApi;
         };
 
+        // The backend `Service` table is an admin-managed override for a handful of
+        // tools (visibility toggle, requires_login) - it is NOT a full mirror of the
+        // static tools.json catalog, so it must never be treated as an allow-list.
+        // A tool with no matching backend row is on by default; only a row that
+        // explicitly sets is_active=false hides it.
         const backendList: any[] = (servicesRes.data?.results ?? servicesRes.data) || [];
-        const activePaths = new Set(backendList.map((s: any) => normalizePath(s.path)));
+        const disabledPaths = new Set(
+          backendList.filter((s: any) => s.is_active === false).map((s: any) => normalizePath(s.path))
+        );
 
         let finalServices = [...staticServices]
-          .filter(s => activePaths.size === 0 || activePaths.has(normalizePath(s.path)))
+          .filter(s => !disabledPaths.has(normalizePath(s.path)))
           .sort((a, b) => b.popularity - a.popularity);
 
         setServices(finalServices);

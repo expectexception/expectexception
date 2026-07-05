@@ -1220,6 +1220,157 @@ export const getMonitorTypeSvgIcon = (monitorType: string): React.ReactElement =
   }
 };
 
+export const BarcodeToolSvg: React.FC = () => {
+  const theme = useTheme();
+  const bars = [3, 1, 2, 1, 3, 2, 1, 2, 3, 1, 2, 1];
+  let x = 12;
+  return (
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      {bars.map((w, i) => {
+        const barX = x;
+        x += w * 2 + 1.5;
+        return (
+          <motion.rect
+            key={i}
+            x={barX} y="18" width={w * 1.6} height="24"
+            fill={i % 3 === 0 ? theme.palette.primary.main : 'currentColor'}
+            opacity={i % 3 === 0 ? 1 : 0.55}
+            initial={{ scaleY: 0.3 }}
+            animate={{ scaleY: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.06, ease: 'easeInOut' }}
+            style={{ originY: '30px' }}
+          />
+        );
+      })}
+    </svg>
+  );
+};
+
+export const GridToolSvg: React.FC = () => {
+  const theme = useTheme();
+  const cells = [0, 1, 2, 3, 4, 5];
+  return (
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <rect x="11" y="14" width="38" height="32" rx="3" stroke="currentColor" strokeWidth="2" opacity="0.35" />
+      <line x1="11" y1="30" x2="49" y2="30" stroke="currentColor" strokeWidth="1.5" opacity="0.35" />
+      <line x1="30.3" y1="14" x2="30.3" y2="46" stroke="currentColor" strokeWidth="1.5" opacity="0.35" />
+      {cells.map((i) => {
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        const cw = 38 / 3;
+        const ch = 32 / 2;
+        return (
+          <motion.rect
+            key={i}
+            x={11 + col * cw + 2} y={14 + row * ch + 2}
+            width={cw - 4} height={ch - 4}
+            rx="1.5"
+            fill={theme.palette.primary.main}
+            initial={{ opacity: 0.08 }}
+            animate={{ opacity: [0.08, 0.4, 0.08] }}
+            transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.25, ease: 'easeInOut' }}
+          />
+        );
+      })}
+    </svg>
+  );
+};
+
+export const MetaTagToolSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <path d="M14 22L14 38C14 40 15 41 17 41L33 41" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+      <path d="M14 22C14 19 16 18 18 18L40 18C42 18 44 19 45 21L48 27C49 29 49 31 48 33L45 39C44 41 42 42 40 42L33 42" fill="none" stroke={theme.palette.primary.main} strokeWidth="2.5" strokeLinejoin="round" />
+      <motion.circle
+        cx="22" cy="30" r="2.4"
+        fill={theme.palette.primary.main}
+        animate={{ opacity: [1, 0.3, 1] }}
+        transition={{ duration: 1.6, repeat: Infinity }}
+      />
+      <motion.path
+        d="M29 30L44 30"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity="0.5"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 0.6 }}
+      />
+    </svg>
+  );
+};
+
+export const JsonDiffToolSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <path d="M20 14C16 14 14 16 14 20L14 26C14 28 13 29 11 30C13 31 14 32 14 34L14 40C14 44 16 46 20 46" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity="0.7" />
+      <path d="M40 14C44 14 46 16 46 20L46 26C46 28 47 29 49 30C47 31 46 32 46 34L46 40C46 44 44 46 40 46" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity="0.7" />
+      <motion.g
+        animate={{ opacity: [1, 0.3, 1] }}
+        transition={{ duration: 1.6, repeat: Infinity }}
+      >
+        <path d="M25 24L30 30L25 36" stroke={theme.palette.error.main} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path d="M35 24L30 30L35 36" stroke={theme.palette.success.main} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      </motion.g>
+    </svg>
+  );
+};
+
+export const AgeCalendarToolSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <rect x="14" y="16" width="32" height="28" rx="3" stroke="currentColor" strokeWidth="2" opacity="0.5" />
+      <line x1="14" y1="24" x2="46" y2="24" stroke="currentColor" strokeWidth="2" opacity="0.5" />
+      <line x1="21" y1="12" x2="21" y2="20" stroke={theme.palette.primary.main} strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="39" y1="12" x2="39" y2="20" stroke={theme.palette.primary.main} strokeWidth="2.5" strokeLinecap="round" />
+      {[0, 1, 2].map((row) => (
+        [0, 1, 2].map((col) => {
+          const idx = row * 3 + col;
+          return (
+            <motion.rect
+              key={idx}
+              x={19 + col * 8} y={29 + row * 5.5}
+              width="5" height="3.5" rx="1"
+              fill={idx === 5 ? theme.palette.primary.main : 'currentColor'}
+              opacity={idx === 5 ? 1 : 0.25}
+              animate={idx === 5 ? { scale: [1, 1.25, 1] } : {}}
+              transition={idx === 5 ? { duration: 1.4, repeat: Infinity } : {}}
+            />
+          );
+        })
+      ))}
+    </svg>
+  );
+};
+
+export const ColorPickerToolSvg: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <path d="M20 40L36 24L40 28L24 44L18 46L20 40Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill="none" opacity="0.7" />
+      <path d="M36 24L41 19C43 17 46 17 48 19C50 21 50 24 48 26L43 31" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill="none" opacity="0.7" />
+      <motion.circle
+        cx="16" cy="17" r="6"
+        fill={theme.palette.primary.main}
+        animate={{ scale: [1, 1.15, 1] }}
+        transition={{ duration: 1.8, repeat: Infinity }}
+      />
+      <motion.circle
+        cx="16" cy="17" r="9"
+        stroke={theme.palette.primary.main}
+        strokeWidth="1.4"
+        fill="none"
+        animate={{ opacity: [0.6, 0, 0.6], scale: [1, 1.4, 1] }}
+        transition={{ duration: 1.8, repeat: Infinity }}
+      />
+    </svg>
+  );
+};
+
 export const getServiceSvgIcon = (iconName: string): React.ReactElement => {
   switch (iconName) {
     case 'Download': return <DownloadToolSvg />;
@@ -1247,6 +1398,12 @@ export const getServiceSvgIcon = (iconName: string): React.ReactElement => {
     case 'Speed': return <SpeedGaugeSvg />;
     case 'NetworkCheck': return <SignalBarsSvg />;
     case 'RocketLaunch': return <RocketToolSvg />;
+    case 'ViewWeek': return <BarcodeToolSvg />;
+    case 'GridView': return <GridToolSvg />;
+    case 'Web': return <MetaTagToolSvg />;
+    case 'AccountTree': return <JsonDiffToolSvg />;
+    case 'Cake': return <AgeCalendarToolSvg />;
+    case 'Colorize': return <ColorPickerToolSvg />;
     default: return <CodeToolSvg />;
   }
 };
