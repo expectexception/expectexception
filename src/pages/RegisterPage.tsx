@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-    Container,
     Box,
     Typography,
     TextField,
@@ -13,16 +12,40 @@ import {
     InputAdornment,
     IconButton,
     Divider,
+    LinearProgress,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { Visibility, VisibilityOff, AppRegistration, Person, Email } from '@mui/icons-material';
+import { Visibility, VisibilityOff, AppRegistration, Person, Email, CheckCircle, Cancel } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme, alpha } from '@mui/material/styles';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from '../components/auth/GoogleSignInButton';
+import AuthShell from '../components/auth/AuthShell';
 import Seo from '../components/seo/Seo';
+
+/** Lightweight heuristic strength score (0-4) - length + character variety.
+ * The backend currently has no AUTH_PASSWORD_VALIDATORS configured, so this
+ * client-side guidance is the only feedback a new user gets before submit. */
+function scorePassword(password: string): number {
+    if (!password) return 0;
+    let score = 0;
+    if (password.length >= 8) score += 1;
+    if (password.length >= 12) score += 1;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^a-zA-Z0-9]/.test(password)) score += 1;
+    return Math.min(score, 4);
+}
+
+const STRENGTH_META = [
+    { label: 'Very weak', color: '#ef4444' },
+    { label: 'Weak', color: '#f97316' },
+    { label: 'Fair', color: '#eab308' },
+    { label: 'Good', color: '#84cc16' },
+    { label: 'Strong', color: '#22c55e' },
+];
 
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
@@ -37,11 +60,17 @@ const RegisterPage: React.FC = () => {
         confirmPassword: '',
     });
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [googleLoading, setGoogleLoading] = useState(false);
 
     const { loginWithGoogle } = useAuth();
+
+    const strength = useMemo(() => scorePassword(formData.password), [formData.password]);
+    const strengthMeta = STRENGTH_META[strength];
+    const passwordsMatch = formData.confirmPassword.length > 0 && formData.password === formData.confirmPassword;
+    const passwordsMismatch = formData.confirmPassword.length > 0 && formData.password !== formData.confirmPassword;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -70,9 +99,15 @@ const RegisterPage: React.FC = () => {
             navigate('/login', { state: { message: 'Registration successful! Please sign in.' } });
         } catch (err: any) {
             console.error('Registration error:', err);
-            setError(
-                err.response?.data ? JSON.stringify(err.response.data) : 'Registration failed. Please try again.'
-            );
+            const data = err.response?.data;
+            if (data && typeof data === 'object') {
+                // DRF field errors come back as {field: [messages]} - flatten
+                // into one readable sentence instead of a raw JSON dump.
+                const messages = Object.values(data).flat().filter((v): v is string => typeof v === 'string');
+                setError(messages.length > 0 ? messages.join(' ') : 'Registration failed. Please try again.');
+            } else {
+                setError('Registration failed. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
@@ -96,23 +131,14 @@ const RegisterPage: React.FC = () => {
     };
 
     return (
-        <Container component="main" maxWidth="sm">
+        <>
             <Seo title="Create Account" description="Create a free ExpectException account to unlock personalized features, save bookmarks, and track your tool usage history." noIndex />
-            <Box
-                sx={{
-                    marginTop: 8,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    minHeight: '80vh',
-                    justifyContent: 'center',
-                }}
-            >
+            <AuthShell>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', maxWidth: 440 }}
                 >
                     <Box sx={{ mb: 4, textAlign: 'center' }}>
                         <Box sx={{
@@ -241,26 +267,69 @@ const RegisterPage: React.FC = () => {
                                                 <IconButton
                                                     onClick={() => setShowPassword(!showPassword)}
                                                     edge="end"
+                                                    size="small"
+                                                    tabIndex={-1}
+                                                    sx={{ color: 'text.secondary' }}
                                                 >
-                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                    {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                                                 </IconButton>
                                             </InputAdornment>
                                         ),
                                     }}
-                                    sx={{ mb: 2 }}
+                                    sx={{ mb: formData.password ? 0.75 : 2 }}
                                 />
+                                {formData.password && (
+                                    <Box sx={{ mb: 2 }}>
+                                        <LinearProgress
+                                            variant="determinate"
+                                            value={(strength / 4) * 100}
+                                            sx={{
+                                                height: 5,
+                                                borderRadius: 3,
+                                                bgcolor: alpha('#ffffff', 0.08),
+                                                '& .MuiLinearProgress-bar': { bgcolor: strengthMeta.color, borderRadius: 3 },
+                                            }}
+                                        />
+                                        <Typography variant="caption" sx={{ color: strengthMeta.color, fontWeight: 600, mt: 0.5, display: 'block' }}>
+                                            {strengthMeta.label}
+                                        </Typography>
+                                    </Box>
+                                )}
                                 <TextField
                                     margin="normal"
                                     required
                                     fullWidth
                                     name="confirmPassword"
                                     label="Confirm Password"
-                                    type={showPassword ? 'text' : 'password'}
+                                    type={showConfirmPassword ? 'text' : 'password'}
                                     id="confirmPassword"
                                     value={formData.confirmPassword}
                                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                                     disabled={loading}
-                                    sx={{ mb: 3 }}
+                                    error={passwordsMismatch}
+                                    helperText={passwordsMismatch ? 'Passwords do not match' : ' '}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                {passwordsMatch && (
+                                                    <CheckCircle fontSize="small" sx={{ color: 'success.main', mr: 0.5 }} />
+                                                )}
+                                                {passwordsMismatch && (
+                                                    <Cancel fontSize="small" sx={{ color: 'error.main', mr: 0.5 }} />
+                                                )}
+                                                <IconButton
+                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    edge="end"
+                                                    size="small"
+                                                    tabIndex={-1}
+                                                    sx={{ color: 'text.secondary' }}
+                                                >
+                                                    {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                    sx={{ mb: 1 }}
                                 />
 
                                 <Button
@@ -270,7 +339,7 @@ const RegisterPage: React.FC = () => {
                                     size="large"
                                     disabled={loading}
                                     startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <AppRegistration />}
-                                    sx={{ py: 1.5, mb: 3 }}
+                                    sx={{ py: 1.5, mb: 3, mt: 2 }}
                                 >
                                     {loading ? 'Creating Account...' : 'Create Account'}
                                 </Button>
@@ -287,8 +356,8 @@ const RegisterPage: React.FC = () => {
                         </CardContent>
                     </Card>
                 </motion.div>
-            </Box>
-        </Container>
+            </AuthShell>
+        </>
     );
 };
 

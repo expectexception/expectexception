@@ -27,9 +27,36 @@ import {
     ChatBubbleOutline
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import apiClient, { API_BASE_URL } from '../../api/config';
+import apiClient, { HEAVY_API_BASE_URL } from '../../api/config';
 
-const apiBaseUrl = API_BASE_URL;
+// Chat is a "heavy" AI service (Ollama-backed) - it must hit the same local
+// GPU-tunnel backend as the full ChatbotPage, not Render's light backend
+// (Render has no Ollama/GPU, so requests routed there could never reach the
+// real model - this previously silently sent the widget's chat requests to
+// the wrong host, making it fall back to the canned local responses far
+// more than the full chat page ever did for the same conversation).
+const apiBaseUrl = HEAVY_API_BASE_URL;
+
+// Best-effort split of a free-text "here's how to reach me" reply into a
+// phone number and a name, so the lead-capture flow (below) can ask one
+// natural question instead of interrogating the user field-by-field.
+// Whatever isn't recognized as the phone number is kept as the name rather
+// than discarded, so no part of the user's reply is ever lost even if the
+// split guesses wrong - a human reviews every inquiry in the admin anyway.
+function splitContactReply(reply: string): { name: string; phone: string; email: string } {
+    const emailMatch = reply.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+    const email = emailMatch ? emailMatch[0].trim() : '';
+    const withoutEmail = email ? reply.replace(email, '') : reply;
+
+    const phoneMatch = withoutEmail.match(/(\+?\d[\d\s\-().]{6,}\d)/);
+    const phone = phoneMatch ? phoneMatch[0].trim() : '';
+
+    const name = (phone ? withoutEmail.replace(phone, '') : withoutEmail)
+        .replace(/[,:-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    return { name: name || 'Chat visitor', phone, email };
+}
 
 // --- Types ---
 type Mood = 'neutral' | 'thinking' | 'happy' | 'excited' | 'sleeping' | 'idea' | 'error';
@@ -225,7 +252,7 @@ const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
                     )}
                     {mood === 'thinking' && (
                         <motion.path
-                            d="M 45 78 Q 50 72 55 78 T 65 78 T 75 78"
+                            initial={{ d: "M 45 78 Q 50 72 55 78 T 65 78 T 75 78" }}
                             stroke={activeColor}
                             strokeWidth="3"
                             strokeLinecap="round"
@@ -242,7 +269,7 @@ const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
                     )}
                     {mood === 'excited' && (
                         <motion.path
-                            d="M 40 76 Q 45 68 50 76 T 60 76 T 70 76 T 80 76"
+                            initial={{ d: "M 40 76 Q 45 68 50 76 T 60 76 T 70 76 T 80 76" }}
                             stroke={activeColor}
                             strokeWidth="3.5"
                             strokeLinecap="round"
@@ -368,6 +395,17 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const [mood, setMood] = useState<Mood>('neutral');
     const [activeSteps, setActiveSteps] = useState<AgentStep[]>([]);
 
+    // Multi-turn project-inquiry lead capture: "idle" until the user shows
+    // project intent, then walks idea -> contact info -> a real submission
+    // to the same /api/contact/hire/ endpoint the Hire page uses (so it
+    // shows up in the admin's existing Inquiries tab and triggers the same
+    // email notification), instead of just chatting about the idea and
+    // forgetting it once the conversation ends.
+    const [inquiryFlow, setInquiryFlow] = useState<{ step: 'idle' | 'awaiting_idea' | 'awaiting_contact'; idea: string }>({
+        step: 'idle',
+        idea: '',
+    });
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -440,6 +478,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
         ]);
         localStorage.removeItem('global_chatbot_history');
         setMood('neutral');
+        setInquiryFlow({ step: 'idle', idea: '' });
     };
 
     const handleTextKeyDown = (e: React.KeyboardEvent) => {
@@ -492,45 +531,26 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             return true;
         }
 
-        // 2. Project Idea Elaborator
-        if (cleanPrompt.includes('elaborate') || cleanPrompt.includes('project') || cleanPrompt.includes('idea') || cleanPrompt.includes('saas') || cleanPrompt.includes('build')) {
+        // 2. Project Inquiry — real lead capture, not just a canned blueprint.
+        // Kicks off a 2-turn flow (idea -> contact info) that ends in an
+        // actual POST to /api/contact/hire/, so someone on the team really
+        // does follow up instead of the idea only ever living in this chat.
+        if (
+            inquiryFlow.step === 'idle' &&
+            (cleanPrompt.includes('elaborate') || cleanPrompt.includes('project') || cleanPrompt.includes('idea') ||
+                cleanPrompt.includes('saas') || cleanPrompt.includes('build') || cleanPrompt.includes('hire') ||
+                cleanPrompt.includes('quote') || cleanPrompt.includes('custom software'))
+        ) {
             setMood('thinking');
-            setActiveSteps([
-                { id: '1', label: 'Analyzing project concept...', status: 'running' },
-                { id: '2', label: 'Formulating modular architecture...', status: 'pending' },
-                { id: '3', label: 'Drafting 3-week MVP roadmap...', status: 'pending' }
-            ]);
-
-            await new Promise(r => setTimeout(r, 800));
-            setActiveSteps(prev => [
-                { ...prev[0], status: 'done' },
-                { ...prev[1], status: 'running' },
-                prev[2]
-            ]);
-
-            await new Promise(r => setTimeout(r, 700));
-            setActiveSteps(prev => [
-                prev[0],
-                { ...prev[1], status: 'done' },
-                { ...prev[2], status: 'running' }
-            ]);
-
+            setActiveSteps([{ id: '1', label: 'Opening a project inquiry...', status: 'running' }]);
             await new Promise(r => setTimeout(r, 500));
             setActiveSteps([]);
             setMood('idea');
 
-            const elaborationText = `### Daemon Project Blueprint
-
-I have synthesized an MVP roadmap for your idea:
-- **Core Architecture**: React (Frontend) + Django REST Framework (Backend) containerized in Docker.
-- **Milestones**:
-  - **Week 1**: Setup database schemas & authentication.
-  - **Week 2**: Build glassmorphic dashboard & connect REST APIs.
-  - **Week 3**: Integrate AI-powered workflows & deploy to production.`;
-
+            setInquiryFlow({ step: 'awaiting_idea', idea: '' });
             const assistantMsg: Message = {
                 role: 'assistant',
-                content: elaborationText,
+                content: `I'd love to help scope that. Tell me a bit about what you want to build — the core idea, key features, or problem it solves — and I'll pass it straight to the ExpectException team.`,
                 timestamp: new Date().toISOString()
             };
             setMessages(prev => [...prev, assistantMsg]);
@@ -539,6 +559,41 @@ I have synthesized an MVP roadmap for your idea:
         }
 
         return false;
+    };
+
+    const submitProjectInquiry = async (idea: string, contactReply: string) => {
+        const { name, phone, email } = splitContactReply(contactReply);
+        setMood('thinking');
+        setActiveSteps([{ id: '1', label: 'Submitting your inquiry to the team...', status: 'running' }]);
+
+        try {
+            await apiClient.post('/api/contact/hire/', {
+                name,
+                email,
+                phone,
+                projectType: 'Chatbot inquiry',
+                budget: '',
+                message: idea,
+            });
+            setActiveSteps([]);
+            setMood('happy');
+            const reachAt = [phone, email].filter(Boolean).join(' or ');
+            const assistantMsg: Message = {
+                role: 'assistant',
+                content: `Thanks${name && name !== 'Chat visitor' ? `, ${name}` : ''}! I've logged your project idea and contact info for the team${reachAt ? ` — expect a call or message at ${reachAt} soon` : ''}. Anything else I can help with in the meantime?`,
+                timestamp: new Date().toISOString()
+            };
+            setMessages(prev => [...prev, assistantMsg]);
+        } catch (err) {
+            setActiveSteps([]);
+            setMood('neutral');
+            const assistantMsg: Message = {
+                role: 'assistant',
+                content: `I couldn't submit that automatically just now. You can also reach the team directly from the Contact page (/contact) with the same details — sorry for the extra step.`,
+                timestamp: new Date().toISOString()
+            };
+            setMessages(prev => [...prev, assistantMsg]);
+        }
     };
 
     const sendMessage = async (messageText?: string) => {
@@ -555,6 +610,43 @@ I have synthesized an MVP roadmap for your idea:
         setIsLoading(true);
         setError(null);
         accumulatedContentRef.current = '';
+
+        // Mid-flow replies (the idea, then contact info) belong to the
+        // project-inquiry conversation, not the normal agent/LLM path —
+        // intercept them here before any keyword or LLM routing runs.
+        if (inquiryFlow.step !== 'idle') {
+            const lowerText = text.toLowerCase().trim();
+            const wantsOut = ['cancel', 'never mind', 'nevermind', 'stop', 'forget it'].some(p => lowerText.includes(p));
+            if (wantsOut) {
+                setInquiryFlow({ step: 'idle', idea: '' });
+                const assistantMsg: Message = {
+                    role: 'assistant',
+                    content: `No problem, I've dropped that. Let me know if you'd like to start over or ask something else.`,
+                    timestamp: new Date().toISOString()
+                };
+                setMessages(prev => [...prev, assistantMsg]);
+                setIsLoading(false);
+                return;
+            }
+
+            if (inquiryFlow.step === 'awaiting_idea') {
+                setInquiryFlow({ step: 'awaiting_contact', idea: text });
+                const assistantMsg: Message = {
+                    role: 'assistant',
+                    content: `Got it. What name and phone number (or email) should the team use to reach you? You'll get a call or message once someone's reviewed it.`,
+                    timestamp: new Date().toISOString()
+                };
+                setMessages(prev => [...prev, assistantMsg]);
+                setIsLoading(false);
+                return;
+            }
+            if (inquiryFlow.step === 'awaiting_contact') {
+                await submitProjectInquiry(inquiryFlow.idea, text);
+                setInquiryFlow({ step: 'idle', idea: '' });
+                setIsLoading(false);
+                return;
+            }
+        }
 
         const agentHandled = await executeAgentAction(text);
         if (agentHandled) {
@@ -678,23 +770,43 @@ If asked what model, AI, or technology powers you, say only that you were built 
             setActiveSteps([]);
             setIsLoading(false);
 
-            let fallbackResponse = `I am **Daemon**, your agentic AI companion.
-
-I am currently running in local fallback mode. Try:
-- "what is the time" to open the Clock utility.
-- "elaborate on a SaaS idea" to generate an MVP blueprint.
-- "list developer skills" to review core expertise.`;
+            let fallbackResponse = `I'm running in local fallback mode right now (the AI core is unreachable), but I can still help directly. Try:
+- "what tools do you have" for the full tool list
+- "start a project" to submit a project inquiry
+- "what is the time" for the Clock utility
+- "contact" for how to reach the team directly`;
 
             const cleanText = text.toLowerCase();
             if (cleanText.includes('hello') || cleanText.includes('hi') || cleanText.includes('hey')) {
-                fallbackResponse = `Hello! How can I assist you with your software development, automation, or agentic workflow questions today?`;
+                fallbackResponse = `Hello! I'm running in local fallback mode right now, but I can still point you to the right tool, take a project inquiry, or answer basic questions. What are you looking to do?`;
                 setMood('happy');
             } else if (cleanText.includes('skill') || cleanText.includes('experience') || cleanText.includes('stack')) {
                 fallbackResponse = `### Developer Core Stack
-- **Frontend**: React, TypeScript, Next.js, Framer Motion, Material-UI.
-- **Backend**: Python (Django, FastAPI), Docker, Redis, PostgreSQL.
+- **Frontend**: React, TypeScript, Framer Motion, Material-UI.
+- **Backend**: Python (Django, DRF), Celery, Docker, Redis.
 - **AI**: Custom in-house LLM pipelines and multi-agent orchestration.`;
                 setMood('idea');
+            } else if (cleanText.includes('tool') || cleanText.includes('what can you do') || cleanText.includes('what do you have') || cleanText.includes('services')) {
+                fallbackResponse = `ExpectException has 60+ free, browser-based tools across a few categories:
+- **Converters**: YouTube/URL downloader, PDF <-> Word, image converter, barcode generator
+- **Developer**: JSON formatter, regex tester, JWT decoder, hash/UUID generator, CSS tools
+- **Media/AI**: background remover, image upscaler, OCR, audio separator, AI detector
+- **Sandbox**: 25+ free browser games (Snake, Tetris, Sudoku, and more)
+
+Browse them all at /services, or tell me what you're trying to do and I'll point you to the right one.`;
+                setMood('idea');
+            } else if (cleanText.includes('game') || cleanText.includes('sandbox') || cleanText.includes('play')) {
+                fallbackResponse = `The Sandbox (/sandbox) has 25+ free browser games — classics like Snake, Tetris, and Sudoku, plus reaction games and creative toys like a particle playground. No installs or accounts needed.`;
+                setMood('happy');
+            } else if (cleanText.includes('contact') || cleanText.includes('reach') || cleanText.includes('email') || cleanText.includes('phone')) {
+                fallbackResponse = `You can reach the ExpectException team directly at /contact, or just tell me what you're looking to build and I'll take down your details right here.`;
+                setMood('neutral');
+            } else if (cleanText.includes('price') || cleanText.includes('cost') || cleanText.includes('pricing') || cleanText.includes('budget')) {
+                fallbackResponse = `Pricing depends on scope - happy to note down what you're building and your budget range, and the team will follow up with a real quote. Want to start there?`;
+                setMood('idea');
+            } else if (cleanText.includes('thank')) {
+                fallbackResponse = `You're welcome! Let me know if anything else comes up.`;
+                setMood('happy');
             } else {
                 setMood('neutral');
             }

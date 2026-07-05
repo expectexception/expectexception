@@ -386,7 +386,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             </Box>
 
                             {/* Desktop Navigation */}
-                            <Box sx={{ display: { xs: 'none', md: 'flex' }, flexGrow: 1, gap: 1, ml: 2 }}>
+                            <Box sx={{ display: { xs: 'none', lg: 'flex' }, flexGrow: 1, gap: 1, ml: 2 }}>
                                 {navItems.map((item) => {
                                     const isSelected = item.path ? location.pathname === item.path : false;
                                     const buttonProps = item.path
@@ -502,6 +502,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                         fontWeight: 800,
                                         fontSize: '0.85rem',
                                         letterSpacing: '0.05em',
+                                        whiteSpace: 'nowrap',
+                                        flexShrink: 0,
                                         background: theme.palette.primary.main,
                                         color: '#000000',
                                         animation: 'pulseGlow 2s infinite alternate',
@@ -622,6 +624,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                                 fontSize: '0.85rem',
                                                 borderRadius: '8px',
                                                 px: 2.5,
+                                                whiteSpace: 'nowrap',
+                                                flexShrink: 0,
                                                 borderColor: 'rgba(255, 255, 255, 0.15)',
                                                 color: '#ffffff',
                                                 '&:hover': {
@@ -641,7 +645,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                     color="inherit"
                                     edge="end"
                                     onClick={handleDrawerToggle}
-                                    sx={{ display: { xs: 'flex', md: 'none' }, color: '#ffffff' }}
+                                    sx={{ display: { xs: 'flex', lg: 'none' }, color: '#ffffff' }}
                                 >
                                     <MenuIcon />
                                 </IconButton>
@@ -659,7 +663,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 onClose={handleDrawerToggle}
                 ModalProps={{ keepMounted: true }}
                 sx={{
-                    display: { xs: 'block', md: 'none' },
+                    display: { xs: 'block', lg: 'none' },
                     '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 280, bgcolor: 'transparent' },
                 }}
             >

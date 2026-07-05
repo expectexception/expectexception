@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-    Container,
     Box,
     Typography,
     TextField,
@@ -14,7 +13,7 @@ import {
     IconButton,
     Divider,
 } from '@mui/material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { Visibility, VisibilityOff, Login, Person } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -22,10 +21,12 @@ import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from '../components/auth/GoogleSignInButton';
+import AuthShell from '../components/auth/AuthShell';
 import Seo from '../components/seo/Seo';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const theme = useTheme();
     const primary = theme.palette.primary.main;
     const secondary = theme.palette.secondary.main;
@@ -37,6 +38,14 @@ const LoginPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [googleLoading, setGoogleLoading] = useState(false);
+
+    // Set when RegisterPage navigates here after a successful sign-up
+    // (`navigate('/login', { state: { message: '...' } })`) - previously
+    // silently dropped since this page never read `location.state`, so a
+    // brand-new user got no on-screen confirmation their account was created.
+    const [successMessage, setSuccessMessage] = useState<string | null>(
+        (location.state as { message?: string } | null)?.message || null
+    );
 
     const { login, loginWithGoogle } = useAuth();
 
@@ -87,23 +96,14 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <Container component="main" maxWidth="sm">
+        <>
             <Seo title="Sign In" description="Sign in to your ExpectException account to access personalized features, bookmarks, and your tool history." noIndex />
-            <Box
-                sx={{
-                    marginTop: 8,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    minHeight: '80vh',
-                    justifyContent: 'center',
-                }}
-            >
+            <AuthShell>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', maxWidth: 440 }}
                 >
                     <Box sx={{ mb: 4, textAlign: 'center' }}>
                         <Box sx={{
@@ -143,6 +143,11 @@ const LoginPage: React.FC = () => {
                         boxShadow: `0 0 40px ${alpha(primary, 0.06)}`,
                     }}>
                         <CardContent sx={{ p: 4 }}>
+                            {successMessage && (
+                                <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage(null)}>
+                                    {successMessage}
+                                </Alert>
+                            )}
                             {error && (
                                 <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
                                     {error}
@@ -204,8 +209,11 @@ const LoginPage: React.FC = () => {
                                                 <IconButton
                                                     onClick={() => setShowPassword(!showPassword)}
                                                     edge="end"
+                                                    size="small"
+                                                    tabIndex={-1}
+                                                    sx={{ color: 'text.secondary' }}
                                                 >
-                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                    {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                                                 </IconButton>
                                             </InputAdornment>
                                         ),
@@ -237,8 +245,8 @@ const LoginPage: React.FC = () => {
                         </CardContent>
                     </Card>
                 </motion.div>
-            </Box>
-        </Container>
+            </AuthShell>
+        </>
     );
 };
 

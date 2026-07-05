@@ -211,3 +211,18 @@ h2 {
   font-size: clamp(14px, 1.1vw, 16px);
 }
 
+/* Chrome/Safari/Edge force a light autofill background via an internal
+   UA style that `background-color` alone can't override - only a huge
+   inset box-shadow (painted like a background fill) beats it. Without
+   this, any autofilled field (e.g. saved email/password on the login
+   page) shows a jarring light-blue box on this site's dark theme. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 100px #14151a inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
