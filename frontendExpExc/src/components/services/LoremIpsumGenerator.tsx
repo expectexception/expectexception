@@ -59,6 +59,19 @@ const LoremIpsumGenerator: React.FC = () => {
             title="Lorem Ipsum Generator"
             subtitle="Generate placeholder text for mockups and layouts - entirely client-side, no server round-trip."
             maxWidth="md"
+            about="Generates classic-style Lorem Ipsum placeholder text for mockups, wireframes, and layout testing. Choose whether to generate paragraphs, sentences, or individual words, pick a count with the slider, and optionally force the output to begin with the traditional 'Lorem ipsum dolor sit amet...' opener. Every sentence is assembled by randomly sampling from the same ~70-word pool used in the standard Lorem Ipsum passage, so the output looks familiar but is different on every generation. Runs entirely client-side — no server round-trip."
+            howToSteps={[
+                { name: 'Pick a mode', text: 'Choose "Paragraphs", "Sentences", or "Words" from the toggle buttons.' },
+                { name: 'Set the count', text: 'Drag the slider to choose how many — up to 20 for paragraphs or sentences, up to 200 for words.' },
+                { name: 'Choose the opener', text: 'Toggle "Start with \'Lorem ipsum...\'" on for the classic opening line, or off for fully random text.' },
+                { name: 'Copy the result', text: 'Click "Copy to Clipboard" to grab the generated text — a confirmation snackbar appears at the bottom.' },
+            ]}
+            faq={[
+                { question: 'Is the output the same passage every time?', answer: 'No — every sentence is built by randomly picking words from the traditional Lorem Ipsum word pool, so regenerating (or reloading the page) produces different text each time rather than one fixed block.' },
+                { question: 'What is the maximum amount I can generate?', answer: 'Up to 20 paragraphs or sentences, or up to 200 words, set with the slider.' },
+                { question: "Why does my output start with the same sentence every time?", answer: 'That\'s the "Start with \'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\'" option — turn it off to get fully randomized text with no fixed opener.' },
+                { question: 'Is it real Latin?', answer: "No — like traditional Lorem Ipsum, it's scrambled pseudo-Latin word fragments meant to look like running text without being legible or meaningful, so it doesn't distract from a layout preview." },
+            ]}
         >
             <Seo title="Lorem Ipsum Generator - Free Placeholder Text" toolId={30} />
 

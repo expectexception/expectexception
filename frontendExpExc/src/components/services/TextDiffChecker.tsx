@@ -57,6 +57,19 @@ const TextDiffChecker: React.FC = () => {
             title="Text Diff Checker"
             subtitle="Compare two blocks of text line-by-line - computed entirely in your browser, nothing uploaded."
             maxWidth="md"
+            about="Compares two blocks of text line by line and highlights which lines were added, removed, or left unchanged, using a longest-common-subsequence (LCS) algorithm implemented directly in the component rather than pulling in a diff library. Paste the original version on the left and the changed version on the right, and the comparison recomputes on every keystroke. Useful for spotting exactly what changed between two versions of a config file, an email draft, or a paragraph of copy. Runs entirely client-side — nothing is uploaded."
+            howToSteps={[
+                { name: 'Paste the original text', text: 'Add the first version into the "Original" box on the left.' },
+                { name: 'Paste the changed version', text: 'Add the second version into the "Changed" box on the right.' },
+                { name: 'Read the highlighted diff', text: 'Removed lines are highlighted in red with a "-" prefix, added lines in the accent color with a "+" prefix; unchanged lines show no highlight.' },
+                { name: 'Check the summary chips', text: 'The "+N added" / "-N removed" chips above the diff give a quick count without reading every line.' },
+            ]}
+            faq={[
+                { question: 'Does this compare word-by-word or line-by-line?', answer: 'Line-by-line — it splits both inputs on newlines and diffs whole lines, so even a single-character edit on a line marks that entire line as removed and its replacement as added, rather than highlighting just the changed word.' },
+                { question: 'Is there a size limit on how much text I can compare?', answer: "The underlying algorithm is O(n×m) in the number of lines in each input, so very large documents (thousands of lines) can feel slower since the diff recomputes in your browser on every keystroke." },
+                { question: 'Is my text uploaded to compare it?', answer: 'No, the comparison runs entirely in your browser; neither text box is sent anywhere.' },
+                { question: 'Why does a moved paragraph sometimes show up as both a removal and an addition?', answer: "The algorithm aligns identical lines wherever they best match between the two inputs, but a paragraph that moved to a very different position — especially alongside edited neighboring lines — can show up as a removal at the old spot and an addition at the new one rather than being recognized as a pure move." },
+            ]}
         >
             <Seo title="Text Diff Checker - Compare Two Texts Online" toolId={34} />
 

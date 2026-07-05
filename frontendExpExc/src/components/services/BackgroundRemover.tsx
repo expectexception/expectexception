@@ -54,6 +54,19 @@ const BackgroundRemover: React.FC = () => {
             title="Background Remover"
             subtitle="Remove backgrounds from images with AI"
             maxWidth="md"
+            about="Background Remover strips the background out of a photo and returns a PNG with a transparent backdrop, using rembg (a U2-Net image-segmentation model) that runs on our server — nothing is processed in your browser. To keep processing fast, uploads are automatically downscaled to a maximum of 2048px on the longest side before the model runs, so very large source photos come back at a lower resolution than the original. It works best on photos with a clear subject against a reasonably distinct background (product shots, portraits, logos) rather than busy scenes with fine detail like loose hair or fur."
+            howToSteps={[
+                { name: 'Upload a photo', text: 'Click the Upload image box on the left and choose a JPEG, PNG, GIF, or BMP file from your device.' },
+                { name: 'Remove the background', text: 'Click Remove Background to send the image to our server, where the AI model cuts out the subject and returns a transparent PNG.' },
+                { name: 'Check the result', text: "Compare the transparent result against the checkerboard preview on the right to confirm the cutout looks right." },
+                { name: 'Download', text: "Click Download to save the transparent PNG once you're happy with the result." },
+            ]}
+            faq={[
+                { question: 'What image formats can I upload?', answer: "JPEG, PNG, GIF, and BMP are all accepted. The result is always returned as a transparent PNG, since this page doesn't expose the backend's JPG-with-white-background output option." },
+                { question: 'Will the removal be perfect on complex images?', answer: 'Accuracy depends on how distinct the subject is from the background — clean product shots and portraits work best. Fine detail like flyaway hair or semi-transparent objects (glass, smoke) can show visible edge artifacts.' },
+                { question: 'Is there a size or resolution limit?', answer: "There's no hard upload cap in the UI, but images are automatically downscaled to at most 2048px on the longest side before processing, so extremely high-resolution photos come back smaller than the original." },
+                { question: 'Are my uploaded photos stored or shared?', answer: "Your photo is uploaded to our server to run the background-removal model, and the processed result is kept there temporarily so you can download it. We don't use it for anything else, and no account is required." },
+            ]}
         >
             <Seo title="AI Background Remover - Transparent Images in Seconds" toolId={6} />
 

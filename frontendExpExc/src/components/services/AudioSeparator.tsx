@@ -156,6 +156,20 @@ const AudioSeparator: React.FC = () => {
             title="Vocal Remover"
             subtitle="Isolate vocals and instrumentals from any audio track using AI."
             maxWidth="sm"
+            about="Splits an uploaded audio file into two isolated stems - vocals and instrumental - using Demucs, an AI source-separation model, run on our GPU server rather than in your browser. Upload an MP3, WAV, FLAC, or M4A file up to 50MB and the server processes it as a background job, since separation is computationally heavy; when it finishes you get two WAV stems to preview and download, plus a combined ZIP. Handy for making karaoke tracks, isolating vocals for sampling, or pulling an instrumental from a mix that was never released separately."
+            howToSteps={[
+                { name: 'Drop or select an audio file', text: 'Drag an MP3, WAV, FLAC, or M4A file (up to 50MB) into the upload area, or click it to open a file picker.' },
+                { name: 'Click Separate Vocals & Music', text: 'This uploads the file and starts the AI separation job on our server.' },
+                { name: 'Wait for processing', text: 'The progress bar advances while the job runs in the background - larger files take longer since this is heavy AI processing.' },
+                { name: 'Preview each stem', text: 'Once done, play the Vocals and Music stems directly in the browser using the built-in audio players.' },
+                { name: 'Download what you need', text: 'Download either stem individually, or grab both at once with Download All Stems (ZIP).' },
+            ]}
+            faq={[
+                { question: 'What technology does the separation?', answer: 'Demucs, an AI audio source-separation model, run server-side with GPU acceleration rather than in your browser - that\'s why processing takes real time instead of being instant.' },
+                { question: "Why does it only produce two stems instead of splitting out drums, bass, etc separately?", answer: 'This tool runs Demucs in two-stem mode - vocals versus everything else - rather than full instrument-by-instrument separation, which keeps processing faster and the output simpler: one vocal track, one backing track.' },
+                { question: 'What file types and sizes are supported?', answer: 'MP3, WAV, FLAC, and M4A, up to 50MB per file. Longer tracks or large lossless files take noticeably longer to process.' },
+                { question: 'Why is the output WAV instead of MP3?', answer: 'The separated stems are written out uncompressed as WAV to avoid extra quality loss, since the separation process itself already introduces some artifacts - convert to MP3 afterward yourself if you need a smaller file.' },
+            ]}
         >
             <Seo
                 title="AI Audio Source Separator"

@@ -36,6 +36,19 @@ const TimestampConverter: React.FC = () => {
             title="Timestamp Converter"
             subtitle="Convert between Unix epoch time and human-readable dates - computed locally in your browser."
             maxWidth="md"
+            about="Converts between Unix epoch time and human-readable dates in both directions. Enter an epoch value and it detects whether you meant seconds or milliseconds based on the number of digits, then shows the equivalent ISO 8601 string, UTC string, and your local time. Enter a date/time instead and it shows the equivalent epoch in both seconds and milliseconds. All conversion happens locally using the browser's native Date object and Intl API; nothing is sent to a server."
+            howToSteps={[
+                { name: 'Start from now (optional)', text: 'Click Use Current Time to fill both fields with the current moment.' },
+                { name: 'Convert an epoch to a date', text: 'Type a Unix timestamp into the Unix Epoch (seconds or ms) field — the ISO, UTC, and local time equivalents appear below it immediately.' },
+                { name: 'Convert a date to an epoch', text: 'Or pick a date/time in the Date / Time field — the equivalent epoch in seconds and milliseconds appears below it.' },
+                { name: 'Copy the result', text: 'Click Copy ISO or Copy Epoch to copy the converted value to your clipboard.' },
+            ]}
+            faq={[
+                { question: 'How does it know if my epoch is in seconds or milliseconds?', answer: 'By digit count: a value longer than 10 digits is treated as milliseconds, 10 digits or fewer is treated as seconds. This covers virtually all real timestamps (10-digit second-based epochs run until the year 2286).' },
+                { question: 'What timezone does it show?', answer: "Both — the epoch conversion shows the UTC time (via toUTCString) and your browser's local time (via toLocaleString), and the footer shows your resolved IANA timezone (e.g. America/New_York) using the Intl API." },
+                { question: 'Is this computed locally or sent to a server?', answer: "Entirely locally — it's just JavaScript's native Date object doing the math in your browser; nothing is transmitted anywhere." },
+                { question: 'What date formats can I enter on the date side?', answer: "The Date / Time field is a native datetime-local input, so it accepts whatever your browser's date/time picker produces — you don't need to type a specific string format." },
+            ]}
         >
             <Seo title="Unix Timestamp / Epoch Converter - Free Online Tool" toolId={32} />
 

@@ -59,6 +59,20 @@ const PdfMerger: React.FC = () => {
             icon={MergeType}
             title="PDF Merger"
             subtitle="Combine multiple PDF files into a single document"
+            about="Combines up to 20 separate PDF files into one merged document, in the order you add them. Each file you select joins a list; when you click Merge, all files are uploaded together to our server, stitched into a single PDF, and returned as one downloadable file. Handy for combining scanned pages, invoices, or chapters that exist as separate PDFs into a single file to send or archive."
+            howToSteps={[
+                { name: 'Add PDF files', text: 'Click Add PDF files and select two or more PDFs — non-PDF files are filtered out automatically.' },
+                { name: 'Review the file list', text: 'Check the list of added files; each shows its name and size.' },
+                { name: "Remove any you don't want", text: 'Click the trash icon next to a file to remove it from the merge before combining.' },
+                { name: 'Merge the files', text: 'Click Merge N PDFs — the button shows the current file count and merges them in the order listed.' },
+                { name: 'Download the combined PDF', text: 'Once merging finishes, click Download to save the single combined PDF.' },
+            ]}
+            faq={[
+                { question: 'In what order are the PDFs merged?', answer: 'Files are merged in the order you add them, which is the order they appear in the list — remove and re-add a file if you need to change its position.' },
+                { question: 'How many PDFs can I merge at once?', answer: 'Up to 20 files per merge; anything beyond that is simply not added to the list.' },
+                { question: 'Do I need at least 2 files?', answer: 'Yes — the Merge button stays disabled until at least 2 PDF files are added.' },
+                { question: 'Are my PDFs kept on the server afterward?', answer: "Files are uploaded only to perform the merge and generate the combined download link; they aren't meant to be stored long-term, so download your merged file right away." },
+            ]}
         >
             <Seo
                 title="Merge PDF Files Online - Combine Documents Free"
