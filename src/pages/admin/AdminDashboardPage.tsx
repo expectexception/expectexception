@@ -99,6 +99,13 @@ interface MongoStatus {
     collections: Record<string, { count: number | null; recent: Record<string, any>[]; error?: string }>;
 }
 
+interface BackupSnapshot {
+    name: string;
+    has_db: boolean;
+    has_media: boolean;
+    size_mb: number;
+}
+
 interface AdminUser {
     id: number;
     email: string;
@@ -268,6 +275,8 @@ const AdminDashboardPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState(0);
     const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
     const [mongoStatus, setMongoStatus] = useState<MongoStatus | null>(null);
+    const [backups, setBackups] = useState<BackupSnapshot[]>([]);
+    const [backupRunning, setBackupRunning] = useState(false);
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [blogs, setBlogs] = useState<AdminBlog[]>([]);
     const [downloads, setDownloads] = useState<AdminDownload[]>([]);
@@ -314,6 +323,28 @@ const AdminDashboardPage: React.FC = () => {
             console.error('Failed to fetch Mongo status:', e);
         }
     }, []);
+
+    const fetchBackups = useCallback(async () => {
+        try {
+            const response = await apiClient.get('/api/services/admin/backups/');
+            setBackups(response.data.snapshots || []);
+        } catch (e) {
+            console.error('Failed to fetch backups:', e);
+        }
+    }, []);
+
+    const triggerBackup = useCallback(async () => {
+        setBackupRunning(true);
+        try {
+            await apiClient.post('/api/services/admin/backups/');
+            // The task runs async in the worker — poll once after a delay
+            // rather than expecting it to already be done.
+            setTimeout(() => { fetchBackups(); setBackupRunning(false); }, 5000);
+        } catch (e) {
+            console.error('Failed to trigger backup:', e);
+            setBackupRunning(false);
+        }
+    }, [fetchBackups]);
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -404,6 +435,7 @@ const AdminDashboardPage: React.FC = () => {
             await Promise.all([
                 fetchMetrics(),
                 fetchMongoStatus(),
+                fetchBackups(),
                 fetchUsers(),
                 fetchBlogs(),
                 fetchDownloads(),
@@ -416,7 +448,7 @@ const AdminDashboardPage: React.FC = () => {
             setLoading(false);
         };
         loadData();
-    }, [fetchMetrics, fetchMongoStatus, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus, fetchToolServices, fetchInquiries, fetchThreads]);
+    }, [fetchMetrics, fetchMongoStatus, fetchBackups, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus, fetchToolServices, fetchInquiries, fetchThreads]);
 
     // Real-time metrics polling
     useEffect(() => {
@@ -638,6 +670,7 @@ const AdminDashboardPage: React.FC = () => {
         { label: 'Inquiries', icon: <Email /> },
         { label: 'Threads', icon: <Forum /> },
         { label: 'Mongo', icon: <Storage /> },
+        { label: 'Backups', icon: <CloudDownload /> },
     ];
 
     // ============ Render ============
@@ -1612,6 +1645,55 @@ const AdminDashboardPage: React.FC = () => {
                                             </Grid>
                                         ))}
                                     </Grid>
+                                )}
+                            </TabPanel>
+
+                            <TabPanel value={activeTab} index={10}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, flexWrap: 'wrap', gap: 2 }}>
+                                    <Box>
+                                        <Typography variant="h6" sx={{ color: 'white' }}>Local Backups</Typography>
+                                        <Typography variant="body2" sx={{ color: 'grey.500' }}>
+                                            Daily snapshot of db.sqlite3 + media at 3:30am, last 14 kept. Render (Postgres) and MongoDB Atlas manage their own backups separately.
+                                        </Typography>
+                                    </Box>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={backupRunning ? <CircularProgress size={16} sx={{ color: 'white' }} /> : <CloudDownload />}
+                                        onClick={triggerBackup}
+                                        disabled={backupRunning}
+                                    >
+                                        {backupRunning ? 'Backing up…' : 'Back Up Now'}
+                                    </Button>
+                                </Box>
+                                {backups.length === 0 ? (
+                                    <Typography sx={{ color: 'grey.500' }}>No backups yet.</Typography>
+                                ) : (
+                                    <TableContainer sx={{ bgcolor: '#1e293b', borderRadius: 2, border: '1px solid rgba(255,255,255,0.08)' }}>
+                                        <Table size="small">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell sx={{ color: 'grey.400' }}>Snapshot</TableCell>
+                                                    <TableCell sx={{ color: 'grey.400' }}>Database</TableCell>
+                                                    <TableCell sx={{ color: 'grey.400' }}>Media</TableCell>
+                                                    <TableCell sx={{ color: 'grey.400' }}>Size</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {backups.map((b) => (
+                                                    <TableRow key={b.name}>
+                                                        <TableCell sx={{ color: 'white', fontFamily: 'monospace', fontSize: '0.8rem' }}>{b.name}</TableCell>
+                                                        <TableCell>
+                                                            <Chip label={b.has_db ? 'yes' : 'missing'} size="small" color={b.has_db ? 'success' : 'error'} />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Chip label={b.has_media ? 'yes' : 'missing'} size="small" color={b.has_media ? 'success' : 'default'} />
+                                                        </TableCell>
+                                                        <TableCell sx={{ color: 'grey.300' }}>{b.size_mb} MB</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
                                 )}
                             </TabPanel>
                         </motion.div>
