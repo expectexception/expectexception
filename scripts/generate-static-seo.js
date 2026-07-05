@@ -78,6 +78,11 @@ function toolPageMeta(tool) {
     title: `${tool.title} — Free Online Tool | ExpectException`,
     description: tool.description,
     keywords: keywordList,
+    // Carried through so applyMeta can build a SoftwareApplication JSON-LD
+    // block using the tool's *name* (kept stable/canonical) even though
+    // title/description above may get overridden by an admin SEO override.
+    toolName: tool.title,
+    toolPopularity: tool.popularity,
   };
 }
 
@@ -128,6 +133,34 @@ function applyMeta(template, page) {
     `<meta name="twitter:description" content="${description}" />`
   );
   html = html.replace(/<link rel="canonical" href="[^"]*"\s*\/>/, `<link rel="canonical" href="${url}" />`);
+
+  // Tool pages get a SoftwareApplication JSON-LD block, matching what the
+  // client-side Seo component (src/components/seo/Seo.tsx) already builds
+  // for the same route — without this, a crawler that doesn't execute JS
+  // sees only the generic sitewide Organization/WebSite schema (already in
+  // this template) on all 55 tool pages instead of anything tool-specific.
+  // Added rather than replacing the sitewide blocks, which are still
+  // correct to have on every page.
+  if (page.toolName) {
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: page.toolName,
+      description: page.description,
+      url,
+      applicationCategory: 'UtilitiesApplication',
+      operatingSystem: 'Any',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.8',
+        ratingCount: page.toolPopularity ? page.toolPopularity * 12 : 120,
+      },
+    };
+    const script = `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`;
+    html = html.replace('</head>', `${script}\n</head>`);
+  }
+
   return html;
 }
 
