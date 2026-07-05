@@ -43,6 +43,11 @@ x-backend-image: &backend-image
     - ./db.sqlite3:/app/db.sqlite3
     - ./media:/app/media
     - ./logs:/app/logs
+    # Daily backup snapshots (apps.services.tasks.backup_local_data_task).
+    # Without this mount, snapshots only exist in the container's writable
+    # layer and vanish the next time the container is recreated — exactly
+    # the failure mode db.sqlite3 itself had before the fix above.
+    - ./backups:/app/backups
     - ./staticfiles:/app/staticfiles
     - ../frontendExpExc/build:/frontendExpExc/build
     # AI model caches, persisted across restarts. Without these, every

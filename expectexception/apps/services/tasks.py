@@ -226,6 +226,76 @@ def run_uptime_monitors_task():
         cache.delete(lock_key)
 
 
+BACKUP_DIR = os.path.join(settings.BASE_DIR, 'backups')
+BACKUP_RETENTION_COUNT = 14
+
+
+@shared_task(name='apps.services.tasks.backup_local_data_task')
+def backup_local_data_task():
+    """Daily snapshot of db.sqlite3 (the primary datastore on this server —
+    Render uses Postgres and has its own managed backups; MongoDB Atlas has
+    its own point-in-time recovery) plus media/, into backups/<timestamp>/,
+    pruning beyond BACKUP_RETENTION_COUNT. Nothing backed this up before.
+
+    Uses sqlite3's own online backup API rather than a plain file copy —
+    copying the raw file while a writer holds a transaction open can capture
+    a torn, inconsistent snapshot; the backup API goes through SQLite's own
+    locking so it's always a consistent point-in-time copy regardless of
+    concurrent access.
+    """
+    if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+        return "Skipped: this server's data (SQLite, media) doesn't exist on Render."
+
+    lock_key = "celery_backup_lock"
+    if cache.get(lock_key):
+        return "Skipping: another backup is already running."
+    cache.set(lock_key, "running", timeout=600)
+
+    try:
+        os.makedirs(BACKUP_DIR, exist_ok=True)
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        snapshot_dir = os.path.join(BACKUP_DIR, timestamp)
+        os.makedirs(snapshot_dir, exist_ok=True)
+
+        db_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
+        db_backed_up = False
+        if os.path.exists(db_path):
+            import sqlite3
+            src = sqlite3.connect(db_path)
+            dest = sqlite3.connect(os.path.join(snapshot_dir, 'db.sqlite3'))
+            try:
+                src.backup(dest)
+                db_backed_up = True
+            finally:
+                dest.close()
+                src.close()
+
+        media_root = str(settings.MEDIA_ROOT)
+        media_backed_up = False
+        if os.path.isdir(media_root) and os.listdir(media_root):
+            shutil.make_archive(os.path.join(snapshot_dir, 'media'), 'zip', media_root)
+            media_backed_up = True
+
+        # Prune snapshots beyond the retention count — names are
+        # timestamp-sortable, so a reverse sort is oldest-last.
+        snapshots = sorted(
+            (d for d in os.listdir(BACKUP_DIR) if os.path.isdir(os.path.join(BACKUP_DIR, d))),
+            reverse=True,
+        )
+        pruned = 0
+        for old in snapshots[BACKUP_RETENTION_COUNT:]:
+            shutil.rmtree(os.path.join(BACKUP_DIR, old), ignore_errors=True)
+            pruned += 1
+
+        return (
+            f"Backup created at {snapshot_dir} "
+            f"(db={'yes' if db_backed_up else 'no'}, media={'yes' if media_backed_up else 'no'}); "
+            f"pruned {pruned} old snapshot(s)."
+        )
+    finally:
+        cache.delete(lock_key)
+
+
 @shared_task(bind=True, time_limit=120, soft_time_limit=100, name='apps.services.tasks.remove_background_task')
 def remove_background_task(self, input_path: str, quality_preset: str, output_format: str) -> dict:
     """Async background removal via rembg."""

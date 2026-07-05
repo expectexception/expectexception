@@ -130,6 +130,55 @@ class AdminUserDetailView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class AdminBackupView(APIView):
+    """List local backup snapshots and trigger one on demand (admin only).
+
+    GET  -> snapshot history (name, created, size, db/media presence).
+    POST -> enqueue backup_local_data_task now (same task the daily
+            schedule runs), for an on-demand "back up now" button.
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        from .tasks import BACKUP_DIR
+
+        if not os.path.isdir(BACKUP_DIR):
+            return Response({'snapshots': []})
+
+        snapshots = []
+        for name in sorted(os.listdir(BACKUP_DIR), reverse=True):
+            path = os.path.join(BACKUP_DIR, name)
+            if not os.path.isdir(path):
+                continue
+            db_path = os.path.join(path, 'db.sqlite3')
+            media_path = os.path.join(path, 'media.zip')
+            size_bytes = sum(
+                os.path.getsize(os.path.join(path, f))
+                for f in os.listdir(path)
+                if os.path.isfile(os.path.join(path, f))
+            )
+            snapshots.append({
+                'name': name,
+                'has_db': os.path.exists(db_path),
+                'has_media': os.path.exists(media_path),
+                'size_mb': round(size_bytes / (1024 * 1024), 2),
+            })
+
+        return Response({'snapshots': snapshots})
+
+    def post(self, request):
+        from .tasks import backup_local_data_task
+
+        if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+            return Response(
+                {'error': "This server's data doesn't exist on Render — nothing to back up here."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        task = backup_local_data_task.delay()
+        return Response({'status': 'queued', 'task_id': task.id})
+
+
 class AdminMongoStatusView(APIView):
     """Read-only visibility into the MongoDB Atlas cross-instance mirror
     (admin only). This is NOT the primary datastore — it's the

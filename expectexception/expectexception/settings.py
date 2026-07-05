@@ -364,6 +364,10 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 60.0,  # every minute; the task itself only actually
                            # checks monitors whose own interval has elapsed
     },
+    'daily-local-backup': {
+        'task': 'apps.services.tasks.backup_local_data_task',
+        'schedule': crontab(hour=3, minute=30),  # low-traffic hour
+    },
 }
 
 # Django cache configuration for AI detector
