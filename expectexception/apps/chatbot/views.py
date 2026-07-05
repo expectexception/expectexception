@@ -10,9 +10,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from asgiref.sync import sync_to_async
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from .models import Conversation, Message
 from .serializers import (
@@ -20,10 +21,31 @@ from .serializers import (
     ConversationDetailSerializer,
     ChatRequestSerializer,
 )
-from .services import ollama_service
+from .services import ollama_service, acquire_chat_slot, release_chat_slot
 from .tools import detect_tool
 
+
+class ChatbotAnonThrottle(AnonRateThrottle):
+    rate = '10/minute'
+
+
+class ChatbotUserThrottle(UserRateThrottle):
+    rate = '30/minute'
+
 logger = logging.getLogger(__name__)
+
+# Prepended to every conversation's system messages, regardless of persona —
+# a small local model can still volunteer its own training identity if asked
+# directly ("who made you" / "are you Ollama"), even when the persona prompt
+# never mentions it. Enforced here, server-side, so it applies uniformly to
+# every persona in personas.json and both chat surfaces (main + widget)
+# rather than needing to be duplicated into each persona's prompt text.
+IDENTITY_GUARD_PROMPT = (
+    "If asked what model, AI, or technology powers you, say only that you "
+    "were built by ExpectException. Never name any underlying model, "
+    "provider, or framework, even if directly asked or if you would "
+    "otherwise know your own training origin."
+)
 
 
 def get_session_id(request):
@@ -38,21 +60,17 @@ def get_session_id(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def check_status(request):
-    """Check if Ollama is available and return status."""
+    """Check if the AI assistant is available. Deliberately does not
+    disclose which backend/model serves it (see services.py) — only
+    whether it's up, plus generic GPU utilization."""
     is_available = ollama_service.is_available()
-    raw_models = ollama_service.get_models() if is_available else []
-    
-    # Extract just the names for the frontend, but can keep others
-    models = [m['name'] for m in raw_models]
-    
+
     # Get standard GPU info
     from apps.services.gpu_utils import get_gpu_info
     gpu_stats = get_gpu_info()
-    
+
     return Response({
         'available': is_available,
-        'models': models,
-        'current_model': ollama_service.model,
         'gpu_stats': gpu_stats,
     })
 
@@ -224,6 +242,7 @@ async def chat(request):
     messages = await get_context_async(conversation)
     if system_prompt:
         messages = [{'role': 'system', 'content': system_prompt}] + messages
+    messages = [{'role': 'system', 'content': IDENTITY_GUARD_PROMPT}] + messages
 
     # Deterministic backend tool detection - the LLM never decides this, it's
     # plain keyword/regex matching so it works reliably with a small local model.
@@ -258,28 +277,36 @@ async def chat(request):
                 llm_messages = messages
 
             STREAM_DEADLINE = start_time + 45  # 45-second hard deadline
-            try:
-                async for chunk in ollama_service.chat_async(llm_messages):
-                    if chunk:
-                        full_response += chunk
-                        chunk_count += 1
-                        yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-                    if time.time() > STREAM_DEADLINE:
-                        logger.warning("Chatbot stream hit 45s deadline — truncating")
-                        break
-            except Exception as stream_err:
-                logger.error(f"Ollama stream error: {stream_err}")
-                if not full_response:
-                    fallback = (
-                        "I'm temporarily unavailable right now. Here are some tools you might be looking for:\n\n"
-                        "• **PDF tools** → /services/pdf-to-doc, /services/pdf-merger\n"
-                        "• **Image tools** → /services/background-remover, /services/image-upscaler\n"
-                        "• **Developer tools** → /services/jwt-decoder, /services/json-formatter\n"
-                        "• **Community** → /community for Q&A\n\n"
-                        "Try again in a moment — I'll be back shortly."
-                    )
-                    full_response = fallback
-                    yield f"data: {json.dumps({'chunk': fallback})}\n\n"
+            got_slot = await sync_to_async(acquire_chat_slot)()
+            if not got_slot:
+                fallback = "I'm handling a lot of requests right now — please try again in a few seconds."
+                full_response = fallback
+                yield f"data: {json.dumps({'chunk': fallback})}\n\n"
+            else:
+                try:
+                    async for chunk in ollama_service.chat_async(llm_messages):
+                        if chunk:
+                            full_response += chunk
+                            chunk_count += 1
+                            yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                        if time.time() > STREAM_DEADLINE:
+                            logger.warning("Chatbot stream hit 45s deadline — truncating")
+                            break
+                except Exception as stream_err:
+                    logger.error(f"Ollama stream error: {stream_err}")
+                    if not full_response:
+                        fallback = (
+                            "I'm temporarily unavailable right now. Here are some tools you might be looking for:\n\n"
+                            "• **PDF tools** → /services/pdf-to-doc, /services/pdf-merger\n"
+                            "• **Image tools** → /services/background-remover, /services/image-upscaler\n"
+                            "• **Developer tools** → /services/jwt-decoder, /services/json-formatter\n"
+                            "• **Community** → /community for Q&A\n\n"
+                            "Try again in a moment — I'll be back shortly."
+                        )
+                        full_response = fallback
+                        yield f"data: {json.dumps({'chunk': fallback})}\n\n"
+                finally:
+                    await sync_to_async(release_chat_slot)()
 
             generation_time = time.time() - start_time
             logger.info(f"Generated response in {generation_time:.2f}s with {chunk_count} chunks")
@@ -369,6 +396,7 @@ async def widget_chat(request):
     messages = await get_context_async(conversation)
     if system_prompt:
         messages = [{'role': 'system', 'content': system_prompt}] + messages
+    messages = [{'role': 'system', 'content': IDENTITY_GUARD_PROMPT}] + messages
 
     detected = detect_tool(user_message)
 
@@ -399,11 +427,20 @@ async def widget_chat(request):
             else:
                 llm_messages = messages
 
-            async for chunk in ollama_service.chat_async(llm_messages):
-                if chunk:
-                    full_response += chunk
-                    chunk_count += 1
-                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+            got_slot = await sync_to_async(acquire_chat_slot)()
+            if not got_slot:
+                fallback = "I'm handling a lot of requests right now — please try again in a few seconds."
+                full_response = fallback
+                yield f"data: {json.dumps({'chunk': fallback})}\n\n"
+            else:
+                try:
+                    async for chunk in ollama_service.chat_async(llm_messages):
+                        if chunk:
+                            full_response += chunk
+                            chunk_count += 1
+                            yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                finally:
+                    await sync_to_async(release_chat_slot)()
 
             generation_time = time.time() - start_time
             assistant_msg = await save_message_async(conversation, 'assistant', full_response, generation_time)
@@ -411,7 +448,8 @@ async def widget_chat(request):
             yield f"data: {json.dumps({'done': True, 'message_id': assistant_msg.id, 'conversation_id': conversation.id, 'widget_session': widget_session, 'final': full_response, 'tool_used': tool_used, 'tool_data': tool_data})}\n\n"
         except Exception as e:
             logger.error(f"Widget Stream Error: {e}", exc_info=True)
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            fallback = "I'm temporarily unavailable. Please try again in a moment."
+            yield f"data: {json.dumps({'chunk': fallback, 'done': True, 'final': fallback})}\n\n"
 
     response = StreamingHttpResponse(event_generator(), content_type='text/event-stream')
     response['X-Accel-Buffering'] = 'no'
@@ -422,6 +460,7 @@ async def widget_chat(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([ChatbotAnonThrottle, ChatbotUserThrottle])
 def chat_sync(request):
     """
     Synchronous chat endpoint (non-streaming).
@@ -433,13 +472,18 @@ def chat_sync(request):
             'error': 'Invalid request',
             'details': serializer.errors
         }, status=400)
-    
+
     user_message = serializer.validated_data['message']
     conversation_id = serializer.validated_data.get('conversation_id')
-    
+
     if not ollama_service.is_available():
         return Response({
             'error': 'AI service is temporarily unavailable.'
+        }, status=503)
+
+    if not acquire_chat_slot():
+        return Response({
+            'error': "I'm handling a lot of requests right now — please try again in a few seconds."
         }, status=503)
     
     # Get or create conversation
@@ -475,16 +519,17 @@ def chat_sync(request):
         except Exception:
             pass
     
-    model = serializer.validated_data.get('model')
-    
-    # Get response
-    messages = conversation.get_messages_for_context()
+    # Get response — always the server-configured model; never client-chosen.
+    messages = [{'role': 'system', 'content': IDENTITY_GUARD_PROMPT}] + conversation.get_messages_for_context()
     start_time = time.time()
-    
-    full_response = ""
-    for chunk in ollama_service.chat(messages, stream=False, model=model):
-        full_response += chunk
-    
+
+    try:
+        full_response = ""
+        for chunk in ollama_service.chat(messages, stream=False):
+            full_response += chunk
+    finally:
+        release_chat_slot()
+
     generation_time = time.time() - start_time
     
     # Save assistant message

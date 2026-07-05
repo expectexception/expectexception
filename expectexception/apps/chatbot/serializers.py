@@ -20,7 +20,9 @@ class ConversationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Conversation
-        fields = ['id', 'title', 'model', 'created_at', 'updated_at', 'message_count', 'last_message']
+        # 'model' deliberately excluded — it's an internal record of which
+        # backend model served this conversation and shouldn't be disclosed.
+        fields = ['id', 'title', 'created_at', 'updated_at', 'message_count', 'last_message']
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def get_message_count(self, obj):
@@ -44,7 +46,8 @@ class ConversationDetailSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Conversation
-        fields = ['id', 'title', 'model', 'system_prompt', 'created_at', 'updated_at', 'messages']
+        # 'model' deliberately excluded — see ConversationSerializer.
+        fields = ['id', 'title', 'system_prompt', 'created_at', 'updated_at', 'messages']
 
 
 class ChatRequestSerializer(serializers.Serializer):
@@ -53,8 +56,10 @@ class ChatRequestSerializer(serializers.Serializer):
     message = serializers.CharField(max_length=10000)
     conversation_id = serializers.IntegerField(required=False, allow_null=True)
     system_prompt = serializers.CharField(max_length=2000, required=False, allow_blank=True, default='')
-    model = serializers.CharField(max_length=100, required=False, allow_blank=True, default='')
-    
+    # No client-supplied `model` field — which model serves a request is a
+    # server-side concern (see CHATBOT_MODEL), never something the client
+    # names or picks.
+
     def validate_message(self, value):
         return value.strip()
 
