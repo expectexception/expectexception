@@ -1,829 +1,1236 @@
 [
-    {
-        "id": 1,
-        "title": "URL Downloader",
-        "description": "Download files from any URL with support for multiple formats and batch processing.",
-        "icon": "Download",
-        "path": "/services/url-downloader",
-        "category": "download",
-        "popularity": 95,
-        "tags": [
-            "file",
-            "download",
-            "batch"
-        ],
-        "color": "primary",
-        "is_active": true
-    },
-    {
-        "id": 2,
-        "title": "YT Video Downloader",
-        "description": "Download YouTube videos in various resolutions (HD, 4K) and multiple formats.",
-        "icon": "Movie",
-        "path": "/services/yt-downloader",
-        "category": "download",
-        "popularity": 92,
-        "tags": [
-            "video",
-            "youtube",
-            "media"
-        ],
-        "color": "secondary",
-        "is_active": true
-    },
-    {
-        "id": 3,
-        "title": "URL to QR Converter",
-        "description": "Generate QR codes from URLs with custom colors, sizes, and logo integration.",
-        "icon": "QrCode",
-        "path": "/services/qr-generator",
-        "category": "converter",
-        "popularity": 88,
-        "tags": [
-            "qr",
-            "generator",
-            "share"
-        ],
-        "color": "success",
-        "is_active": true
-    },
-    {
-        "id": 4,
-        "title": "JSON Formatter",
-        "description": "Format, validate, minify, and beautify JSON data with syntax highlighting.",
-        "icon": "Code",
-        "path": "/services/json-formatter",
-        "category": "developer",
-        "popularity": 90,
-        "tags": [
-            "json",
-            "developer",
-            "format"
-        ],
-        "color": "warning",
-        "is_active": true
-    },
-    {
-        "id": 5,
-        "title": "Text to Speech",
-        "description": "Convert text to speech with multiple voice options and languages.",
-        "icon": "VolumeUp",
-        "path": "/services/text-to-speech",
-        "category": "converter",
-        "popularity": 85,
-        "tags": [
-            "audio",
-            "text",
-            "speech"
-        ],
-        "color": "info",
-        "is_active": true
-    },
-    {
-        "id": 6,
-        "title": "Image Compressor",
-        "description": "Compress images while maintaining quality with batch processing support.",
-        "icon": "Compress",
-        "path": "/services/image-compressor",
-        "category": "media",
-        "popularity": 88,
-        "tags": [
-            "image",
-            "compress",
-            "optimize"
-        ],
-        "color": "error",
-        "is_active": true
-    },
-    {
-        "id": 7,
-        "title": "PDF to DOC Converter",
-        "description": "Convert PDF documents to editable Word (DOC/DOCX) format with formatting preserved.",
-        "icon": "Description",
-        "path": "/services/pdf-to-doc",
-        "category": "document",
-        "popularity": 90,
-        "tags": [
-            "pdf",
-            "doc",
-            "convert"
-        ],
-        "color": "primary",
-        "is_active": true
-    },
-    {
-        "id": 8,
-        "title": "DOC to PDF Converter",
-        "description": "Convert Word documents (DOC/DOCX) to PDF format with high fidelity.",
-        "icon": "PictureAsPdf",
-        "path": "/services/doc-to-pdf",
-        "category": "document",
-        "popularity": 89,
-        "tags": [
-            "doc",
-            "pdf",
-            "convert"
-        ],
-        "color": "secondary",
-        "is_active": true
-    },
-    {
-        "id": 9,
-        "title": "PDF Merger",
-        "description": "Merge multiple PDF files into a single document with custom page ordering.",
-        "icon": "MergeType",
-        "path": "/services/pdf-merger",
-        "category": "document",
-        "popularity": 87,
-        "tags": [
-            "pdf",
-            "merge",
-            "combine"
-        ],
-        "color": "success",
-        "is_active": true
-    },
-    {
-        "id": 10,
-        "title": "PDF Splitter",
-        "description": "Split PDF documents into multiple files by page ranges or individual pages.",
-        "icon": "CallSplit",
-        "path": "/services/pdf-splitter",
-        "category": "document",
-        "popularity": 86,
-        "tags": [
-            "pdf",
-            "split",
-            "extract"
-        ],
-        "color": "warning",
-        "is_active": true
-    },
-    {
-        "id": 11,
-        "title": "Image to PDF",
-        "description": "Convert images (JPG, PNG, etc.) to PDF documents with multiple images per file.",
-        "icon": "Image",
-        "path": "/services/image-to-pdf",
-        "category": "document",
-        "popularity": 85,
-        "tags": [
-            "image",
-            "pdf",
-            "convert"
-        ],
-        "color": "info",
-        "is_active": true
-    },
-    {
-        "id": 12,
-        "title": "Image Resizer",
-        "description": "Resize images to custom dimensions while maintaining aspect ratio and quality.",
-        "icon": "PhotoSizeSelectLarge",
-        "path": "/services/image-resizer",
-        "category": "media",
-        "popularity": 88,
-        "tags": [
-            "image",
-            "resize",
-            "scale"
-        ],
-        "color": "error",
-        "is_active": true
-    },
-    {
-        "id": 13,
-        "title": "Background Remover",
-        "description": "Remove backgrounds from images automatically using AI-powered technology.",
-        "icon": "AutoFixHigh",
-        "path": "/services/background-remover",
-        "category": "media",
-        "popularity": 92,
-        "tags": [
-            "image",
-            "background",
-            "ai"
-        ],
-        "color": "primary",
-        "is_active": true
-    },
-    {
-        "id": 14,
-        "title": "Image to Text (OCR)",
-        "description": "Extract text from images using Optical Character Recognition technology.",
-        "icon": "TextFields",
-        "path": "/services/image-to-text",
-        "category": "converter",
-        "popularity": 87,
-        "tags": [
-            "ocr",
-            "text",
-            "extract"
-        ],
-        "color": "secondary",
-        "is_active": true
-    },
-    {
-        "id": 15,
-        "title": "Image Converter",
-        "description": "Convert images between formats (JPG, PNG, WebP, GIF, BMP, TIFF).",
-        "icon": "SwapHoriz",
-        "path": "/services/image-converter",
-        "category": "media",
-        "popularity": 84,
-        "tags": [
-            "image",
-            "convert",
-            "format"
-        ],
-        "color": "success",
-        "is_active": true
-    },
-    {
-        "id": 16,
-        "title": "Base64 Encoder/Decoder",
-        "description": "Encode text or files to Base64, or decode Base64 strings back to original format.",
-        "icon": "Code",
-        "path": "/services/base64",
-        "category": "developer",
-        "popularity": 85,
-        "tags": [
-            "base64",
-            "encode",
-            "decode"
-        ],
-        "color": "warning",
-        "is_active": true
-    },
-    {
-        "id": 17,
-        "title": "Hash Generator",
-        "description": "Generate cryptographic hashes (MD5, SHA-1, SHA-256, SHA-512) from text or files.",
-        "icon": "Fingerprint",
-        "path": "/services/hash-generator",
-        "category": "developer",
-        "popularity": 83,
-        "tags": [
-            "hash",
-            "crypto",
-            "security"
-        ],
-        "color": "info",
-        "is_active": true
-    },
-    {
-        "id": 18,
-        "title": "UUID Generator",
-        "description": "Generate unique identifiers (UUID v1, v4) for database records and APIs.",
-        "icon": "Key",
-        "path": "/services/uuid-generator",
-        "category": "developer",
-        "popularity": 82,
-        "tags": [
-            "uuid",
-            "generate",
-            "unique"
-        ],
-        "color": "error",
-        "is_active": true
-    },
-    {
-        "id": 19,
-        "title": "Color Converter",
-        "description": "Convert colors between HEX, RGB, HSL, and CMYK formats with live preview.",
-        "icon": "Palette",
-        "path": "/services/color-converter",
-        "category": "developer",
-        "popularity": 81,
-        "tags": [
-            "color",
-            "convert",
-            "design"
-        ],
-        "color": "primary",
-        "is_active": true
-    },
-    {
-        "id": 20,
-        "title": "AI Detector",
-        "description": "Detect AI-generated content in text using advanced analysis algorithms.",
-        "icon": "SmartToy",
-        "path": "/services/ai-detector",
-        "category": "developer",
-        "popularity": 94,
-        "tags": [
-            "ai",
-            "detect",
-            "analysis"
-        ],
-        "color": "secondary",
-        "is_active": true
-    },
-    {
-        "id": 21,
-        "title": "Markdown Preview",
-        "description": "Convert Markdown text to HTML with real-time preview.",
-        "icon": "Code",
-        "path": "/services/markdown-preview",
-        "category": "Developer Tools",
-        "popularity": 10,
-        "tags": [
-            "developer",
-            "markdown",
-            "html",
-            "preview"
-        ],
-        "color": "info",
-        "is_active": true
-    },
-    {
-        "id": 22,
-        "title": "Text to Handwriting",
-        "description": "Convert digital text into realistic handwritten notes on paper background.",
-        "path": "/services/text-to-handwriting",
-        "icon": "Gesture",
-        "color": "primary",
-        "popularity": 91.0,
-        "category": "utility",
-        "tags": [
-            "handwriting",
-            "text",
-            "converter",
-            "notes"
-        ],
-        "keywords": [
-            "text to handwriting",
-            "handwriting generator",
-            "digital to handwritten",
-            "notes generator"
-        ]
-    },
-    {
-        "id": 23,
-        "title": "Secret Sharer",
-        "description": "Share sensitive text or files securely with self-destructing links.",
-        "path": "/services/secret-sharer",
-        "icon": "VpnKey",
-        "color": "secondary",
-        "popularity": 89.0,
-        "category": "security",
-        "tags": [
-            "security",
-            "encryption",
-            "share",
-            "secret"
-        ],
-        "keywords": [
-            "secret sharer",
-            "secure link",
-            "self destruct message",
-            "password share"
-        ]
-    },
-    {
-        "id": 24,
-        "title": "AI Image Upscaler",
-        "description": "Upscale and enhance low-resolution images using AI super-resolution.",
-        "path": "/services/image-upscale",
-        "icon": "AutoFixHigh",
-        "color": "warning",
-        "popularity": 86.0,
-        "category": "media",
-        "tags": [
-            "upscale",
-            "enhance",
-            "image",
-            "ai"
-        ],
-        "keywords": [
-            "ai upscaler",
-            "image enhancer",
-            "super resolution",
-            "enlarge image"
-        ]
-    },
-    {
-        "id": 25,
-        "title": "Website Diagnostics",
-        "description": "Run DNS lookup and redirect-chain inspection from a single dashboard.",
-        "path": "/services/website-diagnostics",
-        "icon": "Terminal",
-        "color": "info",
-        "popularity": 78.9,
-        "category": "developer",
-        "tags": [
-            "dns",
-            "redirect",
-            "headers",
-            "debug"
-        ],
-        "keywords": [
-            "website diagnostics",
-            "site diagnostics",
-            "dns and redirects",
-            "redirect chain",
-            "dns lookup",
-            "http headers",
-            "website debug"
-        ]
-    },
-    {
-        "id": 26,
-        "title": "Internet Speed Test",
-        "description": "Accurately measure your download, upload, and latency speeds in real-time.",
-        "path": "/services/speed-test",
-        "icon": "Speed",
-        "color": "primary",
-        "popularity": 99.0,
-        "category": "developer",
-        "tags": [
-            "speed",
-            "network",
-            "internet",
-            "test"
-        ],
-        "keywords": [
-            "internet speed test",
-            "speedtest",
-            "wifi speed test",
-            "check internet speed",
-            "bandwidth test",
-            "ping test",
-            "real time speed test",
-            "network speed",
-            "download upload test"
-        ]
-    },
-    {
-        "id": 27,
-        "title": "Audio Source Separator",
-        "description": "Extract vocals and instrumentals from any song using AI.",
-        "path": "/services/audio-separator",
-        "icon": "Mic",
-        "color": "secondary",
-        "popularity": 96.0,
-        "category": "media",
-        "tags": [
-            "audio",
-            "vocal remover",
-            "karaoke",
-            "ai"
-        ],
-        "keywords": [
-            "vocal remover",
-            "extract vocals",
-            "karaoke maker",
-            "remove drums",
-            "audio splitter"
-        ]
-    },
-    {
-        "id": 28,
-        "title": "Uptime Robot Monitor",
-        "description": "With UptimeRobot, you can monitor any website, API, server, application, service, network, or endpoint with supports for HTTP/HTTPS, Keywords, Ping, Ports, website change, response time, and SSL certificate & domain expiry.",
-        "path": "/services/uptime-robot",
-        "icon": "NetworkCheck",
-        "color": "success",
-        "popularity": 80.0,
-        "category": "developer",
-        "tags": [
-            "uptime",
-            "monitor",
-            "ssl",
-            "ping",
-            "port"
-        ],
-        "keywords": [
-            "uptime robot",
-            "website monitor",
-            "port check",
-            "keyword monitor",
-            "ssl check",
-            "ping check"
-        ]
-    },
-    {
-        "id": 29,
-        "title": "Word & Character Counter",
-        "description": "Count words, characters, sentences, and paragraphs instantly in your browser.",
-        "path": "/services/word-counter",
-        "icon": "TextFields",
-        "color": "primary",
-        "popularity": 70.0,
-        "category": "developer",
-        "tags": ["text", "counter", "words"],
-        "keywords": ["word counter", "character counter", "text statistics", "reading time"]
-    },
-    {
-        "id": 30,
-        "title": "Lorem Ipsum Generator",
-        "description": "Generate placeholder text for mockups and layouts, fully client-side.",
-        "path": "/services/lorem-ipsum",
-        "icon": "Article",
-        "color": "secondary",
-        "popularity": 65.0,
-        "category": "developer",
-        "tags": ["text", "placeholder", "design"],
-        "keywords": ["lorem ipsum", "placeholder text", "dummy text generator"]
-    },
-    {
-        "id": 31,
-        "title": "CSS Gradient Generator",
-        "description": "Design linear and radial CSS gradients visually and copy the code.",
-        "path": "/services/css-gradient-generator",
-        "icon": "Gradient",
-        "color": "success",
-        "popularity": 72.0,
-        "category": "developer",
-        "tags": ["css", "gradient", "design"],
-        "keywords": ["css gradient generator", "linear gradient", "radial gradient"]
-    },
-    {
-        "id": 32,
-        "title": "Timestamp Converter",
-        "description": "Convert between Unix epoch time and human-readable dates.",
-        "path": "/services/timestamp-converter",
-        "icon": "Schedule",
-        "color": "warning",
-        "popularity": 68.0,
-        "category": "developer",
-        "tags": ["timestamp", "epoch", "date"],
-        "keywords": ["unix timestamp converter", "epoch converter", "date to timestamp"]
-    },
-    {
-        "id": 33,
-        "title": "Password Generator",
-        "description": "Generate cryptographically random, secure passwords locally in your browser.",
-        "path": "/services/password-generator",
-        "icon": "VpnKey",
-        "color": "error",
-        "popularity": 80.0,
-        "category": "security",
-        "tags": ["password", "security", "generator"],
-        "keywords": ["password generator", "strong password", "random password"]
-    },
-    {
-        "id": 34,
-        "title": "Text Diff Checker",
-        "description": "Compare two blocks of text line-by-line and see what changed.",
-        "path": "/services/text-diff",
-        "icon": "Difference",
-        "color": "info",
-        "popularity": 66.0,
-        "category": "developer",
-        "tags": ["diff", "compare", "text"],
-        "keywords": ["text diff checker", "compare text", "diff tool"]
-    },
-    {
-        "id": 35,
-        "title": "Case Converter",
-        "description": "Convert text between camelCase, snake_case, kebab-case, Title Case, and more.",
-        "path": "/services/case-converter",
-        "icon": "TextFormat",
-        "color": "primary",
-        "popularity": 64.0,
-        "category": "developer",
-        "tags": ["text", "case", "converter"],
-        "keywords": ["case converter", "camelcase converter", "snake case converter"]
-    },
-    {
-        "id": 36,
-        "title": "HTML Entity Encoder/Decoder",
-        "description": "Encode special characters to HTML entities, or decode them back.",
-        "path": "/services/html-entity-codec",
-        "icon": "Code",
-        "color": "secondary",
-        "popularity": 60.0,
-        "category": "developer",
-        "tags": ["html", "entities", "encode"],
-        "keywords": ["html entity encoder", "html entity decoder", "escape html"]
-    },
-    {
-        "id": 37,
-        "title": "Number Base Converter",
-        "description": "Convert numbers between binary, octal, decimal, and hexadecimal instantly.",
-        "path": "/services/number-base-converter",
-        "icon": "SwapHoriz",
-        "color": "primary",
-        "popularity": 74.0,
-        "category": "developer",
-        "tags": ["binary", "hex", "number", "convert"],
-        "keywords": ["binary to decimal", "hex converter", "number base converter", "octal converter"]
-    },
-    {
-        "id": 38,
-        "title": "JSON ↔ CSV Converter",
-        "description": "Convert JSON arrays to CSV and CSV back to JSON — entirely in your browser.",
-        "path": "/services/json-csv",
-        "icon": "TableChart",
-        "color": "secondary",
-        "popularity": 78.0,
-        "category": "developer",
-        "tags": ["json", "csv", "convert", "data"],
-        "keywords": ["json to csv", "csv to json", "convert json csv"]
-    },
-    {
-        "id": 39,
-        "title": "URL Encoder / Decoder",
-        "description": "Encode and decode URL components and percent-encoding safely.",
-        "path": "/services/url-encode-decode",
-        "icon": "LinkIcon",
-        "color": "warning",
-        "popularity": 70.0,
-        "category": "developer",
-        "tags": ["url", "encode", "decode", "percent"],
-        "keywords": ["url encoder", "url decoder", "percent encoding", "encodeURIComponent"]
-    },
-    {
-        "id": 40,
-        "title": "JWT Decoder",
-        "description": "Decode JSON Web Tokens to inspect header and payload claims — 100% client-side.",
-        "path": "/services/jwt-decoder",
-        "icon": "VpnKey",
-        "color": "error",
-        "popularity": 80.0,
-        "category": "developer",
-        "tags": ["jwt", "token", "auth", "decode"],
-        "keywords": ["jwt decoder", "json web token", "token inspector", "jwt claims"]
-    },
-    {
-        "id": 41,
-        "title": "Cron Expression Explainer",
-        "description": "Translate cron expressions into plain English. Understand any cron schedule instantly.",
-        "path": "/services/cron-explainer",
-        "icon": "Schedule",
-        "color": "info",
-        "popularity": 72.0,
-        "category": "developer",
-        "tags": ["cron", "schedule", "devops"],
-        "keywords": ["cron expression", "cron parser", "cron explainer", "cron schedule"]
-    },
-    {
-        "id": 42,
-        "title": "Color Palette Generator",
-        "description": "Generate beautiful color palettes, material shades, and color harmonies from any base color.",
-        "path": "/services/color-palette",
-        "icon": "Palette",
-        "color": "success",
-        "popularity": 76.0,
-        "category": "design",
-        "tags": ["color", "palette", "design", "hex"],
-        "keywords": ["color palette generator", "color shades", "color harmonies", "color picker"]
-    },
-    {
-        "id": 43,
-        "title": "CSS Box Shadow Generator",
-        "description": "Visually build CSS box-shadow values with multi-layer support and live preview. Copy the generated CSS instantly.",
-        "path": "/services/css-box-shadow",
-        "icon": "Layers",
-        "color": "primary",
-        "popularity": 78.0,
-        "category": "design",
-        "tags": ["css", "shadow", "design", "frontend"],
-        "keywords": ["css box shadow generator", "box shadow", "css shadow", "drop shadow"]
-    },
-    {
-        "id": 44,
-        "title": "HTTP Status Code Reference",
-        "description": "Complete searchable reference for all HTTP status codes (1xx–5xx) with descriptions and real-world use cases.",
-        "path": "/services/http-status-codes",
-        "icon": "Info",
-        "color": "info",
-        "popularity": 74.0,
-        "category": "developer",
-        "tags": ["http", "status", "reference", "developer"],
-        "keywords": ["http status codes", "404 not found", "500 error", "http reference"]
-    },
-    {
-        "id": 45,
-        "title": "JSON to TypeScript",
-        "description": "Paste any JSON object and instantly generate TypeScript interfaces. Handles nested objects and arrays.",
-        "path": "/services/json-to-typescript",
-        "icon": "Code",
-        "color": "secondary",
-        "popularity": 82.0,
-        "category": "developer",
-        "tags": ["json", "typescript", "types", "interfaces"],
-        "keywords": ["json to typescript", "json to ts", "generate typescript interfaces", "json types"]
-    },
-    {
-        "id": 46,
-        "title": "Favicon Generator",
-        "description": "Upload any image and generate favicons in all standard sizes: 16×16 to 512×512. Download as PNG files.",
-        "path": "/services/favicon-generator",
-        "icon": "Image",
-        "color": "warning",
-        "popularity": 70.0,
-        "category": "design",
-        "tags": ["favicon", "icon", "image", "web"],
-        "keywords": ["favicon generator", "favicon maker", "website icon", "ico generator"]
-    },
-    {
-        "id": 47,
-        "title": "DNS Lookup",
-        "description": "Check A/AAAA/CNAME/MX/TXT records across multiple resolvers to debug DNS issues and propagation.",
-        "path": "/services/dns-lookup",
-        "icon": "Dns",
-        "color": "info",
-        "popularity": 74.0,
-        "category": "developer",
-        "tags": ["dns", "network", "records", "propagation"],
-        "keywords": ["dns lookup", "dns propagation checker", "mx record checker", "dns records online"]
-    },
-    {
-        "id": 48,
-        "title": "Keypair Generator",
-        "description": "Generate RSA or Elliptic Curve keypairs entirely in your browser — private keys never leave your device.",
-        "path": "/services/keypair-generator",
-        "icon": "Fingerprint",
-        "color": "secondary",
-        "popularity": 71.0,
-        "category": "security",
-        "tags": ["rsa", "ec", "keypair", "crypto"],
-        "keywords": ["rsa key generator", "ec keypair generator online", "generate ssh keypair", "public private key generator"]
-    },
-    {
-        "id": 49,
-        "title": "Redirect Inspector",
-        "description": "Paste a URL to see every 301/302 hop and the final security/cache headers (CSP, CORS, HSTS).",
-        "path": "/services/redirect-inspector",
-        "icon": "AltRoute",
-        "color": "primary",
-        "popularity": 73.0,
-        "category": "developer",
-        "tags": ["redirect", "headers", "http", "debug"],
-        "keywords": ["redirect chain checker", "http header inspector", "301 redirect checker", "check security headers"]
-    },
-    {
-        "id": 50,
-        "title": "Regex Tester",
-        "description": "Test JavaScript regular expressions against text with live match highlighting and a built-in cheat sheet.",
-        "path": "/services/regex-tester",
-        "icon": "Terminal",
-        "color": "success",
-        "popularity": 88.0,
-        "category": "developer",
-        "tags": ["regex", "pattern", "testing"],
-        "keywords": ["regex tester online", "regular expression tester", "javascript regex tester", "regex cheat sheet"]
-    },
-    {
-        "id": 51,
-        "title": "Unit Converter",
-        "description": "Convert length, weight, temperature, and volume between common units instantly, entirely in your browser.",
-        "path": "/services/unit-converter",
-        "icon": "SwapHoriz",
-        "color": "primary",
-        "popularity": 76.0,
-        "category": "developer",
-        "tags": ["unit", "converter", "metric", "imperial"],
-        "keywords": ["unit converter online", "length converter", "weight converter", "celsius to fahrenheit"]
-    },
-    {
-        "id": 52,
-        "title": "Color Contrast Checker",
-        "description": "Check WCAG AA/AAA contrast ratios between a foreground and background color for accessible text.",
-        "path": "/services/color-contrast-checker",
-        "icon": "Palette",
-        "color": "secondary",
-        "popularity": 72.0,
-        "category": "design",
-        "tags": ["accessibility", "wcag", "contrast", "color"],
-        "keywords": ["color contrast checker", "wcag contrast ratio", "accessibility checker online", "aa aaa contrast"]
-    },
-    {
-        "id": 53,
-        "title": "Random Data Generator",
-        "description": "Generate plausible mock names, emails, phone numbers, addresses, and UUIDs for testing forms and demos.",
-        "path": "/services/random-data-generator",
-        "icon": "Casino",
-        "color": "warning",
-        "popularity": 75.0,
-        "category": "developer",
-        "tags": ["mock data", "test data", "fake data", "generator"],
-        "keywords": ["random data generator", "mock data generator", "fake data for testing", "test data online"]
-    },
-    {
-        "id": 54,
-        "title": "Text Encryptor",
-        "description": "AES-256-GCM encryption using your browser's native Web Crypto API — passphrase and plaintext never leave your device.",
-        "path": "/services/text-encryptor",
-        "icon": "EnhancedEncryption",
-        "color": "info",
-        "popularity": 73.0,
-        "category": "security",
-        "tags": ["encryption", "aes", "security", "privacy"],
-        "keywords": ["aes encryption online", "encrypt text online", "text encryptor decryptor", "web crypto api"]
-    },
-    {
-        "id": 55,
-        "title": "Markdown Table Generator",
-        "description": "Edit a grid and get valid GitHub-flavored markdown table syntax instantly — no manual pipes or dashes.",
-        "path": "/services/markdown-table-generator",
-        "icon": "TableChart",
-        "color": "success",
-        "popularity": 77.0,
-        "category": "developer",
-        "tags": ["markdown", "table", "generator", "github"],
-        "keywords": ["markdown table generator", "markdown table maker", "github table syntax", "md table generator"]
-    }
+  {
+    "id": 1,
+    "title": "URL Downloader",
+    "description": "Download files from any URL with support for multiple formats and batch processing.",
+    "icon": "Download",
+    "path": "/services/url-downloader",
+    "category": "download",
+    "popularity": 95,
+    "tags": [
+      "file",
+      "download",
+      "batch"
+    ],
+    "color": "primary",
+    "is_active": true
+  },
+  {
+    "id": 2,
+    "title": "YT Video Downloader",
+    "description": "Download YouTube videos in various resolutions (HD, 4K) and multiple formats.",
+    "icon": "Movie",
+    "path": "/services/yt-downloader",
+    "category": "download",
+    "popularity": 92,
+    "tags": [
+      "video",
+      "youtube",
+      "media"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 3,
+    "title": "URL to QR Converter",
+    "description": "Generate QR codes from URLs with custom colors, sizes, and logo integration.",
+    "icon": "QrCode",
+    "path": "/services/qr-generator",
+    "category": "converter",
+    "popularity": 88,
+    "tags": [
+      "qr",
+      "generator",
+      "share"
+    ],
+    "color": "success",
+    "is_active": true
+  },
+  {
+    "id": 4,
+    "title": "JSON Formatter",
+    "description": "Format, validate, minify, and beautify JSON data with syntax highlighting.",
+    "icon": "Code",
+    "path": "/services/json-formatter",
+    "category": "developer",
+    "popularity": 90,
+    "tags": [
+      "json",
+      "developer",
+      "format"
+    ],
+    "color": "warning",
+    "is_active": true
+  },
+  {
+    "id": 5,
+    "title": "Text to Speech",
+    "description": "Convert text to speech with multiple voice options and languages.",
+    "icon": "VolumeUp",
+    "path": "/services/text-to-speech",
+    "category": "converter",
+    "popularity": 85,
+    "tags": [
+      "audio",
+      "text",
+      "speech"
+    ],
+    "color": "info",
+    "is_active": true
+  },
+  {
+    "id": 6,
+    "title": "Image Compressor",
+    "description": "Compress images while maintaining quality with batch processing support.",
+    "icon": "Compress",
+    "path": "/services/image-compressor",
+    "category": "media",
+    "popularity": 88,
+    "tags": [
+      "image",
+      "compress",
+      "optimize"
+    ],
+    "color": "error",
+    "is_active": true
+  },
+  {
+    "id": 7,
+    "title": "PDF to DOC Converter",
+    "description": "Convert PDF documents to editable Word (DOC/DOCX) format with formatting preserved.",
+    "icon": "Description",
+    "path": "/services/pdf-to-doc",
+    "category": "document",
+    "popularity": 90,
+    "tags": [
+      "pdf",
+      "doc",
+      "convert"
+    ],
+    "color": "primary",
+    "is_active": true
+  },
+  {
+    "id": 8,
+    "title": "DOC to PDF Converter",
+    "description": "Convert Word documents (DOC/DOCX) to PDF format with high fidelity.",
+    "icon": "PictureAsPdf",
+    "path": "/services/doc-to-pdf",
+    "category": "document",
+    "popularity": 89,
+    "tags": [
+      "doc",
+      "pdf",
+      "convert"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 9,
+    "title": "PDF Merger",
+    "description": "Merge multiple PDF files into a single document with custom page ordering.",
+    "icon": "MergeType",
+    "path": "/services/pdf-merger",
+    "category": "document",
+    "popularity": 87,
+    "tags": [
+      "pdf",
+      "merge",
+      "combine"
+    ],
+    "color": "success",
+    "is_active": true
+  },
+  {
+    "id": 10,
+    "title": "PDF Splitter",
+    "description": "Split PDF documents into multiple files by page ranges or individual pages.",
+    "icon": "CallSplit",
+    "path": "/services/pdf-splitter",
+    "category": "document",
+    "popularity": 86,
+    "tags": [
+      "pdf",
+      "split",
+      "extract"
+    ],
+    "color": "warning",
+    "is_active": true
+  },
+  {
+    "id": 11,
+    "title": "Image to PDF",
+    "description": "Convert images (JPG, PNG, etc.) to PDF documents with multiple images per file.",
+    "icon": "Image",
+    "path": "/services/image-to-pdf",
+    "category": "document",
+    "popularity": 85,
+    "tags": [
+      "image",
+      "pdf",
+      "convert"
+    ],
+    "color": "info",
+    "is_active": true
+  },
+  {
+    "id": 12,
+    "title": "Image Resizer",
+    "description": "Resize images to custom dimensions while maintaining aspect ratio and quality.",
+    "icon": "PhotoSizeSelectLarge",
+    "path": "/services/image-resizer",
+    "category": "media",
+    "popularity": 88,
+    "tags": [
+      "image",
+      "resize",
+      "scale"
+    ],
+    "color": "error",
+    "is_active": true
+  },
+  {
+    "id": 13,
+    "title": "Background Remover",
+    "description": "Remove backgrounds from images automatically using AI-powered technology.",
+    "icon": "AutoFixHigh",
+    "path": "/services/background-remover",
+    "category": "media",
+    "popularity": 92,
+    "tags": [
+      "image",
+      "background",
+      "ai"
+    ],
+    "color": "primary",
+    "is_active": true
+  },
+  {
+    "id": 14,
+    "title": "Image to Text (OCR)",
+    "description": "Extract text from images using Optical Character Recognition technology.",
+    "icon": "TextFields",
+    "path": "/services/image-to-text",
+    "category": "converter",
+    "popularity": 87,
+    "tags": [
+      "ocr",
+      "text",
+      "extract"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 15,
+    "title": "Image Converter",
+    "description": "Convert images between formats (JPG, PNG, WebP, GIF, BMP, TIFF).",
+    "icon": "SwapHoriz",
+    "path": "/services/image-converter",
+    "category": "media",
+    "popularity": 84,
+    "tags": [
+      "image",
+      "convert",
+      "format"
+    ],
+    "color": "success",
+    "is_active": true
+  },
+  {
+    "id": 16,
+    "title": "Base64 Encoder/Decoder",
+    "description": "Encode text or files to Base64, or decode Base64 strings back to original format.",
+    "icon": "Code",
+    "path": "/services/base64",
+    "category": "developer",
+    "popularity": 85,
+    "tags": [
+      "base64",
+      "encode",
+      "decode"
+    ],
+    "color": "warning",
+    "is_active": true
+  },
+  {
+    "id": 17,
+    "title": "Hash Generator",
+    "description": "Generate cryptographic hashes (MD5, SHA-1, SHA-256, SHA-512) from text or files.",
+    "icon": "Fingerprint",
+    "path": "/services/hash-generator",
+    "category": "developer",
+    "popularity": 83,
+    "tags": [
+      "hash",
+      "crypto",
+      "security"
+    ],
+    "color": "info",
+    "is_active": true
+  },
+  {
+    "id": 18,
+    "title": "UUID Generator",
+    "description": "Generate unique identifiers (UUID v1, v4) for database records and APIs.",
+    "icon": "Key",
+    "path": "/services/uuid-generator",
+    "category": "developer",
+    "popularity": 82,
+    "tags": [
+      "uuid",
+      "generate",
+      "unique"
+    ],
+    "color": "error",
+    "is_active": true
+  },
+  {
+    "id": 19,
+    "title": "Color Converter",
+    "description": "Convert colors between HEX, RGB, HSL, and CMYK formats with live preview.",
+    "icon": "Palette",
+    "path": "/services/color-converter",
+    "category": "developer",
+    "popularity": 81,
+    "tags": [
+      "color",
+      "convert",
+      "design"
+    ],
+    "color": "primary",
+    "is_active": true
+  },
+  {
+    "id": 20,
+    "title": "AI Detector",
+    "description": "Detect AI-generated content in text using advanced analysis algorithms.",
+    "icon": "SmartToy",
+    "path": "/services/ai-detector",
+    "category": "developer",
+    "popularity": 94,
+    "tags": [
+      "ai",
+      "detect",
+      "analysis"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 21,
+    "title": "Markdown Preview",
+    "description": "Convert Markdown text to HTML with real-time preview.",
+    "icon": "Code",
+    "path": "/services/markdown-preview",
+    "category": "Developer Tools",
+    "popularity": 10,
+    "tags": [
+      "developer",
+      "markdown",
+      "html",
+      "preview"
+    ],
+    "color": "info",
+    "is_active": true
+  },
+  {
+    "id": 22,
+    "title": "Text to Handwriting",
+    "description": "Convert digital text into realistic handwritten notes on paper background.",
+    "path": "/services/text-to-handwriting",
+    "icon": "Gesture",
+    "color": "primary",
+    "popularity": 91.0,
+    "category": "utility",
+    "tags": [
+      "handwriting",
+      "text",
+      "converter",
+      "notes"
+    ],
+    "keywords": [
+      "text to handwriting",
+      "handwriting generator",
+      "digital to handwritten",
+      "notes generator"
+    ]
+  },
+  {
+    "id": 23,
+    "title": "Secret Sharer",
+    "description": "Share sensitive text or files securely with self-destructing links.",
+    "path": "/services/secret-sharer",
+    "icon": "VpnKey",
+    "color": "secondary",
+    "popularity": 89.0,
+    "category": "security",
+    "tags": [
+      "security",
+      "encryption",
+      "share",
+      "secret"
+    ],
+    "keywords": [
+      "secret sharer",
+      "secure link",
+      "self destruct message",
+      "password share"
+    ]
+  },
+  {
+    "id": 24,
+    "title": "AI Image Upscaler",
+    "description": "Upscale and enhance low-resolution images using AI super-resolution.",
+    "path": "/services/image-upscale",
+    "icon": "AutoFixHigh",
+    "color": "warning",
+    "popularity": 86.0,
+    "category": "media",
+    "tags": [
+      "upscale",
+      "enhance",
+      "image",
+      "ai"
+    ],
+    "keywords": [
+      "ai upscaler",
+      "image enhancer",
+      "super resolution",
+      "enlarge image"
+    ]
+  },
+  {
+    "id": 25,
+    "title": "Website Diagnostics",
+    "description": "Run DNS lookup and redirect-chain inspection from a single dashboard.",
+    "path": "/services/website-diagnostics",
+    "icon": "Terminal",
+    "color": "info",
+    "popularity": 78.9,
+    "category": "developer",
+    "tags": [
+      "dns",
+      "redirect",
+      "headers",
+      "debug"
+    ],
+    "keywords": [
+      "website diagnostics",
+      "site diagnostics",
+      "dns and redirects",
+      "redirect chain",
+      "dns lookup",
+      "http headers",
+      "website debug"
+    ]
+  },
+  {
+    "id": 26,
+    "title": "Internet Speed Test",
+    "description": "Accurately measure your download, upload, and latency speeds in real-time.",
+    "path": "/services/speed-test",
+    "icon": "Speed",
+    "color": "primary",
+    "popularity": 99.0,
+    "category": "developer",
+    "tags": [
+      "speed",
+      "network",
+      "internet",
+      "test"
+    ],
+    "keywords": [
+      "internet speed test",
+      "speedtest",
+      "wifi speed test",
+      "check internet speed",
+      "bandwidth test",
+      "ping test",
+      "real time speed test",
+      "network speed",
+      "download upload test"
+    ]
+  },
+  {
+    "id": 27,
+    "title": "Audio Source Separator",
+    "description": "Extract vocals and instrumentals from any song using AI.",
+    "path": "/services/audio-separator",
+    "icon": "Mic",
+    "color": "secondary",
+    "popularity": 96.0,
+    "category": "media",
+    "tags": [
+      "audio",
+      "vocal remover",
+      "karaoke",
+      "ai"
+    ],
+    "keywords": [
+      "vocal remover",
+      "extract vocals",
+      "karaoke maker",
+      "remove drums",
+      "audio splitter"
+    ]
+  },
+  {
+    "id": 28,
+    "title": "Uptime Robot Monitor",
+    "description": "With UptimeRobot, you can monitor any website, API, server, application, service, network, or endpoint with supports for HTTP/HTTPS, Keywords, Ping, Ports, website change, response time, and SSL certificate & domain expiry.",
+    "path": "/services/uptime-robot",
+    "icon": "NetworkCheck",
+    "color": "success",
+    "popularity": 80.0,
+    "category": "developer",
+    "tags": [
+      "uptime",
+      "monitor",
+      "ssl",
+      "ping",
+      "port"
+    ],
+    "keywords": [
+      "uptime robot",
+      "website monitor",
+      "port check",
+      "keyword monitor",
+      "ssl check",
+      "ping check"
+    ]
+  },
+  {
+    "id": 29,
+    "title": "Word & Character Counter",
+    "description": "Count words, characters, sentences, and paragraphs instantly in your browser.",
+    "path": "/services/word-counter",
+    "icon": "TextFields",
+    "color": "primary",
+    "popularity": 70.0,
+    "category": "developer",
+    "tags": [
+      "text",
+      "counter",
+      "words"
+    ],
+    "keywords": [
+      "word counter",
+      "character counter",
+      "text statistics",
+      "reading time"
+    ]
+  },
+  {
+    "id": 30,
+    "title": "Lorem Ipsum Generator",
+    "description": "Generate placeholder text for mockups and layouts, fully client-side.",
+    "path": "/services/lorem-ipsum",
+    "icon": "Article",
+    "color": "secondary",
+    "popularity": 65.0,
+    "category": "developer",
+    "tags": [
+      "text",
+      "placeholder",
+      "design"
+    ],
+    "keywords": [
+      "lorem ipsum",
+      "placeholder text",
+      "dummy text generator"
+    ]
+  },
+  {
+    "id": 31,
+    "title": "CSS Gradient Generator",
+    "description": "Design linear and radial CSS gradients visually and copy the code.",
+    "path": "/services/css-gradient-generator",
+    "icon": "Gradient",
+    "color": "success",
+    "popularity": 72.0,
+    "category": "developer",
+    "tags": [
+      "css",
+      "gradient",
+      "design"
+    ],
+    "keywords": [
+      "css gradient generator",
+      "linear gradient",
+      "radial gradient"
+    ]
+  },
+  {
+    "id": 32,
+    "title": "Timestamp Converter",
+    "description": "Convert between Unix epoch time and human-readable dates.",
+    "path": "/services/timestamp-converter",
+    "icon": "Schedule",
+    "color": "warning",
+    "popularity": 68.0,
+    "category": "developer",
+    "tags": [
+      "timestamp",
+      "epoch",
+      "date"
+    ],
+    "keywords": [
+      "unix timestamp converter",
+      "epoch converter",
+      "date to timestamp"
+    ]
+  },
+  {
+    "id": 33,
+    "title": "Password Generator",
+    "description": "Generate cryptographically random, secure passwords locally in your browser.",
+    "path": "/services/password-generator",
+    "icon": "VpnKey",
+    "color": "error",
+    "popularity": 80.0,
+    "category": "security",
+    "tags": [
+      "password",
+      "security",
+      "generator"
+    ],
+    "keywords": [
+      "password generator",
+      "strong password",
+      "random password"
+    ]
+  },
+  {
+    "id": 34,
+    "title": "Text Diff Checker",
+    "description": "Compare two blocks of text line-by-line and see what changed.",
+    "path": "/services/text-diff",
+    "icon": "Difference",
+    "color": "info",
+    "popularity": 66.0,
+    "category": "developer",
+    "tags": [
+      "diff",
+      "compare",
+      "text"
+    ],
+    "keywords": [
+      "text diff checker",
+      "compare text",
+      "diff tool"
+    ]
+  },
+  {
+    "id": 35,
+    "title": "Case Converter",
+    "description": "Convert text between camelCase, snake_case, kebab-case, Title Case, and more.",
+    "path": "/services/case-converter",
+    "icon": "TextFormat",
+    "color": "primary",
+    "popularity": 64.0,
+    "category": "developer",
+    "tags": [
+      "text",
+      "case",
+      "converter"
+    ],
+    "keywords": [
+      "case converter",
+      "camelcase converter",
+      "snake case converter"
+    ]
+  },
+  {
+    "id": 36,
+    "title": "HTML Entity Encoder/Decoder",
+    "description": "Encode special characters to HTML entities, or decode them back.",
+    "path": "/services/html-entity-codec",
+    "icon": "Code",
+    "color": "secondary",
+    "popularity": 60.0,
+    "category": "developer",
+    "tags": [
+      "html",
+      "entities",
+      "encode"
+    ],
+    "keywords": [
+      "html entity encoder",
+      "html entity decoder",
+      "escape html"
+    ]
+  },
+  {
+    "id": 37,
+    "title": "Number Base Converter",
+    "description": "Convert numbers between binary, octal, decimal, and hexadecimal instantly.",
+    "path": "/services/number-base-converter",
+    "icon": "SwapHoriz",
+    "color": "primary",
+    "popularity": 74.0,
+    "category": "developer",
+    "tags": [
+      "binary",
+      "hex",
+      "number",
+      "convert"
+    ],
+    "keywords": [
+      "binary to decimal",
+      "hex converter",
+      "number base converter",
+      "octal converter"
+    ]
+  },
+  {
+    "id": 38,
+    "title": "JSON \u2194 CSV Converter",
+    "description": "Convert JSON arrays to CSV and CSV back to JSON \u2014 entirely in your browser.",
+    "path": "/services/json-csv",
+    "icon": "TableChart",
+    "color": "secondary",
+    "popularity": 78.0,
+    "category": "developer",
+    "tags": [
+      "json",
+      "csv",
+      "convert",
+      "data"
+    ],
+    "keywords": [
+      "json to csv",
+      "csv to json",
+      "convert json csv"
+    ]
+  },
+  {
+    "id": 39,
+    "title": "URL Encoder / Decoder",
+    "description": "Encode and decode URL components and percent-encoding safely.",
+    "path": "/services/url-encode-decode",
+    "icon": "LinkIcon",
+    "color": "warning",
+    "popularity": 70.0,
+    "category": "developer",
+    "tags": [
+      "url",
+      "encode",
+      "decode",
+      "percent"
+    ],
+    "keywords": [
+      "url encoder",
+      "url decoder",
+      "percent encoding",
+      "encodeURIComponent"
+    ]
+  },
+  {
+    "id": 40,
+    "title": "JWT Decoder",
+    "description": "Decode JSON Web Tokens to inspect header and payload claims \u2014 100% client-side.",
+    "path": "/services/jwt-decoder",
+    "icon": "VpnKey",
+    "color": "error",
+    "popularity": 80.0,
+    "category": "developer",
+    "tags": [
+      "jwt",
+      "token",
+      "auth",
+      "decode"
+    ],
+    "keywords": [
+      "jwt decoder",
+      "json web token",
+      "token inspector",
+      "jwt claims"
+    ]
+  },
+  {
+    "id": 41,
+    "title": "Cron Expression Explainer",
+    "description": "Translate cron expressions into plain English. Understand any cron schedule instantly.",
+    "path": "/services/cron-explainer",
+    "icon": "Schedule",
+    "color": "info",
+    "popularity": 72.0,
+    "category": "developer",
+    "tags": [
+      "cron",
+      "schedule",
+      "devops"
+    ],
+    "keywords": [
+      "cron expression",
+      "cron parser",
+      "cron explainer",
+      "cron schedule"
+    ]
+  },
+  {
+    "id": 42,
+    "title": "Color Palette Generator",
+    "description": "Generate beautiful color palettes, material shades, and color harmonies from any base color.",
+    "path": "/services/color-palette",
+    "icon": "Palette",
+    "color": "success",
+    "popularity": 76.0,
+    "category": "design",
+    "tags": [
+      "color",
+      "palette",
+      "design",
+      "hex"
+    ],
+    "keywords": [
+      "color palette generator",
+      "color shades",
+      "color harmonies",
+      "color picker"
+    ]
+  },
+  {
+    "id": 43,
+    "title": "CSS Box Shadow Generator",
+    "description": "Visually build CSS box-shadow values with multi-layer support and live preview. Copy the generated CSS instantly.",
+    "path": "/services/css-box-shadow",
+    "icon": "Layers",
+    "color": "primary",
+    "popularity": 78.0,
+    "category": "design",
+    "tags": [
+      "css",
+      "shadow",
+      "design",
+      "frontend"
+    ],
+    "keywords": [
+      "css box shadow generator",
+      "box shadow",
+      "css shadow",
+      "drop shadow"
+    ]
+  },
+  {
+    "id": 44,
+    "title": "HTTP Status Code Reference",
+    "description": "Complete searchable reference for all HTTP status codes (1xx\u20135xx) with descriptions and real-world use cases.",
+    "path": "/services/http-status-codes",
+    "icon": "Info",
+    "color": "info",
+    "popularity": 74.0,
+    "category": "developer",
+    "tags": [
+      "http",
+      "status",
+      "reference",
+      "developer"
+    ],
+    "keywords": [
+      "http status codes",
+      "404 not found",
+      "500 error",
+      "http reference"
+    ]
+  },
+  {
+    "id": 45,
+    "title": "JSON to TypeScript",
+    "description": "Paste any JSON object and instantly generate TypeScript interfaces. Handles nested objects and arrays.",
+    "path": "/services/json-to-typescript",
+    "icon": "Code",
+    "color": "secondary",
+    "popularity": 82.0,
+    "category": "developer",
+    "tags": [
+      "json",
+      "typescript",
+      "types",
+      "interfaces"
+    ],
+    "keywords": [
+      "json to typescript",
+      "json to ts",
+      "generate typescript interfaces",
+      "json types"
+    ]
+  },
+  {
+    "id": 46,
+    "title": "Favicon Generator",
+    "description": "Upload any image and generate favicons in all standard sizes: 16\u00d716 to 512\u00d7512. Download as PNG files.",
+    "path": "/services/favicon-generator",
+    "icon": "Image",
+    "color": "warning",
+    "popularity": 70.0,
+    "category": "design",
+    "tags": [
+      "favicon",
+      "icon",
+      "image",
+      "web"
+    ],
+    "keywords": [
+      "favicon generator",
+      "favicon maker",
+      "website icon",
+      "ico generator"
+    ]
+  },
+  {
+    "id": 47,
+    "title": "DNS Lookup",
+    "description": "Check A/AAAA/CNAME/MX/TXT records across multiple resolvers to debug DNS issues and propagation.",
+    "path": "/services/dns-lookup",
+    "icon": "Dns",
+    "color": "info",
+    "popularity": 74.0,
+    "category": "developer",
+    "tags": [
+      "dns",
+      "network",
+      "records",
+      "propagation"
+    ],
+    "keywords": [
+      "dns lookup",
+      "dns propagation checker",
+      "mx record checker",
+      "dns records online"
+    ]
+  },
+  {
+    "id": 48,
+    "title": "Keypair Generator",
+    "description": "Generate RSA or Elliptic Curve keypairs entirely in your browser \u2014 private keys never leave your device.",
+    "path": "/services/keypair-generator",
+    "icon": "Fingerprint",
+    "color": "secondary",
+    "popularity": 71.0,
+    "category": "security",
+    "tags": [
+      "rsa",
+      "ec",
+      "keypair",
+      "crypto"
+    ],
+    "keywords": [
+      "rsa key generator",
+      "ec keypair generator online",
+      "generate ssh keypair",
+      "public private key generator"
+    ]
+  },
+  {
+    "id": 49,
+    "title": "Redirect Inspector",
+    "description": "Paste a URL to see every 301/302 hop and the final security/cache headers (CSP, CORS, HSTS).",
+    "path": "/services/redirect-inspector",
+    "icon": "AltRoute",
+    "color": "primary",
+    "popularity": 73.0,
+    "category": "developer",
+    "tags": [
+      "redirect",
+      "headers",
+      "http",
+      "debug"
+    ],
+    "keywords": [
+      "redirect chain checker",
+      "http header inspector",
+      "301 redirect checker",
+      "check security headers"
+    ]
+  },
+  {
+    "id": 50,
+    "title": "Regex Tester",
+    "description": "Test JavaScript regular expressions against text with live match highlighting and a built-in cheat sheet.",
+    "path": "/services/regex-tester",
+    "icon": "Terminal",
+    "color": "success",
+    "popularity": 88.0,
+    "category": "developer",
+    "tags": [
+      "regex",
+      "pattern",
+      "testing"
+    ],
+    "keywords": [
+      "regex tester online",
+      "regular expression tester",
+      "javascript regex tester",
+      "regex cheat sheet"
+    ]
+  },
+  {
+    "id": 51,
+    "title": "Unit Converter",
+    "description": "Convert length, weight, temperature, and volume between common units instantly, entirely in your browser.",
+    "path": "/services/unit-converter",
+    "icon": "SwapHoriz",
+    "color": "primary",
+    "popularity": 76.0,
+    "category": "developer",
+    "tags": [
+      "unit",
+      "converter",
+      "metric",
+      "imperial"
+    ],
+    "keywords": [
+      "unit converter online",
+      "length converter",
+      "weight converter",
+      "celsius to fahrenheit"
+    ]
+  },
+  {
+    "id": 52,
+    "title": "Color Contrast Checker",
+    "description": "Check WCAG AA/AAA contrast ratios between a foreground and background color for accessible text.",
+    "path": "/services/color-contrast-checker",
+    "icon": "Palette",
+    "color": "secondary",
+    "popularity": 72.0,
+    "category": "design",
+    "tags": [
+      "accessibility",
+      "wcag",
+      "contrast",
+      "color"
+    ],
+    "keywords": [
+      "color contrast checker",
+      "wcag contrast ratio",
+      "accessibility checker online",
+      "aa aaa contrast"
+    ]
+  },
+  {
+    "id": 53,
+    "title": "Random Data Generator",
+    "description": "Generate plausible mock names, emails, phone numbers, addresses, and UUIDs for testing forms and demos.",
+    "path": "/services/random-data-generator",
+    "icon": "Casino",
+    "color": "warning",
+    "popularity": 75.0,
+    "category": "developer",
+    "tags": [
+      "mock data",
+      "test data",
+      "fake data",
+      "generator"
+    ],
+    "keywords": [
+      "random data generator",
+      "mock data generator",
+      "fake data for testing",
+      "test data online"
+    ]
+  },
+  {
+    "id": 54,
+    "title": "Text Encryptor",
+    "description": "AES-256-GCM encryption using your browser's native Web Crypto API \u2014 passphrase and plaintext never leave your device.",
+    "path": "/services/text-encryptor",
+    "icon": "EnhancedEncryption",
+    "color": "info",
+    "popularity": 73.0,
+    "category": "security",
+    "tags": [
+      "encryption",
+      "aes",
+      "security",
+      "privacy"
+    ],
+    "keywords": [
+      "aes encryption online",
+      "encrypt text online",
+      "text encryptor decryptor",
+      "web crypto api"
+    ]
+  },
+  {
+    "id": 55,
+    "title": "Markdown Table Generator",
+    "description": "Edit a grid and get valid GitHub-flavored markdown table syntax instantly \u2014 no manual pipes or dashes.",
+    "path": "/services/markdown-table-generator",
+    "icon": "TableChart",
+    "color": "success",
+    "popularity": 77.0,
+    "category": "developer",
+    "tags": [
+      "markdown",
+      "table",
+      "generator",
+      "github"
+    ],
+    "keywords": [
+      "markdown table generator",
+      "markdown table maker",
+      "github table syntax",
+      "md table generator"
+    ]
+  },
+  {
+    "id": 56,
+    "title": "Barcode Generator",
+    "description": "Generate a scannable Code128 barcode from any text, rendered entirely in your browser as SVG.",
+    "path": "/services/barcode-generator",
+    "icon": "ViewWeek",
+    "color": "secondary",
+    "popularity": 58.0,
+    "category": "converter",
+    "tags": [
+      "barcode",
+      "code128",
+      "generator",
+      "svg"
+    ],
+    "keywords": [
+      "barcode generator",
+      "code128 generator",
+      "free barcode maker",
+      "generate barcode online",
+      "code 128 barcode",
+      "text to barcode",
+      "barcode png download",
+      "inventory barcode generator"
+    ],
+    "is_active": true
+  },
+  {
+    "id": 57,
+    "title": "CSS Grid Generator",
+    "description": "Build a CSS Grid layout visually and copy the generated grid-template CSS instantly.",
+    "path": "/services/css-grid-generator",
+    "icon": "GridView",
+    "color": "info",
+    "popularity": 62.0,
+    "category": "design",
+    "tags": [
+      "css",
+      "grid",
+      "generator",
+      "layout"
+    ],
+    "keywords": [
+      "css grid generator",
+      "grid template columns generator",
+      "css grid layout builder",
+      "grid template rows",
+      "fr unit calculator",
+      "css grid tool",
+      "visual grid builder",
+      "grid gap generator"
+    ],
+    "is_active": true
+  },
+  {
+    "id": 58,
+    "title": "Meta Tag Generator",
+    "description": "Generate SEO, Open Graph, and Twitter Card meta tags with live search and social previews.",
+    "path": "/services/meta-tag-generator",
+    "icon": "Web",
+    "color": "primary",
+    "popularity": 65.0,
+    "category": "developer",
+    "tags": [
+      "seo",
+      "meta tags",
+      "open graph",
+      "twitter card"
+    ],
+    "keywords": [
+      "meta tag generator",
+      "open graph generator",
+      "twitter card generator",
+      "seo meta tags",
+      "og tags generator",
+      "social share preview",
+      "meta description generator",
+      "html head tags generator"
+    ],
+    "is_active": true
+  },
+  {
+    "id": 59,
+    "title": "JSON Diff Checker",
+    "description": "Compare two JSON documents structurally and see every key added, removed, or changed.",
+    "path": "/services/json-diff-checker",
+    "icon": "AccountTree",
+    "color": "warning",
+    "popularity": 60.0,
+    "category": "developer",
+    "tags": [
+      "json",
+      "diff",
+      "compare",
+      "developer"
+    ],
+    "keywords": [
+      "json diff",
+      "json compare",
+      "compare two json objects",
+      "json structural diff",
+      "json tree diff",
+      "diff json online"
+    ],
+    "is_active": true
+  },
+  {
+    "id": 60,
+    "title": "Age & Date Difference Calculator",
+    "description": "Work out an exact age from a birth date, or the difference between any two dates.",
+    "path": "/services/age-calculator",
+    "icon": "Cake",
+    "color": "success",
+    "popularity": 63.0,
+    "category": "utility",
+    "tags": [
+      "age calculator",
+      "date calculator",
+      "utility"
+    ],
+    "keywords": [
+      "age calculator",
+      "date difference calculator",
+      "how many days between two dates",
+      "days until birthday",
+      "calculate age from birthdate",
+      "date calculator"
+    ],
+    "is_active": true
+  },
+  {
+    "id": 61,
+    "title": "Color Name Finder",
+    "description": "Find the closest standard CSS color name for any hex, RGB, or HSL color.",
+    "path": "/services/color-name-finder",
+    "icon": "Colorize",
+    "color": "error",
+    "popularity": 55.0,
+    "category": "design",
+    "tags": [
+      "color",
+      "hex",
+      "rgb",
+      "design"
+    ],
+    "keywords": [
+      "color name finder",
+      "nearest css color",
+      "css color names list",
+      "hex to color name",
+      "rgb to color name",
+      "what color is this hex code"
+    ],
+    "is_active": true
+  }
 ]

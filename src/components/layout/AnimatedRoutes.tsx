@@ -108,6 +108,12 @@ const CssBoxShadowGenerator = lazy(() => import('../services/CssBoxShadowGenerat
 const HttpStatusCodes = lazy(() => import('../services/HttpStatusCodes'));
 const JsonToTypescript = lazy(() => import('../services/JsonToTypescript'));
 const FaviconGenerator = lazy(() => import('../services/FaviconGenerator'));
+const BarcodeGenerator = lazy(() => import('../services/BarcodeGenerator'));
+const CssGridGenerator = lazy(() => import('../services/CssGridGenerator'));
+const MetaTagGenerator = lazy(() => import('../services/MetaTagGenerator'));
+const JsonDiffChecker = lazy(() => import('../services/JsonDiffChecker'));
+const AgeDateCalculator = lazy(() => import('../services/AgeDateCalculator'));
+const ColorNameFinder = lazy(() => import('../services/ColorNameFinder'));
 
 // Sandbox games - lazy loaded (all frontend-only, no backend, no auth gate)
 const SnakeGame = lazy(() => import('../sandbox/SnakeGame'));
@@ -134,6 +140,11 @@ const Pong = lazy(() => import('../sandbox/Pong'));
 const Hangman = lazy(() => import('../sandbox/Hangman'));
 const RockPaperScissors = lazy(() => import('../sandbox/RockPaperScissors'));
 const FlappyBlocks = lazy(() => import('../sandbox/FlappyBlocks'));
+const Tetris = lazy(() => import('../sandbox/Tetris'));
+const Sudoku = lazy(() => import('../sandbox/Sudoku'));
+const BubbleShooter = lazy(() => import('../sandbox/BubbleShooter'));
+const TowerOfHanoi = lazy(() => import('../sandbox/TowerOfHanoi'));
+const MazeRunner = lazy(() => import('../sandbox/MazeRunner'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -222,6 +233,12 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/random-data-generator" element={<PageTransition><RandomDataGenerator /></PageTransition>} />
                     <Route path="/services/text-encryptor" element={<PageTransition><TextEncryptor /></PageTransition>} />
                     <Route path="/services/markdown-table-generator" element={<PageTransition><MarkdownTableGenerator /></PageTransition>} />
+                    <Route path="/services/barcode-generator" element={<PageTransition><BarcodeGenerator /></PageTransition>} />
+                    <Route path="/services/css-grid-generator" element={<PageTransition><CssGridGenerator /></PageTransition>} />
+                    <Route path="/services/meta-tag-generator" element={<PageTransition><MetaTagGenerator /></PageTransition>} />
+                    <Route path="/services/json-diff-checker" element={<PageTransition><JsonDiffChecker /></PageTransition>} />
+                    <Route path="/services/age-calculator" element={<PageTransition><AgeDateCalculator /></PageTransition>} />
+                    <Route path="/services/color-name-finder" element={<PageTransition><ColorNameFinder /></PageTransition>} />
                     <Route path="/services/website-diagnostics" element={<PageTransition>{withAuthGuard(<WebsiteDiagnostics />, '/services/website-diagnostics', toolAccess, 'Website Diagnostics')}</PageTransition>} />
                     <Route path="/services/speed-test" element={<PageTransition>{withAuthGuard(<SpeedTest />, '/services/speed-test', toolAccess, 'Speed Test')}</PageTransition>} />
                     <Route path="/services/audio-separator" element={<PageTransition>{withAuthGuard(<AudioSeparator />, '/services/audio-separator', toolAccess, 'Audio Separator')}</PageTransition>} />
@@ -277,6 +294,11 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/sandbox/hangman" element={<PageTransition><Hangman /></PageTransition>} />
                     <Route path="/sandbox/rock-paper-scissors" element={<PageTransition><RockPaperScissors /></PageTransition>} />
                     <Route path="/sandbox/flappy-blocks" element={<PageTransition><FlappyBlocks /></PageTransition>} />
+                    <Route path="/sandbox/tetris" element={<PageTransition><Tetris /></PageTransition>} />
+                    <Route path="/sandbox/sudoku" element={<PageTransition><Sudoku /></PageTransition>} />
+                    <Route path="/sandbox/bubble-shooter" element={<PageTransition><BubbleShooter /></PageTransition>} />
+                    <Route path="/sandbox/tower-of-hanoi" element={<PageTransition><TowerOfHanoi /></PageTransition>} />
+                    <Route path="/sandbox/maze-runner" element={<PageTransition><MazeRunner /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />

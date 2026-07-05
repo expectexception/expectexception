@@ -1,266 +1,441 @@
 [
-    {
-        "id": 1,
-        "title": "Snake",
-        "description": "The classic grid-crawler. Eat, grow, and try not to run into yourself. Arrow keys or swipe to steer.",
-        "icon": "VideogameAsset",
-        "path": "/sandbox/snake",
-        "category": "classic",
-        "tags": ["classic", "arcade", "keyboard"],
-        "color": "primary",
-        "is_active": true
-    },
-    {
-        "id": 2,
-        "title": "2048",
-        "description": "Slide and merge numbered tiles to build up to 2048 (and beyond). One wrong move and it's over.",
-        "icon": "Apps",
-        "path": "/sandbox/2048",
-        "category": "classic",
-        "tags": ["classic", "puzzle", "numbers"],
-        "color": "secondary",
-        "is_active": true
-    },
-    {
-        "id": 3,
-        "title": "Tic-Tac-Toe",
-        "description": "Play against a minimax-perfect AI. Good luck ever beating it - a draw is the best you'll usually get.",
-        "icon": "GridOn",
-        "path": "/sandbox/tic-tac-toe",
-        "category": "classic",
-        "tags": ["classic", "ai", "strategy"],
-        "color": "warning",
-        "is_active": true
-    },
-    {
-        "id": 4,
-        "title": "Particle Playground",
-        "description": "A reactive particle field that follows your cursor. Click to burst, drag to paint trails of light.",
-        "icon": "AutoAwesome",
-        "path": "/sandbox/particles",
-        "category": "creative",
-        "tags": ["creative", "canvas", "generative"],
-        "color": "secondary",
-        "is_active": true
-    },
-    {
-        "id": 5,
-        "title": "Falling Sand",
-        "description": "A pixel-physics sandbox. Drop sand, water, and stone and watch them settle, flow, and pile up.",
-        "icon": "Grain",
-        "path": "/sandbox/falling-sand",
-        "category": "creative",
-        "tags": ["creative", "physics", "simulation"],
-        "color": "info",
-        "is_active": true
-    },
-    {
-        "id": 6,
-        "title": "Word Guess",
-        "description": "Guess the hidden 5-letter word in 6 tries. Green means right spot, yellow means wrong spot.",
-        "icon": "Spellcheck",
-        "path": "/sandbox/word-guess",
-        "category": "puzzle",
-        "tags": ["puzzle", "word", "daily"],
-        "color": "success",
-        "is_active": true
-    },
-    {
-        "id": 7,
-        "title": "Sliding Puzzle",
-        "description": "Shuffle the 15-tile board, then slide pieces back into numerical order as fast as you can.",
-        "icon": "Extension",
-        "path": "/sandbox/sliding-puzzle",
-        "category": "puzzle",
-        "tags": ["puzzle", "logic", "speedrun"],
-        "color": "primary",
-        "is_active": true
-    },
-    {
-        "id": 8,
-        "title": "Reaction Test",
-        "description": "Wait for the screen to flash, then click as fast as you can. Measures your reaction time in milliseconds.",
-        "icon": "Bolt",
-        "path": "/sandbox/reaction-test",
-        "category": "reaction",
-        "tags": ["reaction", "reflex", "score"],
-        "color": "warning",
-        "is_active": true
-    },
-    {
-        "id": 9,
-        "title": "Aim Trainer",
-        "description": "Targets pop up at random - click them before they disappear. Tracks accuracy and average speed.",
-        "icon": "GpsFixed",
-        "path": "/sandbox/aim-trainer",
-        "category": "reaction",
-        "tags": ["reaction", "aim", "score"],
-        "color": "secondary",
-        "is_active": true
-    },
-    {
-        "id": 10,
-        "title": "Memory Match",
-        "description": "Flip cards two at a time and match every pair in as few moves as you can. Tracks your best score.",
-        "icon": "Extension",
-        "path": "/sandbox/memory-match",
-        "category": "puzzle",
-        "tags": ["puzzle", "memory", "cards"],
-        "color": "success",
-        "is_active": true
-    },
-    {
-        "id": 11,
-        "title": "Simon Says",
-        "description": "Watch the colour pattern light up, then repeat it back. Every round adds one more step to remember.",
-        "icon": "Hearing",
-        "path": "/sandbox/simon-says",
-        "category": "reaction",
-        "tags": ["reaction", "memory", "pattern"],
-        "color": "info",
-        "is_active": true
-    },
-    {
-        "id": 12,
-        "title": "Breakout",
-        "description": "Bounce the ball off your paddle to smash every brick. Mouse, touch, or arrow keys to play.",
-        "icon": "SportsEsports",
-        "path": "/sandbox/breakout",
-        "category": "classic",
-        "tags": ["classic", "arcade", "canvas"],
-        "color": "warning",
-        "is_active": true
-    },
-    {
-        "id": 13,
-        "title": "Minesweeper",
-        "description": "Clear the whole board without detonating a mine. Reveal cells, flag the danger, and beat your best time.",
-        "icon": "GridView",
-        "path": "/sandbox/minesweeper",
-        "category": "puzzle",
-        "tags": ["puzzle", "classic", "logic"],
-        "color": "info",
-        "is_active": true
-    },
-    {
-        "id": 14,
-        "title": "Connect Four",
-        "description": "Drop discs to line up four in a row before the AI does. Horizontal, vertical, or diagonal counts.",
-        "icon": "Casino",
-        "path": "/sandbox/connect-four",
-        "category": "classic",
-        "tags": ["classic", "ai", "strategy"],
-        "color": "primary",
-        "is_active": true
-    },
-    {
-        "id": 15,
-        "title": "Whack-a-Mole",
-        "description": "Tap the moles as fast as they pop up. Thirty seconds on the clock — rack up the highest score you can.",
-        "icon": "Pets",
-        "path": "/sandbox/whack-a-mole",
-        "category": "reaction",
-        "tags": ["reaction", "arcade", "score"],
-        "color": "success",
-        "is_active": true
-    },
-    {
-        "id": 16,
-        "title": "Typing Speed Test",
-        "description": "Type the sentence as fast and accurately as you can. Scores your net WPM and accuracy at the end.",
-        "icon": "Keyboard",
-        "path": "/sandbox/typing-test",
-        "category": "reaction",
-        "tags": ["reaction", "skill", "typing"],
-        "color": "secondary",
-        "is_active": true
-    },
-    {
-        "id": 17,
-        "title": "Kaleidoscope",
-        "description": "Draw anywhere and the stroke mirrors around the center with radial symmetry. One gesture, an instant mandala.",
-        "icon": "AutoAwesome",
-        "path": "/sandbox/kaleidoscope",
-        "category": "creative",
-        "tags": ["creative", "canvas", "symmetry"],
-        "color": "secondary",
-        "is_active": true
-    },
-    {
-        "id": 18,
-        "title": "Game of Life",
-        "description": "Click cells to seed a pattern, then watch Conway's four simple rules produce gliders, oscillators, and chaos.",
-        "icon": "GridView",
-        "path": "/sandbox/game-of-life",
-        "category": "creative",
-        "tags": ["creative", "simulation", "automaton"],
-        "color": "primary",
-        "is_active": true
-    },
-    {
-        "id": 19,
-        "title": "Boids",
-        "description": "Craig Reynolds' classic flocking algorithm - separation, alignment, and cohesion produce lifelike flocking from three simple rules.",
-        "icon": "Pets",
-        "path": "/sandbox/boids",
-        "category": "creative",
-        "tags": ["creative", "simulation", "generative"],
-        "color": "success",
-        "is_active": true
-    },
-    {
-        "id": 20,
-        "title": "Spirograph",
-        "description": "The math behind the classic toy: adjust the gear ratio and pen offset with sliders and watch the curve draw itself.",
-        "icon": "Circle",
-        "path": "/sandbox/spirograph",
-        "category": "creative",
-        "tags": ["creative", "generative", "math"],
-        "color": "info",
-        "is_active": true
-    },
-    {
-        "id": 21,
-        "title": "Pong",
-        "description": "The original arcade classic. Move your mouse or finger to control the paddle - first to 7 wins against the AI.",
-        "icon": "SportsEsports",
-        "path": "/sandbox/pong",
-        "category": "classic",
-        "tags": ["classic", "arcade", "ai"],
-        "color": "secondary",
-        "is_active": true
-    },
-    {
-        "id": 22,
-        "title": "Hangman",
-        "description": "Guess the hidden word one letter at a time before six wrong guesses complete the drawing.",
-        "icon": "Spellcheck",
-        "path": "/sandbox/hangman",
-        "category": "puzzle",
-        "tags": ["puzzle", "word", "classic"],
-        "color": "warning",
-        "is_active": true
-    },
-    {
-        "id": 23,
-        "title": "Rock Paper Scissors",
-        "description": "Play against an AI that quietly learns your habits - favor one move too often and it starts countering you.",
-        "icon": "Casino",
-        "path": "/sandbox/rock-paper-scissors",
-        "category": "reaction",
-        "tags": ["reaction", "classic", "ai"],
-        "color": "primary",
-        "is_active": true
-    },
-    {
-        "id": 24,
-        "title": "Flappy Blocks",
-        "description": "Click, tap, or press space to flap and weave through the gaps. One hit and it's over.",
-        "icon": "Bolt",
-        "path": "/sandbox/flappy-blocks",
-        "category": "reaction",
-        "tags": ["reaction", "arcade", "score"],
-        "color": "success",
-        "is_active": true
-    }
+  {
+    "id": 1,
+    "title": "Snake",
+    "description": "The classic grid-crawler. Eat, grow, and try not to run into yourself. Arrow keys or swipe to steer.",
+    "icon": "VideogameAsset",
+    "path": "/sandbox/snake",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "arcade",
+      "keyboard"
+    ],
+    "color": "primary",
+    "is_active": true
+  },
+  {
+    "id": 2,
+    "title": "2048",
+    "description": "Slide and merge numbered tiles to build up to 2048 (and beyond). One wrong move and it's over.",
+    "icon": "Apps",
+    "path": "/sandbox/2048",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "puzzle",
+      "numbers"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 3,
+    "title": "Tic-Tac-Toe",
+    "description": "Play against a minimax-perfect AI. Good luck ever beating it - a draw is the best you'll usually get.",
+    "icon": "GridOn",
+    "path": "/sandbox/tic-tac-toe",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "ai",
+      "strategy"
+    ],
+    "color": "warning",
+    "is_active": true
+  },
+  {
+    "id": 4,
+    "title": "Particle Playground",
+    "description": "A reactive particle field that follows your cursor. Click to burst, drag to paint trails of light.",
+    "icon": "AutoAwesome",
+    "path": "/sandbox/particles",
+    "category": "creative",
+    "tags": [
+      "creative",
+      "canvas",
+      "generative"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 5,
+    "title": "Falling Sand",
+    "description": "A pixel-physics sandbox. Drop sand, water, and stone and watch them settle, flow, and pile up.",
+    "icon": "Grain",
+    "path": "/sandbox/falling-sand",
+    "category": "creative",
+    "tags": [
+      "creative",
+      "physics",
+      "simulation"
+    ],
+    "color": "info",
+    "is_active": true
+  },
+  {
+    "id": 6,
+    "title": "Word Guess",
+    "description": "Guess the hidden 5-letter word in 6 tries. Green means right spot, yellow means wrong spot.",
+    "icon": "Spellcheck",
+    "path": "/sandbox/word-guess",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "word",
+      "daily"
+    ],
+    "color": "success",
+    "is_active": true
+  },
+  {
+    "id": 7,
+    "title": "Sliding Puzzle",
+    "description": "Shuffle the 15-tile board, then slide pieces back into numerical order as fast as you can.",
+    "icon": "Extension",
+    "path": "/sandbox/sliding-puzzle",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "logic",
+      "speedrun"
+    ],
+    "color": "primary",
+    "is_active": true
+  },
+  {
+    "id": 8,
+    "title": "Reaction Test",
+    "description": "Wait for the screen to flash, then click as fast as you can. Measures your reaction time in milliseconds.",
+    "icon": "Bolt",
+    "path": "/sandbox/reaction-test",
+    "category": "reaction",
+    "tags": [
+      "reaction",
+      "reflex",
+      "score"
+    ],
+    "color": "warning",
+    "is_active": true
+  },
+  {
+    "id": 9,
+    "title": "Aim Trainer",
+    "description": "Targets pop up at random - click them before they disappear. Tracks accuracy and average speed.",
+    "icon": "GpsFixed",
+    "path": "/sandbox/aim-trainer",
+    "category": "reaction",
+    "tags": [
+      "reaction",
+      "aim",
+      "score"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 10,
+    "title": "Memory Match",
+    "description": "Flip cards two at a time and match every pair in as few moves as you can. Tracks your best score.",
+    "icon": "Extension",
+    "path": "/sandbox/memory-match",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "memory",
+      "cards"
+    ],
+    "color": "success",
+    "is_active": true
+  },
+  {
+    "id": 11,
+    "title": "Simon Says",
+    "description": "Watch the colour pattern light up, then repeat it back. Every round adds one more step to remember.",
+    "icon": "Hearing",
+    "path": "/sandbox/simon-says",
+    "category": "reaction",
+    "tags": [
+      "reaction",
+      "memory",
+      "pattern"
+    ],
+    "color": "info",
+    "is_active": true
+  },
+  {
+    "id": 12,
+    "title": "Breakout",
+    "description": "Bounce the ball off your paddle to smash every brick. Mouse, touch, or arrow keys to play.",
+    "icon": "SportsEsports",
+    "path": "/sandbox/breakout",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "arcade",
+      "canvas"
+    ],
+    "color": "warning",
+    "is_active": true
+  },
+  {
+    "id": 13,
+    "title": "Minesweeper",
+    "description": "Clear the whole board without detonating a mine. Reveal cells, flag the danger, and beat your best time.",
+    "icon": "GridView",
+    "path": "/sandbox/minesweeper",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "classic",
+      "logic"
+    ],
+    "color": "info",
+    "is_active": true
+  },
+  {
+    "id": 14,
+    "title": "Connect Four",
+    "description": "Drop discs to line up four in a row before the AI does. Horizontal, vertical, or diagonal counts.",
+    "icon": "Casino",
+    "path": "/sandbox/connect-four",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "ai",
+      "strategy"
+    ],
+    "color": "primary",
+    "is_active": true
+  },
+  {
+    "id": 15,
+    "title": "Whack-a-Mole",
+    "description": "Tap the moles as fast as they pop up. Thirty seconds on the clock \u2014 rack up the highest score you can.",
+    "icon": "Pets",
+    "path": "/sandbox/whack-a-mole",
+    "category": "reaction",
+    "tags": [
+      "reaction",
+      "arcade",
+      "score"
+    ],
+    "color": "success",
+    "is_active": true
+  },
+  {
+    "id": 16,
+    "title": "Typing Speed Test",
+    "description": "Type the sentence as fast and accurately as you can. Scores your net WPM and accuracy at the end.",
+    "icon": "Keyboard",
+    "path": "/sandbox/typing-test",
+    "category": "reaction",
+    "tags": [
+      "reaction",
+      "skill",
+      "typing"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 17,
+    "title": "Kaleidoscope",
+    "description": "Draw anywhere and the stroke mirrors around the center with radial symmetry. One gesture, an instant mandala.",
+    "icon": "AutoAwesome",
+    "path": "/sandbox/kaleidoscope",
+    "category": "creative",
+    "tags": [
+      "creative",
+      "canvas",
+      "symmetry"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 18,
+    "title": "Game of Life",
+    "description": "Click cells to seed a pattern, then watch Conway's four simple rules produce gliders, oscillators, and chaos.",
+    "icon": "GridView",
+    "path": "/sandbox/game-of-life",
+    "category": "creative",
+    "tags": [
+      "creative",
+      "simulation",
+      "automaton"
+    ],
+    "color": "primary",
+    "is_active": true
+  },
+  {
+    "id": 19,
+    "title": "Boids",
+    "description": "Craig Reynolds' classic flocking algorithm - separation, alignment, and cohesion produce lifelike flocking from three simple rules.",
+    "icon": "Pets",
+    "path": "/sandbox/boids",
+    "category": "creative",
+    "tags": [
+      "creative",
+      "simulation",
+      "generative"
+    ],
+    "color": "success",
+    "is_active": true
+  },
+  {
+    "id": 20,
+    "title": "Spirograph",
+    "description": "The math behind the classic toy: adjust the gear ratio and pen offset with sliders and watch the curve draw itself.",
+    "icon": "Circle",
+    "path": "/sandbox/spirograph",
+    "category": "creative",
+    "tags": [
+      "creative",
+      "generative",
+      "math"
+    ],
+    "color": "info",
+    "is_active": true
+  },
+  {
+    "id": 21,
+    "title": "Pong",
+    "description": "The original arcade classic. Move your mouse or finger to control the paddle - first to 7 wins against the AI.",
+    "icon": "SportsEsports",
+    "path": "/sandbox/pong",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "arcade",
+      "ai"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 22,
+    "title": "Hangman",
+    "description": "Guess the hidden word one letter at a time before six wrong guesses complete the drawing.",
+    "icon": "Spellcheck",
+    "path": "/sandbox/hangman",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "word",
+      "classic"
+    ],
+    "color": "warning",
+    "is_active": true
+  },
+  {
+    "id": 23,
+    "title": "Rock Paper Scissors",
+    "description": "Play against an AI that quietly learns your habits - favor one move too often and it starts countering you.",
+    "icon": "Casino",
+    "path": "/sandbox/rock-paper-scissors",
+    "category": "reaction",
+    "tags": [
+      "reaction",
+      "classic",
+      "ai"
+    ],
+    "color": "primary",
+    "is_active": true
+  },
+  {
+    "id": 24,
+    "title": "Flappy Blocks",
+    "description": "Click, tap, or press space to flap and weave through the gaps. One hit and it's over.",
+    "icon": "Bolt",
+    "path": "/sandbox/flappy-blocks",
+    "category": "reaction",
+    "tags": [
+      "reaction",
+      "arcade",
+      "score"
+    ],
+    "color": "success",
+    "is_active": true
+  },
+  {
+    "id": 25,
+    "title": "Tetris",
+    "description": "Rotate and stack the falling tetrominoes to clear full lines before the board fills up.",
+    "icon": "ViewModule",
+    "path": "/sandbox/tetris",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "arcade",
+      "puzzle",
+      "blocks"
+    ],
+    "color": "primary",
+    "is_active": true
+  },
+  {
+    "id": 26,
+    "title": "Sudoku",
+    "description": "Fill the grid so every row, column, and 3x3 box holds the numbers 1 to 9 exactly once.",
+    "icon": "Grid3x3",
+    "path": "/sandbox/sudoku",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "numbers",
+      "logic",
+      "brain"
+    ],
+    "color": "info",
+    "is_active": true
+  },
+  {
+    "id": 27,
+    "title": "Bubble Shooter",
+    "description": "Aim and fire colored bubbles into the grid \u2014 match 3 or more to pop them before they reach the bottom.",
+    "icon": "BubbleChart",
+    "path": "/sandbox/bubble-shooter",
+    "category": "reaction",
+    "tags": [
+      "arcade",
+      "reaction",
+      "match",
+      "bubbles"
+    ],
+    "color": "secondary",
+    "is_active": true
+  },
+  {
+    "id": 28,
+    "title": "Tower of Hanoi",
+    "description": "Move the whole stack from the first peg to the last, one disk at a time, without stacking big on small.",
+    "icon": "Stairs",
+    "path": "/sandbox/tower-of-hanoi",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "logic",
+      "classic",
+      "strategy"
+    ],
+    "color": "warning",
+    "is_active": true
+  },
+  {
+    "id": 29,
+    "title": "Maze Runner",
+    "description": "Navigate a freshly generated, guaranteed-solvable maze from start to goal.",
+    "icon": "AltRoute",
+    "path": "/sandbox/maze-runner",
+    "category": "puzzle",
+    "tags": [
+      "maze",
+      "puzzle",
+      "navigation"
+    ],
+    "color": "success",
+    "is_active": true
+  }
 ]
