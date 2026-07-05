@@ -10,6 +10,7 @@ from .views import (
     ServiceViewSet,
     ToolAccessView,
     ToolAccessToggleView,
+    SeoOverridesView,
     DownloadableResourceViewSet,
     UserDashboardViewSet,
     DownloadHistoryViewSet,
@@ -164,6 +165,7 @@ urlpatterns = [
     path('health/', HealthCheckView.as_view(), name='health-check'),
     path('task/<str:task_id>/status/', CeleryTaskStatusView.as_view(), name='task-status'),
     path('tool-access/', ToolAccessView.as_view(), name='tool-access'),
+    path('seo-overrides/', SeoOverridesView.as_view(), name='seo-overrides'),
     path('tool-access/toggle/', ToolAccessToggleView.as_view(), name='tool-access-toggle'),
     path('server-health/', ServerStatusView.as_view(), name='server-health'),
     path('server-status-api/', get_metrics_api, name='server-status-api'), # New API

@@ -753,6 +753,32 @@ class ToolAccessView(APIView):
         return Response({'tools': tools})
 
 
+class SeoOverridesView(APIView):
+    """Admin-editable SEO keyword/title/description overrides, keyed by
+    route. Public and read-only — this is metadata, not access control.
+    Consumed by the frontend Seo component at runtime, and by
+    generate-static-seo.js at build time (same fetch-from-local-backend
+    pattern already used there for blog posts) so the override reaches
+    crawlable static HTML too, not just the client-rendered page.
+
+    GET /api/services/seo-overrides/
+    Returns: { "/services/hash-generator": {"keywords": [...], "title": "...", "description": "..."}, ... }
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from .models import SeoKeywordOverride
+
+        overrides = {}
+        for o in SeoKeywordOverride.objects.all():
+            overrides[o.route] = {
+                'keywords': o.keywords,
+                'title': o.title,
+                'description': o.description,
+            }
+        return Response(overrides)
+
+
 class ToolAccessToggleView(APIView):
     """Admin-only endpoint to toggle requires_login on a tool.
 
