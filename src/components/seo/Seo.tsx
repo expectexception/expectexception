@@ -1,8 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
+import apiClient from '../../api/config';
 
 import toolsData from '../../data/tools.json';
+
+interface SeoOverride {
+    keywords: string[];
+    title: string;
+    description: string;
+}
+
+// Module-level cache shared by every <Seo> instance on the page — fetched
+// once regardless of how many components mount, not once per page. Admin
+// edits (apps/services/models.py's SeoKeywordOverride) reach this on the
+// next full page load; no cache invalidation needed since it's a fresh
+// module load per navigation-triggered reload anyway, and per-route content
+// otherwise never changes without a deploy either.
+let overridesCache: Record<string, SeoOverride> | null = null;
+let overridesPromise: Promise<Record<string, SeoOverride>> | null = null;
+
+function useSeoOverrides(): Record<string, SeoOverride> | null {
+    const [overrides, setOverrides] = useState(overridesCache);
+    useEffect(() => {
+        if (overridesCache) return;
+        if (!overridesPromise) {
+            overridesPromise = apiClient
+                .get('/api/services/seo-overrides/')
+                .then((res) => {
+                    overridesCache = res.data;
+                    return overridesCache as Record<string, SeoOverride>;
+                })
+                .catch(() => {
+                    overridesCache = {};
+                    return overridesCache as Record<string, SeoOverride>;
+                });
+        }
+        overridesPromise.then(setOverrides);
+    }, []);
+    return overrides;
+}
 
 export interface HowToStep {
     name: string;
@@ -68,17 +105,27 @@ const Seo: React.FC<SeoProps> = ({
     const currentUrl = `${siteUrl}${location.pathname}`;
     const imageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
 
+    // Admin-editable override for this route (SeoKeywordOverride) — takes
+    // precedence over the hardcoded title/description/keywords below when
+    // set, so an admin can chase a trending search term without a
+    // code change + redeploy.
+    const seoOverrides = useSeoOverrides();
+    const override = seoOverrides?.[location.pathname];
+
     // Resolve tool data
     const tool = toolId ? toolsData.find(t => t.id === toolId) : null;
     const finalDescription =
+        override?.description ||
         description ||
         tool?.description ||
         'Free online developer tools and utilities by ExpectException. No sign-up required.';
+    const finalTitle = override?.title || title;
 
     // Merged keyword list — deduplicated
     const toolKeywords: string[] = (tool as any)?.keywords || [];
+    const overrideKeywords: string[] = override?.keywords || [];
     const allKeywords = Array.from(
-        new Set([...BASE_KEYWORDS, ...keywords, ...toolKeywords])
+        new Set([...BASE_KEYWORDS, ...keywords, ...toolKeywords, ...overrideKeywords])
     ).join(', ');
 
     // ── Structured Data ──────────────────────────────────────────────
@@ -125,7 +172,7 @@ const Seo: React.FC<SeoProps> = ({
             ? {
                   '@context': 'https://schema.org',
                   '@type': 'HowTo',
-                  name: `How to use ${title}`,
+                  name: `How to use ${finalTitle}`,
                   description: finalDescription,
                   step: howToSteps.map((step, i) => ({
                       '@type': 'HowToStep',
@@ -135,7 +182,7 @@ const Seo: React.FC<SeoProps> = ({
                   })),
                   tool: {
                       '@type': 'HowToTool',
-                      name: title,
+                      name: finalTitle,
                   },
               }
             : null;
@@ -157,9 +204,9 @@ const Seo: React.FC<SeoProps> = ({
               }
             : null;
 
-    const fullTitle = title.includes('ExpectException')
-        ? title
-        : `${title} | ExpectException`;
+    const fullTitle = finalTitle.includes('ExpectException')
+        ? finalTitle
+        : `${finalTitle} | ExpectException`;
 
     return (
         <Helmet>
