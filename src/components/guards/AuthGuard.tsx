@@ -21,13 +21,14 @@ interface AuthGuardProps {
  * Shows a premium login modal with Google Sign-In when user is not authenticated.
  */
 const AuthGuard: React.FC<AuthGuardProps> = ({ children, toolName }) => {
-    const { isAuthenticated, user, loginWithGoogle } = useAuth();
+    const { isAuthenticated, isInitializing, user, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
     const [error, setError] = React.useState<string | null>(null);
     const [loading, setLoading] = React.useState(false);
 
-    // Still loading auth state
-    if (isAuthenticated && !user) {
+    // Still loading auth state — see AdminGuard for why isInitializing is
+    // checked ahead of isAuthenticated (which defaults to false pre-check).
+    if (isInitializing || (isAuthenticated && !user)) {
         return (
             <Box
                 sx={{
