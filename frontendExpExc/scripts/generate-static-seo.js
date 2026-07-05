@@ -153,6 +153,36 @@ async function fetchBlogPages() {
   }
 }
 
+// Admin-editable overrides (apps.services.models.SeoKeywordOverride) — same
+// fetch-from-local-backend pattern as fetchBlogPages(). Lets an admin tune
+// a route's title/description/keywords (e.g. chasing a trending search
+// term) without a code change, and have it reach the *static* HTML a
+// crawler sees, not just the client-rendered one.
+async function fetchSeoOverrides() {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/services/seo-overrides/', { timeout: 5000 });
+    return response.data || {};
+  } catch (error) {
+    console.warn('Warning: Could not fetch SEO overrides for static build (backend might be down). Skipping.', error.message);
+    return {};
+  }
+}
+
+function applyOverrides(pages, overrides) {
+  return pages.map((page) => {
+    const override = overrides[page.route];
+    if (!override) return page;
+    return {
+      ...page,
+      title: override.title || page.title,
+      description: override.description || page.description,
+      keywords: (override.keywords && override.keywords.length > 0)
+        ? Array.from(new Set([...(page.keywords || '').split(', ').filter(Boolean), ...override.keywords])).join(', ')
+        : page.keywords,
+    };
+  });
+}
+
 async function main() {
   if (!fs.existsSync(TEMPLATE_PATH)) {
     console.warn('generate-static-seo: build/index.html not found, skipping.');
@@ -161,12 +191,13 @@ async function main() {
   const template = fs.readFileSync(TEMPLATE_PATH, 'utf8');
 
   const blogPages = await fetchBlogPages();
-  const pages = [
+  const seoOverrides = await fetchSeoOverrides();
+  const pages = applyOverrides([
     ...STATIC_PAGES,
     ...tools.map(toolPageMeta),
     ...games.map(gamePageMeta),
     ...blogPages,
-  ];
+  ], seoOverrides);
 
   let written = 0;
   for (const page of pages) {
