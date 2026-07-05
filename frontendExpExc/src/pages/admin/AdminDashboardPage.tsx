@@ -86,6 +86,17 @@ interface SystemMetrics {
     network: { sent_mb: number; recv_mb: number };
     gpu: { available: boolean; device?: string; utilization_pct?: number; allocated_mb?: number; total_memory_mb?: number; reason?: string };
     runtime: { uptime_seconds: number; environment: string };
+    celery?: {
+        workers: { name: string; status: string; active_tasks: number }[];
+        queues: Record<string, number>;
+        error: string | null;
+    };
+}
+
+interface MongoStatus {
+    connected: boolean;
+    message?: string;
+    collections: Record<string, { count: number | null; recent: Record<string, any>[]; error?: string }>;
 }
 
 interface AdminUser {
@@ -256,6 +267,7 @@ const AdminDashboardPage: React.FC = () => {
     // State
     const [activeTab, setActiveTab] = useState(0);
     const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
+    const [mongoStatus, setMongoStatus] = useState<MongoStatus | null>(null);
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [blogs, setBlogs] = useState<AdminBlog[]>([]);
     const [downloads, setDownloads] = useState<AdminDownload[]>([]);
@@ -291,6 +303,15 @@ const AdminDashboardPage: React.FC = () => {
             setMetrics(response.data);
         } catch (e) {
             console.error('Failed to fetch metrics:', e);
+        }
+    }, []);
+
+    const fetchMongoStatus = useCallback(async () => {
+        try {
+            const response = await apiClient.get('/api/services/admin/mongo-status/');
+            setMongoStatus(response.data);
+        } catch (e) {
+            console.error('Failed to fetch Mongo status:', e);
         }
     }, []);
 
@@ -382,6 +403,7 @@ const AdminDashboardPage: React.FC = () => {
             setLoading(true);
             await Promise.all([
                 fetchMetrics(),
+                fetchMongoStatus(),
                 fetchUsers(),
                 fetchBlogs(),
                 fetchDownloads(),
@@ -394,7 +416,7 @@ const AdminDashboardPage: React.FC = () => {
             setLoading(false);
         };
         loadData();
-    }, [fetchMetrics, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus, fetchToolServices, fetchInquiries, fetchThreads]);
+    }, [fetchMetrics, fetchMongoStatus, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus, fetchToolServices, fetchInquiries, fetchThreads]);
 
     // Real-time metrics polling
     useEffect(() => {
@@ -615,6 +637,7 @@ const AdminDashboardPage: React.FC = () => {
         { label: 'Tool Access', icon: <Lock /> },
         { label: 'Inquiries', icon: <Email /> },
         { label: 'Threads', icon: <Forum /> },
+        { label: 'Mongo', icon: <Storage /> },
     ];
 
     // ============ Render ============
@@ -788,6 +811,45 @@ const AdminDashboardPage: React.FC = () => {
                                                 </CardContent>
                                             </Card>
                                         </Grid>
+
+                                        {metrics.celery && (
+                                            <Grid item xs={12}>
+                                                <Card sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3 }}>
+                                                    <CardContent>
+                                                        <Typography variant="h6" sx={{ color: 'white', mb: 2, fontWeight: 600 }}>
+                                                            Celery Workers &amp; Queues
+                                                        </Typography>
+                                                        {metrics.celery.error && (
+                                                            <Alert severity="warning" sx={{ mb: 2 }}>{metrics.celery.error}</Alert>
+                                                        )}
+                                                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+                                                            {metrics.celery.workers.length === 0 ? (
+                                                                <Chip label="No workers online" color="error" size="small" />
+                                                            ) : (
+                                                                metrics.celery.workers.map((w) => (
+                                                                    <Chip
+                                                                        key={w.name}
+                                                                        label={`${w.name} · ${w.active_tasks} active`}
+                                                                        color="success"
+                                                                        size="small"
+                                                                    />
+                                                                ))
+                                                            )}
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                                                            {Object.entries(metrics.celery.queues).map(([queue, depth]) => (
+                                                                <Box key={queue}>
+                                                                    <Typography variant="caption" sx={{ color: 'grey.500' }}>{queue}</Typography>
+                                                                    <Typography variant="h6" sx={{ color: depth > 0 ? '#f59e0b' : '#10b981', fontWeight: 700 }}>
+                                                                        {depth}
+                                                                    </Typography>
+                                                                </Box>
+                                                            ))}
+                                                        </Box>
+                                                    </CardContent>
+                                                </Card>
+                                            </Grid>
+                                        )}
                                     </Grid>
                                 )}
                             </TabPanel>
@@ -1508,6 +1570,49 @@ const AdminDashboardPage: React.FC = () => {
                                 <Typography variant="caption" sx={{ color: 'grey.600', mt: 2, display: 'block' }}>
                                     Showing {filteredThreads.length} of {threads.length} threads
                                 </Typography>
+                            </TabPanel>
+
+                            <TabPanel value={activeTab} index={9}>
+                                <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>MongoDB Atlas — Cross-Instance Mirror</Typography>
+                                <Typography variant="body2" sx={{ color: 'grey.500', mb: 2 }}>
+                                    Read-only view of the failover mirror (not the primary datastore). Atlas encrypts everything here at rest and in transit by default.
+                                </Typography>
+                                {!mongoStatus ? (
+                                    <Typography sx={{ color: 'grey.500' }}>Loading…</Typography>
+                                ) : !mongoStatus.connected ? (
+                                    <Alert severity="warning">{mongoStatus.message || 'MongoDB Atlas is not reachable.'}</Alert>
+                                ) : (
+                                    <Grid container spacing={2}>
+                                        {Object.entries(mongoStatus.collections).map(([name, data]) => (
+                                            <Grid item xs={12} md={6} key={name}>
+                                                <Card sx={{ bgcolor: '#1e293b', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                                    <CardContent>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                                                            <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700 }}>{name}</Typography>
+                                                            <Chip label={`${data.count ?? '—'} docs`} size="small" color={data.count ? 'success' : 'default'} />
+                                                        </Box>
+                                                        {data.error && <Alert severity="error" sx={{ mb: 1 }}>{data.error}</Alert>}
+                                                        {data.recent.length === 0 ? (
+                                                            <Typography variant="caption" sx={{ color: 'grey.600' }}>No documents mirrored yet.</Typography>
+                                                        ) : (
+                                                            <Table size="small">
+                                                                <TableBody>
+                                                                    {data.recent.map((doc, i) => (
+                                                                        <TableRow key={i}>
+                                                                            <TableCell sx={{ color: 'grey.400', fontSize: '0.75rem', borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                                                {doc.email || doc.title || doc._id}
+                                                                            </TableCell>
+                                                                        </TableRow>
+                                                                    ))}
+                                                                </TableBody>
+                                                            </Table>
+                                                        )}
+                                                    </CardContent>
+                                                </Card>
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                )}
                             </TabPanel>
                         </motion.div>
                     </AnimatePresence>
