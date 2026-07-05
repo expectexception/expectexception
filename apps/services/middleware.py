@@ -24,6 +24,12 @@ RATE_LIMIT_RULES = {
     '/api/services/url-downloader/': (10, 60),
     '/api/services/audio-separator/': (3, 60),
     '/api/ai-detector/': (10, 60),
+    # Async chatbot views (`chat`, `widget_chat`) are plain Django views, not
+    # DRF @api_view, so they can't carry DRF throttle_classes — this
+    # middleware is their only rate-limit coverage. `chat/sync/` also has a
+    # DRF throttle for defense in depth (see chatbot/views.py).
+    '/api/chatbot/chat/': (20, 60),
+    '/api/chatbot/widget/chat/': (20, 60),
 }
 
 

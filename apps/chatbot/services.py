@@ -6,13 +6,50 @@ import httpx
 import json
 from typing import Generator, AsyncGenerator, Optional, Dict, Any, List
 from django.conf import settings
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
+
+# Concurrency cap: without this, every simultaneous chat request hits the
+# same GPU-backed Ollama instance with no admission control, so N users
+# chatting at once just makes all N requests slower/timeout together
+# instead of failing fast for the (N+1)th. Backed by Redis (django-redis
+# CACHES backend) so the counter is process-wide across all gunicorn
+# workers, not per-process.
+MAX_CONCURRENT_CHATS = getattr(settings, 'CHATBOT_MAX_CONCURRENT', 3)
+_ACTIVE_CHATS_KEY = 'chatbot:active_calls'
+_ACTIVE_CHATS_TTL = 300  # safety net: self-heals if a release is ever missed
+
+
+def acquire_chat_slot() -> bool:
+    """Try to claim one of the limited concurrent-chat slots. Returns False
+    if the server is already at capacity — caller should respond with a
+    "busy" message rather than proceeding."""
+    added = cache.add(_ACTIVE_CHATS_KEY, 1, timeout=_ACTIVE_CHATS_TTL)
+    if added:
+        return True
+    try:
+        count = cache.incr(_ACTIVE_CHATS_KEY)
+    except ValueError:
+        # Key expired between add() and incr() — race is harmless, just retry once.
+        cache.add(_ACTIVE_CHATS_KEY, 1, timeout=_ACTIVE_CHATS_TTL)
+        return True
+    if count > MAX_CONCURRENT_CHATS:
+        release_chat_slot()
+        return False
+    return True
+
+
+def release_chat_slot() -> None:
+    try:
+        cache.decr(_ACTIVE_CHATS_KEY)
+    except ValueError:
+        pass  # already expired/reset — nothing to release
 
 
 class OllamaService:
     """Service for interacting with Ollama API."""
-    
+
     _client: Optional[httpx.AsyncClient] = None
 
     def __init__(self):
@@ -181,16 +218,28 @@ class OllamaService:
                     return 
                             
             except (requests.Timeout, requests.ConnectionError):
+                # Transient — worth retrying.
                 retry_count += 1
                 if retry_count > max_retries:
                     logger.error("Ollama chat failed after retries")
                     yield "Error: AI Service is busy or unreachable. Please try again."
                 else:
                     time.sleep(1)
-                    
+
+            except requests.HTTPError as e:
+                status_code = e.response.status_code if e.response is not None else None
+                if status_code == 404:
+                    # Permanent — the model isn't pulled/available; retrying won't help.
+                    logger.error(f"Ollama model not found (404): {model}")
+                    yield "Error: The AI model isn't available right now."
+                else:
+                    logger.error(f"Ollama chat HTTP error: {status_code}")
+                    yield "Error: AI Service is temporarily unavailable. Please try again."
+                return
+
             except requests.RequestException as e:
-                logger.error(f"Ollama chat error: {e}")
-                yield f"Error: {str(e)}"
+                logger.error(f"Ollama chat error: {type(e).__name__}")
+                yield "Error: AI Service is temporarily unavailable. Please try again."
                 return
     
     async def chat_async(
@@ -226,6 +275,14 @@ class OllamaService:
 
             try:
                 async with client.stream("POST", url, json=payload, timeout=300.0) as response:
+                    if response.status_code == 404:
+                        # Permanent — the model isn't pulled/available. Retrying
+                        # identical requests against a model that doesn't exist
+                        # just wastes 3 rounds of backoff for the same failure.
+                        error_text = await response.aread()
+                        logger.error(f"Ollama model not found (404): {error_text}")
+                        yield "Error: The AI model isn't available right now."
+                        return
                     if response.status_code != 200:
                         error_text = await response.aread()
                         logger.error(f"Ollama async error {response.status_code}: {error_text}")
