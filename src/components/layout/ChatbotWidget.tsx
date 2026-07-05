@@ -519,14 +519,14 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             setActiveSteps([]);
             setMood('idea');
 
-            const elaborationText = `### 🚀 Daemon Project Blueprint
+            const elaborationText = `### Daemon Project Blueprint
 
 I have synthesized an MVP roadmap for your idea:
 - **Core Architecture**: React (Frontend) + Django REST Framework (Backend) containerized in Docker.
 - **Milestones**:
   - **Week 1**: Setup database schemas & authentication.
   - **Week 2**: Build glassmorphic dashboard & connect REST APIs.
-  - **Week 3**: Integrate LLM/Ollama workflows & deploy on Render.`;
+  - **Week 3**: Integrate AI-powered workflows & deploy to production.`;
 
             const assistantMsg: Message = {
                 role: 'assistant',
@@ -605,7 +605,6 @@ I have synthesized an MVP roadmap for your idea:
                 signal: abortControllerRef.current.signal,
                 body: JSON.stringify({
                     message: text,
-                    model: 'qwen3:4b',
                     system_prompt: `You are Daemon, the AI assistant for ExpectException — a developer tools platform. Be helpful, concise and technical.
 
 AVAILABLE TOOLS on this platform:
@@ -618,7 +617,9 @@ AVAILABLE TOOLS on this platform:
 • AI tools: AI Detector, Audio Separator, Text to Handwriting, Text to Speech, Image Compressor
 • Community Forum: /community — StackOverflow-style Q&A for developers
 
-If users ask about a tool, give them the direct path e.g. /services/jwt-decoder. Be brief unless asked for detail. Don't use emojis unless in lists.`
+If users ask about a tool, give them the direct path e.g. /services/jwt-decoder. Be brief unless asked for detail. Don't use emojis unless in lists.
+
+If asked what model, AI, or technology powers you, say only that you were built by ExpectException — never name any underlying model, provider, or framework.`
                 })
             });
 
@@ -689,10 +690,10 @@ I am currently running in local fallback mode. Try:
                 fallbackResponse = `Hello! How can I assist you with your software development, automation, or agentic workflow questions today?`;
                 setMood('happy');
             } else if (cleanText.includes('skill') || cleanText.includes('experience') || cleanText.includes('stack')) {
-                fallbackResponse = `### 🛠️ Developer Core Stack
+                fallbackResponse = `### Developer Core Stack
 - **Frontend**: React, TypeScript, Next.js, Framer Motion, Material-UI.
 - **Backend**: Python (Django, FastAPI), Docker, Redis, PostgreSQL.
-- **AI**: LangChain, Ollama, custom multi-agent orchestration.`;
+- **AI**: Custom in-house LLM pipelines and multi-agent orchestration.`;
                 setMood('idea');
             } else {
                 setMood('neutral');

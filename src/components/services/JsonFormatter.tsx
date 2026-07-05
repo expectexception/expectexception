@@ -61,7 +61,7 @@ const JsonFormatter: React.FC = () => {
         try {
             JSON.parse(input);
             setError(null);
-            setOutput('✓ Valid JSON');
+            setOutput('Valid JSON');
         } catch (err) {
             setError((err as Error).message);
             setOutput('');

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import NotificationManager from '../utils/NotificationManager';
+import { BellBadgeSvg, CheckBadgeSvg } from './layout/AnimatedSvgs';
 import './NotificationPrompt.css';
 
 const NotificationPrompt: React.FC = () => {
@@ -69,15 +70,15 @@ const NotificationPrompt: React.FC = () => {
         <div className="notification-prompt-overlay">
             <div className="notification-prompt">
                 <div className="notification-prompt-icon">
-                    🔔
+                    <BellBadgeSvg />
                 </div>
                 <div className="notification-prompt-content">
                     <h3>Stay Updated!</h3>
                     <p>Get notified when:</p>
                     <ul>
-                        <li>✓ Downloads complete</li>
-                        <li>✓ Processing finishes</li>
-                        <li>✓ New features launch</li>
+                        <li><CheckBadgeSvg /> Downloads complete</li>
+                        <li><CheckBadgeSvg /> Processing finishes</li>
+                        <li><CheckBadgeSvg /> New features launch</li>
                     </ul>
                 </div>
                 <div className="notification-prompt-actions">

@@ -16,6 +16,7 @@ import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
 import MarkdownRenderer from '../components/community/MarkdownRenderer';
+import { CheckBadgeSvg, LockBadgeSvg, OpenDotBadgeSvg } from '../components/layout/AnimatedSvgs';
 
 interface Author { id: number; email: string; first_name: string; last_name: string }
 interface Reply {
@@ -413,11 +414,17 @@ const ThreadDetailPage: React.FC = () => {
                                 { label: 'Views', value: thread.view_count },
                                 { label: 'Votes', value: thread.vote_count },
                                 { label: 'Replies', value: thread.reply_count },
-                                { label: 'Status', value: thread.is_solved ? '✅ Solved' : thread.is_closed ? '🔒 Closed' : '🟢 Open' },
+                                {
+                                    label: 'Status',
+                                    value: thread.is_solved ? 'Solved' : thread.is_closed ? 'Closed' : 'Open',
+                                    icon: thread.is_solved ? <CheckBadgeSvg /> : thread.is_closed ? <LockBadgeSvg /> : <OpenDotBadgeSvg />,
+                                },
                             ].map(item => (
                                 <Box key={item.label}>
                                     <Typography variant="caption" color="text.disabled">{item.label}</Typography>
-                                    <Typography variant="body2" fontWeight="600">{item.value}</Typography>
+                                    <Typography variant="body2" fontWeight="600" sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                        {item.icon}{item.value}
+                                    </Typography>
                                 </Box>
                             ))}
                         </Stack>
