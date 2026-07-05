@@ -7,3 +7,6 @@ media/
 staticfiles/
 frontendExpExc/
 node_modules/
+cache/
+backups/
+db.sqlite3
