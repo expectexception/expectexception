@@ -12,7 +12,13 @@
       "keyboard"
     ],
     "color": "primary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "snake game online",
+      "play snake free",
+      "classic snake game",
+      "browser snake game"
+    ]
   },
   {
     "id": 2,
@@ -27,7 +33,13 @@
       "numbers"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "2048 game online",
+      "play 2048 free",
+      "2048 puzzle game",
+      "2048 number game"
+    ]
   },
   {
     "id": 3,
@@ -42,7 +54,13 @@
       "strategy"
     ],
     "color": "warning",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "tic tac toe online",
+      "play tic tac toe vs ai",
+      "tic tac toe unbeatable ai",
+      "noughts and crosses game"
+    ]
   },
   {
     "id": 4,
@@ -57,7 +75,13 @@
       "generative"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "particle simulation online",
+      "interactive particle playground",
+      "generative art tool",
+      "canvas particle effects"
+    ]
   },
   {
     "id": 5,
@@ -72,7 +96,13 @@
       "simulation"
     ],
     "color": "info",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "falling sand game",
+      "sand simulation online",
+      "powder game browser",
+      "falling sand physics toy"
+    ]
   },
   {
     "id": 6,
@@ -87,7 +117,13 @@
       "daily"
     ],
     "color": "success",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "wordle unlimited",
+      "word guessing game online",
+      "free wordle clone",
+      "daily word puzzle game"
+    ]
   },
   {
     "id": 7,
@@ -102,7 +138,13 @@
       "speedrun"
     ],
     "color": "primary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "sliding puzzle game online",
+      "15 puzzle game",
+      "slide puzzle free",
+      "number sliding puzzle"
+    ]
   },
   {
     "id": 8,
@@ -117,7 +159,13 @@
       "score"
     ],
     "color": "warning",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "reaction time test online",
+      "reflex test game",
+      "how fast are your reflexes",
+      "reaction speed test free"
+    ]
   },
   {
     "id": 9,
@@ -132,7 +180,13 @@
       "score"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "aim trainer online free",
+      "mouse accuracy test",
+      "aim training game browser",
+      "improve aim game"
+    ]
   },
   {
     "id": 10,
@@ -147,7 +201,13 @@
       "cards"
     ],
     "color": "success",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "memory match game online",
+      "card matching game free",
+      "memory game browser",
+      "concentration card game"
+    ]
   },
   {
     "id": 11,
@@ -162,7 +222,13 @@
       "pattern"
     ],
     "color": "info",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "simon says game online",
+      "memory pattern game",
+      "simon game free",
+      "color sequence memory game"
+    ]
   },
   {
     "id": 12,
@@ -177,7 +243,13 @@
       "canvas"
     ],
     "color": "warning",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "breakout game online",
+      "brick breaker free",
+      "classic breakout arcade game",
+      "ball and paddle game"
+    ]
   },
   {
     "id": 13,
@@ -192,7 +264,13 @@
       "logic"
     ],
     "color": "info",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "minesweeper online free",
+      "play minesweeper browser",
+      "classic minesweeper game",
+      "minesweeper no download"
+    ]
   },
   {
     "id": 14,
@@ -207,7 +285,13 @@
       "strategy"
     ],
     "color": "primary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "connect four online",
+      "connect 4 vs ai",
+      "play connect four free",
+      "four in a row game"
+    ]
   },
   {
     "id": 15,
@@ -222,7 +306,12 @@
       "score"
     ],
     "color": "success",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "whack a mole online",
+      "whack a mole game free",
+      "reaction arcade game browser"
+    ]
   },
   {
     "id": 16,
@@ -237,7 +326,13 @@
       "typing"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "typing speed test online",
+      "wpm test free",
+      "typing test game",
+      "keyboard speed test"
+    ]
   },
   {
     "id": 17,
@@ -252,7 +347,13 @@
       "symmetry"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "kaleidoscope generator online",
+      "symmetry drawing tool",
+      "interactive kaleidoscope art",
+      "digital kaleidoscope toy"
+    ]
   },
   {
     "id": 18,
@@ -267,7 +368,13 @@
       "automaton"
     ],
     "color": "primary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "conway's game of life online",
+      "cellular automaton simulator",
+      "game of life simulator free",
+      "conway game of life browser"
+    ]
   },
   {
     "id": 19,
@@ -282,7 +389,13 @@
       "generative"
     ],
     "color": "success",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "boids simulation online",
+      "flocking algorithm simulator",
+      "bird flocking simulation",
+      "swarm behavior simulator"
+    ]
   },
   {
     "id": 20,
@@ -297,7 +410,13 @@
       "math"
     ],
     "color": "info",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "spirograph online generator",
+      "digital spirograph tool",
+      "geometric pattern generator",
+      "spirograph art maker"
+    ]
   },
   {
     "id": 21,
@@ -312,7 +431,13 @@
       "ai"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "pong game online",
+      "play pong vs ai",
+      "classic pong arcade game",
+      "table tennis game browser"
+    ]
   },
   {
     "id": 22,
@@ -327,7 +452,13 @@
       "classic"
     ],
     "color": "warning",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "hangman game online free",
+      "play hangman browser",
+      "word guessing hangman game",
+      "classic hangman game"
+    ]
   },
   {
     "id": 23,
@@ -342,7 +473,12 @@
       "ai"
     ],
     "color": "primary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "rock paper scissors online",
+      "play rock paper scissors vs computer",
+      "rock paper scissors game free"
+    ]
   },
   {
     "id": 24,
@@ -357,7 +493,13 @@
       "score"
     ],
     "color": "success",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "flappy bird clone online",
+      "flappy blocks game free",
+      "tap to fly game",
+      "flappy arcade game browser"
+    ]
   },
   {
     "id": 25,
@@ -373,7 +515,13 @@
       "blocks"
     ],
     "color": "primary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "tetris online free",
+      "play tetris browser",
+      "classic tetris game",
+      "block stacking puzzle game"
+    ]
   },
   {
     "id": 26,
@@ -389,7 +537,13 @@
       "brain"
     ],
     "color": "info",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "sudoku online free",
+      "play sudoku browser",
+      "sudoku puzzle game",
+      "daily sudoku no download"
+    ]
   },
   {
     "id": 27,
@@ -405,7 +559,13 @@
       "bubbles"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "bubble shooter online free",
+      "bubble pop game",
+      "match 3 bubble game",
+      "bubble shooter arcade browser"
+    ]
   },
   {
     "id": 28,
@@ -421,7 +581,13 @@
       "strategy"
     ],
     "color": "warning",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "tower of hanoi online",
+      "tower of hanoi puzzle game",
+      "disk puzzle game free",
+      "hanoi tower solver game"
+    ]
   },
   {
     "id": 29,
@@ -436,6 +602,12 @@
       "navigation"
     ],
     "color": "success",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "maze game online free",
+      "random maze generator game",
+      "solve a maze online",
+      "maze puzzle browser game"
+    ]
   }
 ]

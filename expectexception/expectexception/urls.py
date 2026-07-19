@@ -3,7 +3,7 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from django.contrib.sitemaps.views import sitemap
-from .sitemaps import StaticSitemap, BlogSitemap, ToolsSitemap, CommunityThreadSitemap
+from .sitemaps import StaticSitemap, BlogSitemap, ToolsSitemap, CommunityThreadSitemap, SandboxSitemap
 from django.http import HttpResponse
 
 sitemaps = {
@@ -11,6 +11,7 @@ sitemaps = {
     'blog': BlogSitemap,
     'tools': ToolsSitemap,
     'community': CommunityThreadSitemap,
+    'sandbox': SandboxSitemap,
 }
 
 def robots_txt(request):

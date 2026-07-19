@@ -140,6 +140,7 @@ const TowerOfHanoi: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={28}
                 title="Tower of Hanoi - Free Online Disk Puzzle Game"
                 keywords={['tower of hanoi', 'hanoi puzzle online', 'disk puzzle game', 'classic logic puzzle', 'brain teaser game']}
             />

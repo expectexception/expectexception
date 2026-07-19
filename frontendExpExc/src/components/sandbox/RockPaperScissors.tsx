@@ -66,7 +66,7 @@ const RockPaperScissors: React.FC = () => {
 
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
-            <Seo title="Rock Paper Scissors vs AI - Classic Game" />
+            <Seo title="Rock Paper Scissors vs AI - Classic Game" gameId={23} />
             <ServicePageHero
                 icon={Casino}
                 title="Rock Paper Scissors"

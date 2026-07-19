@@ -163,7 +163,7 @@ const Boids: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 8 }}>
-            <Seo title="Boids Flocking Simulation - Emergent Behavior Toy" />
+            <Seo title="Boids Flocking Simulation - Emergent Behavior Toy" gameId={19} />
             <ServicePageHero
                 icon={Pets}
                 title="Boids"

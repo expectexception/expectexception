@@ -148,7 +148,7 @@ const Pong: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 8 }}>
-            <Seo title="Pong - Classic Arcade Game" />
+            <Seo title="Pong - Classic Arcade Game" gameId={21} />
             <ServicePageHero
                 icon={SportsEsports}
                 title="Pong"

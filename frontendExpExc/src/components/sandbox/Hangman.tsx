@@ -53,7 +53,7 @@ const Hangman: React.FC = () => {
 
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
-            <Seo title="Hangman - Classic Word Guessing Game" />
+            <Seo title="Hangman - Classic Word Guessing Game" gameId={22} />
             <ServicePageHero
                 icon={Spellcheck}
                 title="Hangman"

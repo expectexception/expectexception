@@ -249,6 +249,7 @@ const MazeRunner: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={29}
                 title="Maze Runner - Free Online Random Maze Game"
                 keywords={['maze game online', 'maze runner free', 'random maze generator', 'maze puzzle game', 'labyrinth game']}
             />

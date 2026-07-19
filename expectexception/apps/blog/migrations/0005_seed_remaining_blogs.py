@@ -18,6 +18,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('blog', '0004_seed_service_blogs'),
+        ('profiles', '0002_profile_reputation_badges'),
     ]
 
     operations = [
