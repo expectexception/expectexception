@@ -242,7 +242,7 @@ const FallingSand: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 8 }}>
-            <Seo title="Falling Sand Sandbox - Cellular Automaton Toy" />
+            <Seo title="Falling Sand Sandbox - Cellular Automaton Toy" gameId={5} />
             <ServicePageHero
                 icon={Grain}
                 title="Falling Sand"

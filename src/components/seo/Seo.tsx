@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import apiClient from '../../api/config';
 
 import toolsData from '../../data/tools.json';
+import gamesData from '../../data/games.json';
 
 interface SeoOverride {
     keywords: string[];
@@ -61,6 +62,11 @@ interface SeoProps {
     author?: string;
     structuredData?: object;
     toolId?: number;
+    /** games.json id → merges the game's description (as a fallback) and
+     * keywords into this page's meta tags, mirroring how toolId works for
+     * tool pages. Game pages previously had no equivalent, so most of them
+     * fell back to the generic sitewide description instead of their own. */
+    gameId?: number;
     howToSteps?: HowToStep[];
     faq?: FaqItem[];
     noIndex?: boolean;
@@ -91,6 +97,7 @@ const Seo: React.FC<SeoProps> = ({
     author = 'ExpectException',
     structuredData,
     toolId,
+    gameId,
     howToSteps,
     faq,
     noIndex = false,
@@ -112,20 +119,23 @@ const Seo: React.FC<SeoProps> = ({
     const seoOverrides = useSeoOverrides();
     const override = seoOverrides?.[location.pathname];
 
-    // Resolve tool data
+    // Resolve tool/game data
     const tool = toolId ? toolsData.find(t => t.id === toolId) : null;
+    const game = gameId ? gamesData.find(g => g.id === gameId) : null;
     const finalDescription =
         override?.description ||
         description ||
         tool?.description ||
+        game?.description ||
         'Free online developer tools and utilities by ExpectException. No sign-up required.';
     const finalTitle = override?.title || title;
 
     // Merged keyword list — deduplicated
     const toolKeywords: string[] = (tool as any)?.keywords || [];
+    const gameKeywords: string[] = (game as any)?.keywords || [];
     const overrideKeywords: string[] = override?.keywords || [];
     const allKeywords = Array.from(
-        new Set([...BASE_KEYWORDS, ...keywords, ...toolKeywords, ...overrideKeywords])
+        new Set([...BASE_KEYWORDS, ...keywords, ...toolKeywords, ...gameKeywords, ...overrideKeywords])
     ).join(', ');
 
     // ── Structured Data ──────────────────────────────────────────────
@@ -162,6 +172,27 @@ const Seo: React.FC<SeoProps> = ({
                 '@type': 'AggregateRating',
                 ratingValue: '4.8',
                 ratingCount: (tool as any).popularity ? (tool as any).popularity * 12 : 120,
+            },
+        };
+    } else if (game && !structuredData) {
+        finalJsonLd = {
+            '@context': 'https://schema.org',
+            '@type': 'VideoGame',
+            name: game.title,
+            description: finalDescription,
+            url: currentUrl,
+            applicationCategory: 'GameApplication',
+            operatingSystem: 'Any',
+            genre: (game as any).category,
+            offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD',
+            },
+            aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.7',
+                ratingCount: 90,
             },
         };
     }

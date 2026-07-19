@@ -103,7 +103,7 @@ const Spirograph: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 8 }}>
-            <Seo title="Spirograph Generator - Parametric Curve Art" />
+            <Seo title="Spirograph Generator - Parametric Curve Art" gameId={20} />
             <ServicePageHero
                 icon={Circle}
                 title="Spirograph"

@@ -340,7 +340,7 @@ const Game2048: React.FC = () => {
 
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
-            <Seo title="Play 2048 Online - Free Browser Puzzle Game" />
+            <Seo title="Play 2048 Online - Free Browser Puzzle Game" gameId={2} />
             <ServicePageHero
                 icon={Apps}
                 title="2048"

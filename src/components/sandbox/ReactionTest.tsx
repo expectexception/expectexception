@@ -125,7 +125,7 @@ const ReactionTest: React.FC = () => {
 
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
-            <Seo title="Reaction Time Test - Free Online Game" />
+            <Seo title="Reaction Time Test - Free Online Game" gameId={8} />
             <ServicePageHero
                 icon={Bolt}
                 title="Reaction Test"

@@ -279,7 +279,7 @@ const SnakeGame: React.FC = () => {
 
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
-            <Seo title="Play Snake Online - Free Browser Game" />
+            <Seo title="Play Snake Online - Free Browser Game" gameId={1} />
             <ServicePageHero
                 icon={VideogameAsset}
                 title="Snake"

@@ -338,6 +338,7 @@ const Sudoku: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={26}
                 title="Sudoku — Free Online 9x9 Puzzle"
                 keywords={['sudoku', 'play sudoku online', 'free sudoku puzzle', 'sudoku easy medium hard', 'number puzzle game']}
             />

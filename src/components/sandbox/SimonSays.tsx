@@ -104,6 +104,7 @@ const SimonSays: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={11}
                 title="Simon Says — Memory Sequence Game Online"
                 keywords={['simon says game', 'memory sequence game', 'color memory game', 'simon game online', 'pattern memory game', 'brain memory test']}
             />

@@ -150,7 +150,7 @@ const WordGuess: React.FC = () => {
 
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
-            <Seo title="Word Guess - Free Online Wordle-Style Puzzle Game" />
+            <Seo title="Word Guess - Free Online Wordle-Style Puzzle Game" gameId={6} />
             <ServicePageHero
                 icon={Spellcheck}
                 title="Word Guess"

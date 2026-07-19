@@ -162,6 +162,7 @@ const Minesweeper: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={13}
                 title="Minesweeper — Free Online Classic Game"
                 keywords={['minesweeper game', 'play minesweeper online', 'minesweeper free', 'classic minesweeper', 'online puzzle game', 'minesweeper browser']}
             />

@@ -438,6 +438,7 @@ const BubbleShooter: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={27}
                 title="Bubble Shooter - Free Online Bubble Pop Arcade Game"
                 keywords={['bubble shooter game', 'bubble pop online', 'match 3 bubbles', 'free arcade game', 'bubble shooter free']}
             />

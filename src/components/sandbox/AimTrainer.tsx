@@ -178,7 +178,7 @@ const AimTrainer: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 8 }}>
-            <Seo title="Aim Trainer - Free Online Reflex Game" />
+            <Seo title="Aim Trainer - Free Online Reflex Game" gameId={9} />
             <ServicePageHero
                 icon={GpsFixed}
                 title="Aim Trainer"

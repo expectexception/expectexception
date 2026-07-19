@@ -90,6 +90,7 @@ const WhackAMole: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={15}
                 title="Whack-a-Mole — Free Online Reaction Game"
                 keywords={['whack a mole game', 'whack a mole online', 'reaction game free', 'click speed game', 'arcade tap game', 'whack a mole browser']}
             />

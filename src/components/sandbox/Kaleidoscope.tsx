@@ -129,7 +129,7 @@ const Kaleidoscope: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 8 }}>
-            <Seo title="Kaleidoscope Drawing - Symmetric Art Toy" />
+            <Seo title="Kaleidoscope Drawing - Symmetric Art Toy" gameId={17} />
             <ServicePageHero
                 icon={AutoAwesome}
                 title="Kaleidoscope"

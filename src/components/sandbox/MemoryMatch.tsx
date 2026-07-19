@@ -98,6 +98,7 @@ const MemoryMatch: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={10}
                 title="Memory Match — Free Online Card Matching Game"
                 keywords={['memory match game', 'card matching game', 'concentration game online', 'memory game free', 'brain training game', 'pairs matching game']}
             />

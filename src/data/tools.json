@@ -13,7 +13,15 @@
       "batch"
     ],
     "color": "primary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "url downloader",
+      "download file from url",
+      "bulk url downloader",
+      "download files online",
+      "batch file downloader",
+      "direct download link generator"
+    ]
   },
   {
     "id": 2,
@@ -29,7 +37,15 @@
       "media"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "youtube video downloader",
+      "yt to mp4",
+      "download youtube video free",
+      "youtube downloader online",
+      "save youtube video",
+      "yt video download hd"
+    ]
   },
   {
     "id": 3,
@@ -45,7 +61,15 @@
       "share"
     ],
     "color": "success",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "url to qr code",
+      "qr code generator free",
+      "link to qr code",
+      "generate qr code online",
+      "qr code maker",
+      "website qr code generator"
+    ]
   },
   {
     "id": 4,
@@ -61,7 +85,15 @@
       "format"
     ],
     "color": "warning",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "json formatter online",
+      "json beautifier",
+      "json validator",
+      "format json online",
+      "json pretty print",
+      "minify json"
+    ]
   },
   {
     "id": 5,
@@ -77,7 +109,15 @@
       "speech"
     ],
     "color": "info",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "text to speech free",
+      "tts online",
+      "text to voice converter",
+      "natural voice text to speech",
+      "read text aloud online",
+      "free tts generator"
+    ]
   },
   {
     "id": 6,
@@ -93,7 +133,15 @@
       "optimize"
     ],
     "color": "error",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "image compressor online",
+      "compress image free",
+      "reduce image file size",
+      "png jpg compressor",
+      "image optimizer online",
+      "compress photo without losing quality"
+    ]
   },
   {
     "id": 7,
@@ -109,7 +157,14 @@
       "convert"
     ],
     "color": "primary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "pdf to word converter",
+      "pdf to doc online free",
+      "convert pdf to editable word",
+      "pdf to docx converter",
+      "free pdf to word"
+    ]
   },
   {
     "id": 8,
@@ -125,7 +180,13 @@
       "convert"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "word to pdf converter",
+      "doc to pdf online free",
+      "convert word to pdf",
+      "docx to pdf converter"
+    ]
   },
   {
     "id": 9,
@@ -141,7 +202,13 @@
       "combine"
     ],
     "color": "success",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "merge pdf files",
+      "combine pdf online free",
+      "pdf merger tool",
+      "join pdf files online"
+    ]
   },
   {
     "id": 10,
@@ -157,7 +224,13 @@
       "extract"
     ],
     "color": "warning",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "split pdf online",
+      "pdf splitter free",
+      "extract pages from pdf",
+      "separate pdf pages"
+    ]
   },
   {
     "id": 11,
@@ -173,7 +246,13 @@
       "convert"
     ],
     "color": "info",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "image to pdf converter",
+      "jpg to pdf online",
+      "convert photos to pdf",
+      "png to pdf free"
+    ]
   },
   {
     "id": 12,
@@ -189,7 +268,14 @@
       "scale"
     ],
     "color": "error",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "image resizer online",
+      "resize image free",
+      "change image dimensions",
+      "photo resizer tool",
+      "resize photo without losing quality"
+    ]
   },
   {
     "id": 13,
@@ -205,7 +291,13 @@
       "ai"
     ],
     "color": "primary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "remove background from image",
+      "background remover free",
+      "transparent background image",
+      "ai background remover online"
+    ]
   },
   {
     "id": 14,
@@ -221,7 +313,14 @@
       "extract"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "image to text converter",
+      "ocr online free",
+      "extract text from image",
+      "jpg to text converter",
+      "photo to text ocr"
+    ]
   },
   {
     "id": 15,
@@ -237,7 +336,13 @@
       "format"
     ],
     "color": "success",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "image format converter",
+      "png to jpg converter",
+      "webp to png online",
+      "convert image format free"
+    ]
   },
   {
     "id": 16,
@@ -253,7 +358,14 @@
       "decode"
     ],
     "color": "warning",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "base64 encoder",
+      "base64 decoder online",
+      "encode string to base64",
+      "decode base64 to text",
+      "base64 to image converter"
+    ]
   },
   {
     "id": 17,
@@ -269,7 +381,14 @@
       "security"
     ],
     "color": "info",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "hash generator online",
+      "md5 hash generator",
+      "sha256 generator",
+      "generate file hash",
+      "text to hash converter"
+    ]
   },
   {
     "id": 18,
@@ -285,7 +404,13 @@
       "unique"
     ],
     "color": "error",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "uuid generator online",
+      "generate uuid v4",
+      "random uuid generator",
+      "guid generator free"
+    ]
   },
   {
     "id": 19,
@@ -301,7 +426,13 @@
       "design"
     ],
     "color": "primary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "color converter online",
+      "hex to rgb converter",
+      "rgb to hsl converter",
+      "color code converter"
+    ]
   },
   {
     "id": 20,
@@ -317,7 +448,13 @@
       "analysis"
     ],
     "color": "secondary",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "ai image detector",
+      "detect ai generated image",
+      "is this image ai generated",
+      "deepfake detector free"
+    ]
   },
   {
     "id": 21,
@@ -334,7 +471,13 @@
       "preview"
     ],
     "color": "info",
-    "is_active": true
+    "is_active": true,
+    "keywords": [
+      "markdown preview online",
+      "markdown to html converter",
+      "live markdown editor",
+      "markdown renderer free"
+    ]
   },
   {
     "id": 22,
@@ -540,7 +683,11 @@
     "keywords": [
       "lorem ipsum",
       "placeholder text",
-      "dummy text generator"
+      "dummy text generator",
+      "generate lorem ipsum text",
+      "placeholder text generator online",
+      "fake text generator",
+      "ipsum generator free"
     ]
   },
   {
@@ -560,7 +707,11 @@
     "keywords": [
       "css gradient generator",
       "linear gradient",
-      "radial gradient"
+      "radial gradient",
+      "css gradient maker",
+      "gradient background generator",
+      "css background gradient tool",
+      "gradient color picker"
     ]
   },
   {
@@ -580,7 +731,11 @@
     "keywords": [
       "unix timestamp converter",
       "epoch converter",
-      "date to timestamp"
+      "date to timestamp",
+      "timestamp to date converter",
+      "convert unix time online",
+      "current unix timestamp",
+      "epoch time converter free"
     ]
   },
   {
@@ -600,7 +755,11 @@
     "keywords": [
       "password generator",
       "strong password",
-      "random password"
+      "random password",
+      "secure password generator",
+      "password generator online free",
+      "random password creator",
+      "complex password generator"
     ]
   },
   {
@@ -620,7 +779,11 @@
     "keywords": [
       "text diff checker",
       "compare text",
-      "diff tool"
+      "diff tool",
+      "diff checker online",
+      "text comparison tool",
+      "find text differences",
+      "compare two texts online"
     ]
   },
   {
@@ -640,7 +803,11 @@
     "keywords": [
       "case converter",
       "camelcase converter",
-      "snake case converter"
+      "snake case converter",
+      "uppercase to lowercase converter",
+      "title case converter",
+      "text case changer online",
+      "kebab case converter"
     ]
   },
   {
@@ -660,7 +827,11 @@
     "keywords": [
       "html entity encoder",
       "html entity decoder",
-      "escape html"
+      "escape html",
+      "html special characters encoder",
+      "unescape html online",
+      "html entities converter",
+      "encode decode html"
     ]
   },
   {
@@ -703,7 +874,11 @@
     "keywords": [
       "json to csv",
       "csv to json",
-      "convert json csv"
+      "convert json csv",
+      "json to csv converter online",
+      "csv to json converter free",
+      "convert json array to csv",
+      "csv json transformer"
     ]
   },
   {

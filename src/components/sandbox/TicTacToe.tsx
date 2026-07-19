@@ -197,7 +197,7 @@ const TicTacToe: React.FC = () => {
 
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
-            <Seo title="Play Tic-Tac-Toe Online - Unbeatable AI" />
+            <Seo title="Play Tic-Tac-Toe Online - Unbeatable AI" gameId={3} />
             <ServicePageHero
                 icon={GridOn}
                 title="Tic-Tac-Toe"

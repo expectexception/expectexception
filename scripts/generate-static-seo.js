@@ -72,7 +72,13 @@ const STATIC_PAGES = [
 ];
 
 function toolPageMeta(tool) {
-  const keywordList = Array.from(new Set(['ExpectException', tool.title, ...(tool.tags || [])])).join(', ');
+  // tool.keywords (a curated, high-intent phrase list) is what the client-side
+  // Seo component already merges in via toolId - previously this static build
+  // only used title+tags, so a crawler that doesn't execute JS saw a much
+  // thinner keyword set here than what a real browser rendered.
+  const keywordList = Array.from(new Set([
+    'ExpectException', tool.title, ...(tool.tags || []), ...(tool.keywords || []),
+  ])).join(', ');
   return {
     route: tool.path,
     title: `${tool.title} — Free Online Tool | ExpectException`,
@@ -87,7 +93,9 @@ function toolPageMeta(tool) {
 }
 
 function gamePageMeta(game) {
-  const keywordList = Array.from(new Set(['ExpectException', 'free browser game', game.title, ...(game.tags || [])])).join(', ');
+  const keywordList = Array.from(new Set([
+    'ExpectException', 'free browser game', game.title, ...(game.tags || []), ...(game.keywords || []),
+  ])).join(', ');
   return {
     route: game.path,
     title: `${game.title} — Free Browser Game | ExpectException Sandbox`,

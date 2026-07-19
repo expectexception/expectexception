@@ -189,6 +189,7 @@ const Breakout: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={12}
                 title="Breakout — Free Online Brick Breaker Arcade Game"
                 keywords={['breakout game', 'brick breaker online', 'arkanoid game free', 'classic arcade game', 'ball and paddle game', 'brick breaking game']}
             />

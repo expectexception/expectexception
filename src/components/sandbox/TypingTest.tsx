@@ -90,6 +90,7 @@ const TypingTest: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={16}
                 title="Typing Speed Test — Free WPM Test Online"
                 keywords={['typing speed test', 'wpm test', 'typing test online free', 'words per minute test', 'keyboard speed test', 'typing practice']}
             />
