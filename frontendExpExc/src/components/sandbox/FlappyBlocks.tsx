@@ -151,7 +151,7 @@ const FlappyBlocks: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 8 }}>
-            <Seo title="Flappy Blocks - Tap to Flap Arcade Game" />
+            <Seo title="Flappy Blocks - Tap to Flap Arcade Game" gameId={24} />
             <ServicePageHero
                 icon={Bolt}
                 title="Flappy Blocks"

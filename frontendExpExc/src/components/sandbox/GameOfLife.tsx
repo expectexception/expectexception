@@ -131,7 +131,7 @@ const GameOfLife: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 8 }}>
-            <Seo title="Conway's Game of Life - Cellular Automaton" />
+            <Seo title="Conway's Game of Life - Cellular Automaton" gameId={18} />
             <ServicePageHero
                 icon={GridView}
                 title="Game of Life"

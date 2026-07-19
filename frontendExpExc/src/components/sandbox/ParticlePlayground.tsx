@@ -235,7 +235,7 @@ const ParticlePlayground: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 8 }}>
-            <Seo title="Particle Playground - Interactive Canvas Toy" />
+            <Seo title="Particle Playground - Interactive Canvas Toy" gameId={4} />
             <ServicePageHero
                 icon={AutoAwesome}
                 title="Particle Playground"

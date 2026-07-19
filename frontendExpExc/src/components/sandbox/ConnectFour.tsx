@@ -118,6 +118,7 @@ const ConnectFour: React.FC = () => {
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
+                gameId={14}
                 title="Connect Four — Play Free Online vs AI"
                 keywords={['connect four game', 'connect 4 online', 'play connect four vs computer', 'four in a row game', 'connect four free', 'strategy board game online']}
             />

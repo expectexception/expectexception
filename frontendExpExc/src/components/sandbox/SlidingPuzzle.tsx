@@ -150,7 +150,7 @@ const SlidingPuzzle: React.FC = () => {
 
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
-            <Seo title="Sliding Puzzle - Free Online 15-Puzzle Brain Game" />
+            <Seo title="Sliding Puzzle - Free Online 15-Puzzle Brain Game" gameId={7} />
             <ServicePageHero
                 icon={Extension}
                 title="Sliding Puzzle"
