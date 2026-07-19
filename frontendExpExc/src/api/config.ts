@@ -156,14 +156,13 @@ apiClient.interceptors.response.use(
             }
         }
 
-        // Handle 401 Unauthorized - token expired
+        // Handle 401 Unauthorized - token expired/invalid
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
-            try {
-                // Try to refresh token
-                const refreshToken = localStorage.getItem('refreshToken');
-                if (refreshToken) {
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (refreshToken) {
+                try {
                     const refreshBaseUrl = isRenderMarkedDown() ? FALLBACK_BASE_URL : API_BASE_URL;
                     const response = await axios.post(`${refreshBaseUrl}/api/auth/token/refresh/`, {
                         refresh: refreshToken,
@@ -175,13 +174,37 @@ apiClient.interceptors.response.use(
                     // Retry original request with new token
                     originalRequest.headers.Authorization = `Bearer ${access}`;
                     return apiClient(originalRequest);
+                } catch (refreshError) {
+                    console.error('[config.ts] Token refresh failed:', refreshError);
                 }
-            } catch (refreshError) {
-                // Refresh failed, clear tokens and redirect to login
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-                window.location.href = '/login';
-                return Promise.reject(refreshError);
+            }
+
+            // If we are here, we had no refresh token, or the refresh request failed.
+            // Clear local tokens to prevent sending stale tokens with future requests.
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+
+            // Retry the original request WITHOUT the Authorization header.
+            // If the request was for a public endpoint (AllowAny), it will succeed.
+            // If the endpoint actually requires authentication, it will fail again with 401/403.
+            if (originalRequest.headers) {
+                delete originalRequest.headers.Authorization;
+            }
+
+            try {
+                // We use apiClient to retry so that standard base URLs and other interceptors still apply
+                return await apiClient(originalRequest);
+            } catch (retryError: any) {
+                // If it still fails with 401 or 403, and it's not a profile endpoint (which is used by checkAuth),
+                // we redirect to /login.
+                const isProfileRequest = originalRequest.url?.includes('/api/auth/profile');
+                if (
+                    (retryError.response?.status === 401 || retryError.response?.status === 403) &&
+                    !isProfileRequest
+                ) {
+                    window.location.href = '/login';
+                }
+                return Promise.reject(retryError);
             }
         }
 
