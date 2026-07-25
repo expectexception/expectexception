@@ -1235,7 +1235,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             setInquiryFlow({ step: 'awaiting_idea', idea: '' });
             const assistantMsg: Message = {
                 role: 'assistant',
-                content: `I'd love to help scope that. Tell me a bit about what you want to build — the core idea, key features, or problem it solves — and I'll pass it straight to the ExpectException team.`,
+                content: `I'd love to help scope that. Tell me a bit about what you want to build (the core idea, key features, or problem it solves) and I'll pass it straight to the ExpectException team.`,
                 timestamp: new Date().toISOString()
             };
             setMessages(prev => [...prev, assistantMsg]);
@@ -1266,7 +1266,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             const reachAt = [phone, email].filter(Boolean).join(' or ');
             const assistantMsg: Message = {
                 role: 'assistant',
-                content: `Thanks${name && name !== 'Chat visitor' ? `, ${name}` : ''}! I've logged your project idea and contact info for the team${reachAt ? ` — expect a call or message at ${reachAt} soon` : ''}. Anything else I can help with in the meantime?`,
+                content: `Thanks${name && name !== 'Chat visitor' ? `, ${name}` : ''}! I've logged your project idea and contact info for the team${reachAt ? `. Expect a call or message at ${reachAt} soon` : ''}. Anything else I can help with in the meantime?`,
                 timestamp: new Date().toISOString()
             };
             setMessages(prev => [...prev, assistantMsg]);
@@ -1275,7 +1275,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             setMood('neutral');
             const assistantMsg: Message = {
                 role: 'assistant',
-                content: `I couldn't submit that automatically just now. You can also reach the team directly from the Contact page (/contact) with the same details — sorry for the extra step.`,
+                content: `I couldn't submit that automatically just now. You can also reach the team directly from the Contact page (/contact) with the same details. Sorry for the extra step.`,
                 timestamp: new Date().toISOString()
             };
             setMessages(prev => [...prev, assistantMsg]);
