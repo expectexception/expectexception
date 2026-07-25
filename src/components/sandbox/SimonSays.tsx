@@ -98,14 +98,14 @@ const SimonSays: React.FC = () => {
 
     const statusText = phase === 'idle' ? 'Press Start to play'
         : phase === 'showing' ? 'Watch the pattern…'
-        : phase === 'input' ? 'Your turn — repeat it'
-        : `Game over — you reached round ${round - 1}`;
+        : phase === 'input' ? 'Your turn! Repeat it'
+        : `Game over! You reached round ${round - 1}`;
 
     return (
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
                 gameId={11}
-                title="Simon Says — Memory Sequence Game Online"
+                title="Simon Says | Memory Sequence Game Online"
                 keywords={['simon says game', 'memory sequence game', 'color memory game', 'simon game online', 'pattern memory game', 'brain memory test']}
             />
             <ServicePageHero

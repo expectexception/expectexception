@@ -292,7 +292,7 @@ const MazeRunner: React.FC = () => {
                         <Chip size="small" label={`Moves: ${moves}`} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
                         <Chip size="small" label={`Time: ${formatTime(elapsedMs)}`} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
                         <Typography variant="body2" color="text.secondary">
-                            Best: {best[size] ? `${best[size].moves} moves / ${formatTime(best[size].timeMs)}` : '—'}
+                            Best: {best[size] ? `${best[size].moves} moves / ${formatTime(best[size].timeMs)}` : 'N/A'}
                         </Typography>
                     </Stack>
 

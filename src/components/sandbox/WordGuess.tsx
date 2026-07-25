@@ -168,7 +168,7 @@ const WordGuess: React.FC = () => {
                 <CardContent sx={{ p: 1 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
                         <Typography variant="body2" color="text.secondary">
-                            Best: {best !== null ? `${best} ${best === 1 ? 'guess' : 'guesses'}` : '—'}
+                            Best: {best !== null ? `${best} ${best === 1 ? 'guess' : 'guesses'}` : 'N/A'}
                         </Typography>
                         <Chip
                             size="small"

@@ -242,7 +242,7 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/website-diagnostics" element={<PageTransition>{withAuthGuard(<WebsiteDiagnostics />, '/services/website-diagnostics', toolAccess, 'Website Diagnostics')}</PageTransition>} />
                     <Route path="/services/speed-test" element={<PageTransition>{withAuthGuard(<SpeedTest />, '/services/speed-test', toolAccess, 'Speed Test')}</PageTransition>} />
                     <Route path="/services/audio-separator" element={<PageTransition>{withAuthGuard(<AudioSeparator />, '/services/audio-separator', toolAccess, 'Audio Separator')}</PageTransition>} />
-                    {/* No withAuthGuard here on purpose — UptimeRobot renders its own
+                    {/* No withAuthGuard here on purpose, UptimeRobot renders its own
                         richer logged-out landing/marketing view instead of the generic
                         bare "Sign In Required" wall, then gates the real command center
                         internally via useAuth(). */}

@@ -87,10 +87,10 @@ const TYPE_HELP: Record<MonitorType, string> = {
     http: 'Checks the target returns a 2xx/3xx HTTP status.',
     https: 'Checks the target returns a 2xx/3xx HTTP status.',
     keyword: 'Checks a specific string still appears in the page response.',
-    ping: 'A lightweight TCP connect check — good for hosts with no web server.',
+    ping: 'A lightweight TCP connect check | good for hosts with no web server.',
     port: 'Confirms a specific port on the host accepts connections.',
     ssl: 'Confirms the SSL handshake succeeds (certificate expiry warnings coming soon).',
-    heartbeat: "A dead-man's-switch — your own script pings the given URL; if it goes quiet longer than the interval, this flips to down.",
+    heartbeat: "A dead-man's-switch, your own script pings the given URL; if it goes quiet longer than the interval, this flips to down.",
 };
 
 const getHeartbeatSnippets = (url: string) => ({
@@ -243,7 +243,7 @@ const UptimeRobotCommandCenter: React.FC = () => {
                         <Box>
                             <Typography variant="h5" fontWeight={900}>Uptime Robot Command Center</Typography>
                             <Typography variant="body2" color="text.secondary">
-                                {monitors.length} / {limit} monitors used — private to your account
+                                {monitors.length} / {limit} monitors used, private to your account
                             </Typography>
                         </Box>
                     </Stack>
@@ -291,7 +291,7 @@ const UptimeRobotCommandCenter: React.FC = () => {
                 <Card sx={{ p: 6, textAlign: 'center', background: 'rgba(13, 14, 18, 0.4)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>No monitors yet</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                        Add your first monitor — pick a type, set a target and an interval.
+                        Add your first monitor, pick a type, set a target and an interval.
                     </Typography>
                     <Button variant="contained" startIcon={<Add />} onClick={() => setOpenAddDialog(true)}
                         sx={{ bgcolor: primaryColor, color: '#000' }}>
@@ -427,11 +427,11 @@ const UptimeRobotCommandCenter: React.FC = () => {
                                     </Grid>
                                 </Grid>
 
-                                {/* Recent check history strip — real data from logs, most recent first reversed to read left-to-right oldest->newest */}
+                                {/* Recent check history strip, real data from logs, most recent first reversed to read left-to-right oldest->newest */}
                                 <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 1 }}>Recent Check History</Typography>
                                 <Stack direction="row" spacing={0.5} sx={{ mb: 3 }}>
                                     {[...selectedMonitor.logs].reverse().filter((l) => l.status !== 'info').slice(-24).map((l, i) => (
-                                        <Tooltip title={`${l.at} — ${l.message}`} key={i}>
+                                        <Tooltip title={`${l.at}, ${l.message}`} key={i}>
                                             <Box sx={{ flex: 1, height: 28, borderRadius: 0.5, bgcolor: alpha(STATUS_COLOR(theme, l.status), 0.7) }} />
                                         </Tooltip>
                                     ))}

@@ -19,7 +19,7 @@ const STATUS_CODES = [
     { code: 206, name: 'Partial Content', category: '2xx', desc: 'Partial content is delivered due to a range header sent by the client.' },
     // 3xx
     { code: 301, name: 'Moved Permanently', category: '3xx', desc: 'URL has been permanently moved. Update your links.' },
-    { code: 302, name: 'Found', category: '3xx', desc: 'Temporary redirect — original URI should be used in future requests.' },
+    { code: 302, name: 'Found', category: '3xx', desc: 'Temporary redirect (original URI should be used in future requests.' },
     { code: 303, name: 'See Other', category: '3xx', desc: 'Response to the request can be found at another URI using GET.' },
     { code: 304, name: 'Not Modified', category: '3xx', desc: 'Resource has not been modified since last requested. Use cached version.' },
     { code: 307, name: 'Temporary Redirect', category: '3xx', desc: 'Request should be repeated with the same method at another URI.' },
@@ -68,7 +68,7 @@ const HttpStatusCodes: React.FC = () => {
             title="HTTP Status Code Reference"
             subtitle="Complete searchable reference for all HTTP status codes with descriptions and use cases."
             icon={InfoIcon}
-            seoTitle="HTTP Status Codes Reference — 200, 301, 404, 500 Meanings"
+            seoTitle="HTTP Status Codes Reference | 200, 301, 404, 500 Meanings"
             seoDescription="Searchable HTTP status code reference. All 1xx-5xx codes explained with use cases."
             toolId={44}
             keywords={['http status codes', '404 meaning', '301 redirect', '500 error', 'rest api status codes', 'http response codes list', '403 forbidden', '502 bad gateway', 'http error codes']}

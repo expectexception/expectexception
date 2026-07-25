@@ -599,7 +599,7 @@ const APIKeysPanel: React.FC<{ primaryColor: string; token: string }> = ({ prima
 
                 {createdKey && (
                     <Alert severity="success" sx={{ mb: 3 }} onClose={() => setCreatedKey(null)}>
-                        <strong>Copy your new key now — it won't be shown again:</strong>
+                        <strong>Copy your new key now. It won't be shown again:</strong>
                         <Box sx={{ fontFamily: 'monospace', fontSize: '0.8rem', mt: 1, wordBreak: 'break-all', display: 'flex', alignItems: 'center', gap: 1 }}>
                             {createdKey}
                             <IconButton size="small" onClick={() => navigator.clipboard.writeText(createdKey)}><CopyIcon fontSize="small" /></IconButton>

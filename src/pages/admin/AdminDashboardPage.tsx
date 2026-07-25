@@ -1610,7 +1610,7 @@ const AdminDashboardPage: React.FC = () => {
                             </TabPanel>
 
                             <TabPanel value={activeTab} index={9}>
-                                <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>MongoDB Atlas — Cross-Instance Mirror</Typography>
+                                <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>MongoDB Atlas | Cross-Instance Mirror</Typography>
                                 <Typography variant="body2" sx={{ color: 'grey.500', mb: 2 }}>
                                     Read-only view of the failover mirror (not the primary datastore). Atlas encrypts everything here at rest and in transit by default.
                                 </Typography>
@@ -1626,7 +1626,7 @@ const AdminDashboardPage: React.FC = () => {
                                                     <CardContent>
                                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                                                             <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700 }}>{name}</Typography>
-                                                            <Chip label={`${data.count ?? '—'} docs`} size="small" color={data.count ? 'success' : 'default'} />
+                                                            <Chip label={`${data.count ?? 'N/A'} docs`} size="small" color={data.count ? 'success' : 'default'} />
                                                         </Box>
                                                         {data.error && <Alert severity="error" sx={{ mb: 1 }}>{data.error}</Alert>}
                                                         {data.recent.length === 0 ? (
@@ -1849,7 +1849,7 @@ const AdminDashboardPage: React.FC = () => {
                     </DialogActions>
                 </Dialog>
 
-                {/* Inquiry Detail / Reply Dialog — replying is always an explicit
+                {/* Inquiry Detail / Reply Dialog, replying is always an explicit
                     action taken here; nothing is ever emailed to the requester
                     automatically on submission. */}
                 <Dialog
@@ -1884,7 +1884,7 @@ const AdminDashboardPage: React.FC = () => {
                                     minRows={4}
                                     value={replyMessage}
                                     onChange={(e) => setReplyMessage(e.target.value)}
-                                    placeholder="Write your reply — this will be emailed directly to the requester."
+                                    placeholder="Write your reply. This will be emailed directly to the requester."
                                     sx={{ mt: 1, textarea: { color: 'white' }, label: { color: 'grey.500' } }}
                                 />
                             </>

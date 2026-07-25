@@ -99,7 +99,7 @@ const MemoryMatch: React.FC = () => {
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
                 gameId={10}
-                title="Memory Match — Free Online Card Matching Game"
+                title="Memory Match | Free Online Card Matching Game"
                 keywords={['memory match game', 'card matching game', 'concentration game online', 'memory game free', 'brain training game', 'pairs matching game']}
             />
             <ServicePageHero
@@ -120,7 +120,7 @@ const MemoryMatch: React.FC = () => {
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
                         <Typography variant="body1"><strong>Moves:</strong> {moves}</Typography>
                         <Typography variant="body1" color="text.secondary">
-                            Best: {best ?? '—'}
+                            Best: {best ?? 'N/A'}
                         </Typography>
                         <Button size="small" startIcon={<Refresh />} onClick={reset}>New game</Button>
                     </Stack>

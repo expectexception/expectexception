@@ -42,7 +42,7 @@ const ContactForm: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) => {
 
             <Snackbar open={open} autoHideDuration={6000} onClose={() => setOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
                 <Alert onClose={() => setOpen(false)} severity="success" sx={{ width: '100%' }}>
-                    Thanks! Your enquiry has been sent — we'll get back to you shortly.
+                    Thanks! Your enquiry has been sent. We'll get back to you shortly.
                 </Alert>
             </Snackbar>
         </Paper>

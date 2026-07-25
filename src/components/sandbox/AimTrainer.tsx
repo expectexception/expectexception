@@ -200,7 +200,7 @@ const AimTrainer: React.FC = () => {
                                 Time left
                             </Typography>
                             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                {state === 'playing' ? `${timeLeft}s` : '—'}
+                                {state === 'playing' ? `${timeLeft}s` : 'N/A'}
                             </Typography>
                         </Box>
                         <Box>
@@ -224,7 +224,7 @@ const AimTrainer: React.FC = () => {
                                 Best
                             </Typography>
                             <Typography variant="h6" sx={{ fontWeight: 700, color: 'secondary.main' }}>
-                                {best ? `${best.accuracy}% / ${best.hits} hits` : '—'}
+                                {best ? `${best.accuracy}% / ${best.hits} hits` : 'N/A'}
                             </Typography>
                         </Box>
                     </Box>
@@ -262,7 +262,7 @@ const AimTrainer: React.FC = () => {
                                             {hits} hits, {misses} misses, {accuracy}% accuracy
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
-                                            Avg reaction: {avgReaction !== null ? `${avgReaction} ms` : '—'}
+                                            Avg reaction: {avgReaction !== null ? `${avgReaction} ms` : 'N/A'}
                                         </Typography>
                                     </Box>
                                 )}

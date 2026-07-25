@@ -92,7 +92,7 @@ const SearchPage: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 6 }}>
-            <Seo title={`Search${query ? ` — "${query}"` : ''} | ExpectException`} description="Search tools, community threads, and blog posts." />
+            <Seo title={`Search${query ? `, "${query}"` : ''} | ExpectException`} description="Search tools, community threads, and blog posts." />
 
             <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
                 {query ? <>Results for <span style={{ color: theme.palette.primary.main }}>"{query}"</span></> : 'Search ExpectException'}

@@ -568,7 +568,7 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
               }}
             >
               <Box sx={{ position: 'relative', width: '84px', height: '84px' }}>
-                {/* Progress ring — reflects real simulation progress, not just decoration */}
+                {/* Progress ring, reflects real simulation progress, not just decoration */}
                 <svg width="84" height="84" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
                   <circle cx="42" cy="42" r={RING_R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
                   {(isActive || isCompleted) && (
@@ -614,7 +614,7 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
                   </Box>
                 </motion.div>
 
-                {/* Status badge — completed check / active pulse */}
+                {/* Status badge, completed check / active pulse */}
                 {isCompleted && (
                   <Box sx={{
                     position: 'absolute', top: -2, right: -2,
@@ -661,7 +661,7 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
                   fontSize: '0.75rem'
                 }}
               >
-                {isActive ? `${node.desc} — ${Math.round(progress)}%` : isCompleted ? 'Done' : node.desc}
+                {isActive ? `${node.desc}, ${Math.round(progress)}%` : isCompleted ? 'Done' : node.desc}
               </Typography>
             </Box>
           );
@@ -886,7 +886,7 @@ const HomePage: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', pb: 8, bgcolor: '#050505', color: '#ffffff' }}>
       <Seo
-        title="ExpectException – Free Developer Tools, AI Engineering & Portfolio"
+        title="ExpectException | Free Developer Tools, AI Engineering & Portfolio"
         description="ExpectException: free online tools (YouTube downloader, AI detector, PDF converter, OCR), developer blog, and a full-stack engineering & AI studio specializing in React, Django, AI & DevOps."
         keywords={[
           'expectexception',
@@ -909,7 +909,7 @@ const HomePage: React.FC = () => {
         faq={[
           {
             question: 'What is ExpectException?',
-            answer: 'ExpectException is a free online toolkit with 50+ developer utilities — YouTube downloader, AI image detector, PDF converter, image compressor, OCR, text-to-speech — plus a technical blog and a sandbox of browser games.',
+            answer: 'ExpectException is a free online toolkit with 50+ developer utilities, YouTube downloader, AI image detector, PDF converter, image compressor, OCR, text-to-speech | plus a technical blog and a sandbox of browser games.',
           },
           {
             question: 'Are all tools on ExpectException free?',
@@ -917,7 +917,7 @@ const HomePage: React.FC = () => {
           },
           {
             question: 'Can I hire the team behind ExpectException?',
-            answer: "Yes — we take on freelance and contract work in React, Django, Python, and AI/ML integrations. Visit the Hire page for details and to get in touch.",
+            answer: "Yes, we take on freelance and contract work in React, Django, Python, and AI/ML integrations. Visit the Hire page for details and to get in touch.",
           },
         ]}
       />
@@ -1308,10 +1308,10 @@ const HomePage: React.FC = () => {
                 An Engineering Studio Built to Ship, Not Just Prototype
               </Typography>
               <Typography variant="body1" sx={{ color: '#94a3b8', fontSize: '1.1rem', lineHeight: 1.8, mb: 4 }}>
-                ExpectException is a full-stack engineering and applied-AI studio. We design and operate production systems — not demos — and this platform is the proof: every tool in our library is something we built, deployed, and maintain ourselves, running on real infrastructure with real users.
+                ExpectException is a full-stack engineering and applied-AI studio. We design and operate production systems, not demos, and this platform is the proof: every tool in our library is something we built, deployed, and maintain ourselves, running on real infrastructure with real users.
               </Typography>
               <Typography variant="body1" sx={{ color: '#94a3b8', fontSize: '1.1rem', lineHeight: 1.8, mb: 6 }}>
-                Beyond the free tools, we take on client work — React/TypeScript frontends paired with secure Django or Node.js backends, custom AI automation, and agentic workflows that plug real tools into conversational systems. If you're hiring or scoping a project, everything you can try on this site is our portfolio, live in production.
+                Beyond the free tools, we take on client work: React/TypeScript frontends paired with secure Django or Node.js backends, custom AI automation, and agentic workflows that plug real tools into conversational systems. If you're hiring or scoping a project, everything you can try on this site is our portfolio, live in production.
               </Typography>
 
               <Grid container spacing={4}>
@@ -2135,7 +2135,7 @@ const HomePage: React.FC = () => {
             </Grid>
           </Grid>
 
-          {/* How the pipeline works — plain-English explanation of the flow */}
+          {/* How the pipeline works, plain-English explanation of the flow */}
           <Box sx={{ mt: { xs: 8, md: 12 } }}>
             <Box sx={{ textAlign: 'center', mb: 6 }}>
               <Typography variant="h6" color="primary.main" fontWeight="700" sx={{ mb: 1, letterSpacing: '0.1em', textTransform: 'uppercase' }}>

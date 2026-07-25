@@ -163,7 +163,7 @@ const Minesweeper: React.FC = () => {
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
                 gameId={13}
-                title="Minesweeper — Free Online Classic Game"
+                title="Minesweeper | Free Online Classic Game"
                 keywords={['minesweeper game', 'play minesweeper online', 'minesweeper free', 'classic minesweeper', 'online puzzle game', 'minesweeper browser']}
             />
             <ServicePageHero
@@ -184,7 +184,7 @@ const Minesweeper: React.FC = () => {
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
                         <Typography variant="body1"><Flag sx={{ fontSize: 16, verticalAlign: 'text-bottom', mr: 0.5 }} />{MINES - flags}</Typography>
                         <Typography variant="body1" color="text.secondary">
-                            ⏱ {seconds}s · Best: {best ?? '—'}
+                            ⏱ {seconds}s · Best: {best ?? 'N/A'}
                         </Typography>
                         <Button size="small" startIcon={<Refresh />} onClick={reset}>New</Button>
                     </Stack>

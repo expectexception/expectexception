@@ -178,9 +178,9 @@ const CsvToJsonConverter: React.FC = () => {
         <ServicePageShell
             icon={Transform}
             title="CSV to JSON Converter"
-            subtitle="Paste or upload a CSV file and convert it to a formatted JSON array — parsed entirely in your browser"
+            subtitle="Paste or upload a CSV file and convert it to a formatted JSON array | parsed entirely in your browser"
             maxWidth="md"
-            seoTitle="CSV to JSON Converter — Free Online CSV to JSON Tool"
+            seoTitle="CSV to JSON Converter | Free Online CSV to JSON Tool"
             keywords={['csv to json converter', 'convert csv to json online', 'csv to json free', 'csv file to json array', 'parse csv to json', 'csv to json javascript', 'upload csv convert json', 'csv to json object']}
             about="Parses CSV text, whether pasted directly or loaded from an uploaded .csv file, using a real character-by-character parser rather than a naive comma split, so fields wrapped in double quotes can safely contain commas and line breaks, and a doubled double quote inside a quoted field is correctly unescaped to a single literal quote character. The first row is treated as the header and becomes the object keys; every following row becomes one JSON object, with an optional automatic type pass that converts unquoted true, false, and null text into real booleans and null, and plain numbers into actual numeric values, while leaving anything with a leading zero, such as a ZIP code, as a string so it is not corrupted. Built for quick conversions of exported spreadsheets or database dumps into JSON for use in code, API testing, or configuration files; it is not a streaming parser, so extremely large files of tens of megabytes may be slow since the whole file is parsed in memory at once. Everything runs locally in the browser and the file contents are never uploaded anywhere."
             howToSteps={[
@@ -235,7 +235,7 @@ const CsvToJsonConverter: React.FC = () => {
                         <Box sx={{ flex: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1, flexWrap: 'wrap', gap: 0.5 }}>
                                 <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                    JSON Output{objects.length > 0 && ` — ${objects.length} row${objects.length === 1 ? '' : 's'} × ${headers.length} col${headers.length === 1 ? '' : 's'}`}
+                                    JSON Output{objects.length > 0 && `, ${objects.length} row${objects.length === 1 ? '' : 's'} × ${headers.length} col${headers.length === 1 ? '' : 's'}`}
                                 </Typography>
                                 <Stack direction="row" spacing={0.5}>
                                     <Button size="small" onClick={handleCopy} startIcon={<ContentCopy sx={{ fontSize: 14 }} />} disabled={!objects.length} sx={{ fontSize: '0.72rem' }}>

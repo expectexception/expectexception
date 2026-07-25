@@ -65,7 +65,7 @@ const CssGradientGenerator: React.FC = () => {
             title="CSS Gradient Generator"
             subtitle="Design linear and radial gradients visually and copy the CSS - all in your browser."
             maxWidth="md"
-            about="Builds a CSS linear-gradient or radial-gradient by letting you add up to 5 color stops, position each one along the gradient, and (for linear gradients) set the angle in degrees. The preview updates live and the exact `background:` CSS is generated below it, ready to copy into your stylesheet. Everything happens in your browser — there's no upload or server round-trip — so it works offline with no limit tied to file size or account usage."
+            about="Builds a CSS linear-gradient or radial-gradient by letting you add up to 5 color stops, position each one along the gradient, and (for linear gradients) set the angle in degrees. The preview updates live and the exact `background:` CSS is generated below it, ready to copy into your stylesheet. Everything happens in your browser, there's no upload or server round-trip, so it works offline with no limit tied to file size or account usage."
             howToSteps={[
                 { name: 'Choose a gradient type', text: 'Use the Linear / Radial toggle to pick the gradient style you want.' },
                 { name: 'Set the angle', text: 'For linear gradients, drag the Angle slider (0–360°) to change the direction of the gradient.' },
@@ -75,8 +75,8 @@ const CssGradientGenerator: React.FC = () => {
             ]}
             faq={[
                 { question: 'How many color stops can I use?', answer: "Between 2 and 5. The Add Color Stop button disables once you hit 5, and you can't remove a stop below 2 since a gradient needs at least two colors." },
-                { question: 'Does the angle setting apply to radial gradients too?', answer: 'No — angle only affects linear gradients. Radial gradients in this tool always expand outward from the center, so the angle control is hidden once you switch to Radial.' },
-                { question: 'Is my gradient saved anywhere?', answer: "No. The gradient exists only in your browser's memory for the current session — refreshing the page resets it back to the default two-stop gradient." },
+                { question: 'Does the angle setting apply to radial gradients too?', answer: 'No | angle only affects linear gradients. Radial gradients in this tool always expand outward from the center, so the angle control is hidden once you switch to Radial.' },
+                { question: 'Is my gradient saved anywhere?', answer: "No. The gradient exists only in your browser's memory for the current session, refreshing the page resets it back to the default two-stop gradient." },
                 { question: 'What does the Randomize button do?', answer: 'It assigns a new random color to every existing stop and picks a new random angle, which is a quick way to explore gradient ideas without manually picking each color.' },
             ]}
         >

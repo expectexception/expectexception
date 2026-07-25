@@ -152,7 +152,7 @@ const Pong: React.FC = () => {
             <ServicePageHero
                 icon={SportsEsports}
                 title="Pong"
-                subtitle="The original arcade classic. Move your mouse or finger up and down to control the left paddle — first to 7 wins."
+                subtitle="The original arcade classic. Move your mouse or finger up and down to control the left paddle | first to 7 wins."
             />
 
             <Card sx={{

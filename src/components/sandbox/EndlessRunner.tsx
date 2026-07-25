@@ -286,7 +286,7 @@ const EndlessRunner: React.FC = () => {
             <ServicePageHero
                 icon={DirectionsRun}
                 title="Endless Runner"
-                subtitle="Press space, click, or tap to jump over obstacles racing toward you. One hit ends the run — how far can you go before the speed catches you?"
+                subtitle="Press space, click, or tap to jump over obstacles racing toward you. One hit ends the run | how far can you go before the speed catches you?"
             />
 
             <Card sx={{
