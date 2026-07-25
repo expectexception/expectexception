@@ -70,7 +70,9 @@ const NotificationPrompt: React.FC = () => {
         <div className="notification-prompt-overlay">
             <div className="notification-prompt">
                 <div className="notification-prompt-icon">
-                    <BellBadgeSvg />
+                    <div className="notification-prompt-icon-wrapper">
+                        <BellBadgeSvg />
+                    </div>
                 </div>
                 <div className="notification-prompt-content">
                     <h3>Stay Updated!</h3>
