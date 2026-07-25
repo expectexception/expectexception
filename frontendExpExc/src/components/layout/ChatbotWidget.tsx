@@ -416,6 +416,7 @@ const DaemonStandingCharacter: React.FC<{
     const [headAngle, setHeadAngle] = useState(0);
     const [eyeShift, setEyeShift] = useState({ x: 0, y: 0 });
     const [isTrickSpinning, setIsTrickSpinning] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
 
     const handleAntennaDoubleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -451,6 +452,8 @@ const DaemonStandingCharacter: React.FC<{
         <Box
             ref={characterRef}
             onClick={onClick}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             sx={{
                 position: 'relative',
                 width: 76,
@@ -463,36 +466,39 @@ const DaemonStandingCharacter: React.FC<{
                 filter: `drop-shadow(0 8px 20px ${alpha(primaryColor, 0.35)})`,
                 transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 '&:hover': {
-                    transform: 'scale(1.08) translateY(-4px)',
                     filter: `drop-shadow(0 12px 28px ${alpha(primaryColor, 0.6)})`,
                 },
                 '&:active': {
-                    transform: 'scale(0.95)',
+                    transform: 'scale(0.92)',
                 }
             }}
         >
             <motion.div
                 animate={
                     isTrickSpinning
-                        ? { rotate: 360, y: [-5, -25, 0] }
+                        ? { rotate: 360, y: [-5, -35, 0], scale: [1, 1.25, 1] }
                         : isWalking
-                        ? { y: [0, -4, 0] }
+                        ? { y: [0, -10, 0], rotate: [-6, 6, -6] }
                         : isLanding
-                        ? { scaleY: [1, 0.78, 1.15, 0.94, 1], y: [0, 8, -4, 2, 0] }
+                        ? { scaleY: [1, 0.65, 1.25, 0.9, 1], y: [-24, 12, -6, 2, 0] }
                         : isSleeping
                         ? { y: [0, 2, 0], scaleY: [1, 0.96, 1] }
-                        : { y: [0, -5, 0] }
+                        : isHovered
+                        ? { y: [0, -14, 0, -6, 0], rotate: [-8, 8, -8, 4, 0], scale: [1, 1.1, 1] }
+                        : { y: [0, -6, 0, -3, 0], rotate: [-2, 2, -2] }
                 }
                 transition={
                     isTrickSpinning
                         ? { duration: 0.75, ease: 'easeInOut' }
                         : isWalking
-                        ? { repeat: Infinity, duration: 0.22, ease: 'easeInOut' }
+                        ? { repeat: Infinity, duration: 0.2, ease: 'easeInOut' }
                         : isLanding
-                        ? { duration: 0.45, ease: 'easeOut' }
+                        ? { duration: 0.5, ease: 'easeOut' }
                         : isSleeping
                         ? { repeat: Infinity, duration: 4, ease: 'easeInOut' }
-                        : { repeat: Infinity, duration: 3.2, ease: 'easeInOut' }
+                        : isHovered
+                        ? { repeat: Infinity, duration: 0.8, ease: 'easeInOut' }
+                        : { repeat: Infinity, duration: 2.8, ease: 'easeInOut' }
                 }
                 style={{
                     width: '100%',
