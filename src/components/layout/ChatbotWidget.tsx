@@ -28,7 +28,14 @@ import {
     VolumeUp,
     VolumeOff,
     ThumbUpOutlined,
-    Check
+    Check,
+    Mic,
+    MicOff,
+    Download,
+    Palette,
+    CloudUpload,
+    Star,
+    AutoAwesome
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
@@ -397,18 +404,30 @@ const playCyberSound = (type: 'open' | 'close' | 'send' | 'receive' | 'click', i
 const DaemonStandingCharacter: React.FC<{
     isWalking: boolean;
     isLanding: boolean;
+    isSleeping: boolean;
     scrollDirection: 'down' | 'up';
+    themeColor: string;
     onClick: () => void;
-}> = ({ isWalking, isLanding, scrollDirection, onClick }) => {
+}> = ({ isWalking, isLanding, isSleeping, scrollDirection, themeColor, onClick }) => {
     const theme = useTheme();
-    const primaryColor = theme.palette.primary.main || '#00FF66';
+    const primaryColor = themeColor || theme.palette.primary.main || '#00FF66';
     const characterRef = useRef<HTMLDivElement>(null);
     const [headAngle, setHeadAngle] = useState(0);
     const [eyeShift, setEyeShift] = useState({ x: 0, y: 0 });
+    const [isTrickSpinning, setIsTrickSpinning] = useState(false);
+
+    const handleAntennaDoubleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isTrickSpinning) return;
+        setIsTrickSpinning(true);
+        playCyberSound('receive', false);
+        triggerCyberConfetti();
+        setTimeout(() => setIsTrickSpinning(false), 800);
+    };
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
-            if (!characterRef.current) return;
+            if (!characterRef.current || isSleeping) return;
             const rect = characterRef.current.getBoundingClientRect();
             const charX = rect.left + rect.width / 2;
             const charY = rect.top + rect.height / 2;
@@ -425,7 +444,7 @@ const DaemonStandingCharacter: React.FC<{
 
         window.addEventListener('mousemove', handleMouseMove, { passive: true });
         return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, []);
+    }, [isSleeping]);
 
     return (
         <Box
@@ -453,17 +472,25 @@ const DaemonStandingCharacter: React.FC<{
         >
             <motion.div
                 animate={
-                    isWalking
+                    isTrickSpinning
+                        ? { rotate: 360, y: [-5, -25, 0] }
+                        : isWalking
                         ? { y: [0, -4, 0] }
                         : isLanding
                         ? { scaleY: [1, 0.78, 1.15, 0.94, 1], y: [0, 8, -4, 2, 0] }
+                        : isSleeping
+                        ? { y: [0, 2, 0], scaleY: [1, 0.96, 1] }
                         : { y: [0, -5, 0] }
                 }
                 transition={
-                    isWalking
+                    isTrickSpinning
+                        ? { duration: 0.75, ease: 'easeInOut' }
+                        : isWalking
                         ? { repeat: Infinity, duration: 0.22, ease: 'easeInOut' }
                         : isLanding
                         ? { duration: 0.45, ease: 'easeOut' }
+                        : isSleeping
+                        ? { repeat: Infinity, duration: 4, ease: 'easeInOut' }
                         : { repeat: Infinity, duration: 3.2, ease: 'easeInOut' }
                 }
                 style={{
@@ -475,6 +502,25 @@ const DaemonStandingCharacter: React.FC<{
                     transition: 'transform 0.3s ease'
                 }}
             >
+                {/* Floating Zzz sleeping energy particles */}
+                {isSleeping && (
+                    <motion.div
+                        style={{
+                            position: 'absolute',
+                            top: -10,
+                            right: 12,
+                            color: primaryColor,
+                            fontSize: '0.75rem',
+                            fontWeight: 900,
+                            pointerEvents: 'none',
+                        }}
+                        animate={{ opacity: [0, 1, 0], y: [-2, -22], x: [0, 10] }}
+                        transition={{ repeat: Infinity, duration: 3, ease: 'easeOut' }}
+                    >
+                        Zzz...
+                    </motion.div>
+                )}
+
                 <svg width="76" height="96" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="daemon-shadow" cx="50%" cy="50%" r="50%">
@@ -622,8 +668,9 @@ const DaemonStandingCharacter: React.FC<{
                     >
                         {/* Antenna */}
                         <motion.g
+                            onDoubleClick={handleAntennaDoubleClick}
                             animate={isWalking ? { rotate: [-8, 8, -8] } : { rotate: 0 }}
-                            style={{ originX: '50px', originY: '14px' }}
+                            style={{ originX: '50px', originY: '14px', cursor: 'pointer' }}
                             transition={{ repeat: Infinity, duration: 0.22 }}
                         >
                             <line x1="50" y1="14" x2="50" y2="4" stroke={primaryColor} strokeWidth="2.5" strokeLinecap="round" />
@@ -788,6 +835,15 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     });
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
     const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
+    const [themeColor, setThemeColor] = useState<string>(() => {
+        return localStorage.getItem('daemon_theme_color') || '#00FF66';
+    });
+    const [showColorPicker, setShowColorPicker] = useState(false);
+    const [isSleeping, setIsSleeping] = useState(false);
+    const [isListening, setIsListening] = useState(false);
+    const [isDragOver, setIsDragOver] = useState(false);
+    const recognitionRef = useRef<any>(null);
+    const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const toggleMute = () => {
         setIsMuted(prev => {
@@ -795,6 +851,106 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             localStorage.setItem('daemon_sound_muted', String(next));
             return next;
         });
+    };
+
+    const changeThemeColor = (color: string) => {
+        setThemeColor(color);
+        localStorage.setItem('daemon_theme_color', color);
+        setShowColorPicker(false);
+        playCyberSound('click', isMuted);
+    };
+
+    // 25-second user inactivity sleeping timer
+    useEffect(() => {
+        const resetInactivity = () => {
+            if (isSleeping) {
+                setIsSleeping(false);
+                if (mood === 'sleeping') setMood('neutral');
+            }
+            if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+            inactivityTimerRef.current = setTimeout(() => {
+                if (!isOpen) {
+                    setIsSleeping(true);
+                    setMood('sleeping');
+                }
+            }, 25000);
+        };
+
+        resetInactivity();
+        window.addEventListener('mousemove', resetInactivity, { passive: true });
+        window.addEventListener('keydown', resetInactivity, { passive: true });
+        window.addEventListener('touchstart', resetInactivity, { passive: true });
+
+        return () => {
+            if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+            window.removeEventListener('mousemove', resetInactivity);
+            window.removeEventListener('keydown', resetInactivity);
+            window.removeEventListener('touchstart', resetInactivity);
+        };
+    }, [isOpen, isSleeping, mood]);
+
+    // Speech-to-Text Voice Recognition (Browser Web Speech API)
+    const toggleSpeechRecognition = () => {
+        if (typeof window === 'undefined') return;
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('Speech Recognition is not supported by your browser. Please use Chrome or Edge.');
+            return;
+        }
+
+        if (isListening) {
+            if (recognitionRef.current) recognitionRef.current.stop();
+            setIsListening(false);
+            return;
+        }
+
+        try {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                setIsListening(true);
+                playCyberSound('click', isMuted);
+            };
+
+            recognition.onresult = (event: any) => {
+                const transcript = Array.from(event.results)
+                    .map((result: any) => result[0].transcript)
+                    .join('');
+                setInputValue(transcript);
+            };
+
+            recognition.onerror = () => {
+                setIsListening(false);
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+            };
+
+            recognitionRef.current = recognition;
+            recognition.start();
+        } catch (e) {
+            setIsListening(false);
+        }
+    };
+
+    // Export Chat Session as Markdown
+    const exportChatMarkdown = () => {
+        if (messages.length === 0) return;
+        const header = `# Daemon AI Conversation Export\n*Exported on ${new Date().toLocaleString()}*\n\n---\n\n`;
+        const content = messages.map(m => `### ${m.role === 'user' ? '👤 User' : '🤖 Daemon AI'}\n${m.content}\n`).join('\n');
+        const blob = new Blob([header + content], { type: 'text/markdown;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Daemon_Chat_${new Date().toISOString().slice(0, 10)}.md`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        playCyberSound('send', isMuted);
     };
 
     const handleCopyMessage = (text: string, index: number) => {
@@ -1414,7 +1570,9 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                         <DaemonStandingCharacter
                             isWalking={isWalking}
                             isLanding={isLanding}
+                            isSleeping={isSleeping}
                             scrollDirection={scrollDirection}
+                            themeColor={themeColor}
                             onClick={() => {
                                 setIsOpen(true);
                                 playCyberSound('open', isMuted);
@@ -1444,7 +1602,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 bottom: 0,
                                 right: 32,
                                 width: 12,
-                                background: 'linear-gradient(to top, #00FF66, #00eeff, transparent)',
+                                background: `linear-gradient(to top, ${themeColor}, #00eeff, transparent)`,
                                 borderRadius: 6,
                                 filter: 'blur(3px)',
                                 pointerEvents: 'none',
@@ -1453,6 +1611,29 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                         />
 
                         <Paper
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                setIsDragOver(true);
+                            }}
+                            onDragLeave={(e) => {
+                                e.preventDefault();
+                                setIsDragOver(false);
+                            }}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                setIsDragOver(false);
+                                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                    const file = e.dataTransfer.files[0];
+                                    const reader = new FileReader();
+                                    reader.onload = (evt) => {
+                                        const content = evt.target?.result as string;
+                                        if (content) {
+                                            sendMessage(`[Attached file: ${file.name}]\n\`\`\`\n${content.slice(0, 800)}\n\`\`\``);
+                                        }
+                                    };
+                                    reader.readAsText(file);
+                                }
+                            }}
                             sx={{
                                 width: isMobile ? 'calc(100vw - 32px)' : 380,
                                 height: isMobile ? 'calc(100dvh - 90px)' : 540,
@@ -1461,19 +1642,51 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 flexDirection: 'column',
                                 bgcolor: 'rgba(13, 14, 18, 0.92)',
                                 backdropFilter: 'blur(24px)',
-                                border: `1px solid ${alpha(themed.palette.primary.main, 0.2)}`,
+                                border: `1px solid ${isDragOver ? themeColor : alpha(themeColor, 0.3)}`,
                                 borderRadius: '24px',
-                                boxShadow: `0 24px 60px rgba(0,0,0,0.8), 0 0 40px ${alpha(themed.palette.primary.main, 0.15)}`,
+                                boxShadow: `0 24px 60px rgba(0,0,0,0.8), 0 0 40px ${alpha(themeColor, 0.2)}`,
                                 overflow: 'hidden',
-                                position: 'relative'
+                                position: 'relative',
+                                transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
                             }}
                         >
+                            {/* Drag and Drop Overlay */}
+                            <AnimatePresence>
+                                {isDragOver && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        style={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            zIndex: 10010,
+                                            background: 'rgba(13, 14, 18, 0.92)',
+                                            backdropFilter: 'blur(12px)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: 12,
+                                            border: `2px dashed ${themeColor}`,
+                                            borderRadius: '24px',
+                                            color: themeColor,
+                                        }}
+                                    >
+                                        <CloudUpload sx={{ fontSize: 48 }} />
+                                        <Typography variant="subtitle1" fontWeight={800} color="#fff">
+                                            Drop file to analyze
+                                        </Typography>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             {/* Animated Cyber Scanning Gradient Bar */}
                             <Box
                                 sx={{
                                     height: '2px',
                                     width: '100%',
-                                    background: 'linear-gradient(90deg, #00FF66, #00eeff, #00FF66)',
+                                    background: `linear-gradient(90deg, ${themeColor}, #00eeff, ${themeColor})`,
                                     backgroundSize: '200% 100%',
                                     animation: 'scanGrad 3s linear infinite',
                                     '@keyframes scanGrad': {
@@ -1493,21 +1706,31 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 bgcolor: 'rgba(5, 5, 5, 0.3)'
                             }}>
                                 <Stack direction="row" alignItems="center" spacing={1.5}>
-                                    <Avatar sx={{ width: 28, height: 28, bgcolor: alpha(themed.palette.primary.main, 0.1), border: '1px solid', borderColor: 'primary.main' }}>
-                                        <Memory sx={{ color: 'primary.main', fontSize: 15 }} />
+                                    <Avatar sx={{ width: 28, height: 28, bgcolor: alpha(themeColor, 0.1), border: '1px solid', borderColor: themeColor }}>
+                                        <Memory sx={{ color: themeColor, fontSize: 15 }} />
                                     </Avatar>
                                     <Box>
                                         <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', lineHeight: 1.1 }}>
                                             Daemon
                                         </Typography>
-                                        <Typography variant="caption" color={isAvailable ? 'primary.main' : 'grey.500'} sx={{ fontSize: '0.65rem', fontWeight: 600 }}>
+                                        <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 600, color: themeColor }}>
                                             {isAvailable ? 'AI Core Live' : 'Local Fallback'}
                                         </Typography>
                                     </Box>
                                 </Stack>
                                 <Stack direction="row" spacing={0.5}>
+                                    <Tooltip title="Customize Theme Color">
+                                        <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500' }}>
+                                            <Palette fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Export Chat History (.md)">
+                                        <IconButton onClick={exportChatMarkdown} size="small" sx={{ color: 'grey.500', '&:hover': { color: themeColor } }}>
+                                            <Download fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
                                     <Tooltip title={isMuted ? 'Unmute Sound FX' : 'Mute Sound FX'}>
-                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : 'primary.main' }}>
+                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : themeColor }}>
                                             {isMuted ? <VolumeOff fontSize="small" /> : <VolumeUp fontSize="small" />}
                                         </IconButton>
                                     </Tooltip>
@@ -1529,6 +1752,47 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 </Stack>
                             </Box>
 
+                            {/* Visor Color Customizer Bar */}
+                            <AnimatePresence>
+                                {showColorPicker && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        style={{ overflow: 'hidden', background: 'rgba(5, 5, 5, 0.6)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+                                    >
+                                        <Box sx={{ p: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
+                                            <Typography variant="caption" sx={{ color: 'grey.400', fontSize: '0.68rem', fontWeight: 700 }}>
+                                                VISOR ACCENT:
+                                            </Typography>
+                                            {[
+                                                { label: 'Neon Green', hex: '#00FF66' },
+                                                { label: 'Cyber Violet', hex: '#a855f7' },
+                                                { label: 'Electric Cyan', hex: '#00eeff' },
+                                                { label: 'Hyper Orange', hex: '#ff6600' },
+                                                { label: 'Crimson', hex: '#ff3366' },
+                                            ].map((color) => (
+                                                <Box
+                                                    key={color.hex}
+                                                    onClick={() => changeThemeColor(color.hex)}
+                                                    sx={{
+                                                        width: 18,
+                                                        height: 18,
+                                                        borderRadius: '50%',
+                                                        bgcolor: color.hex,
+                                                        cursor: 'pointer',
+                                                        border: themeColor === color.hex ? '2px solid #ffffff' : '1px solid transparent',
+                                                        boxShadow: themeColor === color.hex ? `0 0 10px ${color.hex}` : 'none',
+                                                        transition: 'transform 0.15s ease',
+                                                        '&:hover': { transform: 'scale(1.2)' }
+                                                    }}
+                                                />
+                                            ))}
+                                        </Box>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             {/* Messages Container */}
                             <Box
                                 ref={messagesContainerRef}
@@ -1548,9 +1812,9 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         <Box sx={{ maxWidth: '85%' }}>
                                             <Paper sx={{
                                                 p: 1.5,
-                                                bgcolor: msg.role === 'user' ? alpha(themed.palette.primary.main, 0.04) : 'rgba(13, 14, 18, 0.6)',
+                                                bgcolor: msg.role === 'user' ? alpha(themeColor, 0.05) : 'rgba(13, 14, 18, 0.6)',
                                                 border: '1px solid',
-                                                borderColor: msg.role === 'user' ? alpha(themed.palette.primary.main, 0.15) : 'rgba(255,255,255,0.05)',
+                                                borderColor: msg.role === 'user' ? alpha(themeColor, 0.2) : 'rgba(255,255,255,0.05)',
                                                 borderRadius: '14px',
                                                 borderTopRightRadius: msg.role === 'user' ? 0 : '14px',
                                                 borderTopLeftRadius: msg.role === 'assistant' ? 0 : '14px',
@@ -1582,7 +1846,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                                             <IconButton
                                                                 size="small"
                                                                 onClick={() => handleCopyMessage(msg.content, idx)}
-                                                                sx={{ p: 0.3, color: copiedIndex === idx ? 'primary.main' : 'grey.600' }}
+                                                                sx={{ p: 0.3, color: copiedIndex === idx ? themeColor : 'grey.600' }}
                                                             >
                                                                 {copiedIndex === idx ? <Check sx={{ fontSize: 13 }} /> : <ContentCopy sx={{ fontSize: 13 }} />}
                                                             </IconButton>
@@ -1591,7 +1855,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                                             <IconButton
                                                                 size="small"
                                                                 onClick={() => handleSpeakMessage(msg.content, idx)}
-                                                                sx={{ p: 0.3, color: speakingIndex === idx ? 'primary.main' : 'grey.600' }}
+                                                                sx={{ p: 0.3, color: speakingIndex === idx ? themeColor : 'grey.600' }}
                                                             >
                                                                 <VolumeUp sx={{ fontSize: 13 }} />
                                                             </IconButton>
@@ -1637,7 +1901,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                                     px: 1.2, py: 0.5, borderRadius: 1.5, cursor: 'pointer', fontSize: '0.7rem',
                                                     bgcolor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
                                                     color: 'grey.400', transition: 'all 0.15s',
-                                                    '&:hover': { bgcolor: alpha(themed.palette.primary.main, 0.1), color: 'primary.main', borderColor: alpha(themed.palette.primary.main, 0.3) }
+                                                    '&:hover': { bgcolor: alpha(themeColor, 0.1), color: themeColor, borderColor: alpha(themeColor, 0.3) }
                                                 }}
                                             >
                                                 {suggestion}
@@ -1661,19 +1925,37 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         alignItems: 'center',
                                         borderRadius: '10px',
                                         bgcolor: 'rgba(255, 255, 255, 0.02)',
-                                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                                        border: `1px solid ${isListening ? themeColor : 'rgba(255, 255, 255, 0.06)'}`,
                                         '&:focus-within': {
-                                            borderColor: 'primary.main',
+                                            borderColor: themeColor,
                                             bgcolor: 'rgba(255, 255, 255, 0.04)'
                                         }
                                     }}
                                 >
+                                    <Tooltip title={isListening ? 'Stop listening' : 'Voice Input (STT)'}>
+                                        <IconButton
+                                            onClick={toggleSpeechRecognition}
+                                            sx={{
+                                                p: 0.8,
+                                                color: isListening ? '#ef4444' : 'grey.500',
+                                                animation: isListening ? 'pulse 1.2s infinite' : 'none',
+                                                '@keyframes pulse': {
+                                                    '0%': { transform: 'scale(1)' },
+                                                    '50%': { transform: 'scale(1.2)' },
+                                                    '100%': { transform: 'scale(1)' }
+                                                }
+                                            }}
+                                        >
+                                            {isListening ? <MicOff sx={{ fontSize: 18 }} /> : <Mic sx={{ fontSize: 18 }} />}
+                                        </IconButton>
+                                    </Tooltip>
+
                                     <TextField
                                         inputRef={inputRef}
                                         fullWidth
                                         multiline
                                         maxRows={3}
-                                        placeholder="Ask Daemon..."
+                                        placeholder={isListening ? 'Listening...' : 'Ask Daemon...'}
                                         value={inputValue}
                                         onChange={(e) => {
                                             setInputValue(e.target.value);
@@ -1684,7 +1966,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                             }
                                         }}
                                         onKeyDown={handleTextKeyDown}
-                                        sx={{ ml: 1, flex: 1, '& .MuiInputBase-root': { color: 'white', fontSize: '0.875rem' } }}
+                                        sx={{ ml: 0.5, flex: 1, '& .MuiInputBase-root': { color: 'white', fontSize: '0.875rem' } }}
                                         variant="standard"
                                         InputProps={{ disableUnderline: true }}
                                     />
@@ -1693,7 +1975,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         disabled={!inputValue.trim() || isLoading}
                                         sx={{
                                             p: 1,
-                                            color: inputValue.trim() ? 'primary.main' : 'grey.600',
+                                            color: inputValue.trim() ? themeColor : 'grey.600',
                                             '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' }
                                         }}
                                     >
