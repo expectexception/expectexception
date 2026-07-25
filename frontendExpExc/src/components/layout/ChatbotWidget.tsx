@@ -1714,49 +1714,6 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                         transition={{ type: 'spring', stiffness: 280, damping: 22 }}
                         style={{ pointerEvents: 'auto', position: 'relative' }}
                     >
-                        {/* Speech Tooltip */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: isScrolling ? 0.3 : 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                            style={{
-                                position: 'absolute',
-                                bottom: '100%',
-                                right: 0,
-                                marginBottom: 6,
-                                whiteSpace: 'nowrap',
-                                pointerEvents: 'none',
-                            }}
-                        >
-                            <Box
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    triggerDance();
-                                }}
-                                sx={{
-                                    bgcolor: isDancing ? '#ff007f' : 'rgba(13, 14, 18, 0.95)',
-                                    color: isDancing ? '#ffffff' : 'primary.main',
-                                    border: `1px solid ${alpha(isDancing ? '#ff007f' : themed.palette.primary.main, 0.4)}`,
-                                    boxShadow: `0 4px 20px ${alpha(isDancing ? '#ff007f' : themed.palette.primary.main, 0.35)}`,
-                                    borderRadius: '12px',
-                                    px: 1.5,
-                                    py: 0.6,
-                                    fontSize: '0.72rem',
-                                    fontWeight: 800,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.8,
-                                    cursor: 'pointer',
-                                    backdropFilter: 'blur(12px)',
-                                    transition: 'all 0.2s ease',
-                                    '&:hover': { transform: 'scale(1.08)' }
-                                }}
-                            >
-                                <span style={{ color: '#ffffff' }}>Bot</span>
-                                <span style={{ fontSize: '0.9rem' }}>{isDancing ? '🕺' : '💬'}</span>
-                            </Box>
-                        </motion.div>
-
                         <DaemonStandingCharacter
                             isWalking={isWalking}
                             isLanding={isLanding}
