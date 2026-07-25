@@ -837,8 +837,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </Box>
             )}
 
-            {/* Scroll to Top Button */}
-            <ScrollToTop />
+
 
             {/* Search Dialog */}
             <SearchDialog open={searchOpen} onClose={handleSearchClose} />
