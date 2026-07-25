@@ -585,14 +585,16 @@ const DaemonStandingCharacter: React.FC<{
                         style={{ originX: '38px', originY: '78px' }}
                         animate={
                             isWalking
-                                ? { rotate: [-24, 24, -24] }
-                                : { rotate: 0 }
+                                ? { rotate: [-32, 32, -32], y: [0, -6, 0] }
+                                : isHovered
+                                ? { rotate: [-24, 24, -24], y: [0, -8, 0] }
+                                : { rotate: [-10, 10, -10], y: [0, -2, 0] }
                         }
-                        transition={
-                            isWalking
-                                ? { repeat: Infinity, duration: 0.22, ease: 'easeInOut' }
-                                : { duration: 0.3 }
-                        }
+                        transition={{
+                            repeat: Infinity,
+                            duration: isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            ease: 'easeInOut'
+                        }}
                     >
                         <rect x="34" y="78" width="8" height="24" rx="4" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
                         <rect x="30" y="98" width="14" height="8" rx="3" fill={primaryColor} />
@@ -603,32 +605,40 @@ const DaemonStandingCharacter: React.FC<{
                         style={{ originX: '62px', originY: '78px' }}
                         animate={
                             isWalking
-                                ? { rotate: [24, -24, 24] }
-                                : { rotate: 0 }
+                                ? { rotate: [32, -32, 32], y: [0, -6, 0] }
+                                : isHovered
+                                ? { rotate: [24, -24, 24], y: [0, -8, 0] }
+                                : { rotate: [10, -10, 10], y: [0, -2, 0] }
                         }
-                        transition={
-                            isWalking
-                                ? { repeat: Infinity, duration: 0.22, ease: 'easeInOut' }
-                                : { duration: 0.3 }
-                        }
+                        transition={{
+                            repeat: Infinity,
+                            duration: isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            ease: 'easeInOut'
+                        }}
                     >
                         <rect x="58" y="78" width="8" height="24" rx="4" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
                         <rect x="56" y="98" width="14" height="8" rx="3" fill={primaryColor} />
                     </motion.g>
 
-                    {/* Arms */}
+                    {/* Arms & Hands */}
                     {/* Left Arm */}
                     <motion.g
                         style={{ originX: '22px', originY: '48px' }}
                         animate={
                             isWalking
-                                ? { rotate: [22, -22, 22] }
-                                : { rotate: [-5, 5, -5] }
+                                ? { rotate: [38, -38, 38], y: [0, -4, 0] }
+                                : isHovered
+                                ? { rotate: [-65, 25, -65], y: [-10, 4, -10] }
+                                : { rotate: [-20, 20, -20], y: [0, -2, 0] }
                         }
-                        transition={{ repeat: Infinity, duration: isWalking ? 0.22 : 3 }}
+                        transition={{
+                            repeat: Infinity,
+                            duration: isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            ease: 'easeInOut'
+                        }}
                     >
                         <rect x="18" y="48" width="7" height="22" rx="3.5" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
-                        <circle cx="21.5" cy="71" r="3.5" fill={primaryColor} />
+                        <circle cx="21.5" cy="71" r="4" fill={primaryColor} style={{ filter: 'url(#core-glow)' }} />
                     </motion.g>
 
                     {/* Right Arm */}
@@ -636,13 +646,19 @@ const DaemonStandingCharacter: React.FC<{
                         style={{ originX: '78px', originY: '48px' }}
                         animate={
                             isWalking
-                                ? { rotate: [-22, 22, -22] }
-                                : { rotate: [5, -5, 5] }
+                                ? { rotate: [-38, 38, -38], y: [0, -4, 0] }
+                                : isHovered
+                                ? { rotate: [65, -25, 65], y: [-10, 4, -10] }
+                                : { rotate: [20, -20, 20], y: [0, -2, 0] }
                         }
-                        transition={{ repeat: Infinity, duration: isWalking ? 0.22 : 3 }}
+                        transition={{
+                            repeat: Infinity,
+                            duration: isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            ease: 'easeInOut'
+                        }}
                     >
                         <rect x="75" y="48" width="7" height="22" rx="3.5" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
-                        <circle cx="78.5" cy="71" r="3.5" fill={primaryColor} />
+                        <circle cx="78.5" cy="71" r="4" fill={primaryColor} style={{ filter: 'url(#core-glow)' }} />
                     </motion.g>
 
                     {/* Torso Chassis */}
@@ -983,17 +999,36 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     };
 
     const handleSpeakMessage = (text: string, index: number) => {
-        if ('speechSynthesis' in window) {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
             if (speakingIndex === index) {
                 window.speechSynthesis.cancel();
                 setSpeakingIndex(null);
                 return;
             }
             window.speechSynthesis.cancel();
+            if (window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+            }
+
             const cleanText = text.replace(/```[\s\S]*?```/g, '').replace(/[*#]/g, '');
             const utterance = new SpeechSynthesisUtterance(cleanText);
             utterance.rate = 1.0;
             utterance.pitch = 1.05;
+
+            // Attempt to assign preferred English voice
+            const getAndAssignVoice = () => {
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    const engVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('Karen'))) || voices.find(v => v.lang.startsWith('en'));
+                    if (engVoice) utterance.voice = engVoice;
+                }
+            };
+
+            getAndAssignVoice();
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = getAndAssignVoice;
+            }
+
             utterance.onend = () => setSpeakingIndex(null);
             utterance.onerror = () => setSpeakingIndex(null);
             setSpeakingIndex(index);
@@ -1589,7 +1624,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                     backdropFilter: 'blur(12px)',
                                 }}
                             >
-                                <span style={{ color: '#ffffff' }}>Daemon AI</span>
+                                <span style={{ color: '#ffffff' }}>Bot</span>
                                 <span style={{ fontSize: '0.9rem' }}>💬</span>
                             </Box>
                         </motion.div>
