@@ -1903,19 +1903,38 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
 
                             {/* Header */}
                             <Box sx={{
-                                p: 2,
+                                px: 2,
+                                py: 1.5,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                                bgcolor: 'rgba(5, 5, 5, 0.3)'
+                                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                                bgcolor: 'rgba(10, 11, 15, 0.6)'
                             }}>
-                                <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flexShrink: 0 }}>
-                                    <ChatbotFace mood={mood} themeColor={themeColor} size={42} hideMargin={true} />
+                                <Stack direction="row" alignItems="center" spacing={1.2} sx={{ minWidth: 0 }}>
+                                    <ChatbotFace mood={mood} themeColor={themeColor} size={36} hideMargin={true} />
+                                    <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', letterSpacing: '0.5px', fontSize: '0.9rem' }}>
+                                        Bot
+                                    </Typography>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 0.6,
+                                        px: 1,
+                                        py: 0.3,
+                                        borderRadius: '10px',
+                                        bgcolor: alpha(themeColor, 0.1),
+                                        border: `1px solid ${alpha(themeColor, 0.25)}`
+                                    }}>
+                                        <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isAvailable ? themeColor : '#f59e0b', boxShadow: `0 0 6px ${themeColor}` }} />
+                                        <Typography variant="caption" sx={{ fontSize: '0.62rem', fontWeight: 700, color: themeColor }}>
+                                            {isAvailable ? 'LIVE' : 'OFFLINE'}
+                                        </Typography>
+                                    </Box>
                                 </Stack>
-                                <Stack direction="row" spacing={0.2} sx={{ flexShrink: 0 }}>
+                                <Stack direction="row" spacing={0.3} alignItems="center" sx={{ flexShrink: 0 }}>
                                     <Tooltip title={isDancing ? "Dancing!" : "Make Bot Dance 🕺"}>
-                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor, p: 0.5 }}>
+                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor, p: 0.6 }}>
                                             <motion.span
                                                 animate={isDancing ? { rotate: [0, 25, -25, 0], scale: [1, 1.3, 1] } : {}}
                                                 transition={{ repeat: Infinity, duration: 0.4 }}
@@ -1926,22 +1945,22 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Customize Theme Color">
-                                        <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500' }}>
+                                        <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500', p: 0.6 }}>
                                             <Palette fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Export Chat History (.md)">
-                                        <IconButton onClick={exportChatMarkdown} size="small" sx={{ color: 'grey.500', '&:hover': { color: themeColor } }}>
+                                        <IconButton onClick={exportChatMarkdown} size="small" sx={{ color: 'grey.500', '&:hover': { color: themeColor }, p: 0.6 }}>
                                             <Download fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={isMuted ? 'Unmute Sound FX' : 'Mute Sound FX'}>
-                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : themeColor }}>
+                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : themeColor, p: 0.6 }}>
                                             {isMuted ? <VolumeOff fontSize="small" /> : <VolumeUp fontSize="small" />}
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Reset Conversation">
-                                        <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' } }}>
+                                        <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' }, p: 0.6 }}>
                                             <DeleteOutline fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
@@ -1951,7 +1970,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                             playCyberSound('close', isMuted);
                                         }}
                                         size="small"
-                                        sx={{ color: 'grey.500', '&:hover': { color: '#ffffff' } }}
+                                        sx={{ color: 'grey.500', '&:hover': { color: '#ffffff' }, p: 0.6 }}
                                     >
                                         <Close fontSize="small" />
                                     </IconButton>
@@ -2012,7 +2031,6 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                     bgcolor: 'rgba(0, 0, 0, 0.15)'
                                 }}
                             >
-                                <ChatbotFace mood={mood} themeColor={themeColor} />
                                 {messages.map((msg, idx) => (
                                     <Box key={idx} sx={{ display: 'flex', gap: 1, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
                                         <Box sx={{ maxWidth: '85%' }}>
