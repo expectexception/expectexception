@@ -995,6 +995,32 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
         };
     }, [isOpen, isSleeping, mood]);
 
+    // Autonomous random dancing & emotion jumps while standing on page
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!isSleeping && !isDancing && !isJumping && !isLoading) {
+                const rand = Math.random();
+                if (rand < 0.45) {
+                    // 45% chance to do a random dance burst
+                    setIsDancing(true);
+                    setMood('excited');
+                    setTimeout(() => {
+                        setIsDancing(false);
+                        setMood('neutral');
+                    }, 4500);
+                } else if (rand < 0.75) {
+                    // 30% chance to jump
+                    setIsJumping(true);
+                    setTimeout(() => {
+                        setIsJumping(false);
+                    }, 1200);
+                }
+            }
+        }, 16000);
+
+        return () => clearInterval(interval);
+    }, [isSleeping, isDancing, isJumping, isLoading]);
+
     // Cleanup STT and SpeechSynthesis on unmount or modal close
     useEffect(() => {
         if (!isOpen) {
@@ -1871,10 +1897,10 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                                 bgcolor: 'rgba(5, 5, 5, 0.3)'
                             }}>
-                                <Stack direction="row" alignItems="center" spacing={1.2}>
+                                <Stack direction="row" alignItems="center" spacing={1.2} sx={{ minWidth: 0, flexShrink: 1 }}>
                                     <Box sx={{
-                                        width: 38,
-                                        height: 38,
+                                        width: 36,
+                                        height: 36,
                                         borderRadius: '50%',
                                         bgcolor: 'rgba(5, 5, 5, 0.6)',
                                         border: `1.5px solid ${alpha(themeColor, 0.4)}`,
@@ -1882,23 +1908,24 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         boxShadow: `0 0 12px ${alpha(themeColor, 0.25)}`,
-                                        overflow: 'hidden'
+                                        overflow: 'hidden',
+                                        flexShrink: 0
                                     }}>
-                                        <ChatbotFace mood={mood} themeColor={themeColor} size={34} hideMargin={true} />
+                                        <ChatbotFace mood={mood} themeColor={themeColor} size={32} hideMargin={true} />
                                     </Box>
-                                    <Box>
-                                        <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', lineHeight: 1.1 }}>
+                                    <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
+                                        <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
                                             Bot
                                         </Typography>
-                                        <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 600, color: themeColor, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isAvailable ? themeColor : '#f59e0b', display: 'inline-block' }} />
+                                        <Typography variant="caption" sx={{ fontSize: '0.62rem', fontWeight: 600, color: themeColor, display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
+                                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isAvailable ? themeColor : '#f59e0b', display: 'inline-block', flexShrink: 0 }} />
                                             {isAvailable ? 'AI Core Live' : 'Local Fallback'}
                                         </Typography>
                                     </Box>
                                 </Stack>
-                                <Stack direction="row" spacing={0.5}>
+                                <Stack direction="row" spacing={0.2} sx={{ flexShrink: 0 }}>
                                     <Tooltip title={isDancing ? "Dancing!" : "Make Bot Dance 🕺"}>
-                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor }}>
+                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor, p: 0.5 }}>
                                             <motion.span
                                                 animate={isDancing ? { rotate: [0, 25, -25, 0], scale: [1, 1.3, 1] } : {}}
                                                 transition={{ repeat: Infinity, duration: 0.4 }}
