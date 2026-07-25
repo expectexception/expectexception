@@ -186,8 +186,17 @@ const Breakout: React.FC = () => {
         return () => window.removeEventListener('keydown', onKey);
     }, [status]);
 
+    const cardRef = useRef<HTMLDivElement | null>(null);
+
+    const handleStartClick = () => {
+        start();
+        if (cardRef.current) {
+            cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 gameId={12}
                 title="Breakout | Free Online Brick Breaker Arcade Game"
@@ -196,21 +205,28 @@ const Breakout: React.FC = () => {
             <ServicePageHero
                 icon={SportsEsports}
                 title="Breakout"
-                subtitle="Bounce the ball off your paddle to smash every brick. Move with your mouse, touch, or arrow keys."
+                subtitle="Bounce the ball off your paddle to smash every brick. Touch drag or tap the buttons to move."
             />
 
-            <Card sx={{
-                background: 'rgba(13, 14, 18, 0.4)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                borderRadius: '20px',
-                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: { xs: 2, sm: 3 },
-            }}>
-                <CardContent>
+            <Card
+                ref={cardRef}
+                sx={{
+                    background: 'rgba(13, 14, 18, 0.5)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: { xs: '16px', sm: '24px' },
+                    boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                    p: { xs: 1.5, sm: 3 },
+                }}
+            >
+                <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                        <Typography variant="body1"><strong>Score:</strong> {score}</Typography>
-                        <Typography variant="body1" color="text.secondary">Best: {best}</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 800 }}>
+                            Score: <span style={{ color: primary }}>{score}</span>
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 800 }}>
+                            Best: {best}
+                        </Typography>
                     </Stack>
 
                     <Box sx={{ position: 'relative', width: '100%', maxWidth: W, mx: 'auto' }}>
@@ -222,8 +238,9 @@ const Breakout: React.FC = () => {
                             onTouchMove={e => { e.preventDefault(); movePaddle(e.touches[0].clientX); }}
                             style={{
                                 width: '100%',
+                                height: 'auto',
                                 borderRadius: 12,
-                                border: '1px solid rgba(255,255,255,0.08)',
+                                border: '1px solid rgba(255,255,255,0.12)',
                                 touchAction: 'none',
                                 display: 'block',
                             }}
@@ -232,15 +249,56 @@ const Breakout: React.FC = () => {
                             <Box sx={{
                                 position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
                                 alignItems: 'center', justifyContent: 'center', gap: 2,
-                                bgcolor: 'rgba(0,0,0,0.55)', borderRadius: '12px',
+                                bgcolor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', borderRadius: '12px',
+                                zIndex: 10
                             }}>
-                                {status === 'won' && <Typography variant="h5" sx={{ color: primary, fontWeight: 800 }}>You cleared it! 🎉</Typography>}
-                                {status === 'lost' && <Typography variant="h5" sx={{ color: theme.palette.error.main, fontWeight: 800 }}>Game Over</Typography>}
-                                <Button variant="contained" onClick={start} sx={{ px: 4, fontWeight: 700 }}>
-                                    {status === 'idle' ? 'Start' : 'Play again'}
+                                {status === 'won' && <Typography variant="h4" sx={{ color: primary, fontWeight: 900 }}>You cleared it! 🎉</Typography>}
+                                {status === 'lost' && <Typography variant="h4" sx={{ color: theme.palette.error.main, fontWeight: 900 }}>Game Over</Typography>}
+                                <Button variant="contained" onClick={handleStartClick} sx={{ px: 4, py: 1.2, fontWeight: 800, borderRadius: '12px', fontSize: '1rem' }}>
+                                    {status === 'idle' ? 'Start Game 🎮' : 'Play again'}
                                 </Button>
                             </Box>
                         )}
+                    </Box>
+
+                    {/* Touch Paddle Control Buttons */}
+                    <Box sx={{ mt: 2.5, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                        <Button
+                            variant="contained"
+                            disabled={status !== 'playing'}
+                            onPointerDown={() => {
+                                state.current.paddleX = Math.max(0, state.current.paddleX - 32);
+                            }}
+                            sx={{
+                                minWidth: 80, height: 50,
+                                bgcolor: 'rgba(255,255,255,0.08)',
+                                border: '1.5px solid rgba(255,255,255,0.15)',
+                                borderRadius: '14px',
+                                color: '#ffffff',
+                                fontSize: '1.4rem',
+                                fontWeight: 900
+                            }}
+                        >
+                            ⬅️ LEFT
+                        </Button>
+                        <Button
+                            variant="contained"
+                            disabled={status !== 'playing'}
+                            onPointerDown={() => {
+                                state.current.paddleX = Math.min(W - PADDLE_W, state.current.paddleX + 32);
+                            }}
+                            sx={{
+                                minWidth: 80, height: 50,
+                                bgcolor: 'rgba(255,255,255,0.08)',
+                                border: '1.5px solid rgba(255,255,255,0.15)',
+                                borderRadius: '14px',
+                                color: '#ffffff',
+                                fontSize: '1.4rem',
+                                fontWeight: 900
+                            }}
+                        >
+                            RIGHT ➡️
+                        </Button>
                     </Box>
                 </CardContent>
             </Card>

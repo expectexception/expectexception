@@ -149,39 +149,51 @@ const FlappyBlocks: React.FC = () => {
         return () => window.removeEventListener('keydown', onKey);
     }, []);
 
+    const cardRef = useRef<HTMLDivElement | null>(null);
+
+    const handleFlapOrStart = () => {
+        flap();
+        if (!started && cardRef.current) {
+            cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Flappy Blocks - Tap to Flap Arcade Game" gameId={24} />
             <ServicePageHero
                 icon={Bolt}
                 title="Flappy Blocks"
-                subtitle="Click, tap, or press space to flap and weave through the gaps. One hit and it's over. How far can you go?"
+                subtitle="Click, tap, or press space to flap and weave through the gaps."
             />
 
-            <Card sx={{
-                background: 'rgba(13, 14, 18, 0.4)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                borderRadius: '20px',
-                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
-            }}>
-                <CardContent sx={{ p: 1 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 6, mb: 2 }}>
-                        <Typography variant="h5" fontWeight={900}>Score: {score}</Typography>
-                        <Typography variant="h5" fontWeight={900} color="text.secondary">Best: {best}</Typography>
+            <Card
+                ref={cardRef}
+                sx={{
+                    background: 'rgba(13, 14, 18, 0.5)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: { xs: '16px', sm: '24px' },
+                    boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                    p: { xs: 1.5, sm: 3 }
+                }}
+            >
+                <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, mb: 2 }}>
+                        <Typography variant="h6" fontWeight={900}>Score: <span style={{ color: '#00e5ff' }}>{score}</span></Typography>
+                        <Typography variant="h6" fontWeight={900} color="text.secondary">Best: {best}</Typography>
                     </Box>
 
                     <Box
                         ref={containerRef}
-                        onPointerDown={flap}
+                        onPointerDown={handleFlapOrStart}
                         sx={{
                             width: '100%',
                             borderRadius: '12px',
                             overflow: 'hidden',
                             bgcolor: '#050608',
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            mb: 3,
+                            border: '1px solid rgba(255,255,255,0.12)',
+                            mb: 2,
                             position: 'relative',
                             touchAction: 'none',
                             cursor: 'pointer',
@@ -189,21 +201,43 @@ const FlappyBlocks: React.FC = () => {
                     >
                         <canvas ref={canvasRef} style={{ display: 'block' }} />
                         {!started && !dead && (
-                            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                                <Typography variant="h6" sx={{ bgcolor: 'rgba(0,0,0,0.6)', px: 2, py: 1, borderRadius: '10px' }}>
-                                    Click / Tap / Space to start
+                            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', bgcolor: 'rgba(0,0,0,0.3)' }}>
+                                <Typography variant="h6" sx={{ bgcolor: 'rgba(0,0,0,0.7)', px: 3, py: 1.5, borderRadius: '12px', fontWeight: 800, color: '#39ff88' }}>
+                                    Tap Anywhere to Start 🚀
                                 </Typography>
                             </Box>
                         )}
                         {dead && (
-                            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(0,0,0,0.75)' }}>
-                                <Typography variant="h4" fontWeight={900}>Game Over</Typography>
+                            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, bgcolor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}>
+                                <Typography variant="h4" fontWeight={900} color="#ff4d4d">Game Over</Typography>
+                                <Typography variant="body1" fontWeight={700}>Score: {score}</Typography>
+                                <Button variant="contained" onClick={resetGame} sx={{ px: 4, py: 1, borderRadius: '12px', fontWeight: 800 }}>
+                                    Play Again 🔄
+                                </Button>
                             </Box>
                         )}
                     </Box>
 
-                    <Box sx={{ display: 'flex', gap: 1.5 }}>
-                        <Button variant="outlined" startIcon={<RestartAlt />} onClick={resetGame}>
+                    {/* Dedicated Mobile Big Tap Button */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center' }}>
+                        <Button
+                            variant="contained"
+                            onPointerDown={handleFlapOrStart}
+                            sx={{
+                                width: '100%',
+                                py: 1.8,
+                                borderRadius: '14px',
+                                background: 'linear-gradient(135deg, #00e5ff 0%, #39ff88 100%)',
+                                color: '#000000',
+                                fontWeight: 900,
+                                fontSize: '1.2rem',
+                                boxShadow: '0 4px 20px rgba(0,229,255,0.4)',
+                                '&:active': { transform: 'scale(0.97)' }
+                            }}
+                        >
+                            🚀 TAP TO FLAP 🚀
+                        </Button>
+                        <Button variant="outlined" size="small" startIcon={<RestartAlt />} onClick={resetGame} sx={{ borderRadius: '10px' }}>
                             Restart
                         </Button>
                     </Box>

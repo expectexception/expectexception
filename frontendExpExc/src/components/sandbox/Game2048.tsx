@@ -338,29 +338,41 @@ const Game2048: React.FC = () => {
     const cellSizePx = 76;
     const boardSizePx = cellSizePx * GRID_SIZE + cellGapPx * (GRID_SIZE + 1);
 
+    const cardRef = useRef<HTMLDivElement | null>(null);
+
+    const handleResetClick = () => {
+        resetGame();
+        if (cardRef.current) {
+            cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Play 2048 Online - Free Browser Puzzle Game" gameId={2} />
             <ServicePageHero
                 icon={Apps}
                 title="2048"
-                subtitle="Slide tiles with the arrow keys to merge matching numbers. Reach 2048 to win - but keep playing for an even higher score."
+                subtitle="Slide tiles with swipe, arrow keys, or the on-screen buttons to merge matching numbers."
             />
 
-            <Card sx={{
-                background: 'rgba(13, 14, 18, 0.4)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                borderRadius: '20px',
-                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
-            }}>
-                <CardContent sx={{ p: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Card
+                ref={cardRef}
+                sx={{
+                    background: 'rgba(13, 14, 18, 0.5)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: { xs: '16px', sm: '24px' },
+                    boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                    p: { xs: 1.5, sm: 3 }
+                }}
+            >
+                <CardContent sx={{ p: { xs: 1, sm: 2 }, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: boardSizePx, mb: 2 }}>
-                        <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                            Score: {score}
+                        <Typography variant="body1" sx={{ fontWeight: 800 }}>
+                            Score: <span style={{ color: theme.palette.primary.main }}>{score}</span>
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 700, color: 'secondary.main' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 800, color: 'secondary.main' }}>
                             Best: {bestScore}
                         </Typography>
                     </Box>
@@ -387,27 +399,32 @@ const Game2048: React.FC = () => {
                         onTouchEnd={handleTouchEnd}
                         sx={{
                             position: 'relative',
-                            width: boardSizePx,
-                            height: boardSizePx,
-                            borderRadius: '12px',
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            bgcolor: 'rgba(0,0,0,0.35)',
+                            width: '100%',
+                            maxWidth: boardSizePx,
+                            aspectRatio: '1/1',
+                            borderRadius: '16px',
+                            border: '1px solid rgba(255,255,255,0.12)',
+                            bgcolor: 'rgba(0,0,0,0.45)',
                             touchAction: 'none',
+                            p: `${(cellGapPx / boardSizePx) * 100}%`
                         }}
                     >
                         {/* Background grid cells */}
                         {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, idx) => {
                             const r = Math.floor(idx / GRID_SIZE);
                             const c = idx % GRID_SIZE;
+                            const topPercent = ((cellGapPx + r * (cellSizePx + cellGapPx)) / boardSizePx) * 100;
+                            const leftPercent = ((cellGapPx + c * (cellSizePx + cellGapPx)) / boardSizePx) * 100;
+                            const sizePercent = (cellSizePx / boardSizePx) * 100;
                             return (
                                 <Box
                                     key={`bg-${r}-${c}`}
                                     sx={{
                                         position: 'absolute',
-                                        top: cellGapPx + r * (cellSizePx + cellGapPx),
-                                        left: cellGapPx + c * (cellSizePx + cellGapPx),
-                                        width: cellSizePx,
-                                        height: cellSizePx,
+                                        top: `${topPercent}%`,
+                                        left: `${leftPercent}%`,
+                                        width: `${sizePercent}%`,
+                                        height: `${sizePercent}%`,
                                         borderRadius: '8px',
                                         bgcolor: 'rgba(255,255,255,0.04)',
                                     }}
@@ -418,9 +435,10 @@ const Game2048: React.FC = () => {
                         <AnimatePresence>
                             {tiles.map((tile) => {
                                 const { bg, color } = getTileColor(tile.value);
-                                const top = cellGapPx + tile.row * (cellSizePx + cellGapPx);
-                                const left = cellGapPx + tile.col * (cellSizePx + cellGapPx);
-                                const fontSize = tile.value >= 1024 ? '1.3rem' : tile.value >= 128 ? '1.5rem' : '1.75rem';
+                                const topPercent = ((cellGapPx + tile.row * (cellSizePx + cellGapPx)) / boardSizePx) * 100;
+                                const leftPercent = ((cellGapPx + tile.col * (cellSizePx + cellGapPx)) / boardSizePx) * 100;
+                                const sizePercent = (cellSizePx / boardSizePx) * 100;
+                                const fontSize = tile.value >= 1024 ? '1.1rem' : tile.value >= 128 ? '1.3rem' : '1.5rem';
                                 return (
                                     <motion.div
                                         key={tile.id}
@@ -428,15 +446,15 @@ const Game2048: React.FC = () => {
                                         animate={{
                                             scale: tile.isMerged ? [1, 1.15, 1] : 1,
                                             opacity: 1,
-                                            top,
-                                            left,
+                                            top: `${topPercent}%`,
+                                            left: `${leftPercent}%`,
                                         }}
                                         exit={{ scale: 0, opacity: 0 }}
                                         transition={{ duration: 0.15, ease: 'easeOut' }}
                                         style={{
                                             position: 'absolute',
-                                            width: cellSizePx,
-                                            height: cellSizePx,
+                                            width: `${sizePercent}%`,
+                                            height: `${sizePercent}%`,
                                             borderRadius: 8,
                                             background: bg,
                                             color,
@@ -463,28 +481,107 @@ const Game2048: React.FC = () => {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     gap: 2,
-                                    bgcolor: 'rgba(0,0,0,0.75)',
-                                    borderRadius: '12px',
+                                    bgcolor: 'rgba(0,0,0,0.85)',
+                                    backdropFilter: 'blur(8px)',
+                                    borderRadius: '16px',
+                                    zIndex: 10
                                 }}
                             >
-                                <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                                <Typography variant="h4" sx={{ fontWeight: 900, color: '#ff4d4d' }}>
                                     Game Over
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 700 }}>
                                     Final score: {score}
                                 </Typography>
-                                <Button variant="contained" onClick={resetGame}>
-                                    Play Again
+                                <Button
+                                    variant="contained"
+                                    onClick={handleResetClick}
+                                    sx={{ px: 4, py: 1.2, borderRadius: '12px', fontWeight: 800, fontSize: '1rem' }}
+                                >
+                                    Play Again 🎮
                                 </Button>
                             </Box>
                         )}
                     </Box>
 
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
-                        Use arrow keys or WASD (or swipe on mobile) to move.
-                    </Typography>
+                    {/* Touch Controller D-Pad */}
+                    <Box sx={{ mt: 2.5, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 56px)', gridTemplateRows: 'repeat(3, 56px)', gap: 1 }}>
+                            <Box />
+                            <Button
+                                aria-label="Move Up"
+                                onClick={() => performMove('UP')}
+                                sx={{
+                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                    border: '1.5px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '14px',
+                                    color: '#ffffff',
+                                    minWidth: 0,
+                                    fontSize: '1.2rem',
+                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
+                                }}
+                            >
+                                ⬆️
+                            </Button>
+                            <Box />
 
-                    <Button sx={{ mt: 2 }} variant="outlined" onClick={resetGame}>
+                            <Button
+                                aria-label="Move Left"
+                                onClick={() => performMove('LEFT')}
+                                sx={{
+                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                    border: '1.5px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '14px',
+                                    color: '#ffffff',
+                                    minWidth: 0,
+                                    fontSize: '1.2rem',
+                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
+                                }}
+                            >
+                                ⬅️
+                            </Button>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Typography variant="caption" sx={{ color: 'grey.500', fontSize: '0.65rem', fontWeight: 800 }}>
+                                    SWIPE
+                                </Typography>
+                            </Box>
+                            <Button
+                                aria-label="Move Right"
+                                onClick={() => performMove('RIGHT')}
+                                sx={{
+                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                    border: '1.5px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '14px',
+                                    color: '#ffffff',
+                                    minWidth: 0,
+                                    fontSize: '1.2rem',
+                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
+                                }}
+                            >
+                                ➡️
+                            </Button>
+
+                            <Box />
+                            <Button
+                                aria-label="Move Down"
+                                onClick={() => performMove('DOWN')}
+                                sx={{
+                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                    border: '1.5px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '14px',
+                                    color: '#ffffff',
+                                    minWidth: 0,
+                                    fontSize: '1.2rem',
+                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
+                                }}
+                            >
+                                ⬇️
+                            </Button>
+                            <Box />
+                        </Box>
+                    </Box>
+
+                    <Button sx={{ mt: 2, borderRadius: '12px' }} variant="outlined" size="small" onClick={handleResetClick}>
                         New Game
                     </Button>
                 </CardContent>

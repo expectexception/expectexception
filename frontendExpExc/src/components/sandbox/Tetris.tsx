@@ -494,8 +494,17 @@ const Tetris: React.FC = () => {
     const isPlaying = status === 'playing';
     const previewCells = getPreviewCells(nextType);
 
+    const cardRef = useRef<HTMLDivElement | null>(null);
+
+    const handleStartClick = () => {
+        start();
+        if (cardRef.current) {
+            cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 gameId={25}
                 title="Tetris | Play Classic Block-Stacking Puzzle Online Free"
@@ -504,19 +513,22 @@ const Tetris: React.FC = () => {
             <ServicePageHero
                 icon={ViewModule}
                 title="Tetris"
-                subtitle="Rotate and stack the falling tetrominoes to clear full lines before the board fills up. Arrow keys or the on-screen buttons to play | it only gets faster from here."
+                subtitle="Rotate and stack the falling tetrominoes to clear full lines before the board fills up."
             />
 
-            <Card sx={{
-                background: 'rgba(13, 14, 18, 0.4)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                borderRadius: '20px',
-                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: { xs: 2, sm: 3 },
-            }}>
-                <CardContent>
-                    <Stack direction="row" flexWrap="wrap" justifyContent="center" spacing={3} sx={{ mb: 3 }}>
+            <Card
+                ref={cardRef}
+                sx={{
+                    background: 'rgba(13, 14, 18, 0.5)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: { xs: '16px', sm: '24px' },
+                    boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                    p: { xs: 1.5, sm: 3 },
+                }}
+            >
+                <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
+                    <Stack direction="row" flexWrap="wrap" justifyContent="center" spacing={2.5} sx={{ mb: 2 }}>
                         <Typography variant="body1"><strong>Score:</strong> {score}</Typography>
                         <Typography variant="body1" sx={{ color: theme.palette.secondary.main, fontWeight: 700 }}>
                             Level: {level}
@@ -530,7 +542,7 @@ const Tetris: React.FC = () => {
                         flexDirection: { xs: 'column', sm: 'row' },
                         alignItems: { xs: 'center', sm: 'flex-start' },
                         justifyContent: 'center',
-                        gap: 3,
+                        gap: 2.5,
                     }}>
                         <Box sx={{ position: 'relative', width: W, maxWidth: '100%', mx: 'auto' }}>
                             <canvas
@@ -542,7 +554,7 @@ const Tetris: React.FC = () => {
                                     height: 'auto',
                                     display: 'block',
                                     borderRadius: 12,
-                                    border: '1px solid rgba(255,255,255,0.08)',
+                                    border: '1px solid rgba(255,255,255,0.12)',
                                 }}
                             />
 
@@ -563,26 +575,28 @@ const Tetris: React.FC = () => {
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             gap: 2,
-                                            bgcolor: 'rgba(0,0,0,0.7)',
+                                            bgcolor: 'rgba(0,0,0,0.85)',
+                                            backdropFilter: 'blur(8px)',
                                             borderRadius: '12px',
                                             textAlign: 'center',
                                             px: 2,
+                                            zIndex: 10
                                         }}>
                                             {status === 'gameover' && (
                                                 <>
-                                                    <Typography variant="h5" sx={{ fontWeight: 800, color: theme.palette.error.main }}>
+                                                    <Typography variant="h4" sx={{ fontWeight: 900, color: theme.palette.error.main }}>
                                                         Game Over
                                                     </Typography>
                                                     <Typography variant="body1">Final score: {score}</Typography>
                                                 </>
                                             )}
                                             {status === 'idle' && (
-                                                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                                    Ready?
+                                                <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                                                    Ready to Play?
                                                 </Typography>
                                             )}
-                                            <Button variant="contained" onClick={start} sx={{ px: 4, fontWeight: 700 }}>
-                                                {status === 'idle' ? 'Start Game' : 'Play Again'}
+                                            <Button variant="contained" onClick={handleStartClick} sx={{ px: 4, py: 1.2, fontWeight: 800, borderRadius: '12px', fontSize: '1rem' }}>
+                                                {status === 'idle' ? 'Start Game 🎮' : 'Play Again'}
                                             </Button>
                                         </Box>
                                     </motion.div>
@@ -590,8 +604,8 @@ const Tetris: React.FC = () => {
                             </AnimatePresence>
                         </Box>
 
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="subtitle2" color="text.secondary">Next</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'row', sm: 'column' }, alignItems: 'center', gap: 1.5 }}>
+                            <Typography variant="subtitle2" color="text.secondary" fontWeight={700}>NEXT PIECE</Typography>
                             <Box sx={{
                                 display: 'grid',
                                 gridTemplateColumns: `repeat(${PREVIEW_GRID}, ${PREVIEW_CELL}px)`,
@@ -599,8 +613,8 @@ const Tetris: React.FC = () => {
                                 gap: '2px',
                                 p: 1,
                                 borderRadius: '10px',
-                                bgcolor: 'rgba(0,0,0,0.35)',
-                                border: '1px solid rgba(255,255,255,0.08)',
+                                bgcolor: 'rgba(0,0,0,0.45)',
+                                border: '1px solid rgba(255,255,255,0.1)',
                             }}>
                                 {previewCells.flatMap((row, r) => row.map((filled, c) => (
                                     <Box
@@ -617,8 +631,9 @@ const Tetris: React.FC = () => {
                         </Box>
                     </Box>
 
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, mt: 3 }}>
-                        <Stack direction="row" spacing={1.5}>
+                    {/* Touch Gaming Arcade Controller */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, mt: 3, width: '100%' }}>
+                        <Stack direction="row" spacing={1.5} justifyContent="center">
                             <IconButton
                                 aria-label="Move left"
                                 disabled={!isPlaying}
@@ -626,17 +641,32 @@ const Tetris: React.FC = () => {
                                 onPointerUp={stopHold}
                                 onPointerLeave={stopHold}
                                 onPointerCancel={stopHold}
-                                sx={{ border: '1px solid rgba(255,255,255,0.08)', touchAction: 'none' }}
+                                sx={{
+                                    minWidth: 56, minHeight: 56,
+                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                    border: '1.5px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '14px',
+                                    color: '#ffffff',
+                                    touchAction: 'none',
+                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
+                                }}
                             >
-                                <KeyboardArrowLeft />
+                                <KeyboardArrowLeft fontSize="large" />
                             </IconButton>
                             <IconButton
                                 aria-label="Rotate piece"
                                 disabled={!isPlaying}
                                 onClick={rotatePiece}
-                                sx={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                                sx={{
+                                    minWidth: 56, minHeight: 56,
+                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                    border: '1.5px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '14px',
+                                    color: '#ffffff',
+                                    '&:active': { bgcolor: theme.palette.secondary.main, color: '#000000' }
+                                }}
                             >
-                                <RotateRight />
+                                <RotateRight fontSize="large" />
                             </IconButton>
                             <IconButton
                                 aria-label="Move right"
@@ -645,12 +675,20 @@ const Tetris: React.FC = () => {
                                 onPointerUp={stopHold}
                                 onPointerLeave={stopHold}
                                 onPointerCancel={stopHold}
-                                sx={{ border: '1px solid rgba(255,255,255,0.08)', touchAction: 'none' }}
+                                sx={{
+                                    minWidth: 56, minHeight: 56,
+                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                    border: '1.5px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '14px',
+                                    color: '#ffffff',
+                                    touchAction: 'none',
+                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
+                                }}
                             >
-                                <KeyboardArrowRight />
+                                <KeyboardArrowRight fontSize="large" />
                             </IconButton>
                         </Stack>
-                        <Stack direction="row" spacing={1.5}>
+                        <Stack direction="row" spacing={1.5} justifyContent="center">
                             <IconButton
                                 aria-label="Soft drop"
                                 disabled={!isPlaying}
@@ -658,17 +696,32 @@ const Tetris: React.FC = () => {
                                 onPointerUp={stopHold}
                                 onPointerLeave={stopHold}
                                 onPointerCancel={stopHold}
-                                sx={{ border: '1px solid rgba(255,255,255,0.08)', touchAction: 'none' }}
+                                sx={{
+                                    minWidth: 56, minHeight: 56,
+                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                    border: '1.5px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '14px',
+                                    color: '#ffffff',
+                                    touchAction: 'none',
+                                    '&:active': { bgcolor: theme.palette.warning.main, color: '#000000' }
+                                }}
                             >
-                                <KeyboardArrowDown />
+                                <KeyboardArrowDown fontSize="large" />
                             </IconButton>
                             <IconButton
                                 aria-label="Hard drop"
                                 disabled={!isPlaying}
                                 onClick={hardDrop}
-                                sx={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                                sx={{
+                                    minWidth: 56, minHeight: 56,
+                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                    border: '1.5px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '14px',
+                                    color: '#ffffff',
+                                    '&:active': { bgcolor: theme.palette.error.main, color: '#ffffff' }
+                                }}
                             >
-                                <KeyboardDoubleArrowDown />
+                                <KeyboardDoubleArrowDown fontSize="large" />
                             </IconButton>
                         </Stack>
                     </Box>
