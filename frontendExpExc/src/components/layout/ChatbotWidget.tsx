@@ -24,10 +24,30 @@ import {
     CheckCircle,
     Cancel,
     DeleteOutline,
-    ChatBubbleOutline
+    ChatBubbleOutline,
+    VolumeUp,
+    VolumeOff,
+    ThumbUpOutlined,
+    Check
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import apiClient, { HEAVY_API_BASE_URL } from '../../api/config';
+
+const triggerCyberConfetti = () => {
+    try {
+        confetti({
+            particleCount: 45,
+            spread: 65,
+            origin: { y: 0.88, x: 0.88 },
+            colors: ['#00FF66', '#00eeff', '#ffffff', '#a855f7'],
+            ticks: 160,
+            gravity: 1.1,
+            scalar: 0.85,
+            disableForReducedMotion: true,
+        });
+    } catch (e) { /* ignore */ }
+};
 
 // Chat is a "heavy" AI service (Ollama-backed) - it must hit the same local
 // GPU-tunnel backend as the full ChatbotPage, not Render's light backend
@@ -296,17 +316,120 @@ const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
     );
 };
 
+// --- Cyber Audio Synthesizer (Web Audio API) ---
+const playCyberSound = (type: 'open' | 'close' | 'send' | 'receive' | 'click', isMuted: boolean = false) => {
+    if (isMuted || typeof window === 'undefined') return;
+    try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+
+        if (type === 'open') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.16);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.18);
+        } else if (type === 'close') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(784, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(392, ctx.currentTime + 0.16);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.18);
+        } else if (type === 'send') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(1050, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(525, ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.09);
+        } else if (type === 'receive') {
+            [0, 0.07].forEach((delay, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(idx === 0 ? 587.33 : 880, ctx.currentTime + delay);
+                gain.gain.setValueAtTime(0.08, ctx.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.1);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime + delay);
+                osc.stop(ctx.currentTime + delay + 0.1);
+            });
+        } else if (type === 'click') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(900, ctx.currentTime);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.04);
+        }
+    } catch (e) {
+        /* audio policy */
+    }
+};
+
 // --- Animated Standing Character (Daemon) ---
 const DaemonStandingCharacter: React.FC<{
     isWalking: boolean;
     isLanding: boolean;
+    scrollDirection: 'down' | 'up';
     onClick: () => void;
-}> = ({ isWalking, isLanding, onClick }) => {
+}> = ({ isWalking, isLanding, scrollDirection, onClick }) => {
     const theme = useTheme();
     const primaryColor = theme.palette.primary.main || '#00FF66';
+    const characterRef = useRef<HTMLDivElement>(null);
+    const [headAngle, setHeadAngle] = useState(0);
+    const [eyeShift, setEyeShift] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!characterRef.current) return;
+            const rect = characterRef.current.getBoundingClientRect();
+            const charX = rect.left + rect.width / 2;
+            const charY = rect.top + rect.height / 2;
+            const deltaX = e.clientX - charX;
+            const deltaY = e.clientY - charY;
+            
+            const clampedAngle = Math.max(-14, Math.min(14, deltaX * 0.03));
+            setHeadAngle(clampedAngle);
+            setEyeShift({
+                x: Math.max(-3, Math.min(3, deltaX * 0.015)),
+                y: Math.max(-2, Math.min(2, deltaY * 0.015)),
+            });
+        };
+
+        window.addEventListener('mousemove', handleMouseMove, { passive: true });
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
 
     return (
         <Box
+            ref={characterRef}
             onClick={onClick}
             sx={{
                 position: 'relative',
@@ -343,7 +466,14 @@ const DaemonStandingCharacter: React.FC<{
                         ? { duration: 0.45, ease: 'easeOut' }
                         : { repeat: Infinity, duration: 3.2, ease: 'easeInOut' }
                 }
-                style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    transform: scrollDirection === 'up' ? 'scaleX(-1)' : 'scaleX(1)',
+                    transition: 'transform 0.3s ease'
+                }}
             >
                 <svg width="76" height="96" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
@@ -371,6 +501,29 @@ const DaemonStandingCharacter: React.FC<{
                         }
                         transition={{ repeat: Infinity, duration: isWalking ? 0.22 : 3.2 }}
                     />
+
+                    {/* Floating Energy Particles Aura */}
+                    {[0, 1, 2].map((i) => (
+                        <motion.circle
+                            key={`p-${i}`}
+                            cx={32 + i * 18}
+                            cy="110"
+                            r={1.5 + i * 0.5}
+                            fill={primaryColor}
+                            animate={{
+                                y: [-5, -45],
+                                x: [0, (i % 2 === 0 ? 8 : -8)],
+                                opacity: [0, 0.85, 0],
+                                scale: [0.8, 1.4, 0.2]
+                            }}
+                            transition={{
+                                repeat: Infinity,
+                                duration: 2 + i * 0.5,
+                                delay: i * 0.6,
+                                ease: 'easeOut'
+                            }}
+                        />
+                    ))}
 
                     {/* Legs & Feet */}
                     {/* Left Leg */}
@@ -461,62 +614,69 @@ const DaemonStandingCharacter: React.FC<{
                     {/* Head Neck */}
                     <rect x="44" y="38" width="12" height="7" fill="#0d0e12" stroke={primaryColor} strokeWidth="1.5" />
 
-                    {/* Antenna */}
+                    {/* Cursor Magnetism Rotated Head Group */}
                     <motion.g
-                        animate={isWalking ? { rotate: [-8, 8, -8] } : { rotate: 0 }}
-                        style={{ originX: '50px', originY: '14px' }}
-                        transition={{ repeat: Infinity, duration: 0.22 }}
+                        style={{ originX: '50px', originY: '27px' }}
+                        animate={{ rotate: headAngle }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 18 }}
                     >
-                        <line x1="50" y1="14" x2="50" y2="4" stroke={primaryColor} strokeWidth="2.5" strokeLinecap="round" />
-                        <motion.circle
-                            cx="50"
-                            cy="3"
-                            r="4.5"
-                            fill="#00eeff"
-                            animate={{ scale: [1, 1.3, 1] }}
-                            transition={{ repeat: Infinity, duration: 1.2 }}
-                            style={{ filter: 'url(#core-glow)' }}
+                        {/* Antenna */}
+                        <motion.g
+                            animate={isWalking ? { rotate: [-8, 8, -8] } : { rotate: 0 }}
+                            style={{ originX: '50px', originY: '14px' }}
+                            transition={{ repeat: Infinity, duration: 0.22 }}
+                        >
+                            <line x1="50" y1="14" x2="50" y2="4" stroke={primaryColor} strokeWidth="2.5" strokeLinecap="round" />
+                            <motion.circle
+                                cx="50"
+                                cy="3"
+                                r="4.5"
+                                fill="#00eeff"
+                                animate={{ scale: [1, 1.3, 1] }}
+                                transition={{ repeat: Infinity, duration: 1.2 }}
+                                style={{ filter: 'url(#core-glow)' }}
+                            />
+                        </motion.g>
+
+                        {/* Head Chassis */}
+                        <motion.rect
+                            x="24"
+                            y="12"
+                            width="52"
+                            height="30"
+                            rx="12"
+                            fill="rgba(13, 14, 18, 0.95)"
+                            stroke={primaryColor}
+                            strokeWidth="2.5"
+                            animate={isWalking ? { y: [12, 10, 12] } : {}}
+                            transition={{ repeat: Infinity, duration: 0.22 }}
                         />
+
+                        {/* Visor / Face Screen */}
+                        <rect x="30" y="18" width="40" height="18" rx="7" fill="#050505" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+
+                        {/* Glowing Cursor-Shifted Eyes */}
+                        <g style={{ filter: 'url(#core-glow)' }}>
+                            <motion.ellipse
+                                cx={42 + eyeShift.x}
+                                cy={27 + eyeShift.y}
+                                rx="4"
+                                ry="5"
+                                fill="#00eeff"
+                                animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+                                transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 2 }}
+                            />
+                            <motion.ellipse
+                                cx={58 + eyeShift.x}
+                                cy={27 + eyeShift.y}
+                                rx="4"
+                                ry="5"
+                                fill="#00eeff"
+                                animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+                                transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 2.2 }}
+                            />
+                        </g>
                     </motion.g>
-
-                    {/* Head Chassis */}
-                    <motion.rect
-                        x="24"
-                        y="12"
-                        width="52"
-                        height="30"
-                        rx="12"
-                        fill="rgba(13, 14, 18, 0.95)"
-                        stroke={primaryColor}
-                        strokeWidth="2.5"
-                        animate={isWalking ? { y: [12, 10, 12] } : {}}
-                        transition={{ repeat: Infinity, duration: 0.22 }}
-                    />
-
-                    {/* Visor / Face Screen */}
-                    <rect x="30" y="18" width="40" height="18" rx="7" fill="#050505" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-
-                    {/* Glowing Eyes */}
-                    <g style={{ filter: 'url(#core-glow)' }}>
-                        <motion.ellipse
-                            cx="42"
-                            cy="27"
-                            rx="4"
-                            ry="5"
-                            fill="#00eeff"
-                            animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
-                            transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 2 }}
-                        />
-                        <motion.ellipse
-                            cx="58"
-                            cy="27"
-                            rx="4"
-                            ry="5"
-                            fill="#00eeff"
-                            animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
-                            transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 2.2 }}
-                        />
-                    </g>
                 </svg>
             </motion.div>
         </Box>
@@ -622,6 +782,47 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const [mood, setMood] = useState<Mood>('neutral');
     const [activeSteps, setActiveSteps] = useState<AgentStep[]>([]);
 
+    const [scrollDirection, setScrollDirection] = useState<'down' | 'up'>('down');
+    const [isMuted, setIsMuted] = useState<boolean>(() => {
+        return localStorage.getItem('daemon_sound_muted') === 'true';
+    });
+    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+    const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
+
+    const toggleMute = () => {
+        setIsMuted(prev => {
+            const next = !prev;
+            localStorage.setItem('daemon_sound_muted', String(next));
+            return next;
+        });
+    };
+
+    const handleCopyMessage = (text: string, index: number) => {
+        navigator.clipboard.writeText(text);
+        setCopiedIndex(index);
+        playCyberSound('click', isMuted);
+        setTimeout(() => setCopiedIndex(null), 2000);
+    };
+
+    const handleSpeakMessage = (text: string, index: number) => {
+        if ('speechSynthesis' in window) {
+            if (speakingIndex === index) {
+                window.speechSynthesis.cancel();
+                setSpeakingIndex(null);
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const cleanText = text.replace(/```[\s\S]*?```/g, '').replace(/[*#]/g, '');
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.05;
+            utterance.onend = () => setSpeakingIndex(null);
+            utterance.onerror = () => setSpeakingIndex(null);
+            setSpeakingIndex(index);
+            window.speechSynthesis.speak(utterance);
+        }
+    };
+
     const [isScrolling, setIsScrolling] = useState(false);
     const [isWalking, setIsWalking] = useState(false);
     const [isLanding, setIsLanding] = useState(false);
@@ -638,6 +839,11 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
                 setIsScrolling(true);
                 setIsWalking(true);
                 setIsLanding(false);
+                if (currentScrollY > lastScrollY) {
+                    setScrollDirection('down');
+                } else if (currentScrollY < lastScrollY) {
+                    setScrollDirection('up');
+                }
             }
 
             lastScrollY = currentScrollY;
@@ -843,6 +1049,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             });
             setActiveSteps([]);
             setMood('happy');
+            triggerCyberConfetti();
             const reachAt = [phone, email].filter(Boolean).join(' or ');
             const assistantMsg: Message = {
                 role: 'assistant',
@@ -865,6 +1072,8 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const sendMessage = async (messageText?: string) => {
         const text = messageText || inputValue.trim();
         if (!text || isLoading || isStreaming) return;
+
+        playCyberSound('send', isMuted);
 
         const userMessage: Message = {
             role: 'user',
@@ -1205,7 +1414,12 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                         <DaemonStandingCharacter
                             isWalking={isWalking}
                             isLanding={isLanding}
-                            onClick={() => setIsOpen(true)}
+                            scrollDirection={scrollDirection}
+                            onClick={() => {
+                                setIsOpen(true);
+                                playCyberSound('open', isMuted);
+                                triggerCyberConfetti();
+                            }}
                         />
                     </motion.div>
                 )}
@@ -1220,6 +1434,24 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                         transition={{ type: 'spring', damping: 24, stiffness: 300 }}
                         style={{ pointerEvents: 'auto' }}
                     >
+                        {/* Holographic Beam Laser Effect when opening */}
+                        <motion.div
+                            initial={{ height: 0, opacity: 1 }}
+                            animate={{ height: 180, opacity: [1, 0.8, 0] }}
+                            transition={{ duration: 0.4 }}
+                            style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                right: 32,
+                                width: 12,
+                                background: 'linear-gradient(to top, #00FF66, #00eeff, transparent)',
+                                borderRadius: 6,
+                                filter: 'blur(3px)',
+                                pointerEvents: 'none',
+                                zIndex: 10002,
+                            }}
+                        />
+
                         <Paper
                             sx={{
                                 width: isMobile ? 'calc(100vw - 32px)' : 380,
@@ -1236,6 +1468,21 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 position: 'relative'
                             }}
                         >
+                            {/* Animated Cyber Scanning Gradient Bar */}
+                            <Box
+                                sx={{
+                                    height: '2px',
+                                    width: '100%',
+                                    background: 'linear-gradient(90deg, #00FF66, #00eeff, #00FF66)',
+                                    backgroundSize: '200% 100%',
+                                    animation: 'scanGrad 3s linear infinite',
+                                    '@keyframes scanGrad': {
+                                        '0%': { backgroundPosition: '0% 0%' },
+                                        '100%': { backgroundPosition: '200% 0%' }
+                                    }
+                                }}
+                            />
+
                             {/* Header */}
                             <Box sx={{
                                 p: 2,
@@ -1259,12 +1506,24 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                     </Box>
                                 </Stack>
                                 <Stack direction="row" spacing={0.5}>
+                                    <Tooltip title={isMuted ? 'Unmute Sound FX' : 'Mute Sound FX'}>
+                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : 'primary.main' }}>
+                                            {isMuted ? <VolumeOff fontSize="small" /> : <VolumeUp fontSize="small" />}
+                                        </IconButton>
+                                    </Tooltip>
                                     <Tooltip title="Reset Conversation">
                                         <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' } }}>
                                             <DeleteOutline fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
-                                    <IconButton onClick={() => setIsOpen(false)} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ffffff' } }}>
+                                    <IconButton
+                                        onClick={() => {
+                                            setIsOpen(false);
+                                            playCyberSound('close', isMuted);
+                                        }}
+                                        size="small"
+                                        sx={{ color: 'grey.500', '&:hover': { color: '#ffffff' } }}
+                                    >
                                         <Close fontSize="small" />
                                     </IconButton>
                                 </Stack>
@@ -1296,12 +1555,49 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                                 borderTopRightRadius: msg.role === 'user' ? 0 : '14px',
                                                 borderTopLeftRadius: msg.role === 'assistant' ? 0 : '14px',
                                                 color: 'grey.200',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                                position: 'relative',
+                                                '&:hover .msg-actions': { opacity: 1 }
                                             }}>
                                                 {msg.isWidget && msg.widgetType === 'clock' && <ClockWidget />}
                                                 <Typography component="div" sx={{ fontSize: '0.875rem', lineHeight: 1.6 }}>
                                                     {formatMessage(msg.content)}
                                                 </Typography>
+
+                                                {/* Assistant Quick Action Buttons (Copy / Speak) */}
+                                                {msg.role === 'assistant' && (
+                                                    <Box
+                                                        className="msg-actions"
+                                                        sx={{
+                                                            display: 'flex',
+                                                            gap: 0.5,
+                                                            mt: 0.75,
+                                                            pt: 0.5,
+                                                            borderTop: '1px solid rgba(255,255,255,0.04)',
+                                                            opacity: 0.7,
+                                                            transition: 'opacity 0.2s ease',
+                                                        }}
+                                                    >
+                                                        <Tooltip title={copiedIndex === idx ? 'Copied!' : 'Copy message'}>
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleCopyMessage(msg.content, idx)}
+                                                                sx={{ p: 0.3, color: copiedIndex === idx ? 'primary.main' : 'grey.600' }}
+                                                            >
+                                                                {copiedIndex === idx ? <Check sx={{ fontSize: 13 }} /> : <ContentCopy sx={{ fontSize: 13 }} />}
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip title={speakingIndex === idx ? 'Stop reading' : 'Read aloud'}>
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleSpeakMessage(msg.content, idx)}
+                                                                sx={{ p: 0.3, color: speakingIndex === idx ? 'primary.main' : 'grey.600' }}
+                                                            >
+                                                                <VolumeUp sx={{ fontSize: 13 }} />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </Box>
+                                                )}
                                             </Paper>
                                         </Box>
                                     </Box>
@@ -1333,7 +1629,10 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         ].map(suggestion => (
                                             <Box
                                                 key={suggestion}
-                                                onClick={() => { setInputValue(suggestion); setTimeout(() => inputRef.current?.focus(), 50); }}
+                                                onClick={() => {
+                                                    setInputValue(suggestion);
+                                                    setTimeout(() => inputRef.current?.focus(), 50);
+                                                }}
                                                 sx={{
                                                     px: 1.2, py: 0.5, borderRadius: 1.5, cursor: 'pointer', fontSize: '0.7rem',
                                                     bgcolor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
