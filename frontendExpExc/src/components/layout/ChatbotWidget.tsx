@@ -110,7 +110,7 @@ const ChatbotFace: React.FC<{ mood: Mood; themeColor?: string; size?: number; hi
         neutral: primary,
         thinking: primary,
         happy: primary,
-        excited: primary,
+        excited: '#ff007f', // Vibrant Neon Pink
         sleeping: '#8b5cf6', // Purple
         idea: '#f59e0b', // Amber
         error: '#ef4444', // Red
@@ -121,14 +121,19 @@ const ChatbotFace: React.FC<{ mood: Mood; themeColor?: string; size?: number; hi
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: hideMargin ? 0 : 1 }}>
             <motion.div
-                animate={mood === 'sleeping' ? {
-                    scale: [1, 0.97, 1],
-                    y: [0, 3, 0]
-                } : {
-                    y: [0, -4, 0],
-                }}
+                animate={
+                    mood === 'sleeping'
+                        ? { scale: [1, 0.96, 1], y: [0, 3, 0] }
+                        : mood === 'excited'
+                        ? { rotate: [-8, 8, -8], scale: [1, 1.08, 0.98, 1], y: [0, -6, 0] }
+                        : mood === 'happy'
+                        ? { rotate: [-4, 4, -4], y: [0, -3, 0] }
+                        : mood === 'thinking'
+                        ? { rotate: [-5, 5], y: [0, -2, 0] }
+                        : { y: [0, -3, 0] }
+                }
                 transition={{
-                    duration: mood === 'sleeping' ? 4 : 3,
+                    duration: mood === 'sleeping' ? 4 : mood === 'excited' ? 0.6 : 3,
                     repeat: Infinity,
                     ease: 'easeInOut'
                 }}
@@ -162,10 +167,10 @@ const ChatbotFace: React.FC<{ mood: Mood; themeColor?: string; size?: number; hi
                         y="25"
                         width="80"
                         height="70"
-                        rx="20"
+                        rx="22"
                         stroke={activeColor}
-                        strokeWidth="3"
-                        fill="rgba(13, 14, 18, 0.9)"
+                        strokeWidth="3.5"
+                        fill="rgba(13, 14, 18, 0.92)"
                         style={{ filter: 'url(#glow)' }}
                         animate={
                             mood === 'thinking'
@@ -182,6 +187,14 @@ const ChatbotFace: React.FC<{ mood: Mood; themeColor?: string; size?: number; hi
                                 : {}
                         }
                     />
+
+                    {/* Cute Cheek Blushes for happy/excited */}
+                    {(mood === 'happy' || mood === 'excited') && (
+                        <g opacity="0.6">
+                            <circle cx="32" cy="66" r="4" fill="#ff007f" />
+                            <circle cx="88" cy="66" r="4" fill="#ff007f" />
+                        </g>
+                    )}
 
                     {/* Zzz for sleeping */}
                     {mood === 'sleeping' && (
@@ -1897,31 +1910,8 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                                 bgcolor: 'rgba(5, 5, 5, 0.3)'
                             }}>
-                                <Stack direction="row" alignItems="center" spacing={1.2} sx={{ minWidth: 0, flexShrink: 1 }}>
-                                    <Box sx={{
-                                        width: 36,
-                                        height: 36,
-                                        borderRadius: '50%',
-                                        bgcolor: 'rgba(5, 5, 5, 0.6)',
-                                        border: `1.5px solid ${alpha(themeColor, 0.4)}`,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        boxShadow: `0 0 12px ${alpha(themeColor, 0.25)}`,
-                                        overflow: 'hidden',
-                                        flexShrink: 0
-                                    }}>
-                                        <ChatbotFace mood={mood} themeColor={themeColor} size={32} hideMargin={true} />
-                                    </Box>
-                                    <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
-                                        <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
-                                            Bot
-                                        </Typography>
-                                        <Typography variant="caption" sx={{ fontSize: '0.62rem', fontWeight: 600, color: themeColor, display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
-                                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isAvailable ? themeColor : '#f59e0b', display: 'inline-block', flexShrink: 0 }} />
-                                            {isAvailable ? 'AI Core Live' : 'Local Fallback'}
-                                        </Typography>
-                                    </Box>
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flexShrink: 0 }}>
+                                    <ChatbotFace mood={mood} themeColor={themeColor} size={42} hideMargin={true} />
                                 </Stack>
                                 <Stack direction="row" spacing={0.2} sx={{ flexShrink: 0 }}>
                                     <Tooltip title={isDancing ? "Dancing!" : "Make Bot Dance 🕺"}>
