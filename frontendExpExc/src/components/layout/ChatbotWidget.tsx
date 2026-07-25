@@ -103,19 +103,20 @@ interface AgentStep {
 }
 
 // --- Custom Animated SVG Face Component ---
-const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
+const ChatbotFace: React.FC<{ mood: Mood; themeColor?: string }> = ({ mood, themeColor }) => {
     const theme = useTheme();
+    const primary = themeColor || theme.palette.primary.main || '#00FF66';
     const colorMap = {
-        neutral: '#00eeff', // Cyan
-        thinking: '#00eeff', // Cyan
-        happy: theme.palette.primary.main, // Neon Green
-        excited: theme.palette.primary.main, // Neon Green
+        neutral: primary,
+        thinking: primary,
+        happy: primary,
+        excited: primary,
         sleeping: '#8b5cf6', // Purple
         idea: '#f59e0b', // Amber
         error: '#ef4444', // Red
     };
 
-    const activeColor = colorMap[mood] || '#00eeff';
+    const activeColor = colorMap[mood] || primary;
 
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 1 }}>
@@ -889,6 +890,20 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
         };
     }, [isOpen, isSleeping, mood]);
 
+    // Cleanup STT and SpeechSynthesis on unmount or modal close
+    useEffect(() => {
+        if (!isOpen) {
+            if (recognitionRef.current) {
+                try { recognitionRef.current.stop(); } catch (e) { /* ignore */ }
+            }
+            setIsListening(false);
+            if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                setSpeakingIndex(null);
+            }
+        }
+    }, [isOpen]);
+
     // Speech-to-Text Voice Recognition (Browser Web Speech API)
     const toggleSpeechRecognition = () => {
         if (typeof window === 'undefined') return;
@@ -1228,6 +1243,11 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const sendMessage = async (messageText?: string) => {
         const text = messageText || inputValue.trim();
         if (!text || isLoading || isStreaming) return;
+
+        if (isListening) {
+            if (recognitionRef.current) try { recognitionRef.current.stop(); } catch (e) { }
+            setIsListening(false);
+        }
 
         playCyberSound('send', isMuted);
 
@@ -1624,14 +1644,26 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 setIsDragOver(false);
                                 if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                                     const file = e.dataTransfer.files[0];
-                                    const reader = new FileReader();
-                                    reader.onload = (evt) => {
-                                        const content = evt.target?.result as string;
-                                        if (content) {
-                                            sendMessage(`[Attached file: ${file.name}]\n\`\`\`\n${content.slice(0, 800)}\n\`\`\``);
-                                        }
-                                    };
-                                    reader.readAsText(file);
+                                    const isTextFile = file.type.startsWith('text/') ||
+                                        file.name.endsWith('.js') || file.name.endsWith('.ts') ||
+                                        file.name.endsWith('.tsx') || file.name.endsWith('.jsx') ||
+                                        file.name.endsWith('.json') || file.name.endsWith('.md') ||
+                                        file.name.endsWith('.py') || file.name.endsWith('.css') ||
+                                        file.name.endsWith('.html') || file.name.endsWith('.csv');
+
+                                    if (isTextFile) {
+                                        const reader = new FileReader();
+                                        reader.onload = (evt) => {
+                                            const content = evt.target?.result as string;
+                                            if (content) {
+                                                sendMessage(`[Attached file: ${file.name}]\n\`\`\`\n${content.slice(0, 1000)}\n\`\`\``);
+                                            }
+                                        };
+                                        reader.readAsText(file);
+                                    } else {
+                                        const sizeKb = (file.size / 1024).toFixed(1);
+                                        sendMessage(`[Attached binary document: ${file.name} (${sizeKb} KB, ${file.type || 'unknown type'})]`);
+                                    }
                                 }
                             }}
                             sx={{
@@ -1806,7 +1838,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                     bgcolor: 'rgba(0, 0, 0, 0.15)'
                                 }}
                             >
-                                <ChatbotFace mood={mood} />
+                                <ChatbotFace mood={mood} themeColor={themeColor} />
                                 {messages.map((msg, idx) => (
                                     <Box key={idx} sx={{ display: 'flex', gap: 1, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
                                         <Box sx={{ maxWidth: '85%' }}>
