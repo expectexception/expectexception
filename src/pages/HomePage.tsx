@@ -2148,11 +2148,11 @@ const HomePage: React.FC = () => {
 
             <Grid container spacing={3}>
               {[
-                { n: '01', title: 'You describe the goal', body: 'Give the system a plain-language objective — "build a landing page with a contact form", "add OCR to this pipeline". No tickets, no specs.' },
+                { n: '01', title: 'You describe the goal', body: 'Give the system a plain-language objective such as "build a landing page with a contact form" or "add OCR to this pipeline". No complex specs required.' },
                 { n: '02', title: 'The Planner decomposes it', body: 'The planning agent breaks the goal into an ordered, dependency-aware task graph and picks the right tools and frameworks for each step.' },
                 { n: '03', title: 'The Coder builds each task', body: 'The coding agent implements every task against a strict design system and type-safe conventions, writing production-grade React, Django, or Node.js.' },
-                { n: '04', title: 'The Tester validates & loops back', body: 'Automated tests, security checks, and responsive validation run on every change. Failures are fed back to the coder to self-correct — not shipped.' },
-                { n: '05', title: 'The Deployer ships it', body: 'Once green, the deploy agent containers the app, wires up SSL/DNS, and rolls it out — then reports back so you can trigger the next objective.' },
+                { n: '04', title: 'The Tester validates & loops back', body: 'Automated tests, security checks, and responsive validation run on every change. Failures are automatically fed back to the coder to self-correct.' },
+                { n: '05', title: 'The Deployer ships it', body: 'Once green, the deploy agent packages the app, configures SSL/DNS, and rolls it out smoothly so you can move to the next objective.' },
               ].map((step, i) => (
                 <Grid item xs={12} md key={step.n}>
                   <Box sx={{
@@ -2189,66 +2189,15 @@ const HomePage: React.FC = () => {
               bgcolor: alpha(primaryColor, 0.04), border: `1px solid ${alpha(primaryColor, 0.15)}`,
             }}>
               <Typography variant="body1" color="#cbd5e1" sx={{ maxWidth: 820, mx: 'auto', lineHeight: 1.7 }}>
-                <strong style={{ color: '#ffffff' }}>It's a loop, not a line.</strong> When the testing agent finds a bug or a
-                failing check, work flows back to the coding agent to fix it before anything reaches deployment — so the output
-                is verified, not just generated. That same orchestration is what powers the AI tooling across this platform.
+                <strong style={{ color: '#ffffff' }}>It's a continuous loop.</strong> When the testing agent finds a bug or a
+                failing check, work flows directly back to the coding agent to fix it before anything reaches deployment, ensuring the output is fully verified.
               </Typography>
             </Box>
           </Box>
         </Container>
       </Box>
 
-      {/* --- AWARDS & MILESTONES --- */}
-      <Container maxWidth="xl" sx={{ py: { xs: 8, md: 16 } }}>
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h6" color="primary.main" fontWeight="700" sx={{ mb: 1, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            Milestones
-          </Typography>
-          <Typography variant="h2" sx={{ fontWeight: 800, mb: 2, letterSpacing: '-0.02em' }}>
-            Awards & Recognition
-          </Typography>
-        </Box>
 
-        <TableContainer component={Paper} sx={{
-          bgcolor: 'transparent',
-          backgroundImage: 'none',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
-          borderRadius: '16px',
-          boxShadow: 'none',
-          overflow: 'hidden'
-        }}>
-          <Table>
-            <TableHead sx={{ bgcolor: 'rgba(13, 14, 18, 0.4)' }}>
-              <TableRow>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }} width="15%">Year</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }} width="45%">Award / Certification</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }} width="25%">Provider</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }} width="15%">Category</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {[
-                { year: '2026', title: 'Excellence in Web Engineering', provider: 'ExpectException', category: 'Engineering Showcase' },
-                { year: '2025', title: 'Advanced AI & Chatbot Integrator', provider: 'ExpExc platform', category: 'AI Automation' },
-                { year: '2025', title: 'Full Stack Development Certification', provider: 'Developer Alliance', category: 'Mastery' },
-                { year: '2024', title: 'Technical Leadership Award', provider: 'Open Source Guild', category: 'Contribution' },
-              ].map((row, idx) => (
-                <TableRow key={idx} sx={{
-                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.015)' },
-                  transition: 'background-color 0.2s'
-                }}>
-                  <TableCell sx={{ color: primaryColor, fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }}>{row.year}</TableCell>
-                  <TableCell sx={{ color: '#ffffff', fontWeight: 600, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }}>{row.title}</TableCell>
-                  <TableCell sx={{ color: '#94a3b8', borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }}>{row.provider}</TableCell>
-                  <TableCell sx={{ borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }}>
-                    <Chip label={row.category} size="small" sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', color: '#ffffff', fontSize: '0.75rem' }} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Container>
 
       {/* --- COLLABORATION PROCESS --- */}
       <Box sx={{ py: { xs: 8, md: 14 }, bgcolor: '#08090d', borderTop: '1px solid rgba(255, 255, 255, 0.03)', borderBottom: '1px solid rgba(255, 255, 255, 0.03)' }}>
