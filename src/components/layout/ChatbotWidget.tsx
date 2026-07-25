@@ -296,6 +296,233 @@ const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
     );
 };
 
+// --- Animated Standing Character (Daemon) ---
+const DaemonStandingCharacter: React.FC<{
+    isWalking: boolean;
+    isLanding: boolean;
+    onClick: () => void;
+}> = ({ isWalking, isLanding, onClick }) => {
+    const theme = useTheme();
+    const primaryColor = theme.palette.primary.main || '#00FF66';
+
+    return (
+        <Box
+            onClick={onClick}
+            sx={{
+                position: 'relative',
+                width: 76,
+                height: 96,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                userSelect: 'none',
+                filter: `drop-shadow(0 8px 20px ${alpha(primaryColor, 0.35)})`,
+                transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                '&:hover': {
+                    transform: 'scale(1.08) translateY(-4px)',
+                    filter: `drop-shadow(0 12px 28px ${alpha(primaryColor, 0.6)})`,
+                },
+                '&:active': {
+                    transform: 'scale(0.95)',
+                }
+            }}
+        >
+            <motion.div
+                animate={
+                    isWalking
+                        ? { y: [0, -4, 0] }
+                        : isLanding
+                        ? { scaleY: [1, 0.78, 1.15, 0.94, 1], y: [0, 8, -4, 2, 0] }
+                        : { y: [0, -5, 0] }
+                }
+                transition={
+                    isWalking
+                        ? { repeat: Infinity, duration: 0.22, ease: 'easeInOut' }
+                        : isLanding
+                        ? { duration: 0.45, ease: 'easeOut' }
+                        : { repeat: Infinity, duration: 3.2, ease: 'easeInOut' }
+                }
+                style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}
+            >
+                <svg width="76" height="96" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="daemon-shadow" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stopColor={primaryColor} stopOpacity="0.6" />
+                            <stop offset="100%" stopColor={primaryColor} stopOpacity="0" />
+                        </radialGradient>
+                        <filter id="core-glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+
+                    {/* Standing Platform Glow Shadow */}
+                    <motion.ellipse
+                        cx="50"
+                        cy="114"
+                        rx={isWalking ? "22" : "28"}
+                        ry="5"
+                        fill="url(#daemon-shadow)"
+                        animate={
+                            isWalking
+                                ? { rx: [22, 16, 22], opacity: [0.5, 0.9, 0.5] }
+                                : { rx: [28, 24, 28], opacity: [0.7, 0.4, 0.7] }
+                        }
+                        transition={{ repeat: Infinity, duration: isWalking ? 0.22 : 3.2 }}
+                    />
+
+                    {/* Legs & Feet */}
+                    {/* Left Leg */}
+                    <motion.g
+                        style={{ originX: '38px', originY: '78px' }}
+                        animate={
+                            isWalking
+                                ? { rotate: [-24, 24, -24] }
+                                : { rotate: 0 }
+                        }
+                        transition={
+                            isWalking
+                                ? { repeat: Infinity, duration: 0.22, ease: 'easeInOut' }
+                                : { duration: 0.3 }
+                        }
+                    >
+                        <rect x="34" y="78" width="8" height="24" rx="4" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
+                        <rect x="30" y="98" width="14" height="8" rx="3" fill={primaryColor} />
+                    </motion.g>
+
+                    {/* Right Leg */}
+                    <motion.g
+                        style={{ originX: '62px', originY: '78px' }}
+                        animate={
+                            isWalking
+                                ? { rotate: [24, -24, 24] }
+                                : { rotate: 0 }
+                        }
+                        transition={
+                            isWalking
+                                ? { repeat: Infinity, duration: 0.22, ease: 'easeInOut' }
+                                : { duration: 0.3 }
+                        }
+                    >
+                        <rect x="58" y="78" width="8" height="24" rx="4" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
+                        <rect x="56" y="98" width="14" height="8" rx="3" fill={primaryColor} />
+                    </motion.g>
+
+                    {/* Arms */}
+                    {/* Left Arm */}
+                    <motion.g
+                        style={{ originX: '22px', originY: '48px' }}
+                        animate={
+                            isWalking
+                                ? { rotate: [22, -22, 22] }
+                                : { rotate: [-5, 5, -5] }
+                        }
+                        transition={{ repeat: Infinity, duration: isWalking ? 0.22 : 3 }}
+                    >
+                        <rect x="18" y="48" width="7" height="22" rx="3.5" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
+                        <circle cx="21.5" cy="71" r="3.5" fill={primaryColor} />
+                    </motion.g>
+
+                    {/* Right Arm */}
+                    <motion.g
+                        style={{ originX: '78px', originY: '48px' }}
+                        animate={
+                            isWalking
+                                ? { rotate: [-22, 22, -22] }
+                                : { rotate: [5, -5, 5] }
+                        }
+                        transition={{ repeat: Infinity, duration: isWalking ? 0.22 : 3 }}
+                    >
+                        <rect x="75" y="48" width="7" height="22" rx="3.5" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
+                        <circle cx="78.5" cy="71" r="3.5" fill={primaryColor} />
+                    </motion.g>
+
+                    {/* Torso Chassis */}
+                    <rect x="28" y="44" width="44" height="36" rx="10" fill="rgba(13, 14, 18, 0.95)" stroke={primaryColor} strokeWidth="2.5" />
+                    
+                    {/* Chest Armor Detail lines */}
+                    <line x1="34" y1="52" x2="66" y2="52" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" />
+                    <line x1="36" y1="72" x2="64" y2="72" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" />
+
+                    {/* Glowing Core Energy Reactor */}
+                    <circle cx="50" cy="62" r="7" fill={primaryColor} style={{ filter: 'url(#core-glow)' }} />
+                    <motion.circle
+                        cx="50"
+                        cy="62"
+                        r="10"
+                        stroke={primaryColor}
+                        strokeWidth="1.5"
+                        fill="none"
+                        animate={{ opacity: [0.8, 0.2, 0.8], scale: [0.9, 1.2, 0.9] }}
+                        transition={{ repeat: Infinity, duration: 1.8 }}
+                    />
+
+                    {/* Head Neck */}
+                    <rect x="44" y="38" width="12" height="7" fill="#0d0e12" stroke={primaryColor} strokeWidth="1.5" />
+
+                    {/* Antenna */}
+                    <motion.g
+                        animate={isWalking ? { rotate: [-8, 8, -8] } : { rotate: 0 }}
+                        style={{ originX: '50px', originY: '14px' }}
+                        transition={{ repeat: Infinity, duration: 0.22 }}
+                    >
+                        <line x1="50" y1="14" x2="50" y2="4" stroke={primaryColor} strokeWidth="2.5" strokeLinecap="round" />
+                        <motion.circle
+                            cx="50"
+                            cy="3"
+                            r="4.5"
+                            fill="#00eeff"
+                            animate={{ scale: [1, 1.3, 1] }}
+                            transition={{ repeat: Infinity, duration: 1.2 }}
+                            style={{ filter: 'url(#core-glow)' }}
+                        />
+                    </motion.g>
+
+                    {/* Head Chassis */}
+                    <motion.rect
+                        x="24"
+                        y="12"
+                        width="52"
+                        height="30"
+                        rx="12"
+                        fill="rgba(13, 14, 18, 0.95)"
+                        stroke={primaryColor}
+                        strokeWidth="2.5"
+                        animate={isWalking ? { y: [12, 10, 12] } : {}}
+                        transition={{ repeat: Infinity, duration: 0.22 }}
+                    />
+
+                    {/* Visor / Face Screen */}
+                    <rect x="30" y="18" width="40" height="18" rx="7" fill="#050505" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+
+                    {/* Glowing Eyes */}
+                    <g style={{ filter: 'url(#core-glow)' }}>
+                        <motion.ellipse
+                            cx="42"
+                            cy="27"
+                            rx="4"
+                            ry="5"
+                            fill="#00eeff"
+                            animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+                            transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 2 }}
+                        />
+                        <motion.ellipse
+                            cx="58"
+                            cy="27"
+                            rx="4"
+                            ry="5"
+                            fill="#00eeff"
+                            animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+                            transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 2.2 }}
+                        />
+                    </g>
+                </svg>
+            </motion.div>
+        </Box>
+    );
+};
+
 // --- Glowing Clock Widget ---
 const ClockWidget: React.FC = () => {
     const theme = useTheme();
@@ -394,6 +621,45 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const [error, setError] = useState<string | null>(null);
     const [mood, setMood] = useState<Mood>('neutral');
     const [activeSteps, setActiveSteps] = useState<AgentStep[]>([]);
+
+    const [isScrolling, setIsScrolling] = useState(false);
+    const [isWalking, setIsWalking] = useState(false);
+    const [isLanding, setIsLanding] = useState(false);
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        let lastScrollY = window.scrollY;
+
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            const delta = Math.abs(currentScrollY - lastScrollY);
+
+            if (delta > 2) {
+                setIsScrolling(true);
+                setIsWalking(true);
+                setIsLanding(false);
+            }
+
+            lastScrollY = currentScrollY;
+
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+
+            scrollTimeoutRef.current = setTimeout(() => {
+                setIsWalking(false);
+                setIsScrolling(false);
+                setIsLanding(true);
+                setTimeout(() => setIsLanding(false), 500);
+            }, 150);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        };
+    }, []);
 
     // Multi-turn project-inquiry lead capture: "idle" until the user shows
     // project intent, then walks idea -> contact info -> a real submission
@@ -879,59 +1145,93 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
     };
 
     return (
-        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999 }}>
-            <AnimatePresence>
-                {/* 1. Closed State: Floating Action Button (FAB) */}
+        <Box
+            sx={{
+                position: 'fixed',
+                bottom: isMobile ? 'max(16px, env(safe-area-inset-bottom))' : 24,
+                right: isMobile ? 16 : 24,
+                zIndex: 10001,
+                pointerEvents: 'none',
+                transition: 'bottom 0.3s ease, right 0.3s ease',
+            }}
+        >
+            <AnimatePresence mode="wait">
+                {/* 1. Closed State: Standing Animated Character (Daemon) */}
                 {!isOpen && (
                     <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                        key="standing-daemon"
+                        initial={{ scale: 0, opacity: 0, y: 40 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.2, opacity: 0, y: -30, rotate: 12 }}
+                        transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+                        style={{ pointerEvents: 'auto', position: 'relative' }}
                     >
-                        <IconButton
-                            onClick={() => setIsOpen(true)}
-                            sx={{
-                                width: 60,
-                                height: 60,
-                                bgcolor: '#0d0e12',
-                                color: 'primary.main',
-                                border: `2px solid ${alpha(themed.palette.primary.main, 0.3)}`,
-                                boxShadow: `0 8px 32px ${alpha(themed.palette.primary.main, 0.25)}`,
-                                '&:hover': {
-                                    bgcolor: alpha(themed.palette.primary.main, 0.05),
-                                    borderColor: 'primary.main',
-                                    boxShadow: `0 8px 32px ${alpha(themed.palette.primary.main, 0.45)}`,
-                                    transform: 'scale(1.05)'
-                                },
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        {/* Speech Tooltip */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: isScrolling ? 0.3 : 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                            style={{
+                                position: 'absolute',
+                                bottom: '100%',
+                                right: 0,
+                                marginBottom: 6,
+                                whiteSpace: 'nowrap',
+                                pointerEvents: 'none',
                             }}
                         >
-                            <ChatBubbleOutline sx={{ fontSize: 28 }} />
-                        </IconButton>
+                            <Box
+                                sx={{
+                                    bgcolor: 'rgba(13, 14, 18, 0.95)',
+                                    color: 'primary.main',
+                                    border: `1px solid ${alpha(themed.palette.primary.main, 0.3)}`,
+                                    boxShadow: `0 4px 20px ${alpha(themed.palette.primary.main, 0.25)}`,
+                                    borderRadius: '12px',
+                                    px: 1.5,
+                                    py: 0.6,
+                                    fontSize: '0.72rem',
+                                    fontWeight: 800,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.8,
+                                    backdropFilter: 'blur(12px)',
+                                }}
+                            >
+                                <span style={{ color: '#ffffff' }}>Daemon AI</span>
+                                <span style={{ fontSize: '0.9rem' }}>💬</span>
+                            </Box>
+                        </motion.div>
+
+                        <DaemonStandingCharacter
+                            isWalking={isWalking}
+                            isLanding={isLanding}
+                            onClick={() => setIsOpen(true)}
+                        />
                     </motion.div>
                 )}
 
                 {/* 2. Open State: Expanding Chat Window */}
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.85, y: 50, x: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.85, y: 50, x: 20 }}
-                        transition={{ type: 'spring', damping: 22 }}
+                        key="chat-window"
+                        initial={{ opacity: 0, scale: 0.75, y: 60, transformOrigin: 'bottom right' }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.75, y: 60, transformOrigin: 'bottom right' }}
+                        transition={{ type: 'spring', damping: 24, stiffness: 300 }}
+                        style={{ pointerEvents: 'auto' }}
                     >
                         <Paper
                             sx={{
-                                width: isMobile ? 'calc(100vw - 48px)' : 380,
-                                height: isMobile ? 'calc(100dvh - 140px)' : 540,
-                                maxHeight: 'calc(100dvh - 120px)',
+                                width: isMobile ? 'calc(100vw - 32px)' : 380,
+                                height: isMobile ? 'calc(100dvh - 90px)' : 540,
+                                maxHeight: isMobile ? 'calc(100dvh - 90px)' : 'calc(100dvh - 100px)',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                bgcolor: 'rgba(13, 14, 18, 0.85)',
-                                backdropFilter: 'blur(20px)',
-                                border: '1px solid rgba(255, 255, 255, 0.08)',
-                                borderRadius: '20px',
-                                boxShadow: '0 20px 50px rgba(0,0,0,0.6), inset 0 0 30px rgba(255,255,255,0.02)',
+                                bgcolor: 'rgba(13, 14, 18, 0.92)',
+                                backdropFilter: 'blur(24px)',
+                                border: `1px solid ${alpha(themed.palette.primary.main, 0.2)}`,
+                                borderRadius: '24px',
+                                boxShadow: `0 24px 60px rgba(0,0,0,0.8), 0 0 40px ${alpha(themed.palette.primary.main, 0.15)}`,
                                 overflow: 'hidden',
                                 position: 'relative'
                             }}
@@ -943,7 +1243,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                                 borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                                bgcolor: 'rgba(5, 5, 5, 0.2)'
+                                bgcolor: 'rgba(5, 5, 5, 0.3)'
                             }}>
                                 <Stack direction="row" alignItems="center" spacing={1.5}>
                                     <Avatar sx={{ width: 28, height: 28, bgcolor: alpha(themed.palette.primary.main, 0.1), border: '1px solid', borderColor: 'primary.main' }}>
