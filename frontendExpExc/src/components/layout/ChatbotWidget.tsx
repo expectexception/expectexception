@@ -1699,7 +1699,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
         <Box
             sx={{
                 position: 'fixed',
-                bottom: !isOpen && isGameOrServicePage ? -36 : (isMobile ? 'max(16px, env(safe-area-inset-bottom))' : 24),
+                bottom: !isOpen && isGameOrServicePage ? -60 : (isMobile ? 'max(16px, env(safe-area-inset-bottom))' : 24),
                 right: isMobile ? 12 : 24,
                 zIndex: 10001,
                 pointerEvents: 'none',
@@ -1714,7 +1714,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                         initial={{ scale: 0, opacity: 0, y: 40 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.2, opacity: 0, y: -30, rotate: 12 }}
-                        whileHover={isGameOrServicePage ? { y: -28 } : { y: -6 }}
+                        whileHover={isGameOrServicePage ? { y: -44 } : { y: -6 }}
                         transition={{ type: 'spring', stiffness: 280, damping: 22 }}
                         style={{ pointerEvents: 'auto', position: 'relative' }}
                     >
