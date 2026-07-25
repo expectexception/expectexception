@@ -406,12 +406,15 @@ const DaemonStandingCharacter: React.FC<{
     isWalking: boolean;
     isLanding: boolean;
     isSleeping: boolean;
+    isDancing?: boolean;
+    isJumping?: boolean;
+    mood?: string;
     scrollDirection: 'down' | 'up';
     themeColor: string;
     onClick: () => void;
-}> = ({ isWalking, isLanding, isSleeping, scrollDirection, themeColor, onClick }) => {
+}> = ({ isWalking, isLanding, isSleeping, isDancing, isJumping, mood, scrollDirection, themeColor, onClick }) => {
     const theme = useTheme();
-    const primaryColor = themeColor || theme.palette.primary.main || '#00FF66';
+    const primaryColor = isDancing ? '#ff007f' : themeColor || theme.palette.primary.main || '#00FF66';
     const characterRef = useRef<HTMLDivElement>(null);
     const [headAngle, setHeadAngle] = useState(0);
     const [eyeShift, setEyeShift] = useState({ x: 0, y: 0 });
@@ -463,10 +466,10 @@ const DaemonStandingCharacter: React.FC<{
                 alignItems: 'center',
                 justifyContent: 'center',
                 userSelect: 'none',
-                filter: `drop-shadow(0 8px 20px ${alpha(primaryColor, 0.35)})`,
+                filter: `drop-shadow(0 8px 20px ${alpha(primaryColor, 0.45)})`,
                 transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 '&:hover': {
-                    filter: `drop-shadow(0 12px 28px ${alpha(primaryColor, 0.6)})`,
+                    filter: `drop-shadow(0 12px 28px ${alpha(primaryColor, 0.7)})`,
                 },
                 '&:active': {
                     transform: 'scale(0.92)',
@@ -477,6 +480,10 @@ const DaemonStandingCharacter: React.FC<{
                 animate={
                     isTrickSpinning
                         ? { rotate: 360, y: [-5, -35, 0], scale: [1, 1.25, 1] }
+                        : isDancing
+                        ? { y: [0, -22, 0, -14, 0], rotate: [-16, 16, -16, 16, -16], scale: [1, 1.15, 0.92, 1.1, 1] }
+                        : isJumping
+                        ? { y: [0, -45, 0], scaleY: [0.75, 1.3, 0.9, 1], rotate: [0, -15, 15, 0] }
                         : isWalking
                         ? { y: [0, -10, 0], rotate: [-6, 6, -6] }
                         : isLanding
@@ -490,6 +497,10 @@ const DaemonStandingCharacter: React.FC<{
                 transition={
                     isTrickSpinning
                         ? { duration: 0.75, ease: 'easeInOut' }
+                        : isDancing
+                        ? { repeat: Infinity, duration: 0.45, ease: 'easeInOut' }
+                        : isJumping
+                        ? { duration: 0.7, ease: 'easeOut' }
                         : isWalking
                         ? { repeat: Infinity, duration: 0.2, ease: 'easeInOut' }
                         : isLanding
@@ -528,6 +539,38 @@ const DaemonStandingCharacter: React.FC<{
                     </motion.div>
                 )}
 
+                {/* Floating Dance Music Notes / Sparkle Particles Aura */}
+                {isDancing && (
+                    ['🎵', '🎶', '✨', '⭐'].map((symbol, idx) => (
+                        <motion.div
+                            key={`music-${idx}`}
+                            style={{
+                                position: 'absolute',
+                                top: -14,
+                                left: 6 + idx * 16,
+                                fontSize: '1rem',
+                                pointerEvents: 'none',
+                                zIndex: 10,
+                            }}
+                            animate={{
+                                y: [-5, -45],
+                                x: [0, (idx % 2 === 0 ? 14 : -14)],
+                                opacity: [0, 1, 0],
+                                scale: [0.6, 1.4, 0.4],
+                                rotate: [-25, 25, -25]
+                            }}
+                            transition={{
+                                repeat: Infinity,
+                                duration: 1.1 + idx * 0.2,
+                                delay: idx * 0.2,
+                                ease: 'easeOut'
+                            }}
+                        >
+                            {symbol}
+                        </motion.div>
+                    ))
+                )}
+
                 <svg width="76" height="96" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="daemon-shadow" cx="50%" cy="50%" r="50%">
@@ -548,11 +591,13 @@ const DaemonStandingCharacter: React.FC<{
                         ry={5}
                         fill="url(#daemon-shadow)"
                         animate={
-                            isWalking
+                            isDancing
+                                ? { scaleX: [1, 0.5, 1.2, 0.6, 1], opacity: [0.8, 0.3, 0.9, 0.4, 0.8] }
+                                : isWalking
                                 ? { scaleX: [1, 0.7, 1], opacity: [0.5, 0.9, 0.5] }
                                 : { scaleX: [1, 0.85, 1], opacity: [0.7, 0.4, 0.7] }
                         }
-                        transition={{ repeat: Infinity, duration: isWalking ? 0.22 : 3.2 }}
+                        transition={{ repeat: Infinity, duration: isDancing ? 0.45 : isWalking ? 0.22 : 3.2 }}
                         style={{ originX: '50px', originY: '114px' }}
                     />
 
@@ -584,7 +629,11 @@ const DaemonStandingCharacter: React.FC<{
                     <motion.g
                         style={{ originX: '38px', originY: '78px' }}
                         animate={
-                            isWalking
+                            isDancing
+                                ? { rotate: [-42, 42, -42], y: [0, -10, 0], x: [-8, 8, -8] }
+                                : isJumping
+                                ? { rotate: [-20, 30, 0], y: [0, -12, 0] }
+                                : isWalking
                                 ? { rotate: [-32, 32, -32], y: [0, -6, 0] }
                                 : isHovered
                                 ? { rotate: [-24, 24, -24], y: [0, -8, 0] }
@@ -592,7 +641,7 @@ const DaemonStandingCharacter: React.FC<{
                         }
                         transition={{
                             repeat: Infinity,
-                            duration: isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            duration: isDancing ? 0.45 : isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
                             ease: 'easeInOut'
                         }}
                     >
@@ -604,7 +653,11 @@ const DaemonStandingCharacter: React.FC<{
                     <motion.g
                         style={{ originX: '62px', originY: '78px' }}
                         animate={
-                            isWalking
+                            isDancing
+                                ? { rotate: [42, -42, 42], y: [0, -10, 0], x: [8, -8, 8] }
+                                : isJumping
+                                ? { rotate: [20, -30, 0], y: [0, -12, 0] }
+                                : isWalking
                                 ? { rotate: [32, -32, 32], y: [0, -6, 0] }
                                 : isHovered
                                 ? { rotate: [24, -24, 24], y: [0, -8, 0] }
@@ -612,7 +665,7 @@ const DaemonStandingCharacter: React.FC<{
                         }
                         transition={{
                             repeat: Infinity,
-                            duration: isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            duration: isDancing ? 0.45 : isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
                             ease: 'easeInOut'
                         }}
                     >
@@ -625,7 +678,11 @@ const DaemonStandingCharacter: React.FC<{
                     <motion.g
                         style={{ originX: '22px', originY: '48px' }}
                         animate={
-                            isWalking
+                            isDancing
+                                ? { rotate: [-135, 55, -135], y: [-16, 10, -16] }
+                                : isJumping
+                                ? { rotate: [-145, 0], y: [-18, 0] }
+                                : isWalking
                                 ? { rotate: [38, -38, 38], y: [0, -4, 0] }
                                 : isHovered
                                 ? { rotate: [-65, 25, -65], y: [-10, 4, -10] }
@@ -633,7 +690,7 @@ const DaemonStandingCharacter: React.FC<{
                         }
                         transition={{
                             repeat: Infinity,
-                            duration: isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            duration: isDancing ? 0.45 : isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
                             ease: 'easeInOut'
                         }}
                     >
@@ -645,7 +702,11 @@ const DaemonStandingCharacter: React.FC<{
                     <motion.g
                         style={{ originX: '78px', originY: '48px' }}
                         animate={
-                            isWalking
+                            isDancing
+                                ? { rotate: [55, -135, 55], y: [10, -16, 10] }
+                                : isJumping
+                                ? { rotate: [145, 0], y: [-18, 0] }
+                                : isWalking
                                 ? { rotate: [-38, 38, -38], y: [0, -4, 0] }
                                 : isHovered
                                 ? { rotate: [65, -25, 65], y: [-10, 4, -10] }
@@ -653,7 +714,7 @@ const DaemonStandingCharacter: React.FC<{
                         }
                         transition={{
                             repeat: Infinity,
-                            duration: isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            duration: isDancing ? 0.45 : isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
                             ease: 'easeInOut'
                         }}
                     >
@@ -678,7 +739,7 @@ const DaemonStandingCharacter: React.FC<{
                         strokeWidth="1.5"
                         fill="none"
                         animate={{ opacity: [0.8, 0.2, 0.8], scale: [0.9, 1.2, 0.9] }}
-                        transition={{ repeat: Infinity, duration: 1.8 }}
+                        transition={{ repeat: Infinity, duration: isDancing ? 0.3 : 1.8 }}
                     />
 
                     {/* Head Neck */}
@@ -687,24 +748,24 @@ const DaemonStandingCharacter: React.FC<{
                     {/* Cursor Magnetism Rotated Head Group */}
                     <motion.g
                         style={{ originX: '50px', originY: '27px' }}
-                        animate={{ rotate: headAngle }}
-                        transition={{ type: 'spring', stiffness: 200, damping: 18 }}
+                        animate={{ rotate: isDancing ? [18, -18, 18] : headAngle }}
+                        transition={isDancing ? { repeat: Infinity, duration: 0.45 } : { type: 'spring', stiffness: 200, damping: 18 }}
                     >
                         {/* Antenna */}
                         <motion.g
                             onDoubleClick={handleAntennaDoubleClick}
-                            animate={isWalking ? { rotate: [-8, 8, -8] } : { rotate: 0 }}
+                            animate={isDancing ? { rotate: [-25, 25, -25] } : isWalking ? { rotate: [-8, 8, -8] } : { rotate: 0 }}
                             style={{ originX: '50px', originY: '14px', cursor: 'pointer' }}
-                            transition={{ repeat: Infinity, duration: 0.22 }}
+                            transition={{ repeat: Infinity, duration: isDancing ? 0.3 : 0.22 }}
                         >
                             <line x1="50" y1="14" x2="50" y2="4" stroke={primaryColor} strokeWidth="2.5" strokeLinecap="round" />
                             <motion.circle
                                 cx="50"
                                 cy="3"
                                 r="4.5"
-                                fill="#00eeff"
-                                animate={{ scale: [1, 1.3, 1] }}
-                                transition={{ repeat: Infinity, duration: 1.2 }}
+                                fill={isDancing ? '#ff007f' : '#00eeff'}
+                                animate={{ scale: [1, 1.5, 1] }}
+                                transition={{ repeat: Infinity, duration: isDancing ? 0.3 : 1.2 }}
                                 style={{ filter: 'url(#core-glow)' }}
                             />
                         </motion.g>
@@ -719,8 +780,8 @@ const DaemonStandingCharacter: React.FC<{
                             fill="rgba(13, 14, 18, 0.95)"
                             stroke={primaryColor}
                             strokeWidth="2.5"
-                            animate={isWalking ? { y: [12, 10, 12] } : {}}
-                            transition={{ repeat: Infinity, duration: 0.22 }}
+                            animate={isDancing ? { y: [10, 14, 10] } : isWalking ? { y: [12, 10, 12] } : {}}
+                            transition={{ repeat: Infinity, duration: isDancing ? 0.3 : 0.22 }}
                         />
 
                         {/* Visor / Face Screen */}
@@ -731,20 +792,20 @@ const DaemonStandingCharacter: React.FC<{
                             <motion.ellipse
                                 cx={42 + eyeShift.x}
                                 cy={27 + eyeShift.y}
-                                rx="4"
-                                ry="5"
-                                fill="#00eeff"
-                                animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
-                                transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 2 }}
+                                rx={isDancing ? 5 : 4}
+                                ry={isDancing ? 3 : 5}
+                                fill={isDancing ? '#ff007f' : '#00eeff'}
+                                animate={isDancing ? { scale: [1, 1.4, 1] } : { scaleY: [1, 1, 0.1, 1, 1] }}
+                                transition={isDancing ? { repeat: Infinity, duration: 0.45 } : { duration: 3.2, repeat: Infinity, repeatDelay: 2 }}
                             />
                             <motion.ellipse
                                 cx={58 + eyeShift.x}
                                 cy={27 + eyeShift.y}
-                                rx="4"
-                                ry="5"
-                                fill="#00eeff"
-                                animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
-                                transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 2.2 }}
+                                rx={isDancing ? 5 : 4}
+                                ry={isDancing ? 3 : 5}
+                                fill={isDancing ? '#ff007f' : '#00eeff'}
+                                animate={isDancing ? { scale: [1, 1.4, 1] } : { scaleY: [1, 1, 0.1, 1, 1] }}
+                                transition={isDancing ? { repeat: Infinity, duration: 0.45 } : { duration: 3.2, repeat: Infinity, repeatDelay: 2.2 }}
                             />
                         </g>
                     </motion.g>
@@ -851,6 +912,8 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [mood, setMood] = useState<Mood>('neutral');
+    const [isDancing, setIsDancing] = useState(false);
+    const [isJumping, setIsJumping] = useState(false);
     const [activeSteps, setActiveSteps] = useState<AgentStep[]>([]);
 
     const [scrollDirection, setScrollDirection] = useState<'down' | 'up'>('down');
@@ -868,6 +931,25 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const [isDragOver, setIsDragOver] = useState(false);
     const recognitionRef = useRef<any>(null);
     const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const triggerDance = () => {
+        setIsDancing(true);
+        setMood('excited');
+        playCyberSound('receive', isMuted);
+        triggerCyberConfetti();
+        setTimeout(() => {
+            setIsDancing(false);
+            setMood('neutral');
+        }, 6000);
+    };
+
+    const triggerJump = () => {
+        setIsJumping(true);
+        playCyberSound('open', isMuted);
+        setTimeout(() => {
+            setIsJumping(false);
+        }, 1200);
+    };
 
     const toggleMute = () => {
         setIsMuted(prev => {
@@ -978,13 +1060,13 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     // Export Chat Session as Markdown
     const exportChatMarkdown = () => {
         if (messages.length === 0) return;
-        const header = `# Daemon AI Conversation Export\n*Exported on ${new Date().toLocaleString()}*\n\n---\n\n`;
-        const content = messages.map(m => `### ${m.role === 'user' ? '👤 User' : '🤖 Daemon AI'}\n${m.content}\n`).join('\n');
+        const header = `# Bot Conversation Export\n*Exported on ${new Date().toLocaleString()}*\n\n---\n\n`;
+        const content = messages.map(m => `### ${m.role === 'user' ? '👤 User' : '🤖 Bot'}\n${m.content}\n`).join('\n');
         const blob = new Blob([header + content], { type: 'text/markdown;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', `Daemon_Chat_${new Date().toISOString().slice(0, 10)}.md`);
+        link.setAttribute('download', `Bot_Chat_${new Date().toISOString().slice(0, 10)}.md`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1110,7 +1192,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             setMessages([
                 {
                     role: 'assistant',
-                    content: 'Hello! I am **Daemon**, your site-wide agentic assistant. How can I help you design, build, or automate today?'
+                    content: 'Hello! I am **Bot**, your site-wide agentic assistant. How can I help you design, build, or automate today?'
                 }
             ]);
         }
@@ -1390,7 +1472,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
                 signal: abortControllerRef.current.signal,
                 body: JSON.stringify({
                     message: text,
-                    system_prompt: `You are Daemon, the AI assistant for ExpectException, a developer tools platform. Be helpful, concise and technical.
+                    system_prompt: `You are Bot, the AI assistant for ExpectException, a developer tools platform. Be helpful, concise and technical.
 
 AVAILABLE TOOLS on this platform:
 • URL Downloader, YouTube Downloader, QR Generator, JSON Formatter
@@ -1608,11 +1690,15 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                             }}
                         >
                             <Box
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    triggerDance();
+                                }}
                                 sx={{
-                                    bgcolor: 'rgba(13, 14, 18, 0.95)',
-                                    color: 'primary.main',
-                                    border: `1px solid ${alpha(themed.palette.primary.main, 0.3)}`,
-                                    boxShadow: `0 4px 20px ${alpha(themed.palette.primary.main, 0.25)}`,
+                                    bgcolor: isDancing ? '#ff007f' : 'rgba(13, 14, 18, 0.95)',
+                                    color: isDancing ? '#ffffff' : 'primary.main',
+                                    border: `1px solid ${alpha(isDancing ? '#ff007f' : themed.palette.primary.main, 0.4)}`,
+                                    boxShadow: `0 4px 20px ${alpha(isDancing ? '#ff007f' : themed.palette.primary.main, 0.35)}`,
                                     borderRadius: '12px',
                                     px: 1.5,
                                     py: 0.6,
@@ -1621,11 +1707,14 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 0.8,
+                                    cursor: 'pointer',
                                     backdropFilter: 'blur(12px)',
+                                    transition: 'all 0.2s ease',
+                                    '&:hover': { transform: 'scale(1.08)' }
                                 }}
                             >
                                 <span style={{ color: '#ffffff' }}>Bot</span>
-                                <span style={{ fontSize: '0.9rem' }}>💬</span>
+                                <span style={{ fontSize: '0.9rem' }}>{isDancing ? '🕺' : '💬'}</span>
                             </Box>
                         </motion.div>
 
@@ -1633,6 +1722,9 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                             isWalking={isWalking}
                             isLanding={isLanding}
                             isSleeping={isSleeping}
+                            isDancing={isDancing}
+                            isJumping={isJumping}
+                            mood={mood}
                             scrollDirection={scrollDirection}
                             themeColor={themeColor}
                             onClick={() => {
@@ -1785,7 +1877,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                     </Avatar>
                                     <Box>
                                         <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', lineHeight: 1.1 }}>
-                                            Daemon
+                                            Bot
                                         </Typography>
                                         <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 600, color: themeColor }}>
                                             {isAvailable ? 'AI Core Live' : 'Local Fallback'}
@@ -1793,6 +1885,17 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                     </Box>
                                 </Stack>
                                 <Stack direction="row" spacing={0.5}>
+                                    <Tooltip title={isDancing ? "Dancing!" : "Make Bot Dance 🕺"}>
+                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor }}>
+                                            <motion.span
+                                                animate={isDancing ? { rotate: [0, 25, -25, 0], scale: [1, 1.3, 1] } : {}}
+                                                transition={{ repeat: Infinity, duration: 0.4 }}
+                                                style={{ display: 'inline-block', fontSize: '1rem' }}
+                                            >
+                                                🕺
+                                            </motion.span>
+                                        </IconButton>
+                                    </Tooltip>
                                     <Tooltip title="Customize Theme Color">
                                         <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500' }}>
                                             <Palette fontSize="small" />
@@ -2029,7 +2132,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         fullWidth
                                         multiline
                                         maxRows={3}
-                                        placeholder={isListening ? 'Listening...' : 'Ask Daemon...'}
+                                        placeholder={isListening ? 'Listening...' : 'Ask Bot...'}
                                         value={inputValue}
                                         onChange={(e) => {
                                             setInputValue(e.target.value);
