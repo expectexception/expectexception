@@ -100,9 +100,10 @@ const Spirograph: React.FC = () => {
         if (!canvas || !ctx) return;
         ctx.clearRect(0, 0, sizeRef.current, sizeRef.current);
     };
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Spirograph Generator - Parametric Curve Art" gameId={20} />
             <ServicePageHero
                 icon={Circle}
@@ -110,13 +111,13 @@ const Spirograph: React.FC = () => {
                 subtitle="The math behind the classic toy: drag the sliders to change the gear ratio and pen offset, and watch the curve draw itself."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box

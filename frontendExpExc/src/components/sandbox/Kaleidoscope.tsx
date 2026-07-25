@@ -126,9 +126,10 @@ const Kaleidoscope: React.FC = () => {
         const dpr = window.devicePixelRatio || 1;
         ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
     };
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Kaleidoscope Drawing - Symmetric Art Toy" gameId={17} />
             <ServicePageHero
                 icon={AutoAwesome}
@@ -136,13 +137,13 @@ const Kaleidoscope: React.FC = () => {
                 subtitle="Draw anywhere and the stroke mirrors around the center with radial symmetry. One gesture, an instant mandala."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box

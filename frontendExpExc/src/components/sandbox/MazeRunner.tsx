@@ -245,9 +245,10 @@ const MazeRunner: React.FC = () => {
     const playerTopPct = ((playerRow + 0.5) / size) * 100;
     const goalLeftPct = ((size - 0.5) / size) * 100;
     const goalTopPct = ((size - 0.5) / size) * 100;
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 gameId={29}
                 title="Maze Runner - Free Online Random Maze Game"
@@ -259,7 +260,7 @@ const MazeRunner: React.FC = () => {
                 subtitle="Navigate a freshly generated maze from start to goal. Arrow keys, on-screen arrows, or a swipe - every maze is guaranteed solvable."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',

@@ -100,9 +100,10 @@ const SimonSays: React.FC = () => {
         : phase === 'showing' ? 'Watch the pattern…'
         : phase === 'input' ? 'Your turn! Repeat it'
         : `Game over! You reached round ${round - 1}`;
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 gameId={11}
                 title="Simon Says | Memory Sequence Game Online"
@@ -114,7 +115,7 @@ const SimonSays: React.FC = () => {
                 subtitle="Watch the colour pattern, then repeat it back. Each round adds one more step."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',

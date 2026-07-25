@@ -145,9 +145,10 @@ const Pong: React.FC = () => {
         runningRef.current = true;
         resetBall(1);
     };
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Pong - Classic Arcade Game" gameId={21} />
             <ServicePageHero
                 icon={SportsEsports}
@@ -155,13 +156,13 @@ const Pong: React.FC = () => {
                 subtitle="The original arcade classic. Move your mouse or finger up and down to control the left paddle | first to 7 wins."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 6, mb: 2 }}>

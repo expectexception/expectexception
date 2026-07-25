@@ -160,9 +160,10 @@ const Boids: React.FC = () => {
     };
 
     const handleReset = () => seedBoids(sizeRef.current.w, sizeRef.current.h);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Boids Flocking Simulation - Emergent Behavior Toy" gameId={19} />
             <ServicePageHero
                 icon={Pets}
@@ -170,13 +171,13 @@ const Boids: React.FC = () => {
                 subtitle="Craig Reynolds' classic flocking algorithm (separation, alignment, and cohesion) produce lifelike flocking from three simple rules. Click to scatter a burst."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box

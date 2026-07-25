@@ -334,9 +334,10 @@ const Sudoku: React.FC = () => {
     }, [values]);
 
     const bestForDifficulty = stats[difficulty]?.best ?? null;
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 gameId={26}
                 title="Sudoku | Free Online 9x9 Puzzle"
@@ -348,7 +349,7 @@ const Sudoku: React.FC = () => {
                 subtitle="Fill the grid so every row, column, and 3x3 box holds the numbers 1 to 9 exactly once. Pick a difficulty and race the clock."
             />
 
-            <Card
+            <Card ref={cardRef}
                 sx={{
                     background: 'rgba(13, 14, 18, 0.4)',
                     backdropFilter: 'blur(20px)',

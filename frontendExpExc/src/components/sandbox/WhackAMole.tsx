@@ -86,9 +86,10 @@ const WhackAMole: React.FC = () => {
         setScore(s => s + 1);
         setActive(null);
     }, [active]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 gameId={15}
                 title="Whack-a-Mole | Free Online Reaction Game"
@@ -100,7 +101,7 @@ const WhackAMole: React.FC = () => {
                 subtitle="Tap the moles as fast as they pop up. You have 30 seconds | how many can you hit?"
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useRef, useCallback, useMemo, useState } from 'react';
 import {
     Container, Card, CardContent, Box, Typography, Button, TextField, Stack, Chip,
 } from '@mui/material';
@@ -147,9 +147,10 @@ const WordGuess: React.FC = () => {
         const remainingRows = ATTEMPTS - guesses.length - (status === 'playing' ? 1 : 0);
         return Math.max(remainingRows, 0);
     }, [guesses.length, status]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Word Guess - Free Online Wordle-Style Puzzle Game" gameId={6} />
             <ServicePageHero
                 icon={Spellcheck}
@@ -157,13 +158,13 @@ const WordGuess: React.FC = () => {
                 subtitle="Guess the hidden 5-letter word in 6 tries. Green means correct spot, yellow means wrong spot, grey means not in the word."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>

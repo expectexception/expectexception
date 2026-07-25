@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import {
     Box, Button, Card, CardContent, Chip, Container, Stack, Typography,
     ToggleButton, ToggleButtonGroup, useTheme,
@@ -136,9 +136,10 @@ const TowerOfHanoi: React.FC = () => {
         ];
         return solids[(size - 1) % solids.length];
     }, [theme]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 gameId={28}
                 title="Tower of Hanoi - Free Online Disk Puzzle Game"
@@ -150,7 +151,7 @@ const TowerOfHanoi: React.FC = () => {
                 subtitle="Move the whole stack from the first peg to the last, one disk at a time - and never place a bigger disk on a smaller one."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',

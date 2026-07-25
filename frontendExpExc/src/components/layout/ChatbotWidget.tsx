@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
     Box,
     Typography,
@@ -917,6 +918,8 @@ interface ChatbotWidgetProps {
 const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const themed = useTheme();
     const isMobile = useMediaQuery(themed.breakpoints.down('sm'));
+    const location = useLocation();
+    const isGameOrServicePage = location.pathname.includes('/sandbox') || location.pathname.includes('/services') || location.pathname.includes('/tools');
 
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
@@ -1696,11 +1699,11 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
         <Box
             sx={{
                 position: 'fixed',
-                bottom: isMobile ? 'max(16px, env(safe-area-inset-bottom))' : 24,
-                right: isMobile ? 16 : 24,
+                bottom: !isOpen && isGameOrServicePage ? -36 : (isMobile ? 'max(16px, env(safe-area-inset-bottom))' : 24),
+                right: isMobile ? 12 : 24,
                 zIndex: 10001,
                 pointerEvents: 'none',
-                transition: 'bottom 0.3s ease, right 0.3s ease',
+                transition: 'bottom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), right 0.3s ease',
             }}
         >
             <AnimatePresence mode="wait">
@@ -1711,6 +1714,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                         initial={{ scale: 0, opacity: 0, y: 40 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.2, opacity: 0, y: -30, rotate: 12 }}
+                        whileHover={isGameOrServicePage ? { y: -28 } : { y: -6 }}
                         transition={{ type: 'spring', stiffness: 280, damping: 22 }}
                         style={{ pointerEvents: 'auto', position: 'relative' }}
                     >
@@ -1866,17 +1870,15 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                                 borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                                bgcolor: 'rgba(10, 11, 15, 0.6)'
+                                bgcolor: 'rgba(10, 11, 15, 0.6)',
+                                gap: 1
                             }}>
-                                <Stack direction="row" alignItems="center" spacing={1.2} sx={{ minWidth: 0 }}>
-                                    <ChatbotFace mood={mood} themeColor={themeColor} size={36} hideMargin={true} />
-                                    <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', letterSpacing: '0.5px', fontSize: '0.9rem' }}>
-                                        Bot
-                                    </Typography>
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ flexShrink: 0 }}>
+                                    <ChatbotFace mood={mood} themeColor={themeColor} size={34} hideMargin={true} />
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 0.6,
+                                        gap: 0.5,
                                         px: 1,
                                         py: 0.3,
                                         borderRadius: '10px',
@@ -1889,35 +1891,35 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         </Typography>
                                     </Box>
                                 </Stack>
-                                <Stack direction="row" spacing={0.3} alignItems="center" sx={{ flexShrink: 0 }}>
+                                <Stack direction="row" spacing={0.2} alignItems="center" sx={{ flexShrink: 0 }}>
                                     <Tooltip title={isDancing ? "Dancing!" : "Make Bot Dance 🕺"}>
-                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor, p: 0.6 }}>
+                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor, p: 0.5 }}>
                                             <motion.span
                                                 animate={isDancing ? { rotate: [0, 25, -25, 0], scale: [1, 1.3, 1] } : {}}
                                                 transition={{ repeat: Infinity, duration: 0.4 }}
-                                                style={{ display: 'inline-block', fontSize: '1rem' }}
+                                                style={{ display: 'inline-block', fontSize: '0.95rem' }}
                                             >
                                                 🕺
                                             </motion.span>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Customize Theme Color">
-                                        <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500', p: 0.6 }}>
+                                        <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500', p: 0.5 }}>
                                             <Palette fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Export Chat History (.md)">
-                                        <IconButton onClick={exportChatMarkdown} size="small" sx={{ color: 'grey.500', '&:hover': { color: themeColor }, p: 0.6 }}>
+                                        <IconButton onClick={exportChatMarkdown} size="small" sx={{ color: 'grey.500', '&:hover': { color: themeColor }, p: 0.5 }}>
                                             <Download fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={isMuted ? 'Unmute Sound FX' : 'Mute Sound FX'}>
-                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : themeColor, p: 0.6 }}>
+                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : themeColor, p: 0.5 }}>
                                             {isMuted ? <VolumeOff fontSize="small" /> : <VolumeUp fontSize="small" />}
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Reset Conversation">
-                                        <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' }, p: 0.6 }}>
+                                        <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' }, p: 0.5 }}>
                                             <DeleteOutline fontSize="small" />
                                         </IconButton>
                                     </Tooltip>

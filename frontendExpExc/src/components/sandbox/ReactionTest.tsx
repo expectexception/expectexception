@@ -122,9 +122,10 @@ const ReactionTest: React.FC = () => {
             boxLabel = 'Click to start';
             boxBg = 'rgba(255,255,255,0.06)';
     }
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Reaction Time Test - Free Online Game" gameId={8} />
             <ServicePageHero
                 icon={Bolt}
@@ -132,13 +133,13 @@ const ReactionTest: React.FC = () => {
                 subtitle="Measure how fast you react. Click when the box turns green - but not before!"
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box

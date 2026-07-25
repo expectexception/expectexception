@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Container, Card, CardContent, Box, Button, Typography } from '@mui/material';
 import { Casino, RestartAlt } from '@mui/icons-material';
 import Seo from '../seo/Seo';
@@ -63,9 +63,10 @@ const RockPaperScissors: React.FC = () => {
 
     const resultText = result === 'win' ? 'You Win!' : result === 'lose' ? 'AI Wins!' : result === 'tie' ? "It's a Tie" : '';
     const resultColor = result === 'win' ? 'primary.main' : result === 'lose' ? 'error.main' : 'text.secondary';
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Rock Paper Scissors vs AI - Classic Game" gameId={23} />
             <ServicePageHero
                 icon={Casino}
@@ -73,13 +74,13 @@ const RockPaperScissors: React.FC = () => {
                 subtitle="Play against an AI that quietly learns your habits | favor one move too often and it starts countering you."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1, textAlign: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 6, mb: 3 }}>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Container, Card, CardContent, Box, Typography, Button, Stack, useTheme, alpha } from '@mui/material';
 import { Grid4x4, Star } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -562,9 +562,10 @@ const Checkers: React.FC = () => {
             );
         }
     }
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 title="Checkers - Play Free Online vs AI"
                 description="Play classic American checkers against a minimax AI opponent right in your browser. Mandatory captures, forced multi-jumps, and kings - free, no sign-up."
@@ -576,7 +577,7 @@ const Checkers: React.FC = () => {
                 subtitle="Classic American checkers against a minimax-powered AI. Captures are mandatory, chain jumps are forced, and reaching the back row crowns a king."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',

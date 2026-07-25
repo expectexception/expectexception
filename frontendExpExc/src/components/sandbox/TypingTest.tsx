@@ -86,9 +86,10 @@ const TypingTest: React.FC = () => {
         const minutes = (Date.now() - startTime) / 60000;
         return Math.round((typed.trim().split(/\s+/).length) / Math.max(minutes, 1 / 600));
     }, [startTime, typed]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 gameId={16}
                 title="Typing Speed Test | Free WPM Test Online"
@@ -100,7 +101,7 @@ const TypingTest: React.FC = () => {
                 subtitle="Type the sentence as fast and accurately as you can. Your net WPM and accuracy are scored at the end."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',

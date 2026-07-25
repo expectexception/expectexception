@@ -114,9 +114,10 @@ const ConnectFour: React.FC = () => {
         : winner === 2 ? 'The AI wins! Try again'
         : winner === 'draw' ? "It's a draw"
         : turn === 1 ? 'Your move (green)' : 'AI thinking…';
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 gameId={14}
                 title="Connect Four | Play Free Online vs AI"
@@ -128,7 +129,7 @@ const ConnectFour: React.FC = () => {
                 subtitle="Drop your discs and line up four in a row | horizontally, vertically, or diagonally | before the AI does."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',

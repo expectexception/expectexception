@@ -175,9 +175,10 @@ const AimTrainer: React.FC = () => {
     const avgReaction = reactionTimes.length > 0
         ? Math.round(reactionTimes.reduce((sum, v) => sum + v, 0) / reactionTimes.length)
         : null;
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Aim Trainer - Free Online Reflex Game" gameId={9} />
             <ServicePageHero
                 icon={GpsFixed}
@@ -185,13 +186,13 @@ const AimTrainer: React.FC = () => {
                 subtitle="Click the targets as fast as you can. You have 30 seconds - how many can you hit?"
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, mb: 2 }}>

@@ -94,9 +94,10 @@ const MemoryMatch: React.FC = () => {
             }
         }
     }, [tiles, moves, best, won]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo
                 gameId={10}
                 title="Memory Match | Free Online Card Matching Game"
@@ -108,7 +109,7 @@ const MemoryMatch: React.FC = () => {
                 subtitle="Flip cards two at a time and match every pair in as few moves as possible."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',

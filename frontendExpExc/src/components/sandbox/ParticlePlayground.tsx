@@ -232,9 +232,10 @@ const ParticlePlayground: React.FC = () => {
         { key: 'secondary', label: 'Secondary' },
         { key: 'white', label: 'White' },
     ];
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
             <Seo title="Particle Playground - Interactive Canvas Toy" gameId={4} />
             <ServicePageHero
                 icon={AutoAwesome}
@@ -242,13 +243,13 @@ const ParticlePlayground: React.FC = () => {
                 subtitle="A drifting field of particles that react to your cursor or finger. Click or tap to trigger a burst of sparks."
             />
 
-            <Card sx={{
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box

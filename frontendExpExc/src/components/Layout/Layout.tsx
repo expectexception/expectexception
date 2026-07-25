@@ -482,12 +482,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                     </IconButton>
                                 </Tooltip>
 
-                                <Tooltip title={modeLabel}>
-                                    <IconButton onClick={() => setColorMode(nextMode)} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
-                                        {cycleModeIcon}
-                                    </IconButton>
-                                </Tooltip>
-
                                 {/* LET'S TALK CTA Button */}
                                 <Button
                                     component={Link}
