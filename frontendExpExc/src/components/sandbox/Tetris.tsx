@@ -498,13 +498,13 @@ const Tetris: React.FC = () => {
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
                 gameId={25}
-                title="Tetris — Play Classic Block-Stacking Puzzle Online Free"
+                title="Tetris | Play Classic Block-Stacking Puzzle Online Free"
                 keywords={['tetris online', 'tetris game free', 'block stacking game', 'classic arcade puzzle', 'tetromino game', 'falling blocks game']}
             />
             <ServicePageHero
                 icon={ViewModule}
                 title="Tetris"
-                subtitle="Rotate and stack the falling tetrominoes to clear full lines before the board fills up. Arrow keys or the on-screen buttons to play — it only gets faster from here."
+                subtitle="Rotate and stack the falling tetrominoes to clear full lines before the board fills up. Arrow keys or the on-screen buttons to play | it only gets faster from here."
             />
 
             <Card sx={{

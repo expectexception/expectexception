@@ -339,7 +339,7 @@ const Sudoku: React.FC = () => {
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
                 gameId={26}
-                title="Sudoku — Free Online 9x9 Puzzle"
+                title="Sudoku | Free Online 9x9 Puzzle"
                 keywords={['sudoku', 'play sudoku online', 'free sudoku puzzle', 'sudoku easy medium hard', 'number puzzle game']}
             />
             <ServicePageHero
@@ -393,7 +393,7 @@ const Sudoku: React.FC = () => {
                                 </Typography>
                                 <Typography variant="body1" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                     <Timer sx={{ fontSize: 18 }} />
-                                    {formatTime(seconds)} · Best: {bestForDifficulty !== null ? formatTime(bestForDifficulty) : '—'}
+                                    {formatTime(seconds)} · Best: {bestForDifficulty !== null ? formatTime(bestForDifficulty) : 'N/A'}
                                 </Typography>
                                 <Button size="small" startIcon={<RestartAlt />} onClick={backToMenu}>
                                     New

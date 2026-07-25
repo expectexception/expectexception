@@ -115,7 +115,7 @@ const ReactionTest: React.FC = () => {
             boxBg = theme.palette.warning.main;
             break;
         case 'result':
-            boxLabel = `${lastResult} ms — click to try again`;
+            boxLabel = `${lastResult} ms (click to try again)`;
             boxBg = theme.palette.primary.main;
             break;
         default:
@@ -170,7 +170,7 @@ const ReactionTest: React.FC = () => {
                                 Best
                             </Typography>
                             <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                                {best !== null ? `${best} ms` : '—'}
+                                {best !== null ? `${best} ms` : 'N/A'}
                             </Typography>
                         </Box>
                         <Box>
@@ -178,7 +178,7 @@ const ReactionTest: React.FC = () => {
                                 Average (last {history.length || 0})
                             </Typography>
                             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                {average !== null ? `${average} ms` : '—'}
+                                {average !== null ? `${average} ms` : 'N/A'}
                             </Typography>
                         </Box>
                     </Box>

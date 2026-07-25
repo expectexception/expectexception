@@ -350,7 +350,7 @@ const HirePage: React.FC = () => {
                         Our Development Services
                     </Typography>
                     <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto', fontSize: { xs: '1rem', sm: '1.2rem' }, fontWeight: 400 }}>
-Pick one, or combine a few — most projects end up touching more than one of these.
+Pick one, or combine a few. Most projects end up touching more than one of these.
                     </Typography>
                 </Box>
 
@@ -471,7 +471,7 @@ Pick one, or combine a few — most projects end up touching more than one of th
                         {
                             icon: <SmartToy sx={{ fontSize: 30 }} />,
                             title: 'Products that want to add AI',
-                            desc: 'You know you want an AI feature — a chatbot, a classifier, a content pipeline — but not exactly how to wire it into what already exists. That integration work is what we do most.',
+                            desc: 'You know you want an AI feature (such as a chatbot, classifier, or content pipeline) but not exactly how to wire it into what already exists. That integration work is what we do most.',
                             color: '#f97316',
                         },
                     ].map((persona, idx) => (
@@ -520,7 +520,7 @@ Pick one, or combine a few — most projects end up touching more than one of th
                             How We Work
                         </Typography>
                         <Typography variant="h6" color="text.secondary" sx={{ fontSize: { xs: '1rem', sm: '1.2rem' }, fontWeight: 400 }}>
-                            No lengthy onboarding — a short call, a written scope, then we start building.
+                            No lengthy onboarding: a short call, a written scope, then we start building.
                         </Typography>
                     </Box>
 

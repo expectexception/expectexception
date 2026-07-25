@@ -91,13 +91,13 @@ const WhackAMole: React.FC = () => {
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
                 gameId={15}
-                title="Whack-a-Mole — Free Online Reaction Game"
+                title="Whack-a-Mole | Free Online Reaction Game"
                 keywords={['whack a mole game', 'whack a mole online', 'reaction game free', 'click speed game', 'arcade tap game', 'whack a mole browser']}
             />
             <ServicePageHero
                 icon={Pets}
                 title="Whack-a-Mole"
-                subtitle="Tap the moles as fast as they pop up. You have 30 seconds — how many can you hit?"
+                subtitle="Tap the moles as fast as they pop up. You have 30 seconds | how many can you hit?"
             />
 
             <Card sx={{

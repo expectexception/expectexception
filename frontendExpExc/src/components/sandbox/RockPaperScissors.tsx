@@ -70,7 +70,7 @@ const RockPaperScissors: React.FC = () => {
             <ServicePageHero
                 icon={Casino}
                 title="Rock Paper Scissors"
-                subtitle="Play against an AI that quietly learns your habits — favor one move too often and it starts countering you."
+                subtitle="Play against an AI that quietly learns your habits | favor one move too often and it starts countering you."
             />
 
             <Card sx={{

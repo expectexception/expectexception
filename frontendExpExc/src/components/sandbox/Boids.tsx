@@ -167,7 +167,7 @@ const Boids: React.FC = () => {
             <ServicePageHero
                 icon={Pets}
                 title="Boids"
-                subtitle="Craig Reynolds' classic flocking algorithm — separation, alignment, and cohesion produce lifelike flocking from three simple rules. Click to scatter a burst."
+                subtitle="Craig Reynolds' classic flocking algorithm (separation, alignment, and cohesion) produce lifelike flocking from three simple rules. Click to scatter a burst."
             />
 
             <Card sx={{

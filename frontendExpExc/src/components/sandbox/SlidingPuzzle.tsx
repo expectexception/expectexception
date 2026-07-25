@@ -170,7 +170,7 @@ const SlidingPuzzle: React.FC = () => {
                         <Chip size="small" label={`Moves: ${moves}`} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
                         <Chip size="small" label={`Time: ${formatTime(elapsedMs)}`} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
                         <Typography variant="body2" color="text.secondary">
-                            Best: {best ? `${best.moves} moves / ${formatTime(best.timeMs)}` : '—'}
+                            Best: {best ? `${best.moves} moves / ${formatTime(best.timeMs)}` : 'N/A'}
                         </Typography>
                     </Stack>
 

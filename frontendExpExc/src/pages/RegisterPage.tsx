@@ -184,7 +184,7 @@ const RegisterPage: React.FC = () => {
                                 </Alert>
                             )}
 
-                            {/* Google Sign-Up (same endpoint — auto-creates account) */}
+                            {/* Google Sign-Up (same endpoint, auto-creates account) */}
                             {googleLoading ? (
                                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
                                     <CircularProgress size={32} />

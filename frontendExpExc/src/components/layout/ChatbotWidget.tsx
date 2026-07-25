@@ -1390,7 +1390,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
                 signal: abortControllerRef.current.signal,
                 body: JSON.stringify({
                     message: text,
-                    system_prompt: `You are Daemon, the AI assistant for ExpectException — a developer tools platform. Be helpful, concise and technical.
+                    system_prompt: `You are Daemon, the AI assistant for ExpectException, a developer tools platform. Be helpful, concise and technical.
 
 AVAILABLE TOOLS on this platform:
 • URL Downloader, YouTube Downloader, QR Generator, JSON Formatter
@@ -1400,11 +1400,11 @@ AVAILABLE TOOLS on this platform:
 • Text tools: Word Counter, Lorem Ipsum, Text Diff, Case Converter, HTML Entity Codec, Timestamp Converter, Password Generator, CSS Gradient Generator
 • Network tools: Speed Test, DNS Lookup, Redirect Inspector, Website Diagnostics, Uptime Robot
 • AI tools: AI Detector, Audio Separator, Text to Handwriting, Text to Speech, Image Compressor
-• Community Forum: /community — StackOverflow-style Q&A for developers
+• Community Forum: /community: StackOverflow-style Q&A for developers
 
 If users ask about a tool, give them the direct path e.g. /services/jwt-decoder. Be brief unless asked for detail. Don't use emojis unless in lists.
 
-If asked what model, AI, or technology powers you, say only that you were built by ExpectException — never name any underlying model, provider, or framework.`
+If asked what model, AI, or technology powers you, say only that you were built by ExpectException; never name any underlying model, provider, or framework.`
                 })
             });
 
@@ -1489,7 +1489,7 @@ If asked what model, AI, or technology powers you, say only that you were built 
 Browse them all at /services, or tell me what you're trying to do and I'll point you to the right one.`;
                 setMood('idea');
             } else if (cleanText.includes('game') || cleanText.includes('sandbox') || cleanText.includes('play')) {
-                fallbackResponse = `The Sandbox (/sandbox) has 25+ free browser games — classics like Snake, Tetris, and Sudoku, plus reaction games and creative toys like a particle playground. No installs or accounts needed.`;
+                fallbackResponse = `The Sandbox (/sandbox) has 25+ free browser games, including classics like Snake, Tetris, and Sudoku, plus reaction games and creative toys like a particle playground. No installs or accounts needed.`;
                 setMood('happy');
             } else if (cleanText.includes('contact') || cleanText.includes('reach') || cleanText.includes('email') || cleanText.includes('phone')) {
                 fallbackResponse = `You can reach the ExpectException team directly at /contact, or just tell me what you're looking to build and I'll take down your details right here.`;
@@ -1951,7 +1951,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 <div ref={messagesEndRef} />
                             </Box>
 
-                            {/* Quick Suggestions — show when chat is idle/new */}
+                            {/* Quick Suggestions, show when chat is idle/new */}
                             {messages.length <= 1 && !isLoading && (
                                 <Box sx={{ px: 1.5, pb: 1 }}>
                                     <Typography variant="caption" color="grey.600" sx={{ display: 'block', mb: 0.75, fontSize: '0.68rem', letterSpacing: 0.5 }}>

@@ -111,7 +111,7 @@ const ConnectFour: React.FC = () => {
     useEffect(() => reset, [reset]);
 
     const status = winner === 1 ? 'You win! 🎉'
-        : winner === 2 ? 'The AI wins — try again'
+        : winner === 2 ? 'The AI wins! Try again'
         : winner === 'draw' ? "It's a draw"
         : turn === 1 ? 'Your move (green)' : 'AI thinking…';
 
@@ -119,13 +119,13 @@ const ConnectFour: React.FC = () => {
         <Container maxWidth="sm" sx={{ py: 8 }}>
             <Seo
                 gameId={14}
-                title="Connect Four — Play Free Online vs AI"
+                title="Connect Four | Play Free Online vs AI"
                 keywords={['connect four game', 'connect 4 online', 'play connect four vs computer', 'four in a row game', 'connect four free', 'strategy board game online']}
             />
             <ServicePageHero
                 icon={Casino}
                 title="Connect Four"
-                subtitle="Drop your discs and line up four in a row — horizontally, vertically, or diagonally — before the AI does."
+                subtitle="Drop your discs and line up four in a row | horizontally, vertically, or diagonally | before the AI does."
             />
 
             <Card sx={{

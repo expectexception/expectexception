@@ -50,19 +50,19 @@ const JwtDecoder: React.FC = () => {
         <ServicePageShell
             icon={VpnKey}
             title="JWT Decoder"
-            subtitle="Decode JSON Web Tokens in your browser — your token never leaves your device"
+            subtitle="Decode JSON Web Tokens in your browser | your token never leaves your device"
             maxWidth="lg"
-            seoTitle="JWT Decoder Online — Decode & Inspect JSON Web Tokens"
+            seoTitle="JWT Decoder Online | Decode & Inspect JSON Web Tokens"
             toolId={40}
             keywords={['jwt decoder', 'decode jwt online', 'json web token decoder', 'jwt debugger', 'inspect jwt claims', 'jwt viewer', 'decode bearer token', 'jwt payload decoder']}
             faq={[
-                { question: 'Is it safe to paste my JWT here?', answer: 'Yes. Decoding happens entirely in your browser with client-side JavaScript — your token is never transmitted to any server.' },
+                { question: 'Is it safe to paste my JWT here?', answer: 'Yes. Decoding happens entirely in your browser with client-side JavaScript | your token is never transmitted to any server.' },
                 { question: 'Does this verify the JWT signature?', answer: 'This tool decodes and inspects the header and payload. It shows the algorithm and expiry but does not verify the signature, which requires the secret key.' },
             ]}
             howToSteps={[
                 { name: 'Paste your JWT', text: 'Copy your JWT token from your app, API response, or cookie and paste it into the input field.' },
                 { name: 'Inspect decoded claims', text: 'The tool instantly decodes the header and payload showing algorithm, subject, issuer, and custom claims.' },
-                { name: 'Check expiry status', text: 'The expiry chip tells you if the token is valid, expired, or has no expiry set — no server round-trip needed.' },
+                { name: 'Check expiry status', text: 'The expiry chip tells you if the token is valid, expired, or has no expiry set | no server round-trip needed.' },
             ]}
         >
             <Card>
@@ -125,7 +125,7 @@ const JwtDecoder: React.FC = () => {
                                 </Paper>
 
                                 <Alert severity="warning" sx={{ fontSize: '0.8rem' }}>
-                                    This decoder only decodes — it does NOT verify the signature. Never trust a JWT's claims without server-side signature verification.
+                                    This decoder only decodes, it does NOT verify the signature. Never trust a JWT's claims without server-side signature verification.
                                 </Alert>
                             </Stack>
                         </Box>

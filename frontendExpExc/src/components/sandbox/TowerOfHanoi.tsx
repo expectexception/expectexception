@@ -185,7 +185,7 @@ const TowerOfHanoi: React.FC = () => {
                         <Chip size="small" label={`Moves: ${moveCount}`} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
                         <Chip size="small" label={`Optimal: ${optimalMoves(diskCount)}`} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
                         <Typography variant="body2" color="text.secondary">
-                            Best: {best[diskCount] !== undefined ? `${best[diskCount]} moves` : '—'}
+                            Best: {best[diskCount] !== undefined ? `${best[diskCount]} moves` : 'N/A'}
                         </Typography>
                     </Stack>
 

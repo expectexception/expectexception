@@ -85,10 +85,10 @@ const calculateSubnet = (raw: string): SubnetResult => {
 
     if (prefix === 32) {
         usableHostCount = 1;
-        note = 'A /32 is a single-host route — the network address, broadcast address, and only usable address are all the same.';
+        note = 'A /32 is a single-host route | the network address, broadcast address, and only usable address are all the same.';
     } else if (prefix === 31) {
         usableHostCount = 2;
-        note = 'A /31 is a point-to-point link (RFC 3021) — both addresses are usable; there is no separate network or broadcast address.';
+        note = 'A /31 is a point-to-point link (RFC 3021) | both addresses are usable; there is no separate network or broadcast address.';
     } else {
         firstHostInt = networkInt + 1;
         lastHostInt = broadcastInt - 1;
@@ -149,11 +149,11 @@ const SubnetCalculator: React.FC = () => {
         <ServicePageShell
             icon={Router}
             title="IP Subnet / CIDR Calculator"
-            subtitle="Work out the network, broadcast, and usable host range for any IPv4 CIDR address — computed locally in your browser"
+            subtitle="Work out the network, broadcast, and usable host range for any IPv4 CIDR address | computed locally in your browser"
             maxWidth="md"
-            seoTitle="Subnet Calculator — Free IPv4 CIDR Network Calculator"
+            seoTitle="Subnet Calculator | Free IPv4 CIDR Network Calculator"
             keywords={['subnet calculator', 'cidr calculator', 'ip subnet calculator', 'network address calculator', 'broadcast address calculator', 'wildcard mask calculator', 'ipv4 cidr calculator', 'subnet mask calculator']}
-            about="Takes an IPv4 address in CIDR notation, such as 192.168.1.0/24, and works out every value a network engineer needs from it: the network and broadcast addresses, the subnet mask and its wildcard-mask complement, the first and last usable host addresses, and both the usable host count and total address count for that prefix. All of the arithmetic — converting dotted-decimal octets to a 32-bit integer, applying the prefix mask, and splitting the results back into octets — runs as plain bitwise and arithmetic operations directly in the browser; nothing is looked up from an external IP database or sent to a server. Point-to-point /31 and single-host /32 prefixes are called out with their RFC 3021 / host-route conventions rather than the usual network-plus-broadcast-reserved rule."
+            about="Takes an IPv4 address in CIDR notation, such as 192.168.1.0/24, and works out every value a network engineer needs from it: the network and broadcast addresses, the subnet mask and its wildcard-mask complement, the first and last usable host addresses, and both the usable host count and total address count for that prefix. All of the arithmetic, converting dotted-decimal octets to a 32-bit integer, applying the prefix mask, and splitting the results back into octets | runs as plain bitwise and arithmetic operations directly in the browser; nothing is looked up from an external IP database or sent to a server. Point-to-point /31 and single-host /32 prefixes are called out with their RFC 3021 / host-route conventions rather than the usual network-plus-broadcast-reserved rule."
             howToSteps={[
                 { name: 'Enter a CIDR address', text: 'Type an IPv4 address with a prefix length, e.g. 192.168.1.0/24, into the input field.' },
                 { name: 'Check for validation errors', text: 'A malformed IP, an octet outside 0-255, or a prefix outside 0-32 shows a specific error message instead of a result.' },
@@ -161,10 +161,10 @@ const SubnetCalculator: React.FC = () => {
                 { name: 'Copy the results', text: 'Click Copy Summary to copy every computed field to your clipboard as plain text.' },
             ]}
             faq={[
-                { question: 'How is the network address calculated?', answer: 'The IP address is converted to a 32-bit integer and bitwise-ANDed with the subnet mask, which is itself derived from the prefix length as a 32-bit integer — the same calculation networking equipment performs. The result is converted back to dotted-decimal for display.' },
-                { question: 'Why don’t /31 and /32 show "usable = total - 2"?', answer: "A /32 is a single host route — 1 address, no separate network or broadcast — and a /31 is a point-to-point link defined by RFC 3021, where both of its 2 addresses are usable since there's no room to reserve one for a broadcast address. Every other prefix (/0-/30) reserves the first address as the network address and the last as the broadcast address." },
-                { question: 'Does this support IPv6?', answer: "No — this calculator is IPv4-only. IPv6 uses 128-bit addresses and different conventions (no broadcast address, for instance), which aren't covered here." },
-                { question: 'Is my IP address sent anywhere?', answer: 'No. Parsing and all bit arithmetic happen locally in JavaScript in your browser — nothing is transmitted, logged, or looked up externally.' },
+                { question: 'How is the network address calculated?', answer: 'The IP address is converted to a 32-bit integer and bitwise-ANDed with the subnet mask, which is itself derived from the prefix length as a 32-bit integer | the same calculation networking equipment performs. The result is converted back to dotted-decimal for display.' },
+                { question: 'Why don’t /31 and /32 show "usable = total - 2"?', answer: "A /32 is a single host route, 1 address, no separate network or broadcast, and a /31 is a point-to-point link defined by RFC 3021, where both of its 2 addresses are usable since there's no room to reserve one for a broadcast address. Every other prefix (/0-/30) reserves the first address as the network address and the last as the broadcast address." },
+                { question: 'Does this support IPv6?', answer: "No, this calculator is IPv4-only. IPv6 uses 128-bit addresses and different conventions (no broadcast address, for instance), which aren't covered here." },
+                { question: 'Is my IP address sent anywhere?', answer: 'No. Parsing and all bit arithmetic happen locally in JavaScript in your browser | nothing is transmitted, logged, or looked up externally.' },
             ]}
         >
             <Card>

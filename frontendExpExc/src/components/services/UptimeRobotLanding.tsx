@@ -33,7 +33,7 @@ const UptimeRobotLanding: React.FC = () => {
         <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
             <Box sx={{ textAlign: 'center', mb: 8 }}>
                 <Chip
-                    label="Sign in required — your monitors are private to you"
+                    label="Sign in required | your monitors are private to you"
                     sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor, fontWeight: 700, mb: 3 }}
                 />
                 <Typography
@@ -51,7 +51,7 @@ const UptimeRobotLanding: React.FC = () => {
                     Uptime Robot Command Center
                 </Typography>
                 <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 680, mx: 'auto', fontWeight: 400, lineHeight: 1.6, mb: 5 }}>
-                    Recurring uptime, keyword, port, SSL, and heartbeat monitors — checked on the interval you set,
+                    Recurring uptime, keyword, port, SSL, and heartbeat monitors, checked on the interval you set,
                     running on our own server, private to your account. Free up to 10 monitors.
                 </Typography>
                 <Button
@@ -70,10 +70,10 @@ const UptimeRobotLanding: React.FC = () => {
                 </Button>
             </Box>
 
-            {/* Example dashboard preview — clearly labeled sample data */}
+            {/* Example dashboard preview, clearly labeled sample data */}
             <Box sx={{ mb: 8 }}>
                 <Typography variant="overline" color="text.secondary" sx={{ display: 'block', textAlign: 'center', mb: 2, letterSpacing: '0.1em' }}>
-                    Example dashboard — illustrative numbers, not live data
+                    Example dashboard, illustrative numbers, not live data
                 </Typography>
                 <Grid container spacing={3}>
                     {[
@@ -124,7 +124,7 @@ const UptimeRobotLanding: React.FC = () => {
                         <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>Why does this need an account?</Typography>
                         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.7 }}>
                             Earlier versions of this tool let anyone create recurring checks against any target with
-                            no ownership — which meant no privacy, no abuse limits, and no way to tell whose monitor
+                            no ownership, which meant no privacy, no abuse limits, and no way to tell whose monitor
                             was whose. An account means your monitors are yours alone, checked by our own server on
                             your schedule, with a free-tier cap so the service stays reliable for everyone.
                         </Typography>

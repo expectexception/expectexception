@@ -83,7 +83,7 @@ const Hangman: React.FC = () => {
 
                     {isOver && (
                         <Typography variant="h5" fontWeight={800} sx={{ mb: 3, color: isWon ? 'primary.main' : 'error.main' }}>
-                            {isWon ? 'You Won!' : `Game Over — it was ${word}`}
+                            {isWon ? 'You Won!' : `Game Over! It was ${word}`}
                         </Typography>
                     )}
 

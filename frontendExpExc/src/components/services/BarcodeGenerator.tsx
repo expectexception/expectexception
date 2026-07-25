@@ -52,7 +52,7 @@ function textToValues(text: string): number[] {
     for (const ch of text) {
         const code = ch.charCodeAt(0);
         if (code < MIN_CODE || code > MAX_CODE) {
-            throw new Error(`Unsupported character "${ch}" — Code128 Subset B only supports ASCII 32-126.`);
+            throw new Error(`Unsupported character "${ch}", Code128 Subset B only supports ASCII 32-126.`);
         }
         values.push(code - 32);
     }
@@ -141,22 +141,22 @@ const BarcodeGenerator: React.FC = () => {
             toolId={56}
             icon={ViewWeek}
             title="Barcode Generator"
-            subtitle="Generate a scannable Code128 barcode from any text — rendered entirely in your browser"
+            subtitle="Generate a scannable Code128 barcode from any text | rendered entirely in your browser"
             maxWidth="md"
-            seoTitle="Barcode Generator — Free Code128 Barcode Maker"
+            seoTitle="Barcode Generator | Free Code128 Barcode Maker"
             keywords={['barcode generator', 'code128 generator', 'free barcode maker', 'generate barcode online', 'code 128 barcode', 'text to barcode', 'barcode png download', 'inventory barcode generator']}
-            about="Encodes any text you type into a scannable Code128 (Subset B) barcode using the standard Code128 symbol width table, implemented directly in JavaScript and rendered as SVG bars — no image API or server call involved. Code128 is the flexible, alphanumeric barcode format used for shipping labels, inventory tags, and internal asset tracking; it is not the UPC-A/EAN-13 format printed on retail packaging, and this tool does not generate retail barcodes. Subset B supports the full standard printable ASCII range (letters, digits, punctuation, and spaces), and the checksum is calculated using the official modulo-103 Code128 algorithm so the result is scannable by standard barcode readers. Adjust the bar width and height, then download it as a PNG or copy the raw SVG markup."
+            about="Encodes any text you type into a scannable Code128 (Subset B) barcode using the standard Code128 symbol width table, implemented directly in JavaScript and rendered as SVG bars | no image API or server call involved. Code128 is the flexible, alphanumeric barcode format used for shipping labels, inventory tags, and internal asset tracking; it is not the UPC-A/EAN-13 format printed on retail packaging, and this tool does not generate retail barcodes. Subset B supports the full standard printable ASCII range (letters, digits, punctuation, and spaces), and the checksum is calculated using the official modulo-103 Code128 algorithm so the result is scannable by standard barcode readers. Adjust the bar width and height, then download it as a PNG or copy the raw SVG markup."
             howToSteps={[
-                { name: 'Type the text to encode', text: 'Enter any text using standard printable ASCII characters (codes 32-126) — letters, numbers, spaces, and most punctuation are supported.' },
+                { name: 'Type the text to encode', text: 'Enter any text using standard printable ASCII characters (codes 32-126) | letters, numbers, spaces, and most punctuation are supported.' },
                 { name: 'Adjust bar width and height', text: 'Drag the Bar Width and Bar Height sliders to resize the barcode for your label size or print DPI.' },
                 { name: 'Toggle the human-readable text', text: 'Switch "Show text below barcode" on or off depending on whether you want the encoded value printed under the bars.' },
                 { name: 'Download or copy', text: 'Click Download PNG to save the rendered barcode as an image, or Copy SVG to copy the scalable markup to your clipboard.' },
             ]}
             faq={[
-                { question: 'Is this a UPC or EAN retail barcode?', answer: 'No — this generates Code128 (Subset B), a variable-length barcode used for shipping, logistics, and inventory tracking. It is not the UPC-A/EAN-13 format required for retail point-of-sale scanning.' },
-                { question: 'What characters can I encode?', answer: 'Any standard printable ASCII character with code 32 to 126 — uppercase and lowercase letters, digits 0-9, spaces, and common punctuation such as - . / : and #. Characters outside that range (emoji, accented letters, control characters) are not supported by Code128 Subset B.' },
-                { question: 'Will this scan with a real barcode scanner?', answer: 'Yes — the bar widths come directly from the standard Code128 symbol table with a correctly calculated modulo-103 checksum, so most barcode scanners and scanning apps can read it. Print or display it large enough that the narrowest bar is still comfortably resolvable by your scanner.' },
-                { question: 'Does any of my text get sent to a server?', answer: 'No. Encoding and rendering both happen locally in your browser as plain JavaScript and SVG — nothing is uploaded.' },
+                { question: 'Is this a UPC or EAN retail barcode?', answer: 'No | this generates Code128 (Subset B), a variable-length barcode used for shipping, logistics, and inventory tracking. It is not the UPC-A/EAN-13 format required for retail point-of-sale scanning.' },
+                { question: 'What characters can I encode?', answer: 'Any standard printable ASCII character with code 32 to 126 | uppercase and lowercase letters, digits 0-9, spaces, and common punctuation such as - . / : and #. Characters outside that range (emoji, accented letters, control characters) are not supported by Code128 Subset B.' },
+                { question: 'Will this scan with a real barcode scanner?', answer: 'Yes | the bar widths come directly from the standard Code128 symbol table with a correctly calculated modulo-103 checksum, so most barcode scanners and scanning apps can read it. Print or display it large enough that the narrowest bar is still comfortably resolvable by your scanner.' },
+                { question: 'Does any of my text get sent to a server?', answer: 'No. Encoding and rendering both happen locally in your browser as plain JavaScript and SVG | nothing is uploaded.' },
             ]}
         >
             <Card>
@@ -168,7 +168,7 @@ const BarcodeGenerator: React.FC = () => {
                         onChange={e => setText(e.target.value)}
                         placeholder="DEMO-12345"
                         inputProps={{ maxLength: 48, style: { fontFamily: 'monospace' } }}
-                        helperText={`${text.length}/48 characters — Code128 Subset B (ASCII 32-126)`}
+                        helperText={`${text.length}/48 characters, Code128 Subset B (ASCII 32-126)`}
                         sx={{ mb: 2 }}
                     />
 

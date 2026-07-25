@@ -155,7 +155,7 @@ const FlappyBlocks: React.FC = () => {
             <ServicePageHero
                 icon={Bolt}
                 title="Flappy Blocks"
-                subtitle="Click, tap, or press space to flap and weave through the gaps. One hit and it's over — how far can you go?"
+                subtitle="Click, tap, or press space to flap and weave through the gaps. One hit and it's over. How far can you go?"
             />
 
             <Card sx={{

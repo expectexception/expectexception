@@ -156,7 +156,7 @@ const NewThreadPage: React.FC = () => {
                                     onChange={e => setTagInput(e.target.value)}
                                     onKeyDown={addTag}
                                     disabled={tags.length >= 5}
-                                    helperText="Up to 5 tags — helps others find your thread"
+                                    helperText="Up to 5 tags | helps others find your thread"
                                     InputProps={{ startAdornment: tags.length > 0 ? undefined : undefined }}
                                 />
                                 {tags.length > 0 && (
