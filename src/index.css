@@ -230,3 +230,10 @@ input:-webkit-autofill:active {
   transition: background-color 9999s ease-in-out 0s;
 }
 
+/* Disable touch tap ripple circles on mobile/coarse pointer devices */
+@media (pointer: coarse), (max-width: 768px) {
+  .MuiTouchRipple-root {
+    display: none !important;
+  }
+}
+
