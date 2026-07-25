@@ -103,7 +103,7 @@ interface AgentStep {
 }
 
 // --- Custom Animated SVG Face Component ---
-const ChatbotFace: React.FC<{ mood: Mood; themeColor?: string }> = ({ mood, themeColor }) => {
+const ChatbotFace: React.FC<{ mood: Mood; themeColor?: string; size?: number; hideMargin?: boolean }> = ({ mood, themeColor, size = 70, hideMargin = false }) => {
     const theme = useTheme();
     const primary = themeColor || theme.palette.primary.main || '#00FF66';
     const colorMap = {
@@ -119,7 +119,7 @@ const ChatbotFace: React.FC<{ mood: Mood; themeColor?: string }> = ({ mood, them
     const activeColor = colorMap[mood] || primary;
 
     return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: hideMargin ? 0 : 1 }}>
             <motion.div
                 animate={mood === 'sleeping' ? {
                     scale: [1, 0.97, 1],
@@ -132,9 +132,9 @@ const ChatbotFace: React.FC<{ mood: Mood; themeColor?: string }> = ({ mood, them
                     repeat: Infinity,
                     ease: 'easeInOut'
                 }}
-                style={{ position: 'relative', width: 70, height: 70 }}
+                style={{ position: 'relative', width: size, height: size }}
             >
-                <svg width="70" height="70" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                             <feGaussianBlur stdDeviation="5" result="blur" />
@@ -1871,15 +1871,27 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                                 bgcolor: 'rgba(5, 5, 5, 0.3)'
                             }}>
-                                <Stack direction="row" alignItems="center" spacing={1.5}>
-                                    <Avatar sx={{ width: 28, height: 28, bgcolor: alpha(themeColor, 0.1), border: '1px solid', borderColor: themeColor }}>
-                                        <Memory sx={{ color: themeColor, fontSize: 15 }} />
-                                    </Avatar>
+                                <Stack direction="row" alignItems="center" spacing={1.2}>
+                                    <Box sx={{
+                                        width: 38,
+                                        height: 38,
+                                        borderRadius: '50%',
+                                        bgcolor: 'rgba(5, 5, 5, 0.6)',
+                                        border: `1.5px solid ${alpha(themeColor, 0.4)}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: `0 0 12px ${alpha(themeColor, 0.25)}`,
+                                        overflow: 'hidden'
+                                    }}>
+                                        <ChatbotFace mood={mood} themeColor={themeColor} size={34} hideMargin={true} />
+                                    </Box>
                                     <Box>
                                         <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', lineHeight: 1.1 }}>
                                             Bot
                                         </Typography>
-                                        <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 600, color: themeColor }}>
+                                        <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 600, color: themeColor, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isAvailable ? themeColor : '#f59e0b', display: 'inline-block' }} />
                                             {isAvailable ? 'AI Core Live' : 'Local Fallback'}
                                         </Typography>
                                     </Box>
