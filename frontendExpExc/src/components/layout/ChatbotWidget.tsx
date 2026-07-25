@@ -542,17 +542,18 @@ const DaemonStandingCharacter: React.FC<{
 
                     {/* Standing Platform Glow Shadow */}
                     <motion.ellipse
-                        cx="50"
-                        cy="114"
-                        rx={isWalking ? "22" : "28"}
-                        ry="5"
+                        cx={50}
+                        cy={114}
+                        rx={28}
+                        ry={5}
                         fill="url(#daemon-shadow)"
                         animate={
                             isWalking
-                                ? { rx: [22, 16, 22], opacity: [0.5, 0.9, 0.5] }
-                                : { rx: [28, 24, 28], opacity: [0.7, 0.4, 0.7] }
+                                ? { scaleX: [1, 0.7, 1], opacity: [0.5, 0.9, 0.5] }
+                                : { scaleX: [1, 0.85, 1], opacity: [0.7, 0.4, 0.7] }
                         }
                         transition={{ repeat: Infinity, duration: isWalking ? 0.22 : 3.2 }}
+                        style={{ originX: '50px', originY: '114px' }}
                     />
 
                     {/* Floating Energy Particles Aura */}
