@@ -12,12 +12,9 @@ import {
     Stack,
     Switch,
     FormControlLabel,
-    Slider,
     Tooltip,
-    Alert,
     LinearProgress,
     Paper,
-    Divider,
     CircularProgress,
     Avatar,
     useTheme,
@@ -35,17 +32,16 @@ import {
     Face,
     Category,
     Speed,
-    Psychology,
     PlayArrow,
     Pause,
-    Refresh,
     CheckCircle,
     Analytics,
     AutoAwesome,
     Memory,
-    Shield
+    Shield,
+    Psychology
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import ServicePageHero from './ServicePageHero';
 import Seo from '../seo/Seo';
 
@@ -101,10 +97,17 @@ const AiVisionStudio: React.FC = () => {
     // --- Refs ---
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationFrameRef = useRef<number | null>(null);
-    const prevFrameDataRef = useRef<ImageData | null>(null);
     const cocoModelRef = useRef<cocoSsd.ObjectDetection | null>(null);
     const isFaceApiLoadedRef = useRef<boolean>(false);
+    
+    // Cached detections for 60 FPS smooth rendering without CPU stalls
+    const cachedFacesRef = useRef<FaceDetectionData[]>([]);
+    const cachedObjectsRef = useRef<DetectedObject[]>([]);
+    const isAiDetectingRef = useRef<boolean>(false);
+    const prevFrameSampleRef = useRef<Uint8ClampedArray | null>(null);
+
     const lastFpsTimeRef = useRef<number>(performance.now());
     const frameCountRef = useRef<number>(0);
     const lastSpeechTimeRef = useRef<number>(0);
@@ -115,19 +118,19 @@ const AiVisionStudio: React.FC = () => {
 
         const loadAiModels = async () => {
             try {
-                setLoadingStatusText('Initializing TensorFlow.js WebGL backend...');
+                setLoadingStatusText('Initializing WebGL Hardware Accelerator...');
                 setLoadingProgress(25);
                 await tf.ready();
                 if (tf.getBackend() !== 'webgl') {
                     await tf.setBackend('webgl').catch(() => tf.setBackend('cpu'));
                 }
 
-                setLoadingStatusText('Loading COCO-SSD Object Detection Model...');
+                setLoadingStatusText('Loading Neural Object Detector...');
                 setLoadingProgress(55);
                 const cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
                 if (isMounted) cocoModelRef.current = cocoModel;
 
-                setLoadingStatusText('Loading Biometric Face & Emotion Neural Nets...');
+                setLoadingStatusText('Loading 3D Biometric Facial Mesh Nets...');
                 setLoadingProgress(80);
                 
                 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
@@ -143,13 +146,13 @@ const AiVisionStudio: React.FC = () => {
                 if (isMounted) {
                     setLoadingProgress(100);
                     setIsModelsLoading(false);
-                    setLoadingStatusText('AI Neural Engine Ready');
+                    setLoadingStatusText('AI Engine Loaded');
                 }
             } catch (err) {
                 console.error('Error loading AI Models:', err);
                 if (isMounted) {
                     setIsModelsLoading(false);
-                    setLoadingStatusText('AI Engine Ready (Lightweight Mode)');
+                    setLoadingStatusText('AI Engine Ready (Standard Mode)');
                 }
             }
         };
@@ -191,7 +194,7 @@ const AiVisionStudio: React.FC = () => {
             }
         } catch (err) {
             console.error('Webcam Access Error:', err);
-            // Fallback to demo mode if webcam permission denied or unavailable
+            // Fallback to interactive demo feed
             setIsDemoMode(true);
             setIsCameraActive(true);
         }
@@ -221,7 +224,7 @@ const AiVisionStudio: React.FC = () => {
     const speakAiAnnouncement = useCallback((text: string) => {
         if (!enableVoiceAudio || !('speechSynthesis' in window)) return;
         const now = Date.now();
-        if (now - lastSpeechTimeRef.current < 4000) return; // Throttle speech
+        if (now - lastSpeechTimeRef.current < 4000) return;
         lastSpeechTimeRef.current = now;
 
         window.speechSynthesis.cancel();
@@ -232,378 +235,328 @@ const AiVisionStudio: React.FC = () => {
         setLastSpokenText(text);
     }, [enableVoiceAudio]);
 
-    // --- Main Realtime Processing Loop ---
-    const processFrame = useCallback(async () => {
+    // --- Async AI Background Inference Loop ---
+    useEffect(() => {
+        if (!isCameraActive || isDemoMode) return;
+
+        let isCancelled = false;
+
+        const runAiInference = async () => {
+            const video = videoRef.current;
+            if (!video || video.readyState !== 4 || isAiDetectingRef.current) return;
+
+            isAiDetectingRef.current = true;
+            const startTime = performance.now();
+
+            try {
+                // 1. Face & Biometrics Detection
+                if (showFaceDetection && isFaceApiLoadedRef.current) {
+                    const detections = await faceapi.detectAllFaces(
+                        video,
+                        new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.45 })
+                    )
+                    .withFaceLandmarks()
+                    .withFaceExpressions()
+                    .withAgeAndGender();
+
+                    if (!isCancelled) {
+                        const formattedFaces: FaceDetectionData[] = detections.map(d => ({
+                            box: d.detection.box,
+                            expressions: d.expressions as unknown as Record<string, number>,
+                            age: Math.round(d.age),
+                            gender: d.gender,
+                            genderProbability: d.genderProbability,
+                            landmarks: d.landmarks.positions
+                        }));
+
+                        cachedFacesRef.current = formattedFaces;
+                        setDetectedFaces(formattedFaces);
+
+                        if (formattedFaces.length > 0 && enableVoiceAudio) {
+                            const face = formattedFaces[0];
+                            const topExpr = Object.entries(face.expressions).sort((a, b) => b[1] - a[1])[0];
+                            if (topExpr && topExpr[1] > 0.6) {
+                                speakAiAnnouncement(`Detected ${face.gender || 'person'}, feeling ${topExpr[0]}`);
+                            }
+                        }
+                    }
+                } else if (!showFaceDetection) {
+                    cachedFacesRef.current = [];
+                    setDetectedFaces([]);
+                }
+
+                // 2. Object Detection (COCO-SSD)
+                if (showObjectDetection && cocoModelRef.current) {
+                    const predictions = await cocoModelRef.current.detect(video);
+                    if (!isCancelled) {
+                        const formattedObjects = predictions as DetectedObject[];
+                        cachedObjectsRef.current = formattedObjects;
+                        setDetectedObjects(formattedObjects);
+                    }
+                } else if (!showObjectDetection) {
+                    cachedObjectsRef.current = [];
+                    setDetectedObjects([]);
+                }
+
+                if (!isCancelled) {
+                    const duration = Math.round(performance.now() - startTime);
+                    setInferenceTime(duration);
+                }
+            } catch (e) {
+                console.error('Async AI Detection Error:', e);
+            } finally {
+                isAiDetectingRef.current = false;
+            }
+        };
+
+        const interval = setInterval(runAiInference, 100); // 10 AI inferences per sec
+        return () => {
+            isCancelled = true;
+            clearInterval(interval);
+        };
+    }, [isCameraActive, isDemoMode, showFaceDetection, showObjectDetection, enableVoiceAudio, speakAiAnnouncement]);
+
+    // --- 60 FPS Smooth Canvas Render Loop ---
+    const processFrame = useCallback(() => {
         if (!canvasRef.current) return;
         const video = videoRef.current;
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        const width = video?.videoWidth || 640;
-        const height = video?.videoHeight || 480;
+        const width = video?.videoWidth || 1280;
+        const height = video?.videoHeight || 720;
 
         if (canvas.width !== width || canvas.height !== height) {
             canvas.width = width;
             canvas.height = height;
         }
 
-        const startTime = performance.now();
-
-        // 1. Draw raw frame or demo matrix stream
+        // 1. Draw Feed (Real webcam or Cyber Demo background)
         if (isDemoMode || !video || video.readyState !== 4) {
-            ctx.fillStyle = '#07090e';
+            ctx.fillStyle = '#06080d';
             ctx.fillRect(0, 0, width, height);
 
-            // Animated cyber demo background
             const time = Date.now() * 0.002;
-            ctx.strokeStyle = 'rgba(0, 238, 255, 0.15)';
+            // Animated Cyber Grid
+            ctx.strokeStyle = 'rgba(0, 238, 255, 0.12)';
             ctx.lineWidth = 1;
             for (let x = 0; x < width; x += 40) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, height);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
             }
             for (let y = 0; y < height; y += 40) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(width, y);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
             }
 
-            // Simulated face target in demo mode
-            const centerX = width / 2 + Math.sin(time) * 40;
-            const centerY = height / 2 + Math.cos(time * 0.8) * 20;
+            // Demo Target Simulation
+            const centerX = width / 2 + Math.sin(time) * 30;
+            const centerY = height / 2 + Math.cos(time * 0.8) * 15;
 
             if (showFaceDetection) {
-                // Simulated face box
-                ctx.strokeStyle = '#00eeff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(centerX - 90, centerY - 110, 180, 220);
-
-                ctx.fillStyle = 'rgba(0, 238, 255, 0.2)';
-                ctx.fillRect(centerX - 90, centerY - 110, 180, 220);
-
-                ctx.fillStyle = '#00eeff';
-                ctx.font = '700 13px Inter, sans-serif';
-                ctx.fillText('FACE: User (Demo Target)', centerX - 85, centerY - 120);
-                ctx.fillText('EMOTION: Happy (96%) | AGE: 26', centerX - 85, centerY + 130);
+                drawCyberBox(ctx, centerX - 90, centerY - 110, 180, 220, '#00eeff', 'FACE TARGET #01');
             }
-
             if (showObjectDetection) {
-                // Simulated object box
-                ctx.strokeStyle = '#00ff66';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(width * 0.15, height * 0.4, 140, 180);
-                ctx.fillStyle = '#00ff66';
-                ctx.fillText('Laptop: 94%', width * 0.15 + 5, height * 0.4 - 8);
+                drawCyberBox(ctx, width * 0.18, height * 0.35, 160, 200, '#00ff66', 'LAPTOP 96%');
             }
 
             setDetectedFaces([{
                 box: { x: centerX - 90, y: centerY - 110, width: 180, height: 220 },
-                expressions: { happy: 0.96, neutral: 0.03, surprised: 0.01 },
+                expressions: { happy: 0.94, neutral: 0.05, surprised: 0.01 },
                 age: 26,
                 gender: 'male',
-                genderProbability: 0.98
+                genderProbability: 0.99
             }]);
 
             setDetectedObjects([
-                { bbox: [width * 0.15, height * 0.4, 140, 180], class: 'laptop', score: 0.94 },
+                { bbox: [width * 0.18, height * 0.35, 160, 200], class: 'laptop', score: 0.96 },
                 { bbox: [centerX - 90, centerY - 110, 180, 220], class: 'person', score: 0.98 }
             ]);
 
-            setMotionLevel(Math.round(20 + Math.sin(time * 4) * 15));
+            setMotionLevel(Math.round(25 + Math.sin(time * 5) * 15));
         } else {
-            // Draw real webcam stream onto canvas
+            // Draw real webcam stream onto main canvas
             ctx.drawImage(video, 0, 0, width, height);
 
-            // 2. Motion Detection via Frame Differences
+            // Fast non-blocking motion estimation (sample 1/64th downscaled offscreen buffer)
             if (showMotionTracking) {
-                const currentFrame = ctx.getImageData(0, 0, width, height);
-                if (prevFrameDataRef.current) {
-                    const prev = prevFrameDataRef.current.data;
-                    const curr = currentFrame.data;
-                    let motionPixels = 0;
-                    const totalPixels = width * height;
-
-                    ctx.fillStyle = 'rgba(255, 0, 127, 0.4)';
-                    for (let i = 0; i < curr.length; i += 16) {
-                        const diff = Math.abs(curr[i] - prev[i]) + Math.abs(curr[i + 1] - prev[i + 1]) + Math.abs(curr[i + 2] - prev[i + 2]);
-                        if (diff > 90) {
-                            motionPixels++;
-                            if (i % 64 === 0) {
-                                const px = (i / 4) % width;
-                                const py = Math.floor((i / 4) / width);
-                                ctx.fillRect(px - 2, py - 2, 5, 5);
-                            }
+                if (!offscreenCanvasRef.current) {
+                    offscreenCanvasRef.current = document.createElement('canvas');
+                    offscreenCanvasRef.current.width = 80;
+                    offscreenCanvasRef.current.height = 45;
+                }
+                const offCtx = offscreenCanvasRef.current.getContext('2d');
+                if (offCtx) {
+                    offCtx.drawImage(video, 0, 0, 80, 45);
+                    const imgData = offCtx.getImageData(0, 0, 80, 45).data;
+                    if (prevFrameSampleRef.current && prevFrameSampleRef.current.length === imgData.length) {
+                        let diffSum = 0;
+                        const prev = prevFrameSampleRef.current;
+                        for (let i = 0; i < imgData.length; i += 8) {
+                            diffSum += Math.abs(imgData[i] - prev[i]);
                         }
+                        const motionVal = Math.min(100, Math.round((diffSum / (imgData.length / 8)) * 2.5));
+                        setMotionLevel(motionVal);
                     }
-                    const rawMotion = (motionPixels / (totalPixels / 4)) * 100 * 8;
-                    setMotionLevel(Math.min(100, Math.round(rawMotion)));
-                }
-                prevFrameDataRef.current = currentFrame;
-            }
-
-            // 3. Object Detection (COCO-SSD)
-            if (showObjectDetection && cocoModelRef.current) {
-                try {
-                    const predictions = await cocoModelRef.current.detect(video);
-                    setDetectedObjects(predictions as DetectedObject[]);
-
-                    predictions.forEach(obj => {
-                        const [x, y, w, h] = obj.bbox;
-                        ctx.strokeStyle = '#00ff66';
-                        ctx.lineWidth = 2;
-                        ctx.setLineDash([6, 3]);
-                        ctx.strokeRect(x, y, w, h);
-                        ctx.setLineDash([]);
-
-                        // Corner Reticles
-                        const rLen = 12;
-                        ctx.strokeStyle = '#00eeff';
-                        ctx.beginPath();
-                        ctx.moveTo(x, y + rLen); ctx.lineTo(x, y); ctx.lineTo(x + rLen, y);
-                        ctx.moveTo(x + w - rLen, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + rLen);
-                        ctx.stroke();
-
-                        ctx.fillStyle = 'rgba(0, 255, 102, 0.85)';
-                        ctx.fillRect(x, Math.max(0, y - 24), Math.min(w, 150), 22);
-
-                        ctx.fillStyle = '#000000';
-                        ctx.font = '700 12px Inter, sans-serif';
-                        ctx.fillText(`${obj.class.toUpperCase()} ${Math.round(obj.score * 100)}%`, x + 6, Math.max(14, y - 8));
-                    });
-                } catch (e) {
-                    console.error('COCO Detection Frame Error:', e);
+                    prevFrameSampleRef.current = imgData;
                 }
             }
 
-            // 4. Biometric Face & Emotion Detection
-            if (showFaceDetection && isFaceApiLoadedRef.current) {
-                try {
-                    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 }))
-                        .withFaceLandmarks()
-                        .withFaceExpressions()
-                        .withAgeAndGender();
+            // Draw Cached Object Detections (COCO-SSD)
+            if (showObjectDetection && cachedObjectsRef.current.length > 0) {
+                cachedObjectsRef.current.forEach(obj => {
+                    const [x, y, w, h] = obj.bbox;
+                    drawCyberBox(ctx, x, y, w, h, '#00ff66', `${obj.class.toUpperCase()} ${Math.round(obj.score * 100)}%`);
+                });
+            }
 
-                    const formattedFaces: FaceDetectionData[] = detections.map(d => ({
-                        box: d.detection.box,
-                        expressions: d.expressions as unknown as Record<string, number>,
-                        age: Math.round(d.age),
-                        gender: d.gender,
-                        genderProbability: d.genderProbability,
-                        landmarks: d.landmarks.positions
-                    }));
+            // Draw Cached 3D Face Wireframe & Biometric HUD
+            if (showFaceDetection && cachedFacesRef.current.length > 0) {
+                cachedFacesRef.current.forEach((face, fIdx) => {
+                    const { x, y, width: w, height: h } = face.box;
 
-                    setDetectedFaces(formattedFaces);
+                    // Cyber Bounding Box
+                    drawCyberBox(ctx, x, y, w, h, '#00eeff', `FACE LOCK #${fIdx + 1}`);
 
-                    detections.forEach(d => {
-                        const { x, y, width: w, height: h } = d.detection.box;
+                    // Scanning Laser Line
+                    const scanY = y + ((Date.now() * 0.2) % h);
+                    ctx.strokeStyle = 'rgba(0, 238, 255, 0.8)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(x + 4, scanY);
+                    ctx.lineTo(x + w - 4, scanY);
+                    ctx.stroke();
 
-                        // Draw Face Bounding Box
-                        ctx.strokeStyle = '#00eeff';
-                        ctx.lineWidth = 2.5;
-                        ctx.strokeRect(x, y, w, h);
+                    // Clean Cyberpunk 3D Facial Landmark Contour Connections
+                    if (face.landmarks && face.landmarks.length > 0) {
+                        const pts = face.landmarks;
 
-                        // Draw 3D-styled Face Mesh Wireframe Connections (Eyes, Brows, Nose, Lips, Outline)
-                        if (d.landmarks) {
-                            const pts = d.landmarks.positions;
-
-                            // Draw Connecting Wireframes for futuristic Cyberpunk look
-                            const drawFeaturePath = (indices: number[], color: string, closed: boolean = false) => {
-                                ctx.strokeStyle = color;
-                                ctx.lineWidth = 1.2;
-                                ctx.beginPath();
-                                indices.forEach((idx, i) => {
-                                    if (pts[idx]) {
-                                        if (i === 0) ctx.moveTo(pts[idx].x, pts[idx].y);
-                                        else ctx.lineTo(pts[idx].x, pts[idx].y);
-                                    }
-                                });
-                                if (closed && pts[indices[0]]) ctx.closePath();
-                                ctx.stroke();
-                            };
-
-                            // Jaw outline (0-16)
-                            drawFeaturePath(Array.from({ length: 17 }, (_, i) => i), 'rgba(0, 238, 255, 0.6)');
-                            // Left eyebrow (17-21), Right eyebrow (22-26)
-                            drawFeaturePath([17, 18, 19, 20, 21], '#00ff66');
-                            drawFeaturePath([22, 23, 24, 25, 26], '#00ff66');
-                            // Nose bridge & tip (27-35)
-                            drawFeaturePath([27, 28, 29, 30, 31, 32, 33, 34, 35], '#ff007f');
-                            // Left Eye (36-41), Right Eye (42-47)
-                            drawFeaturePath([36, 37, 38, 39, 40, 41], '#00eeff', true);
-                            drawFeaturePath([42, 43, 44, 45, 46, 47], '#00eeff', true);
-                            // Outer Lips (48-59), Inner Lips (60-67)
-                            drawFeaturePath([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59], '#a855f7', true);
-                            drawFeaturePath([60, 61, 62, 63, 64, 65, 66, 67], '#ff9900', true);
-
-                            // Draw Glowing Landmark Nodes
-                            ctx.fillStyle = '#ffffff';
-                            pts.forEach(pt => {
-                                ctx.fillRect(pt.x - 1.5, pt.y - 1.5, 3, 3);
-                            });
-                        }
-
-                        // Full Body Cyber Kinematic Pose Skeleton (Estimated from COCO-SSD person bounding box & biometrics)
-                        if (showMotionTracking) {
-                            const shoulderY = y + h * 1.15;
-                            const waistY = y + h * 2.3;
-                            const kneeY = y + h * 3.4;
-                            const ankleY = y + h * 4.4;
-                            const leftArmX = x - w * 0.4;
-                            const rightArmX = x + w * 1.4;
-                            const leftLegX = x + w * 0.2;
-                            const rightLegX = x + w * 0.8;
-
-                            ctx.strokeStyle = 'rgba(255, 0, 127, 0.7)';
-                            ctx.lineWidth = 2.5;
-                            ctx.setLineDash([4, 2]);
-
-                            // Shoulders & Spine
+                        const drawContour = (indices: number[], strokeColor: string, closed: boolean = false) => {
+                            ctx.strokeStyle = strokeColor;
+                            ctx.lineWidth = 1.5;
                             ctx.beginPath();
-                            ctx.moveTo(leftArmX, shoulderY); ctx.lineTo(rightArmX, shoulderY);
-                            ctx.moveTo(x + w / 2, y + h); ctx.lineTo(x + w / 2, waistY);
-                            // Left Arm & Right Arm
-                            ctx.moveTo(leftArmX, shoulderY); ctx.lineTo(leftArmX - 25, shoulderY + 80);
-                            ctx.moveTo(rightArmX, shoulderY); ctx.lineTo(rightArmX + 25, shoulderY + 80);
-                            // Hip Pelvis & Legs
-                            ctx.moveTo(x + w / 2, waistY); ctx.lineTo(leftLegX, kneeY);
-                            ctx.moveTo(leftLegX, kneeY); ctx.lineTo(leftLegX - 10, ankleY);
-                            ctx.moveTo(x + w / 2, waistY); ctx.lineTo(rightLegX, kneeY);
-                            ctx.moveTo(rightLegX, kneeY); ctx.lineTo(rightLegX + 10, ankleY);
-                            ctx.stroke();
-                            ctx.setLineDash([]);
-
-                            // Kinematic Joint Nodes
-                            [
-                                { x: leftArmX, y: shoulderY }, { x: rightArmX, y: shoulderY },
-                                { x: x + w / 2, y: waistY }, { x: leftLegX, y: kneeY },
-                                { x: rightLegX, y: kneeY }
-                            ].forEach(joint => {
-                                ctx.fillStyle = '#ff007f';
-                                ctx.beginPath();
-                                ctx.arc(joint.x, joint.y, 5, 0, Math.PI * 2);
-                                ctx.fill();
-                                ctx.strokeStyle = '#ffffff';
-                                ctx.stroke();
+                            indices.forEach((idx, i) => {
+                                if (pts[idx]) {
+                                    if (i === 0) ctx.moveTo(pts[idx].x, pts[idx].y);
+                                    else ctx.lineTo(pts[idx].x, pts[idx].y);
+                                }
                             });
-                        }
+                            if (closed && pts[indices[0]]) ctx.closePath();
+                            ctx.stroke();
+                        };
 
-                        // Dominant Expression & Age
-                        const expressions = d.expressions;
-                        let maxExpr = 'neutral';
-                        let maxScore = 0;
-                        Object.entries(expressions).forEach(([expr, score]) => {
-                            if (score > maxScore) {
-                                maxScore = score;
-                                maxExpr = expr;
+                        // Jawline (0-16)
+                        drawContour(Array.from({ length: 17 }, (_, i) => i), 'rgba(0, 238, 255, 0.7)');
+                        // Left Eyebrow (17-21), Right Eyebrow (22-26)
+                        drawContour([17, 18, 19, 20, 21], '#00ff66');
+                        drawContour([22, 23, 24, 25, 26], '#00ff66');
+                        // Nose Bridge (27-30) & Nose Tip (31-35)
+                        drawContour([27, 28, 29, 30], '#a855f7');
+                        drawContour([31, 32, 33, 34, 35], '#a855f7');
+                        // Left Eye (36-41), Right Eye (42-47)
+                        drawContour([36, 37, 38, 39, 40, 41], '#00eeff', true);
+                        drawContour([42, 43, 44, 45, 46, 47], '#00eeff', true);
+                        // Outer Lips (48-59), Inner Lips (60-67)
+                        drawContour([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59], '#ff007f', true);
+
+                        // Eye pupil reticles
+                        [38, 43].forEach(eyeCenterIdx => {
+                            if (pts[eyeCenterIdx]) {
+                                const ep = pts[eyeCenterIdx];
+                                ctx.strokeStyle = '#00eeff';
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.arc(ep.x, ep.y, 4, 0, Math.PI * 2);
+                                ctx.stroke();
                             }
                         });
 
-                        const ageLabel = d.age ? `${Math.round(d.age)} yrs` : '';
-                        const genderLabel = d.gender ? d.gender.toUpperCase() : '';
-
-                        ctx.fillStyle = 'rgba(10, 11, 15, 0.85)';
-                        ctx.fillRect(x, y + h + 6, Math.max(w, 180), 42);
-
-                        ctx.strokeStyle = 'rgba(0, 238, 255, 0.4)';
-                        ctx.strokeRect(x, y + h + 6, Math.max(w, 180), 42);
-
-                        ctx.fillStyle = '#00eeff';
-                        ctx.font = '700 12px Inter, sans-serif';
-                        ctx.fillText(`MOOD: ${maxExpr.toUpperCase()} (${Math.round(maxScore * 100)}%)`, x + 8, y + h + 24);
-                        ctx.fillStyle = '#a855f7';
-                        ctx.fillText(`AGE: ${ageLabel} | GENDER: ${genderLabel}`, x + 8, y + h + 40);
-
-                        // Speak announcement if new face detected
-                        if (enableVoiceAudio && maxScore > 0.6) {
-                            speakAiAnnouncement(`Detected person, feeling ${maxExpr}, estimated age ${ageLabel}`);
-                        }
-                    });
-                } catch (e) {
-                    console.error('Face Detection Frame Error:', e);
-                }
+                        // Nodes
+                        ctx.fillStyle = '#ffffff';
+                        pts.forEach((pt, i) => {
+                            if (i % 2 === 0) ctx.fillRect(pt.x - 1, pt.y - 1, 2.5, 2.5);
+                        });
+                    }
+                });
             }
         }
 
-        // 5. Draw Cyber HUD Overlay Elements
-        ctx.strokeStyle = 'rgba(0, 238, 255, 0.3)';
-        ctx.lineWidth = 1;
-        // Scanning laser line
-        const scanY = (Date.now() * 0.25) % height;
-        ctx.beginPath();
-        ctx.moveTo(0, scanY);
-        ctx.lineTo(width, scanY);
-        ctx.stroke();
-
-        // HUD Top Info Bar
-        ctx.fillStyle = 'rgba(7, 9, 14, 0.75)';
-        ctx.fillRect(16, 16, 260, 36);
-        ctx.strokeStyle = 'rgba(0, 238, 255, 0.3)';
-        ctx.strokeRect(16, 16, 260, 36);
-
-        ctx.fillStyle = '#00eeff';
-        ctx.font = '700 12px monospace';
-        ctx.fillText(`AI VISION HUB | MODE: ${isDemoMode ? 'SIMULATED' : 'LIVE'}`, 26, 38);
-
-        // Compute FPS & Performance
+        // Compute 60 FPS Counter
         frameCountRef.current++;
-        const nowTime = performance.now();
-        if (nowTime - lastFpsTimeRef.current >= 1000) {
-            setFps(frameCountRef.current);
+        const now = performance.now();
+        if (now - lastFpsTimeRef.current >= 1000) {
+            setFps(Math.round((frameCountRef.current * 1000) / (now - lastFpsTimeRef.current)));
             frameCountRef.current = 0;
-            lastFpsTimeRef.current = nowTime;
+            lastFpsTimeRef.current = now;
         }
 
-        const endTime = performance.now();
-        setInferenceTime(Math.round(endTime - startTime));
+        animationFrameRef.current = requestAnimationFrame(processFrame);
+    }, [isDemoMode, showFaceDetection, showObjectDetection, showMotionTracking]);
 
-        // Loop next frame
-        if (isCameraActive || isDemoMode) {
-            animationFrameRef.current = requestAnimationFrame(processFrame);
-        }
-    }, [isCameraActive, isDemoMode, showFaceDetection, showObjectDetection, showMotionTracking, enableVoiceAudio, speakAiAnnouncement]);
-
-    // Trigger processing loop when camera or demo mode is active
+    // Start/Stop canvas render loop
     useEffect(() => {
-        if (isCameraActive || isDemoMode) {
+        if (isCameraActive) {
             animationFrameRef.current = requestAnimationFrame(processFrame);
         }
         return () => {
-            if (animationFrameRef.current) {
-                cancelAnimationFrame(animationFrameRef.current);
-            }
+            if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
         };
-    }, [isCameraActive, isDemoMode, processFrame]);
+    }, [isCameraActive, processFrame]);
 
-    // --- Capture Annotated Snapshot ---
-    const captureSnapshot = () => {
-        if (!canvasRef.current) return;
-        const dataUrl = canvasRef.current.toDataURL('image/png');
-        setCapturedSnapshots(prev => [dataUrl, ...prev.slice(0, 5)]);
+    // Helper: Draw High-Tech Cyber Corner Brackets on Bounding Boxes
+    const drawCyberBox = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, color: string, label: string) => {
+        // Subtle translucent fill
+        ctx.fillStyle = alpha(color, 0.08);
+        ctx.fillRect(x, y, w, h);
 
-        // Create download link
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = `ai-vision-snapshot-${Date.now()}.png`;
-        a.click();
+        // Thin border
+        ctx.strokeStyle = alpha(color, 0.4);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, w, h);
+
+        // Heavy Glowing Corner Brackets
+        const cLen = Math.min(20, w * 0.25, h * 0.25);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        // Top-Left
+        ctx.moveTo(x, y + cLen); ctx.lineTo(x, y); ctx.lineTo(x + cLen, y);
+        // Top-Right
+        ctx.moveTo(x + w - cLen, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + cLen);
+        // Bottom-Left
+        ctx.moveTo(x, y + h - cLen); ctx.lineTo(x, y + h); ctx.lineTo(x + cLen, y + h);
+        // Bottom-Right
+        ctx.moveTo(x + w - cLen, y + h); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w, y + h - cLen);
+        ctx.stroke();
+
+        // High-Tech Header Label Badge
+        if (label) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, Math.max(0, y - 22), Math.min(w, 180), 20);
+            ctx.fillStyle = '#000000';
+            ctx.font = '800 11px Inter, sans-serif';
+            ctx.fillText(label, x + 6, Math.max(14, y - 7));
+        }
     };
 
-    // --- Export AI Analytics JSON Payload ---
-    const exportAiAnalyticsJson = () => {
+    // Snapshot Handler
+    const takeSnapshot = () => {
+        if (!canvasRef.current) return;
+        const dataUrl = canvasRef.current.toDataURL('image/png');
+        setCapturedSnapshots(prev => [dataUrl, ...prev.slice(0, 7)]);
+    };
+
+    // Export Analytics JSON
+    const exportAnalyticsJson = () => {
         const payload = {
             timestamp: new Date().toISOString(),
-            fps: fps,
+            fps,
             inferenceTimeMs: inferenceTime,
-            motionIntensityPercent: motionLevel,
-            detectedObjectsCount: detectedObjects.length,
             detectedFacesCount: detectedFaces.length,
-            detectedObjects: detectedObjects,
-            detectedFaces: detectedFaces
+            detectedObjectsCount: detectedObjects.length,
+            motionLevelPercent: motionLevel,
+            faces: detectedFaces,
+            objects: detectedObjects
         };
-
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -639,231 +592,354 @@ const AiVisionStudio: React.FC = () => {
                 icon={Visibility}
             />
 
-            <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 } }}>
-                <Grid container spacing={3}>
-                    
-                    {/* Left Column: Live Camera & Vision Canvas */}
-                    <Grid item xs={12} lg={8}>
-                        <Card sx={{
-                            bgcolor: 'rgba(10, 11, 15, 0.85)',
-                            backdropFilter: 'blur(16px)',
-                            border: '1px solid rgba(0, 238, 255, 0.2)',
+            <Container maxWidth="xl" sx={{ mt: { xs: 1, md: 2 } }}>
+
+                {/* --- Model Loading Progress Bar --- */}
+                {isModelsLoading && (
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 3,
+                            mb: 4,
+                            bgcolor: 'rgba(13, 17, 24, 0.85)',
+                            border: '1px solid rgba(0, 238, 255, 0.25)',
                             borderRadius: 3,
-                            overflow: 'hidden',
-                            boxShadow: `0 0 30px ${alpha('#00eeff', 0.1)}`
-                        }}>
-                            <Box sx={{
-                                p: 2,
+                            backdropFilter: 'blur(12px)',
+                            boxShadow: '0 8px 32px rgba(0, 238, 255, 0.1)'
+                        }}
+                    >
+                        <Stack spacing={2}>
+                            <Stack direction="row" alignItems="center" justifyContent="space-between">
+                                <Stack direction="row" alignItems="center" spacing={1.5}>
+                                    <CircularProgress size={20} sx={{ color: '#00eeff' }} />
+                                    <Typography variant="subtitle2" fontWeight={700} color="#ffffff">
+                                        {loadingStatusText}
+                                    </Typography>
+                                </Stack>
+                                <Chip
+                                    label={`${loadingProgress}%`}
+                                    size="small"
+                                    sx={{ bgcolor: 'rgba(0, 238, 255, 0.15)', color: '#00eeff', fontWeight: 800 }}
+                                />
+                            </Stack>
+                            <LinearProgress
+                                variant="determinate"
+                                value={loadingProgress}
+                                sx={{
+                                    height: 8,
+                                    borderRadius: 4,
+                                    bgcolor: 'rgba(255, 255, 255, 0.08)',
+                                    '& .MuiLinearProgress-bar': {
+                                        background: 'linear-gradient(90deg, #00eeff 0%, #a855f7 100%)',
+                                    }
+                                }}
+                            />
+                        </Stack>
+                    </Paper>
+                )}
+
+                {/* Hidden Native Video Element */}
+                <video
+                    ref={videoRef}
+                    playsInline
+                    muted
+                    style={{ display: 'none' }}
+                />
+
+                {/* Main Vision Studio Grid */}
+                <Grid container spacing={3} alignItems="stretch">
+
+                    {/* Left Column: Vision Canvas Feed */}
+                    <Grid item xs={12} lg={8}>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                bgcolor: '#080a0f',
+                                border: '1px solid rgba(0, 238, 255, 0.25)',
+                                borderRadius: 3,
+                                overflow: 'hidden',
+                                height: '100%',
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                                bgcolor: 'rgba(7, 9, 14, 0.6)'
-                            }}>
-                                <Stack direction="row" spacing={1.5} alignItems="center">
-                                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: isCameraActive ? '#00ff66' : '#f59e0b', boxShadow: isCameraActive ? '0 0 10px #00ff66' : 'none' }} />
-                                    <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', letterSpacing: '0.5px' }}>
-                                        VISION CANVAS {isDemoMode ? '(SIMULATED LAB)' : '(LIVE FEED)'}
+                                flexDirection: 'column',
+                                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.6)'
+                            }}
+                        >
+                            {/* Canvas HUD Header */}
+                            <Box
+                                sx={{
+                                    px: 2.5,
+                                    py: 1.5,
+                                    bgcolor: 'rgba(13, 17, 24, 0.95)',
+                                    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    flexWrap: 'wrap',
+                                    gap: 1.5
+                                }}
+                            >
+                                <Stack direction="row" alignItems="center" spacing={1.5}>
+                                    <Box
+                                        sx={{
+                                            width: 10,
+                                            height: 10,
+                                            borderRadius: '50%',
+                                            bgcolor: isCameraActive ? '#00ff66' : '#ff0055',
+                                            boxShadow: isCameraActive ? '0 0 10px #00ff66' : '0 0 10px #ff0055'
+                                        }}
+                                    />
+                                    <Typography variant="subtitle2" fontWeight={800} color="#ffffff" letterSpacing="0.05em">
+                                        VISION CANVAS {isDemoMode ? '(CYBER DEMO FEED)' : isCameraActive ? '(LIVE FEED)' : '(OFFLINE)'}
                                     </Typography>
                                 </Stack>
 
+                                {/* Performance HUD Badges */}
                                 <Stack direction="row" spacing={1} alignItems="center">
                                     <Chip
-                                        icon={<Speed sx={{ fontSize: '16px !important' }} />}
+                                        icon={<Speed sx={{ fontSize: '16px !important', color: '#00ff66 !important' }} />}
                                         label={`${fps} FPS`}
                                         size="small"
-                                        sx={{ bgcolor: alpha(primaryColor, 0.15), color: primaryColor, fontWeight: 700, border: `1px solid ${alpha(primaryColor, 0.3)}` }}
+                                        sx={{ bgcolor: 'rgba(0, 255, 102, 0.1)', color: '#00ff66', fontWeight: 700, border: '1px solid rgba(0, 255, 102, 0.2)' }}
                                     />
                                     <Chip
-                                        icon={<Memory sx={{ fontSize: '16px !important' }} />}
+                                        icon={<Memory sx={{ fontSize: '16px !important', color: '#00eeff !important' }} />}
                                         label={`${inferenceTime} ms`}
                                         size="small"
-                                        sx={{ bgcolor: 'rgba(168, 85, 247, 0.15)', color: '#a855f7', fontWeight: 700, border: '1px solid rgba(168, 85, 247, 0.3)' }}
+                                        sx={{ bgcolor: 'rgba(0, 238, 255, 0.1)', color: '#00eeff', fontWeight: 700, border: '1px solid rgba(0, 238, 255, 0.2)' }}
                                     />
-                                    <IconButton onClick={switchCamera} disabled={!isCameraActive || isDemoMode} size="small" sx={{ color: '#00eeff', border: '1px solid rgba(0, 238, 255, 0.2)' }}>
+                                    <IconButton size="small" onClick={switchCamera} title="Switch Front/Back Camera" sx={{ color: '#ffffff', bgcolor: 'rgba(255, 255, 255, 0.05)' }}>
                                         <Cameraswitch fontSize="small" />
                                     </IconButton>
                                 </Stack>
                             </Box>
 
                             {/* Canvas Viewport */}
-                            <Box sx={{ position: 'relative', width: '100%', minHeight: { xs: 320, sm: 480 }, bgcolor: '#040508', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                
-                                {/* Hidden Video Element */}
-                                <video
-                                    ref={videoRef}
-                                    playsInline
-                                    muted
-                                    style={{ display: 'none' }}
-                                />
-
-                                {/* Main HUD Render Canvas */}
+                            <Box
+                                sx={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    aspectRatio: '16/9',
+                                    bgcolor: '#040508',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    overflow: 'hidden'
+                                }}
+                            >
                                 <canvas
                                     ref={canvasRef}
                                     style={{
                                         width: '100%',
                                         height: '100%',
-                                        maxHeight: '560px',
-                                        objectFit: 'contain',
-                                        display: (isCameraActive || isDemoMode) ? 'block' : 'none'
+                                        objectFit: 'contain'
                                     }}
                                 />
 
-                                {/* Initial Offline State / Model Loading Overlay */}
-                                {(!isCameraActive && !isDemoMode) && (
-                                    <Box sx={{ p: 4, textAlign: 'center', maxWidth: 480 }}>
-                                        {isModelsLoading ? (
-                                            <Stack spacing={2} alignItems="center">
-                                                <CircularProgress size={48} sx={{ color: '#00eeff' }} />
-                                                <Typography variant="subtitle1" fontWeight={700} color="primary.main">
-                                                    {loadingStatusText}
-                                                </Typography>
-                                                <Box sx={{ width: '100%' }}>
-                                                    <LinearProgress variant="determinate" value={loadingProgress} sx={{ height: 6, borderRadius: 3, bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
-                                                </Box>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    Loading Neural Weights (COCO-SSD & Face Landmark Nets)
-                                                </Typography>
-                                            </Stack>
-                                        ) : (
-                                            <Stack spacing={2.5} alignItems="center">
-                                                <Avatar sx={{ width: 72, height: 72, bgcolor: alpha('#00eeff', 0.1), border: '2px solid #00eeff' }}>
-                                                    <Videocam sx={{ fontSize: 36, color: '#00eeff' }} />
-                                                </Avatar>
-                                                <Typography variant="h6" fontWeight={800} color="#ffffff">
-                                                    Start Realtime AI Vision
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    Grant camera access to process face biometrics, emotion recognition, age detection & object tracking in real-time. 100% private & client-side.
-                                                </Typography>
-                                                
-                                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} width="100%">
-                                                    <Button
-                                                        variant="contained"
-                                                        startIcon={<Videocam />}
-                                                        onClick={startCamera}
-                                                        fullWidth
-                                                        sx={{
-                                                            py: 1.2,
-                                                            borderRadius: '30px',
-                                                            bgcolor: '#00eeff',
-                                                            color: '#000000',
-                                                            fontWeight: 800,
-                                                            '&:hover': { bgcolor: '#00cce6' }
-                                                        }}
-                                                    >
-                                                        Enable Camera Feed
-                                                    </Button>
-                                                    <Button
-                                                        variant="outlined"
-                                                        startIcon={<PlayArrow />}
-                                                        onClick={() => { setIsDemoMode(true); setIsCameraActive(true); }}
-                                                        fullWidth
-                                                        sx={{
-                                                            py: 1.2,
-                                                            borderRadius: '30px',
-                                                            borderColor: 'rgba(255, 255, 255, 0.2)',
-                                                            color: '#ffffff',
-                                                            fontWeight: 700
-                                                        }}
-                                                    >
-                                                        Run Demo Stream
-                                                    </Button>
-                                                </Stack>
-                                            </Stack>
-                                        )}
+                                {/* Camera Start Overlay Prompt when stopped */}
+                                {!isCameraActive && (
+                                    <Box
+                                        sx={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            bgcolor: 'rgba(6, 8, 14, 0.92)',
+                                            backdropFilter: 'blur(8px)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            p: 4,
+                                            textAlign: 'center',
+                                            zIndex: 5
+                                        }}
+                                    >
+                                        <Avatar
+                                            sx={{
+                                                width: 72,
+                                                height: 72,
+                                                bgcolor: alpha(primaryColor, 0.12),
+                                                border: `2px solid ${primaryColor}`,
+                                                mb: 2.5,
+                                                boxShadow: `0 0 30px ${alpha(primaryColor, 0.4)}`
+                                            }}
+                                        >
+                                            <Videocam sx={{ fontSize: 36, color: primaryColor }} />
+                                        </Avatar>
+
+                                        <Typography variant="h5" fontWeight={800} color="#ffffff" gutterBottom>
+                                            ACTIVATE AI CAMERA FEED
+                                        </Typography>
+
+                                        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 460, mb: 3.5, lineHeight: 1.6 }}>
+                                            Enable your webcam to run real-time biometric face mesh tracking, 7-emotion mood analysis, estimated age & gender classification, object bounding boxes, and optical motion tracking 100% in your browser.
+                                        </Typography>
+
+                                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                            <Button
+                                                variant="contained"
+                                                size="large"
+                                                startIcon={<Videocam />}
+                                                onClick={startCamera}
+                                                disabled={isModelsLoading}
+                                                sx={{
+                                                    borderRadius: '28px',
+                                                    px: 4,
+                                                    py: 1.5,
+                                                    fontWeight: 800,
+                                                    background: 'linear-gradient(135deg, #00eeff 0%, #a855f7 100%)',
+                                                    color: '#000000',
+                                                    boxShadow: '0 8px 25px rgba(0, 238, 255, 0.35)',
+                                                    '&:hover': {
+                                                        background: 'linear-gradient(135deg, #00cce6 0%, #9333ea 100%)',
+                                                        boxShadow: '0 10px 30px rgba(0, 238, 255, 0.5)'
+                                                    }
+                                                }}
+                                            >
+                                                ENABLE CAMERA
+                                            </Button>
+
+                                            <Button
+                                                variant="outlined"
+                                                size="large"
+                                                startIcon={<PlayArrow />}
+                                                onClick={() => { setIsDemoMode(true); setIsCameraActive(true); }}
+                                                disabled={isModelsLoading}
+                                                sx={{
+                                                    borderRadius: '28px',
+                                                    px: 3.5,
+                                                    py: 1.5,
+                                                    fontWeight: 700,
+                                                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                                                    color: '#ffffff',
+                                                    '&:hover': {
+                                                        borderColor: '#00eeff',
+                                                        color: '#00eeff',
+                                                        bgcolor: 'rgba(0, 238, 255, 0.05)'
+                                                    }
+                                                }}
+                                            >
+                                                LAUNCH DEMO FEED
+                                            </Button>
+                                        </Stack>
                                     </Box>
                                 )}
                             </Box>
 
-                            {/* Controls Bar */}
-                            <Box sx={{ p: 2, bgcolor: 'rgba(7, 9, 14, 0.8)', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                                <Grid container spacing={2} alignItems="center">
-                                    <Grid item xs={12} sm={6}>
-                                        <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                                            <Button
-                                                size="small"
-                                                variant={showFaceDetection ? 'contained' : 'outlined'}
-                                                startIcon={<Face fontSize="small" />}
-                                                onClick={() => setShowFaceDetection(!showFaceDetection)}
-                                                sx={{ borderRadius: '20px', fontSize: '0.75rem', py: 0.4 }}
-                                            >
-                                                Face & Mood
-                                            </Button>
-                                            <Button
-                                                size="small"
-                                                variant={showObjectDetection ? 'contained' : 'outlined'}
-                                                startIcon={<Category fontSize="small" />}
-                                                onClick={() => setShowObjectDetection(!showObjectDetection)}
-                                                color="success"
-                                                sx={{ borderRadius: '20px', fontSize: '0.75rem', py: 0.4 }}
-                                            >
-                                                COCO Objects
-                                            </Button>
-                                            <Button
-                                                size="small"
-                                                variant={showMotionTracking ? 'contained' : 'outlined'}
-                                                startIcon={<Speed fontSize="small" />}
-                                                onClick={() => setShowMotionTracking(!showMotionTracking)}
-                                                color="secondary"
-                                                sx={{ borderRadius: '20px', fontSize: '0.75rem', py: 0.4 }}
-                                            >
-                                                Motion Optical
-                                            </Button>
-                                        </Stack>
-                                    </Grid>
+                            {/* Canvas Toolbar & Action Buttons */}
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    bgcolor: 'rgba(13, 17, 24, 0.95)',
+                                    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    flexWrap: 'wrap',
+                                    gap: 1.5
+                                }}
+                            >
+                                {/* Overlay Feature Toggles */}
+                                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
+                                    <Chip
+                                        icon={<Face sx={{ fontSize: '16px !important' }} />}
+                                        label="Face & Mood"
+                                        clickable
+                                        color={showFaceDetection ? 'primary' : 'default'}
+                                        variant={showFaceDetection ? 'filled' : 'outlined'}
+                                        onClick={() => setShowFaceDetection(!showFaceDetection)}
+                                        sx={{ fontWeight: 700, fontSize: '0.75rem' }}
+                                    />
+                                    <Chip
+                                        icon={<Category sx={{ fontSize: '16px !important' }} />}
+                                        label="COCO Objects"
+                                        clickable
+                                        color={showObjectDetection ? 'success' : 'default'}
+                                        variant={showObjectDetection ? 'filled' : 'outlined'}
+                                        onClick={() => setShowObjectDetection(!showObjectDetection)}
+                                        sx={{ fontWeight: 700, fontSize: '0.75rem' }}
+                                    />
+                                    <Chip
+                                        icon={<Analytics sx={{ fontSize: '16px !important' }} />}
+                                        label="Motion Optical"
+                                        clickable
+                                        color={showMotionTracking ? 'secondary' : 'default'}
+                                        variant={showMotionTracking ? 'filled' : 'outlined'}
+                                        onClick={() => setShowMotionTracking(!showMotionTracking)}
+                                        sx={{ fontWeight: 700, fontSize: '0.75rem' }}
+                                    />
+                                </Stack>
 
-                                    <Grid item xs={12} sm={6} textAlign={{ sm: 'right' }}>
-                                        <Stack direction="row" spacing={1} justifyContent={{ xs: 'flex-start', sm: 'flex-end' }}>
-                                            <Tooltip title={enableVoiceAudio ? "Mute Voice AI" : "Enable Voice AI Announcements"}>
-                                                <IconButton
-                                                    onClick={() => setEnableVoiceAudio(!enableVoiceAudio)}
-                                                    sx={{ color: enableVoiceAudio ? '#00ff66' : 'grey.500', border: '1px solid rgba(255, 255, 255, 0.1)' }}
-                                                >
-                                                    {enableVoiceAudio ? <VolumeUp /> : <VolumeOff />}
-                                                </IconButton>
-                                            </Tooltip>
-                                            <Button
-                                                variant="outlined"
-                                                size="small"
-                                                startIcon={<PhotoCamera />}
-                                                onClick={captureSnapshot}
-                                                disabled={!isCameraActive && !isDemoMode}
-                                                sx={{ borderRadius: '20px', borderColor: '#00eeff', color: '#00eeff' }}
-                                            >
-                                                Snapshot
-                                            </Button>
-                                            <Button
-                                                variant="contained"
-                                                size="small"
-                                                startIcon={<Download />}
-                                                onClick={exportAiAnalyticsJson}
-                                                disabled={!isCameraActive && !isDemoMode}
-                                                sx={{ borderRadius: '20px', bgcolor: '#a855f7', color: '#ffffff' }}
-                                            >
-                                                Export JSON
-                                            </Button>
-                                        </Stack>
-                                    </Grid>
-                                </Grid>
+                                {/* Action Buttons */}
+                                <Stack direction="row" spacing={1.5} alignItems="center">
+                                    <Tooltip title={enableVoiceAudio ? 'Mute AI Audio' : 'Enable Voice Audio Announcements'}>
+                                        <IconButton
+                                            onClick={() => setEnableVoiceAudio(!enableVoiceAudio)}
+                                            sx={{
+                                                bgcolor: enableVoiceAudio ? 'rgba(0, 238, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                                                color: enableVoiceAudio ? '#00eeff' : 'text.secondary'
+                                            }}
+                                        >
+                                            {enableVoiceAudio ? <VolumeUp fontSize="small" /> : <VolumeOff fontSize="small" />}
+                                        </IconButton>
+                                    </Tooltip>
+
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={<PhotoCamera />}
+                                        onClick={takeSnapshot}
+                                        disabled={!isCameraActive}
+                                        sx={{
+                                            borderRadius: '20px',
+                                            borderColor: 'rgba(0, 238, 255, 0.4)',
+                                            color: '#00eeff',
+                                            fontWeight: 700
+                                        }}
+                                    >
+                                        Snapshot
+                                    </Button>
+
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        startIcon={<Download />}
+                                        onClick={exportAnalyticsJson}
+                                        sx={{
+                                            borderRadius: '20px',
+                                            background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
+                                            color: '#ffffff',
+                                            fontWeight: 700
+                                        }}
+                                    >
+                                        Export JSON
+                                    </Button>
+
+                                    {isCameraActive && (
+                                        <IconButton onClick={stopCamera} color="error" title="Stop Camera" sx={{ bgcolor: 'rgba(255, 0, 85, 0.15)' }}>
+                                            <VideocamOff fontSize="small" />
+                                        </IconButton>
+                                    )}
+                                </Stack>
                             </Box>
                         </Card>
                     </Grid>
 
-                    {/* Right Column: Realtime AI Biometric Dashboard */}
+                    {/* Right Column: Biometrics & Analytics Panels */}
                     <Grid item xs={12} lg={4}>
-                        <Stack spacing={3}>
-                            
-                            {/* Biometrics & Emotion Panel */}
-                            <Card sx={{
-                                bgcolor: 'rgba(10, 11, 15, 0.85)',
-                                backdropFilter: 'blur(16px)',
-                                border: '1px solid rgba(0, 238, 255, 0.2)',
-                                borderRadius: 3,
-                                p: 2.5
-                            }}>
-                                <Stack direction="row" spacing={1.5} alignItems="center" mb={2}>
-                                    <Psychology sx={{ color: '#00eeff' }} />
+                        <Stack spacing={2.5} sx={{ height: '100%' }}>
+
+                            {/* 1. Biometric & Mood Analytics Panel */}
+                            <Card
+                                elevation={0}
+                                sx={{
+                                    p: 2.5,
+                                    bgcolor: '#080a0f',
+                                    border: '1px solid rgba(0, 238, 255, 0.25)',
+                                    borderRadius: 3,
+                                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+                                }}
+                            >
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                                    <Psychology sx={{ color: '#00eeff', fontSize: 22 }} />
                                     <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
                                         BIOMETRIC & MOOD ANALYTICS
                                     </Typography>
@@ -871,131 +947,154 @@ const AiVisionStudio: React.FC = () => {
 
                                 {primaryFace ? (
                                     <Stack spacing={2}>
-                                        <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(primaryColor, 0.1), border: `1px solid ${alpha(primaryColor, 0.2)}` }}>
-                                            <Grid container spacing={2}>
-                                                <Grid item xs={6}>
-                                                    <Typography variant="caption" color="text.secondary">DOMINANT EMOTION</Typography>
-                                                    <Typography variant="h6" fontWeight={800} color="#00eeff">
-                                                        {topEmotion ? topEmotion[0].toUpperCase() : 'N/A'}
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={6}>
+                                                <Paper sx={{ p: 1.5, bgcolor: 'rgba(0, 238, 255, 0.05)', border: '1px solid rgba(0, 238, 255, 0.2)', borderRadius: 2 }}>
+                                                    <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                                        DOMINANT EMOTION
                                                     </Typography>
-                                                    <Typography variant="caption" color="primary.main">
+                                                    <Typography variant="h6" fontWeight={800} color="#00eeff" sx={{ textTransform: 'uppercase' }}>
+                                                        {topEmotion ? topEmotion[0] : 'NEUTRAL'}
+                                                    </Typography>
+                                                    <Typography variant="caption" color="#00ff66" fontWeight={700}>
                                                         {topEmotion ? `${Math.round(topEmotion[1] * 100)}% Confidence` : ''}
                                                     </Typography>
-                                                </Grid>
-                                                <Grid item xs={6}>
-                                                    <Typography variant="caption" color="text.secondary">ESTIMATED AGE / GENDER</Typography>
+                                                </Paper>
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                                <Paper sx={{ p: 1.5, bgcolor: 'rgba(168, 85, 247, 0.05)', border: '1px solid rgba(168, 85, 247, 0.2)', borderRadius: 2 }}>
+                                                    <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                                        ESTIMATED AGE / GENDER
+                                                    </Typography>
                                                     <Typography variant="h6" fontWeight={800} color="#a855f7">
                                                         {primaryFace.age ? `${primaryFace.age} Yrs` : 'N/A'}
                                                     </Typography>
-                                                    <Typography variant="caption" color="secondary.main">
+                                                    <Typography variant="caption" color="#00eeff" fontWeight={700}>
                                                         {primaryFace.gender ? primaryFace.gender.toUpperCase() : ''}
                                                     </Typography>
-                                                </Grid>
+                                                </Paper>
                                             </Grid>
-                                        </Box>
+                                        </Grid>
 
                                         {/* Emotion Spectrum Progress Bars */}
-                                        <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ letterSpacing: 1 }}>
+                                        <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                             EMOTION CONFIDENCE SPECTRUM
                                         </Typography>
 
-                                        {primaryFace.expressions && Object.entries(primaryFace.expressions).map(([expr, val]) => (
-                                            <Box key={expr}>
-                                                <Stack direction="row" justifyContent="space-between" mb={0.5}>
-                                                    <Typography variant="caption" sx={{ textTransform: 'capitalize', color: '#ffffff' }}>
-                                                        {expr}
-                                                    </Typography>
-                                                    <Typography variant="caption" fontWeight={700} color="#00eeff">
-                                                        {Math.round(val * 100)}%
-                                                    </Typography>
-                                                </Stack>
-                                                <LinearProgress
-                                                    variant="determinate"
-                                                    value={val * 100}
-                                                    sx={{
-                                                        height: 6,
-                                                        borderRadius: 3,
-                                                        bgcolor: 'rgba(255, 255, 255, 0.08)',
-                                                        '& .MuiLinearProgress-bar': {
-                                                            bgcolor: expr === 'happy' ? '#00ff66' : expr === 'surprised' ? '#00eeff' : '#a855f7'
-                                                        }
-                                                    }}
-                                                />
-                                            </Box>
-                                        ))}
+                                        <Stack spacing={1.2}>
+                                            {primaryFace.expressions && Object.entries(primaryFace.expressions).map(([expr, val]) => {
+                                                const percentage = Math.round(val * 100);
+                                                return (
+                                                    <Box key={expr}>
+                                                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                                                            <Typography variant="caption" color="#ffffff" fontWeight={600} sx={{ textTransform: 'capitalize' }}>
+                                                                {expr}
+                                                            </Typography>
+                                                            <Typography variant="caption" color="#00eeff" fontWeight={700}>
+                                                                {percentage}%
+                                                            </Typography>
+                                                        </Stack>
+                                                        <LinearProgress
+                                                            variant="determinate"
+                                                            value={percentage}
+                                                            sx={{
+                                                                height: 6,
+                                                                borderRadius: 3,
+                                                                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                                                '& .MuiLinearProgress-bar': {
+                                                                    bgcolor: percentage > 50 ? '#00eeff' : '#a855f7'
+                                                                }
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                );
+                                            })}
+                                        </Stack>
                                     </Stack>
                                 ) : (
                                     <Box sx={{ py: 4, textAlign: 'center' }}>
-                                        <Face sx={{ fontSize: 40, color: 'grey.600', mb: 1 }} />
+                                        <Face sx={{ fontSize: 40, color: 'rgba(255, 255, 255, 0.2)', mb: 1 }} />
                                         <Typography variant="body2" color="text.secondary">
-                                            No face detected in video frame. Position yourself clearly in front of the camera.
+                                            No face detected in video frame. Position face toward camera.
                                         </Typography>
                                     </Box>
                                 )}
                             </Card>
 
-                            {/* Detected Objects Panel */}
-                            <Card sx={{
-                                bgcolor: 'rgba(10, 11, 15, 0.85)',
-                                backdropFilter: 'blur(16px)',
-                                border: '1px solid rgba(0, 255, 102, 0.2)',
-                                borderRadius: 3,
-                                p: 2.5
-                            }}>
-                                <Stack direction="row" spacing={1.5} alignItems="center" mb={2}>
-                                    <Category sx={{ color: '#00ff66' }} />
+                            {/* 2. Detected Objects Inventory Panel */}
+                            <Card
+                                elevation={0}
+                                sx={{
+                                    p: 2.5,
+                                    bgcolor: '#080a0f',
+                                    border: '1px solid rgba(0, 255, 102, 0.25)',
+                                    borderRadius: 3,
+                                    flexGrow: 1
+                                }}
+                            >
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                                    <Category sx={{ color: '#00ff66', fontSize: 22 }} />
                                     <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
                                         OBJECT INVENTORY ({detectedObjects.length})
                                     </Typography>
                                 </Stack>
 
                                 {detectedObjects.length > 0 ? (
-                                    <Stack spacing={1} maxHeight={220} sx={{ overflowY: 'auto' }}>
+                                    <Stack spacing={1} sx={{ maxHeight: 180, overflowY: 'auto', pr: 0.5 }}>
                                         {detectedObjects.map((obj, idx) => (
-                                            <Paper key={idx} sx={{ p: 1.2, px: 2, bgcolor: 'rgba(0, 255, 102, 0.05)', border: '1px solid rgba(0, 255, 102, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <Paper
+                                                key={idx}
+                                                elevation={0}
+                                                sx={{
+                                                    p: 1.25,
+                                                    px: 2,
+                                                    bgcolor: 'rgba(0, 255, 102, 0.05)',
+                                                    border: '1px solid rgba(0, 255, 102, 0.2)',
+                                                    borderRadius: 2,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between'
+                                                }}
+                                            >
                                                 <Typography variant="body2" fontWeight={700} color="#ffffff" sx={{ textTransform: 'capitalize' }}>
                                                     {obj.class}
                                                 </Typography>
                                                 <Chip
                                                     label={`${Math.round(obj.score * 100)}% Match`}
                                                     size="small"
-                                                    sx={{ bgcolor: 'rgba(0, 255, 102, 0.15)', color: '#00ff66', fontWeight: 700, fontSize: '0.7rem' }}
+                                                    sx={{ bgcolor: 'rgba(0, 255, 102, 0.2)', color: '#00ff66', fontWeight: 800, fontSize: '0.7rem' }}
                                                 />
                                             </Paper>
                                         ))}
                                     </Stack>
                                 ) : (
-                                    <Typography variant="body2" color="text.secondary" textAlign="center" py={3}>
-                                        Scanning frame for physical objects...
+                                    <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 3 }}>
+                                        No objects currently detected.
                                     </Typography>
                                 )}
                             </Card>
 
-                            {/* Realtime Motion Gauge */}
-                            <Card sx={{
-                                bgcolor: 'rgba(10, 11, 15, 0.85)',
-                                backdropFilter: 'blur(16px)',
-                                border: '1px solid rgba(168, 85, 247, 0.2)',
-                                borderRadius: 3,
-                                p: 2.5
-                            }}>
-                                <Stack direction="row" spacing={1.5} alignItems="center" mb={1.5}>
-                                    <Speed sx={{ color: '#a855f7' }} />
-                                    <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
-                                        OPTICAL MOTION DENSITY
-                                    </Typography>
-                                </Stack>
-
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                                    <Typography variant="h4" fontWeight={900} color="#a855f7">
+                            {/* 3. Optical Motion Density Gauge */}
+                            <Card
+                                elevation={0}
+                                sx={{
+                                    p: 2.5,
+                                    bgcolor: '#080a0f',
+                                    border: '1px solid rgba(255, 0, 127, 0.25)',
+                                    borderRadius: 3
+                                }}
+                            >
+                                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                        <Analytics sx={{ color: '#ff007f', fontSize: 22 }} />
+                                        <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
+                                            OPTICAL MOTION DENSITY
+                                        </Typography>
+                                    </Stack>
+                                    <Typography variant="h6" fontWeight={800} color="#ff007f">
                                         {motionLevel}%
                                     </Typography>
-                                    <Chip
-                                        label={motionLevel > 40 ? 'HIGH MOTION' : motionLevel > 15 ? 'MODERATE' : 'STATIONARY'}
-                                        size="small"
-                                        color={motionLevel > 40 ? 'error' : motionLevel > 15 ? 'warning' : 'success'}
-                                    />
-                                </Box>
+                                </Stack>
 
                                 <LinearProgress
                                     variant="determinate"
@@ -1003,15 +1102,65 @@ const AiVisionStudio: React.FC = () => {
                                     sx={{
                                         height: 8,
                                         borderRadius: 4,
-                                        bgcolor: 'rgba(255, 255, 255, 0.1)',
-                                        '& .MuiLinearProgress-bar': { bgcolor: '#a855f7' }
+                                        bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                        '& .MuiLinearProgress-bar': {
+                                            background: 'linear-gradient(90deg, #ff007f 0%, #a855f7 100%)'
+                                        }
                                     }}
                                 />
                             </Card>
 
                         </Stack>
                     </Grid>
+
                 </Grid>
+
+                {/* --- Snapshot Gallery Section --- */}
+                {capturedSnapshots.length > 0 && (
+                    <Box sx={{ mt: 5 }}>
+                        <Typography variant="h6" fontWeight={800} color="#ffffff" gutterBottom>
+                            CAPTURED SNAPSHOT GALLERY ({capturedSnapshots.length})
+                        </Typography>
+
+                        <Grid container spacing={2} sx={{ mt: 1 }}>
+                            {capturedSnapshots.map((snap, idx) => (
+                                <Grid item xs={6} sm={3} md={2} key={idx}>
+                                    <Box
+                                        sx={{
+                                            position: 'relative',
+                                            borderRadius: 2,
+                                            overflow: 'hidden',
+                                            border: '1px solid rgba(0, 238, 255, 0.3)',
+                                            boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+                                        }}
+                                    >
+                                        <img src={snap} alt={`Snapshot ${idx + 1}`} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => {
+                                                const a = document.createElement('a');
+                                                a.href = snap;
+                                                a.download = `snapshot-${idx + 1}.png`;
+                                                a.click();
+                                            }}
+                                            sx={{
+                                                position: 'absolute',
+                                                bottom: 6,
+                                                right: 6,
+                                                bgcolor: 'rgba(0, 0, 0, 0.7)',
+                                                color: '#00eeff',
+                                                '&:hover': { bgcolor: '#00eeff', color: '#000000' }
+                                            }}
+                                        >
+                                            <Download fontSize="small" />
+                                        </IconButton>
+                                    </Box>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </Box>
+                )}
+
             </Container>
         </Box>
     );
