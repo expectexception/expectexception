@@ -1641,6 +1641,17 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
         }
     };
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isOpen) {
+                setIsOpen(false);
+                playCyberSound('close', isMuted);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, isMuted]);
+
     const formatMessage = (content: string) => {
         const parts = content.split(/(```[\s\S]*?```)/g);
         return parts.map((part, i) => {
@@ -1713,9 +1724,9 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                         key="standing-daemon"
                         initial={{ scale: 0, opacity: 0, y: 40 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.2, opacity: 0, y: -30, rotate: 12 }}
+                        exit={{ scale: 0.1, opacity: 0, y: 20, filter: 'blur(8px)', rotate: -15 }}
                         whileHover={isGameOrServicePage ? { y: -44 } : { y: -6 }}
-                        transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+                        transition={{ type: 'spring', stiffness: 320, damping: 24 }}
                         style={{ pointerEvents: 'auto', position: 'relative' }}
                     >
                         <DaemonStandingCharacter
@@ -1730,35 +1741,33 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                             onClick={() => {
                                 setIsOpen(true);
                                 playCyberSound('open', isMuted);
-                                triggerCyberConfetti();
                             }}
                         />
                     </motion.div>
                 )}
 
-                {/* 2. Open State: Expanding Chat Window */}
+                {/* 2. Open State: Morphing Cyber Chat Window */}
                 {isOpen && (
                     <motion.div
                         key="chat-window"
-                        initial={{ opacity: 0, scale: 0.75, y: 60, transformOrigin: 'bottom right' }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.75, y: 60, transformOrigin: 'bottom right' }}
-                        transition={{ type: 'spring', damping: 24, stiffness: 300 }}
+                        initial={{ opacity: 0, scale: 0.2, y: 90, borderRadius: '60px', transformOrigin: 'bottom right', filter: 'blur(10px)' }}
+                        animate={{ opacity: 1, scale: 1, y: 0, borderRadius: '24px', filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, scale: 0.2, y: 90, borderRadius: '60px', transformOrigin: 'bottom right', filter: 'blur(10px)' }}
+                        transition={{ type: 'spring', damping: 26, stiffness: 320 }}
                         style={{ pointerEvents: 'auto' }}
                     >
-                        {/* Holographic Beam Laser Effect when opening */}
+                        {/* Energy Morph Beam Effect when expanding */}
                         <motion.div
-                            initial={{ height: 0, opacity: 1 }}
-                            animate={{ height: 180, opacity: [1, 0.8, 0] }}
-                            transition={{ duration: 0.4 }}
+                            initial={{ height: 0, opacity: 1, width: 4 }}
+                            animate={{ height: [0, 200, 0], opacity: [1, 0.8, 0], width: [4, 20, 0] }}
+                            transition={{ duration: 0.45, ease: 'easeOut' }}
                             style={{
                                 position: 'absolute',
-                                bottom: 0,
-                                right: 32,
-                                width: 12,
-                                background: `linear-gradient(to top, ${themeColor}, #00eeff, transparent)`,
-                                borderRadius: 6,
-                                filter: 'blur(3px)',
+                                bottom: 10,
+                                right: 28,
+                                background: `radial-gradient(circle, ${themeColor} 0%, #00eeff 60%, transparent 100%)`,
+                                borderRadius: 12,
+                                filter: 'blur(4px)',
                                 pointerEvents: 'none',
                                 zIndex: 10002,
                             }}
@@ -1864,23 +1873,23 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
 
                             {/* Header */}
                             <Box sx={{
-                                px: 2,
-                                py: 1.5,
+                                px: 1.5,
+                                py: 1.2,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                                 borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                                bgcolor: 'rgba(10, 11, 15, 0.6)',
-                                gap: 1
+                                bgcolor: 'rgba(10, 11, 15, 0.7)',
+                                gap: 0.5
                             }}>
-                                <Stack direction="row" alignItems="center" spacing={1} sx={{ flexShrink: 0 }}>
-                                    <ChatbotFace mood={mood} themeColor={themeColor} size={34} hideMargin={true} />
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flexShrink: 0 }}>
+                                    <ChatbotFace mood={mood} themeColor={themeColor} size={32} hideMargin={true} />
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 0.5,
-                                        px: 1,
-                                        py: 0.3,
+                                        px: 0.8,
+                                        py: 0.2,
                                         borderRadius: '10px',
                                         bgcolor: alpha(themeColor, 0.1),
                                         border: `1px solid ${alpha(themeColor, 0.25)}`
@@ -1891,49 +1900,70 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         </Typography>
                                     </Box>
                                 </Stack>
-                                <Stack direction="row" spacing={0.2} alignItems="center" sx={{ flexShrink: 0 }}>
+
+                                {/* Action Tool Buttons */}
+                                <Stack direction="row" spacing={0.1} alignItems="center" sx={{ minWidth: 0, flexShrink: 1, overflowX: 'auto', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
                                     <Tooltip title={isDancing ? "Dancing!" : "Make Bot Dance 🕺"}>
-                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor, p: 0.5 }}>
+                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor, p: 0.4 }}>
                                             <motion.span
                                                 animate={isDancing ? { rotate: [0, 25, -25, 0], scale: [1, 1.3, 1] } : {}}
                                                 transition={{ repeat: Infinity, duration: 0.4 }}
-                                                style={{ display: 'inline-block', fontSize: '0.95rem' }}
+                                                style={{ display: 'inline-block', fontSize: '0.9rem' }}
                                             >
                                                 🕺
                                             </motion.span>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Customize Theme Color">
-                                        <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500', p: 0.5 }}>
+                                        <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500', p: 0.4 }}>
                                             <Palette fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Export Chat History (.md)">
-                                        <IconButton onClick={exportChatMarkdown} size="small" sx={{ color: 'grey.500', '&:hover': { color: themeColor }, p: 0.5 }}>
+                                        <IconButton onClick={exportChatMarkdown} size="small" sx={{ color: 'grey.500', '&:hover': { color: themeColor }, p: 0.4 }}>
                                             <Download fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={isMuted ? 'Unmute Sound FX' : 'Mute Sound FX'}>
-                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : themeColor, p: 0.5 }}>
+                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : themeColor, p: 0.4 }}>
                                             {isMuted ? <VolumeOff fontSize="small" /> : <VolumeUp fontSize="small" />}
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Reset Conversation">
-                                        <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' }, p: 0.5 }}>
+                                        <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' }, p: 0.4 }}>
                                             <DeleteOutline fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
+                                </Stack>
+
+                                {/* Prominent Fixed Close Button */}
+                                <Tooltip title="Close AI Assistant (Esc)">
                                     <IconButton
                                         onClick={() => {
                                             setIsOpen(false);
                                             playCyberSound('close', isMuted);
                                         }}
                                         size="small"
-                                        sx={{ color: 'grey.500', '&:hover': { color: '#ffffff' }, p: 0.6 }}
+                                        sx={{
+                                            color: '#ffffff',
+                                            bgcolor: 'rgba(255, 255, 255, 0.08)',
+                                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                                            borderRadius: '50%',
+                                            p: 0.5,
+                                            ml: 0.5,
+                                            flexShrink: 0,
+                                            '&:hover': {
+                                                bgcolor: '#ef4444',
+                                                color: '#ffffff',
+                                                borderColor: '#ef4444',
+                                                transform: 'scale(1.1)'
+                                            },
+                                            transition: 'all 0.2s ease'
+                                        }}
                                     >
-                                        <Close fontSize="small" />
+                                        <Close sx={{ fontSize: 18 }} />
                                     </IconButton>
-                                </Stack>
+                                </Tooltip>
                             </Box>
 
                             {/* Visor Color Customizer Bar */}
