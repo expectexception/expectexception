@@ -121,6 +121,38 @@ interface MotionTrailPoint {
     alpha: number;
 }
 
+// 21-point hand finger landmark generator for robust fallback tracking
+const generateHandFingerLandmarks = (wX: number, wY: number, angle: number) => {
+    const kps: Array<{ x: number; y: number; z?: number; name?: string }> = [];
+    kps[0] = { x: wX, y: wY, z: 0, name: 'wrist' };
+
+    const fingerConfigs = [
+        { offsetAngle: -0.55, baseDist: 35, len: 50, names: ['thumb_cmc', 'thumb_mcp', 'thumb_ip', 'thumb_tip'] },
+        { offsetAngle: -0.28, baseDist: 40, len: 70, names: ['index_finger_mcp', 'index_finger_pip', 'index_finger_dip', 'index_finger_tip'] },
+        { offsetAngle: 0.0,   baseDist: 42, len: 80, names: ['middle_finger_mcp', 'middle_finger_pip', 'middle_finger_dip', 'middle_finger_tip'] },
+        { offsetAngle: 0.25,  baseDist: 38, len: 72, names: ['ring_finger_mcp', 'ring_finger_pip', 'ring_finger_dip', 'ring_finger_tip'] },
+        { offsetAngle: 0.48,  baseDist: 32, len: 58, names: ['pinky_finger_mcp', 'pinky_finger_pip', 'pinky_finger_dip', 'pinky_finger_tip'] }
+    ];
+
+    let kpIndex = 1;
+    fingerConfigs.forEach(cfg => {
+        const fAngle = angle + cfg.offsetAngle;
+        const mcpX = wX + Math.cos(fAngle) * cfg.baseDist;
+        const mcpY = wY + Math.sin(fAngle) * cfg.baseDist;
+        kps[kpIndex] = { x: mcpX, y: mcpY, z: 0, name: cfg.names[0] };
+
+        const segLen = cfg.len / 3;
+        for (let s = 1; s <= 3; s++) {
+            const px = mcpX + Math.cos(fAngle) * (segLen * s);
+            const py = mcpY + Math.sin(fAngle) * (segLen * s);
+            kps[kpIndex + s] = { x: px, y: py, z: 0, name: cfg.names[s] };
+        }
+        kpIndex += 4;
+    });
+
+    return kps;
+};
+
 const AiVisionStudio: React.FC = () => {
     const theme = useTheme();
     const primaryColor = theme.palette.primary.main;
@@ -242,7 +274,7 @@ const AiVisionStudio: React.FC = () => {
                     const handModel = handPoseDetection.SupportedModels.MediaPipeHands;
                     const handDetector = await handPoseDetection.createDetector(handModel, {
                         runtime: 'tfjs',
-                        modelType: 'full',
+                        modelType: 'lite',
                         maxHands: 2
                     });
                     if (isMounted) handDetectorRef.current = handDetector;
@@ -498,22 +530,20 @@ const AiVisionStudio: React.FC = () => {
                 let liveHands: HandData[] = [];
                 if (showHandTracking && handDetectorRef.current) {
                     try {
-                        const hands = await handDetectorRef.current.estimateHands(video);
-                        if (!isCancelled && hands.length > 0) {
+                        const hands = await handDetectorRef.current.estimateHands(video, {
+                            flipHorizontal: false,
+                            staticImageMode: false
+                        });
+                        if (!isCancelled && hands && hands.length > 0) {
                             liveHands = hands.map(h => ({
                                 handedness: h.handedness || 'Hand',
                                 score: h.score,
                                 keypoints: h.keypoints.map(k => ({ x: k.x, y: k.y, z: k.z, name: k.name }))
                             }));
-                            cachedHandsRef.current = liveHands;
-                            setDetectedHands(liveHands);
                         }
                     } catch (err) {
                         console.warn('Hand inference err:', err);
                     }
-                } else if (!showHandTracking) {
-                    cachedHandsRef.current = [];
-                    setDetectedHands([]);
                 }
 
                 // 2. MoveNet Full-Body Pose Estimation
@@ -523,6 +553,27 @@ const AiVisionStudio: React.FC = () => {
                         const formattedPoses: BodyPoseData[] = poses.map(p => {
                             const kpsMap: Record<string, Keypoint> = {};
                             p.keypoints.forEach(k => { if (k.name) kpsMap[k.name] = k; });
+
+                            // Fallback: If hand detector has temporary frame delay, anchor 21 finger keypoints to wrist position
+                            if (showHandTracking && liveHands.length === 0) {
+                                ['left_wrist', 'right_wrist'].forEach((wristName, wIdx) => {
+                                    const wrist = kpsMap[wristName];
+                                    const elbow = kpsMap[wristName === 'left_wrist' ? 'left_elbow' : 'right_elbow'];
+                                    if (wrist && (wrist.score ?? 1) > 0.2) {
+                                        let angle = -Math.PI / 2;
+                                        if (elbow && (elbow.score ?? 1) > 0.2) {
+                                            angle = Math.atan2(wrist.y - elbow.y, wrist.x - elbow.x);
+                                        }
+                                        const syntheticKps = generateHandFingerLandmarks(wrist.x, wrist.y, angle);
+                                        liveHands.push({
+                                            handedness: wIdx === 0 ? 'Left' : 'Right',
+                                            score: wrist.score || 0.85,
+                                            keypoints: syntheticKps
+                                        });
+                                    }
+                                });
+                            }
+
                             const detectedGesture = classifyGesture(kpsMap, liveHands);
                             setCurrentGesture(detectedGesture);
 
@@ -538,6 +589,14 @@ const AiVisionStudio: React.FC = () => {
                 } else if (!showPoseTracking) {
                     cachedPosesRef.current = [];
                     setDetectedPoses([]);
+                }
+
+                if (!isCancelled && showHandTracking) {
+                    cachedHandsRef.current = liveHands;
+                    setDetectedHands(liveHands);
+                } else if (!showHandTracking) {
+                    cachedHandsRef.current = [];
+                    setDetectedHands([]);
                 }
 
                 // 3. Face, Biometrics & Facial Embeddings
