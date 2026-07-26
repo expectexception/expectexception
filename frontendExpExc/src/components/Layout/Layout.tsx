@@ -43,6 +43,7 @@ import {
     DarkMode,
     LightMode,
     SettingsBrightness,
+    Visibility,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -125,6 +126,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const navItems = [
         { label: 'Home', path: '/', icon: <Home /> },
         { label: 'Services', path: '/services', icon: <Build /> },
+        { label: 'AI Vision Studio', path: '/services/ai-vision-studio', icon: <Visibility /> },
         { label: 'Sandbox', path: '/sandbox', icon: <SportsEsports /> },
         { label: 'Community', path: '/community', icon: <Forum /> },
         { label: 'Blogs', path: '/blogs', icon: <Article /> },
@@ -744,6 +746,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                     Explore
                                 </Typography>
                                 <Stack spacing={1.5}>
+                                    <Link to="/services/ai-vision-studio" style={{ color: '#00eeff', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 'bold', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#00eeff'}>
+                                        Realtime AI Vision Studio 👁️
+                                    </Link>
                                     <Link to="/services" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                         All Developer Tools
                                     </Link>

@@ -20,6 +20,7 @@ interface CmdItem {
 
 const NAV_ITEMS: CmdItem[] = [
     { id: 'nav-home', label: 'Home', path: '/', type: 'nav' },
+    { id: 'nav-vision', label: 'Realtime AI Vision Studio', path: '/services/ai-vision-studio', type: 'nav' },
     { id: 'nav-services', label: 'All Tools', path: '/services', type: 'nav' },
     { id: 'nav-community', label: 'Community', path: '/community', type: 'nav' },
     { id: 'nav-blog', label: 'Blog', path: '/blog', type: 'nav' },
