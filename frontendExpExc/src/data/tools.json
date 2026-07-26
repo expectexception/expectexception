@@ -1,5 +1,32 @@
 [
   {
+    "id": 100,
+    "title": "Realtime AI Vision Studio",
+    "description": "100% frontend real-time camera AI vision lab with face landmark detection, emotion, age & gender estimation, COCO-SSD object detection, and optical motion tracking.",
+    "icon": "Visibility",
+    "path": "/services/ai-vision-studio",
+    "category": "ai",
+    "popularity": 99.8,
+    "tags": [
+      "ai",
+      "vision",
+      "face",
+      "emotion",
+      "camera",
+      "detection"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "ai vision studio",
+      "realtime face detection",
+      "face emotion recognition online",
+      "realtime object detection browser",
+      "age gender detection webcam",
+      "motion detection webcam ai"
+    ]
+  },
+  {
     "id": 1,
     "title": "URL Downloader",
     "description": "Download files from any URL with support for multiple formats and batch processing.",

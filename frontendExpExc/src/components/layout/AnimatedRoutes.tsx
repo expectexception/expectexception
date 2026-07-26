@@ -35,6 +35,7 @@ const RegisterPage = lazy(() => import('../../pages/RegisterPage'));
 const TextToSpeechPage = lazy(() => import('../../pages/TextToSpeechPage'));
 const ImageCompressorPage = lazy(() => import('../../pages/ImageCompressorPage'));
 const AIDetectorPage = lazy(() => import('../../pages/AIDetectorPage'));
+const AiVisionStudio = lazy(() => import('../services/AiVisionStudio'));
 const CreateBlogPage = lazy(() => import('../../pages/admin/CreateBlogPage'));
 const UploadResourcePage = lazy(() => import('../../pages/admin/UploadResourcePage'));
 const AdminDashboardPage = lazy(() => import('../../pages/admin/AdminDashboardPage'));
@@ -203,6 +204,7 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/text-to-speech" element={<PageTransition>{withAuthGuard(<TextToSpeechPage />, '/services/text-to-speech', toolAccess, 'Text to Speech')}</PageTransition>} />
                     <Route path="/services/image-compressor" element={<PageTransition>{withAuthGuard(<ImageCompressorPage />, '/services/image-compressor', toolAccess, 'Image Compressor')}</PageTransition>} />
                     <Route path="/services/ai-detector" element={<PageTransition>{withAuthGuard(<AIDetectorPage />, '/services/ai-detector', toolAccess, 'AI Detector')}</PageTransition>} />
+                    <Route path="/services/ai-vision-studio" element={<PageTransition><AiVisionStudio /></PageTransition>} />
 
                     {/* Document Tools */}
                     <Route path="/services/pdf-to-doc" element={<PageTransition>{withAuthGuard(<PdfToDoc />, '/services/pdf-to-doc', toolAccess, 'PDF to Doc')}</PageTransition>} />
