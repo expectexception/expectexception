@@ -1871,9 +1871,45 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 }}
                             />
 
+                            {/* Top Right Guaranteed Floating Close Button */}
+                            <Tooltip title="Close AI Chat (Esc)">
+                                <IconButton
+                                    onClick={() => {
+                                        setIsOpen(false);
+                                        playCyberSound('close', isMuted);
+                                    }}
+                                    size="small"
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 8,
+                                        right: 8,
+                                        zIndex: 10030,
+                                        color: '#ffffff',
+                                        bgcolor: 'rgba(255, 255, 255, 0.12)',
+                                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                                        backdropFilter: 'blur(8px)',
+                                        borderRadius: '50%',
+                                        width: 28,
+                                        height: 28,
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                                        '&:hover': {
+                                            bgcolor: '#ef4444',
+                                            color: '#ffffff',
+                                            borderColor: '#ef4444',
+                                            transform: 'scale(1.15)',
+                                            boxShadow: '0 0 15px rgba(239, 68, 68, 0.6)'
+                                        },
+                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                                    }}
+                                >
+                                    <Close sx={{ fontSize: 16 }} />
+                                </IconButton>
+                            </Tooltip>
+
                             {/* Header */}
                             <Box sx={{
-                                px: 1.5,
+                                pl: 1.5,
+                                pr: 5, // Extra right padding so title/tools never overlap the absolute top-right close button
                                 py: 1.2,
                                 display: 'flex',
                                 alignItems: 'center',
@@ -1883,7 +1919,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 gap: 0.5
                             }}>
                                 <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flexShrink: 0 }}>
-                                    <ChatbotFace mood={mood} themeColor={themeColor} size={32} hideMargin={true} />
+                                    <ChatbotFace mood={mood} themeColor={themeColor} size={30} hideMargin={true} />
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -1902,68 +1938,39 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 </Stack>
 
                                 {/* Action Tool Buttons */}
-                                <Stack direction="row" spacing={0.1} alignItems="center" sx={{ minWidth: 0, flexShrink: 1, overflowX: 'auto', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+                                <Stack direction="row" spacing={0.1} alignItems="center" sx={{ minWidth: 0, flexShrink: 1 }}>
                                     <Tooltip title={isDancing ? "Dancing!" : "Make Bot Dance 🕺"}>
-                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor, p: 0.4 }}>
+                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor, p: 0.35 }}>
                                             <motion.span
                                                 animate={isDancing ? { rotate: [0, 25, -25, 0], scale: [1, 1.3, 1] } : {}}
                                                 transition={{ repeat: Infinity, duration: 0.4 }}
-                                                style={{ display: 'inline-block', fontSize: '0.9rem' }}
+                                                style={{ display: 'inline-block', fontSize: '0.85rem' }}
                                             >
                                                 🕺
                                             </motion.span>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Customize Theme Color">
-                                        <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500', p: 0.4 }}>
-                                            <Palette fontSize="small" />
+                                        <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500', p: 0.35 }}>
+                                            <Palette sx={{ fontSize: 17 }} />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Export Chat History (.md)">
-                                        <IconButton onClick={exportChatMarkdown} size="small" sx={{ color: 'grey.500', '&:hover': { color: themeColor }, p: 0.4 }}>
-                                            <Download fontSize="small" />
+                                        <IconButton onClick={exportChatMarkdown} size="small" sx={{ color: 'grey.500', '&:hover': { color: themeColor }, p: 0.35 }}>
+                                            <Download sx={{ fontSize: 17 }} />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={isMuted ? 'Unmute Sound FX' : 'Mute Sound FX'}>
-                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : themeColor, p: 0.4 }}>
-                                            {isMuted ? <VolumeOff fontSize="small" /> : <VolumeUp fontSize="small" />}
+                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : themeColor, p: 0.35 }}>
+                                            {isMuted ? <VolumeOff sx={{ fontSize: 17 }} /> : <VolumeUp sx={{ fontSize: 17 }} />}
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Reset Conversation">
-                                        <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' }, p: 0.4 }}>
-                                            <DeleteOutline fontSize="small" />
+                                        <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' }, p: 0.35 }}>
+                                            <DeleteOutline sx={{ fontSize: 17 }} />
                                         </IconButton>
                                     </Tooltip>
                                 </Stack>
-
-                                {/* Prominent Fixed Close Button */}
-                                <Tooltip title="Close AI Assistant (Esc)">
-                                    <IconButton
-                                        onClick={() => {
-                                            setIsOpen(false);
-                                            playCyberSound('close', isMuted);
-                                        }}
-                                        size="small"
-                                        sx={{
-                                            color: '#ffffff',
-                                            bgcolor: 'rgba(255, 255, 255, 0.08)',
-                                            border: '1px solid rgba(255, 255, 255, 0.15)',
-                                            borderRadius: '50%',
-                                            p: 0.5,
-                                            ml: 0.5,
-                                            flexShrink: 0,
-                                            '&:hover': {
-                                                bgcolor: '#ef4444',
-                                                color: '#ffffff',
-                                                borderColor: '#ef4444',
-                                                transform: 'scale(1.1)'
-                                            },
-                                            transition: 'all 0.2s ease'
-                                        }}
-                                    >
-                                        <Close sx={{ fontSize: 18 }} />
-                                    </IconButton>
-                                </Tooltip>
                             </Box>
 
                             {/* Visor Color Customizer Bar */}
