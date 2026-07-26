@@ -1347,43 +1347,86 @@ const AiVisionStudio: React.FC = () => {
         <Card
             elevation={0}
             sx={{
-                p: 2.5,
+                p: 2,
                 bgcolor: '#080a0f',
                 border: '1px solid rgba(0, 255, 102, 0.25)',
-                borderRadius: 3
+                borderRadius: 3,
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                position: 'relative',
+                overflow: 'hidden'
             }}
         >
             <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
-                    <Analytics sx={{ color: '#00ff66', fontSize: 22 }} />
-                    <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
-                        OPTICAL MOTION DENSITY
-                    </Typography>
+                    <Box sx={{ p: 0.75, borderRadius: '50%', bgcolor: 'rgba(0, 255, 102, 0.1)', border: '1px solid rgba(0, 255, 102, 0.3)' }}>
+                        <Analytics sx={{ color: '#00ff66', fontSize: 20 }} />
+                    </Box>
+                    <Box>
+                        <Typography variant="subtitle2" fontWeight={800} color="#ffffff" letterSpacing="0.02em">
+                            OPTICAL MOTION & DENSITY TELEMETRY
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                            Realtime Differential Pixel Vector Analysis
+                        </Typography>
+                    </Box>
                 </Stack>
-                <Typography variant="h6" fontWeight={800} color="#00ff66">
-                    {motionLevel}%
-                </Typography>
+                <Chip
+                    label={`${motionLevel}% DENSITY`}
+                    size="small"
+                    sx={{
+                        bgcolor: motionLevel > 40 ? 'rgba(0, 255, 102, 0.2)' : 'rgba(255, 255, 255, 0.06)',
+                        color: '#00ff66',
+                        fontWeight: 800,
+                        border: '1px solid rgba(0, 255, 102, 0.3)'
+                    }}
+                />
             </Stack>
 
-            <LinearProgress
-                variant="determinate"
-                value={motionLevel}
-                sx={{
-                    height: 8,
-                    borderRadius: 4,
-                    bgcolor: 'rgba(255, 255, 255, 0.05)',
-                    '& .MuiLinearProgress-bar': {
-                        background: 'linear-gradient(90deg, #00ff66 0%, #00b347 100%)'
-                    }
-                }}
-            />
+            <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} md={7}>
+                    <Box sx={{ position: 'relative', mb: 1 }}>
+                        <LinearProgress
+                            variant="determinate"
+                            value={motionLevel}
+                            sx={{
+                                height: 8,
+                                borderRadius: 4,
+                                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                '& .MuiLinearProgress-bar': {
+                                    background: 'linear-gradient(90deg, #00ff66 0%, #00e676 50%, #76ff03 100%)',
+                                    borderRadius: 4
+                                }
+                            }}
+                        />
+                    </Box>
+                    <Stack direction="row" justifyContent="space-between">
+                        <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.65rem' }}>STATIC (0%)</Typography>
+                        <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.65rem' }}>MODERATE (50%)</Typography>
+                        <Typography variant="caption" color="#00ff66" fontWeight={700} sx={{ fontSize: '0.65rem' }}>HIGH KINEMATIC FLOW (100%)</Typography>
+                    </Stack>
+                </Grid>
+
+                <Grid item xs={12} md={5}>
+                    <Paper elevation={0} sx={{ p: 1, bgcolor: 'rgba(0, 255, 102, 0.04)', border: '1px solid rgba(0, 255, 102, 0.15)', borderRadius: 2 }}>
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.62rem' }}>
+                                COCO OBJECT SUMMARY
+                            </Typography>
+                            <Chip label={`${detectedObjects.length} Detected`} size="small" sx={{ height: 18, fontSize: '0.62rem', color: '#00ff66', bgcolor: 'rgba(0, 255, 102, 0.15)', fontWeight: 800 }} />
+                        </Stack>
+                        <Typography variant="body2" fontWeight={800} color={detectedObjects.length > 0 ? '#00ff66' : 'rgba(255, 255, 255, 0.4)'} noWrap sx={{ mt: 0.3, textTransform: 'capitalize', fontSize: '0.78rem' }}>
+                            {detectedObjects.length > 0 ? detectedObjects.map(o => o.class).join(', ') : 'No objects in frame'}
+                        </Typography>
+                    </Paper>
+                </Grid>
+            </Grid>
         </Card>
     );
 
     return (
         <Box sx={{ pb: 8 }}>
             <Seo
-                title="Realtime AI Vision Studio — 21 Hand Finger Landmarks, Body Kinematics & Biometrics"
+                title="Realtime AI Vision Studio | 21 Hand Finger Landmarks, Body Kinematics & Biometrics"
                 description="Real-time WebGL neural vision lab in browser. Track 21 3D finger landmarks, 17 body pose keypoints, biometric faces, 7 emotions, and objects with 60 FPS performance."
                 keywords={[
                     "21 finger hand tracking landmark",
@@ -1397,7 +1440,7 @@ const AiVisionStudio: React.FC = () => {
 
             <ServicePageHero
                 title="Realtime AI Vision Studio"
-                subtitle="High-Performance Neural Vision — 21 3D Finger Landmarks per Hand, 17 Body Kinematics Keypoints, 128-d Biometric Face Matching, 7 Emotions & Object Detection 100% Client-Side."
+                subtitle="High-Performance Neural Vision: 21 3D Finger Landmarks per Hand, 17 Body Kinematics Keypoints, 128-d Biometric Face Matching, 7 Emotions & Object Detection 100% Client-Side."
                 icon={Visibility}
             />
 
@@ -1453,20 +1496,21 @@ const AiVisionStudio: React.FC = () => {
                 {/* Main Vision Studio Grid */}
                 <Grid container spacing={3} alignItems="flex-start">
 
-                    {/* Left Column: Clean Video Canvas Feed */}
-                    <Grid item xs={12} lg={8}>
-                        <Card
-                            elevation={0}
-                            sx={{
-                                bgcolor: '#080a0f',
-                                border: '1px solid rgba(0, 255, 102, 0.25)',
-                                borderRadius: 3,
-                                overflow: 'hidden',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.6)'
-                            }}
-                        >
+                    {/* Left Column: Clean Video Canvas Feed & Optical Motion Telemetry */}
+                    <Grid item xs={12} lg={7}>
+                        <Stack spacing={2.5}>
+                            <Card
+                                elevation={0}
+                                sx={{
+                                    bgcolor: '#080a0f',
+                                    border: '1px solid rgba(0, 255, 102, 0.25)',
+                                    borderRadius: 3,
+                                    overflow: 'hidden',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.6)'
+                                }}
+                            >
                             {/* Canvas HUD Header */}
                             <Box
                                 sx={{
@@ -1738,7 +1782,6 @@ const AiVisionStudio: React.FC = () => {
                                     >
                                         Export JSON
                                     </Button>
-
                                     {isCameraActive && (
                                         <IconButton onClick={stopCamera} color="error" title="Stop Camera" sx={{ bgcolor: 'rgba(255, 0, 85, 0.15)' }}>
                                             <VideocamOff fontSize="small" />
@@ -1747,48 +1790,49 @@ const AiVisionStudio: React.FC = () => {
                                 </Stack>
                             </Box>
                         </Card>
-                    </Grid>
-
-                    {/* Right Column / Mobile Tabs Viewport */}
-                    <Grid item xs={12} lg={4}>
-                        {isMobile ? (
-                            <Box>
-                                <Paper sx={{ bgcolor: '#080a0f', border: '1px solid rgba(0, 255, 102, 0.3)', borderRadius: 3, mb: 2, overflow: 'hidden' }}>
-                                    <Tabs
-                                        value={mobileTab}
-                                        onChange={(_, val) => setMobileTab(val)}
-                                        variant="fullWidth"
-                                        textColor="primary"
-                                        indicatorColor="primary"
-                                        sx={{
-                                            '& .MuiTab-root': { color: 'text.secondary', fontWeight: 700, fontSize: '0.75rem', py: 1.5 },
-                                            '& .Mui-selected': { color: '#00ff66 !important' },
-                                            '& .MuiTabs-indicator': { bgcolor: '#00ff66' }
-                                        }}
-                                    >
-                                        <Tab icon={<BackHand sx={{ fontSize: 18 }} />} label="Kinematics" />
-                                        <Tab icon={<Fingerprint sx={{ fontSize: 18 }} />} label="Biometrics" />
-                                        <Tab icon={<Category sx={{ fontSize: 18 }} />} label="Objects" />
-                                        <Tab icon={<Analytics sx={{ fontSize: 18 }} />} label="Metrics" />
-                                    </Tabs>
-                                </Paper>
-
-                                {mobileTab === 0 && <RenderKinematicsPanel />}
-                                {mobileTab === 1 && <RenderBiometricsPanel />}
-                                {mobileTab === 2 && <RenderObjectsPanel />}
-                                {mobileTab === 3 && <RenderMetricsPanel />}
-                            </Box>
-                        ) : (
-                            <Stack spacing={2.5}>
-                                <RenderKinematicsPanel />
-                                <RenderBiometricsPanel />
-                                <RenderObjectsPanel />
-                                <RenderMetricsPanel />
-                            </Stack>
-                        )}
-                    </Grid>
-
+                        {!isMobile && <RenderMetricsPanel />}
+                    </Stack>
                 </Grid>
+
+                {/* Right Column / Mobile Tabs Viewport */}
+                <Grid item xs={12} lg={5}>
+                    {isMobile ? (
+                        <Box>
+                            <Paper sx={{ bgcolor: '#080a0f', border: '1px solid rgba(0, 255, 102, 0.3)', borderRadius: 3, mb: 2, overflow: 'hidden' }}>
+                                <Tabs
+                                    value={mobileTab}
+                                    onChange={(_, val) => setMobileTab(val)}
+                                    variant="fullWidth"
+                                    textColor="primary"
+                                    indicatorColor="primary"
+                                    sx={{
+                                        '& .MuiTab-root': { color: 'text.secondary', fontWeight: 700, fontSize: '0.75rem', py: 1.5 },
+                                        '& .Mui-selected': { color: '#00ff66 !important' },
+                                        '& .MuiTabs-indicator': { bgcolor: '#00ff66' }
+                                    }}
+                                >
+                                    <Tab icon={<BackHand sx={{ fontSize: 18 }} />} label="Kinematics" />
+                                    <Tab icon={<Fingerprint sx={{ fontSize: 18 }} />} label="Biometrics" />
+                                    <Tab icon={<Category sx={{ fontSize: 18 }} />} label="Objects" />
+                                    <Tab icon={<Analytics sx={{ fontSize: 18 }} />} label="Metrics" />
+                                </Tabs>
+                            </Paper>
+
+                            {mobileTab === 0 && <RenderKinematicsPanel />}
+                            {mobileTab === 1 && <RenderBiometricsPanel />}
+                            {mobileTab === 2 && <RenderObjectsPanel />}
+                            {mobileTab === 3 && <RenderMetricsPanel />}
+                        </Box>
+                    ) : (
+                        <Stack spacing={2.5}>
+                            <RenderKinematicsPanel />
+                            <RenderBiometricsPanel />
+                            <RenderObjectsPanel />
+                        </Stack>
+                    )}
+                </Grid>
+
+            </Grid>
 
                 {/* --- Snapshot Gallery Section --- */}
                 {capturedSnapshots.length > 0 && (
