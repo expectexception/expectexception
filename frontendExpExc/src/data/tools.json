@@ -2,7 +2,7 @@
   {
     "id": 100,
     "title": "Realtime AI Vision Studio",
-    "description": "100% frontend real-time camera AI vision lab with face landmark detection, emotion, age & gender estimation, COCO-SSD object detection, and optical motion tracking.",
+    "description": "Enterprise 100% client-side real-time AI camera vision studio powered by WebGL & TensorFlow. Detect 21 3D hand finger landmarks, 17 body pose kinematics, 128-d biometric facial recognition embeddings, 7 emotions, and COCO-SSD object inventory.",
     "icon": "Visibility",
     "path": "/services/ai-vision-studio",
     "category": "ai",
@@ -10,20 +10,25 @@
     "tags": [
       "ai",
       "vision",
-      "face",
+      "hand-tracking",
+      "pose-estimation",
+      "face-recognition",
       "emotion",
       "camera",
-      "detection"
+      "tensorflow"
     ],
     "color": "primary",
     "is_active": true,
     "keywords": [
       "ai vision studio",
-      "realtime face detection",
+      "21 hand finger landmark tracking",
+      "realtime pose tracking movenet",
+      "gesture recognition browser",
+      "128d face embedding recognition",
       "face emotion recognition online",
       "realtime object detection browser",
       "age gender detection webcam",
-      "motion detection webcam ai"
+      "optical motion tracking webcam ai"
     ]
   },
   {
