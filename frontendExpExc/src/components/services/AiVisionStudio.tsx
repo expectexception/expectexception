@@ -772,12 +772,11 @@ const AiVisionStudio: React.FC = () => {
                                         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 460, mb: 3.5, lineHeight: 1.6 }}>
                                             Enable your webcam to run real-time biometric face mesh tracking, 7-emotion mood analysis, estimated age & gender classification, object bounding boxes, and optical motion tracking 100% in your browser.
                                         </Typography>
-
                                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                             <Button
                                                 variant="contained"
                                                 size="large"
-                                                startIcon={<Videocam />}
+                                                startIcon={<Videocam sx={{ color: '#000000' }} />}
                                                 onClick={startCamera}
                                                 disabled={isModelsLoading}
                                                 sx={{
@@ -785,12 +784,12 @@ const AiVisionStudio: React.FC = () => {
                                                     px: 4,
                                                     py: 1.5,
                                                     fontWeight: 800,
-                                                    background: 'linear-gradient(135deg, #00eeff 0%, #a855f7 100%)',
+                                                    background: 'linear-gradient(135deg, #00ff66 0%, #00b347 100%)',
                                                     color: '#000000',
-                                                    boxShadow: '0 8px 25px rgba(0, 238, 255, 0.35)',
+                                                    boxShadow: '0 8px 25px rgba(0, 255, 102, 0.35)',
                                                     '&:hover': {
-                                                        background: 'linear-gradient(135deg, #00cce6 0%, #9333ea 100%)',
-                                                        boxShadow: '0 10px 30px rgba(0, 238, 255, 0.5)'
+                                                        background: 'linear-gradient(135deg, #00e65c 0%, #00993d 100%)',
+                                                        boxShadow: '0 10px 30px rgba(0, 255, 102, 0.55)'
                                                     }
                                                 }}
                                             >
@@ -808,12 +807,12 @@ const AiVisionStudio: React.FC = () => {
                                                     px: 3.5,
                                                     py: 1.5,
                                                     fontWeight: 700,
-                                                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                                                    borderColor: 'rgba(0, 255, 102, 0.4)',
                                                     color: '#ffffff',
                                                     '&:hover': {
-                                                        borderColor: '#00eeff',
-                                                        color: '#00eeff',
-                                                        bgcolor: 'rgba(0, 238, 255, 0.05)'
+                                                        borderColor: '#00ff66',
+                                                        color: '#00ff66',
+                                                        bgcolor: 'rgba(0, 255, 102, 0.08)'
                                                     }
                                                 }}
                                             >
@@ -843,7 +842,7 @@ const AiVisionStudio: React.FC = () => {
                                         icon={<Face sx={{ fontSize: '16px !important' }} />}
                                         label="Face & Mood"
                                         clickable
-                                        color={showFaceDetection ? 'primary' : 'default'}
+                                        color={showFaceDetection ? 'success' : 'default'}
                                         variant={showFaceDetection ? 'filled' : 'outlined'}
                                         onClick={() => setShowFaceDetection(!showFaceDetection)}
                                         sx={{ fontWeight: 700, fontSize: '0.75rem' }}
@@ -861,7 +860,7 @@ const AiVisionStudio: React.FC = () => {
                                         icon={<Analytics sx={{ fontSize: '16px !important' }} />}
                                         label="Motion Optical"
                                         clickable
-                                        color={showMotionTracking ? 'secondary' : 'default'}
+                                        color={showMotionTracking ? 'success' : 'default'}
                                         variant={showMotionTracking ? 'filled' : 'outlined'}
                                         onClick={() => setShowMotionTracking(!showMotionTracking)}
                                         sx={{ fontWeight: 700, fontSize: '0.75rem' }}
@@ -874,8 +873,8 @@ const AiVisionStudio: React.FC = () => {
                                         <IconButton
                                             onClick={() => setEnableVoiceAudio(!enableVoiceAudio)}
                                             sx={{
-                                                bgcolor: enableVoiceAudio ? 'rgba(0, 238, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                                                color: enableVoiceAudio ? '#00eeff' : 'text.secondary'
+                                                bgcolor: enableVoiceAudio ? 'rgba(0, 255, 102, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                                                color: enableVoiceAudio ? '#00ff66' : 'text.secondary'
                                             }}
                                         >
                                             {enableVoiceAudio ? <VolumeUp fontSize="small" /> : <VolumeOff fontSize="small" />}
@@ -890,9 +889,13 @@ const AiVisionStudio: React.FC = () => {
                                         disabled={!isCameraActive}
                                         sx={{
                                             borderRadius: '20px',
-                                            borderColor: 'rgba(0, 238, 255, 0.4)',
-                                            color: '#00eeff',
-                                            fontWeight: 700
+                                            borderColor: 'rgba(0, 255, 102, 0.4)',
+                                            color: '#00ff66',
+                                            fontWeight: 700,
+                                            '&:hover': {
+                                                borderColor: '#00ff66',
+                                                bgcolor: 'rgba(0, 255, 102, 0.08)'
+                                            }
                                         }}
                                     >
                                         Snapshot
@@ -901,13 +904,18 @@ const AiVisionStudio: React.FC = () => {
                                     <Button
                                         variant="contained"
                                         size="small"
-                                        startIcon={<Download />}
+                                        startIcon={<Download sx={{ color: '#000000' }} />}
                                         onClick={exportAnalyticsJson}
                                         sx={{
                                             borderRadius: '20px',
-                                            background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
-                                            color: '#ffffff',
-                                            fontWeight: 700
+                                            background: 'linear-gradient(135deg, #00ff66 0%, #00b347 100%)',
+                                            color: '#000000',
+                                            fontWeight: 800,
+                                            boxShadow: '0 4px 15px rgba(0, 255, 102, 0.3)',
+                                            '&:hover': {
+                                                background: 'linear-gradient(135deg, #00e65c 0%, #00993d 100%)',
+                                                boxShadow: '0 6px 20px rgba(0, 255, 102, 0.5)'
+                                            }
                                         }}
                                     >
                                         Export JSON

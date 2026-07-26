@@ -1103,18 +1103,18 @@ const HomePage: React.FC = () => {
                     to="/services/ai-vision-studio"
                     variant="contained"
                     size="large"
-                    startIcon={<Visibility sx={{ color: '#00eeff' }} />}
+                    startIcon={<Visibility sx={{ color: '#000000' }} />}
                     sx={{
                       borderRadius: '30px',
                       px: 3.5,
                       py: 1.75,
                       fontWeight: 800,
-                      background: 'linear-gradient(135deg, #00eeff 0%, #a855f7 100%)',
+                      background: 'linear-gradient(135deg, #00ff66 0%, #00b347 100%)',
                       color: '#000000',
-                      boxShadow: '0 8px 25px rgba(0, 238, 255, 0.3)',
+                      boxShadow: '0 8px 25px rgba(0, 255, 102, 0.35)',
                       '&:hover': {
-                        background: 'linear-gradient(135deg, #00cce6 0%, #9333ea 100%)',
-                        boxShadow: '0 12px 30px rgba(0, 238, 255, 0.5)',
+                        background: 'linear-gradient(135deg, #00e65c 0%, #00993d 100%)',
+                        boxShadow: '0 12px 30px rgba(0, 255, 102, 0.55)',
                         transform: 'translateY(-2px)'
                       }
                     }}
