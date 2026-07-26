@@ -33,32 +33,25 @@ export const CustomThemeContextProvider: React.FC<{ children: ReactNode }> = ({ 
     catch { return DEFAULT_COLOR; }
   });
 
-  const [colorMode, setColorModeState] = useState<ColorMode>(() => {
-    try { return (localStorage.getItem(MODE_KEY) as ColorMode) || 'dark'; }
-    catch { return 'dark'; }
-  });
-
-  const [systemMode, setSystemMode] = useState<'dark' | 'light'>(getSystemMode);
+  // Always enforce dark theme mode exclusively
+  const colorMode: ColorMode = 'dark';
+  const resolvedMode: 'dark' | 'light' = 'dark';
 
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e: MediaQueryListEvent) => setSystemMode(e.matches ? 'dark' : 'light');
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+    try {
+      localStorage.setItem(MODE_KEY, 'dark');
+    } catch { }
   }, []);
 
-  const resolvedMode: 'dark' | 'light' = colorMode === 'system' ? systemMode : colorMode;
-
-  const theme = useMemo(() => getTheme(primaryColor, resolvedMode), [primaryColor, resolvedMode]);
+  const theme = useMemo(() => getTheme(primaryColor, 'dark'), [primaryColor]);
 
   const setPrimaryColor = (color: string) => {
     setPrimaryColorState(color);
     try { localStorage.setItem(STORAGE_KEY, color); } catch { }
   };
 
-  const setColorMode = (mode: ColorMode) => {
-    setColorModeState(mode);
-    try { localStorage.setItem(MODE_KEY, mode); } catch { }
+  const setColorMode = (_mode: ColorMode) => {
+    // No-op: keep theme strictly dark
   };
 
   const resetTheme = () => setPrimaryColor(DEFAULT_COLOR);

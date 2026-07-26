@@ -243,7 +243,7 @@ const SandboxPage: React.FC = () => {
                         </motion.div>
                       </Box>
 
-                      <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
+                      <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, mb: 1.5, color: '#ffffff' }}>
                         {game.title}
                       </Typography>
                       <Typography

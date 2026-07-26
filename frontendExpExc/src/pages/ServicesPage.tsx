@@ -565,7 +565,7 @@ const ServicesPage: React.FC = () => {
                         </Box>
 
                         {/* Service Content */}
-                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
+                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, mb: 1.5, color: '#ffffff' }}>
                           {service.title}
                         </Typography>
                         <Typography
