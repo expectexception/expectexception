@@ -3,15 +3,12 @@ import {
     Container,
     Grid,
     Card,
-    CardContent,
     Typography,
     Box,
     Button,
     IconButton,
     Chip,
     Stack,
-    Switch,
-    FormControlLabel,
     Tooltip,
     LinearProgress,
     Paper,
@@ -33,22 +30,20 @@ import {
     Category,
     Speed,
     PlayArrow,
-    Pause,
     CheckCircle,
     Analytics,
-    AutoAwesome,
     Memory,
-    Shield,
-    Psychology
+    Psychology,
+    AccessibilityNew
 } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import ServicePageHero from './ServicePageHero';
 import Seo from '../seo/Seo';
 
-// TensorFlow & Face-API imports
+// TensorFlow, Face-API & MoveNet Pose Detection imports
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 import * as faceapi from '@vladmandic/face-api';
+import * as poseDetection from '@tensorflow-models/pose-detection';
 
 interface DetectedObject {
     bbox: [number, number, number, number];
@@ -63,6 +58,11 @@ interface FaceDetectionData {
     gender?: string;
     genderProbability?: number;
     landmarks?: Array<{ x: number; y: number }>;
+}
+
+interface BodyPoseData {
+    keypoints: Array<{ x: number; y: number; score?: number; name?: string }>;
+    score?: number;
 }
 
 const AiVisionStudio: React.FC = () => {
@@ -80,7 +80,7 @@ const AiVisionStudio: React.FC = () => {
     // Toggle overlays
     const [showFaceDetection, setShowFaceDetection] = useState(true);
     const [showObjectDetection, setShowObjectDetection] = useState(true);
-    const [showMotionTracking, setShowMotionTracking] = useState(true);
+    const [showPoseTracking, setShowPoseTracking] = useState(true);
     const [enableVoiceAudio, setEnableVoiceAudio] = useState(false);
 
     // Live Metrics
@@ -89,6 +89,7 @@ const AiVisionStudio: React.FC = () => {
     const [motionLevel, setMotionLevel] = useState(0);
     const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([]);
     const [detectedFaces, setDetectedFaces] = useState<FaceDetectionData[]>([]);
+    const [detectedPoses, setDetectedPoses] = useState<BodyPoseData[]>([]);
 
     // Snapshot state
     const [capturedSnapshots, setCapturedSnapshots] = useState<string[]>([]);
@@ -100,11 +101,13 @@ const AiVisionStudio: React.FC = () => {
     const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationFrameRef = useRef<number | null>(null);
     const cocoModelRef = useRef<cocoSsd.ObjectDetection | null>(null);
+    const poseDetectorRef = useRef<poseDetection.PoseDetector | null>(null);
     const isFaceApiLoadedRef = useRef<boolean>(false);
     
     // Cached detections for 60 FPS smooth rendering without CPU stalls
     const cachedFacesRef = useRef<FaceDetectionData[]>([]);
     const cachedObjectsRef = useRef<DetectedObject[]>([]);
+    const cachedPosesRef = useRef<BodyPoseData[]>([]);
     const isAiDetectingRef = useRef<boolean>(false);
     const prevFrameSampleRef = useRef<Uint8ClampedArray | null>(null);
 
@@ -118,20 +121,32 @@ const AiVisionStudio: React.FC = () => {
 
         const loadAiModels = async () => {
             try {
-                setLoadingStatusText('Initializing WebGL Hardware Accelerator...');
-                setLoadingProgress(25);
+                setLoadingStatusText('Initializing WebGL Hardware Acceleration Engine...');
+                setLoadingProgress(20);
                 await tf.ready();
                 if (tf.getBackend() !== 'webgl') {
                     await tf.setBackend('webgl').catch(() => tf.setBackend('cpu'));
                 }
 
-                setLoadingStatusText('Loading Neural Object Detector...');
-                setLoadingProgress(55);
+                setLoadingStatusText('Loading MoveNet Realtime Full-Body Skeleton Detector...');
+                setLoadingProgress(40);
+                try {
+                    const detector = await poseDetection.createDetector(
+                        poseDetection.SupportedModels.MoveNet,
+                        { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING }
+                    );
+                    if (isMounted) poseDetectorRef.current = detector;
+                } catch (e) {
+                    console.warn('MoveNet load warning:', e);
+                }
+
+                setLoadingStatusText('Loading COCO-SSD Neural Object Detector...');
+                setLoadingProgress(65);
                 const cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
                 if (isMounted) cocoModelRef.current = cocoModel;
 
-                setLoadingStatusText('Loading 3D Biometric Facial Mesh Nets...');
-                setLoadingProgress(80);
+                setLoadingStatusText('Loading 3D Biometric Face & Mood Mesh Nets...');
+                setLoadingProgress(85);
                 
                 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
                 await Promise.all([
@@ -146,7 +161,7 @@ const AiVisionStudio: React.FC = () => {
                 if (isMounted) {
                     setLoadingProgress(100);
                     setIsModelsLoading(false);
-                    setLoadingStatusText('AI Engine Loaded');
+                    setLoadingStatusText('AI Neural Engine Loaded');
                 }
             } catch (err) {
                 console.error('Error loading AI Models:', err);
@@ -194,7 +209,6 @@ const AiVisionStudio: React.FC = () => {
             }
         } catch (err) {
             console.error('Webcam Access Error:', err);
-            // Fallback to interactive demo feed
             setIsDemoMode(true);
             setIsCameraActive(true);
         }
@@ -249,7 +263,23 @@ const AiVisionStudio: React.FC = () => {
             const startTime = performance.now();
 
             try {
-                // 1. Face & Biometrics Detection
+                // 1. MoveNet Full-Body Pose Estimation
+                if (showPoseTracking && poseDetectorRef.current) {
+                    const poses = await poseDetectorRef.current.estimatePoses(video);
+                    if (!isCancelled && poses.length > 0) {
+                        const formattedPoses: BodyPoseData[] = poses.map(p => ({
+                            keypoints: p.keypoints.map(k => ({ x: k.x, y: k.y, score: k.score, name: k.name })),
+                            score: p.score
+                        }));
+                        cachedPosesRef.current = formattedPoses;
+                        setDetectedPoses(formattedPoses);
+                    }
+                } else if (!showPoseTracking) {
+                    cachedPosesRef.current = [];
+                    setDetectedPoses([]);
+                }
+
+                // 2. Face & Biometrics Detection
                 if (showFaceDetection && isFaceApiLoadedRef.current) {
                     const detections = await faceapi.detectAllFaces(
                         video,
@@ -285,7 +315,7 @@ const AiVisionStudio: React.FC = () => {
                     setDetectedFaces([]);
                 }
 
-                // 2. Object Detection (COCO-SSD)
+                // 3. Object Detection (COCO-SSD)
                 if (showObjectDetection && cocoModelRef.current) {
                     const predictions = await cocoModelRef.current.detect(video);
                     if (!isCancelled) {
@@ -314,7 +344,7 @@ const AiVisionStudio: React.FC = () => {
             isCancelled = true;
             clearInterval(interval);
         };
-    }, [isCameraActive, isDemoMode, showFaceDetection, showObjectDetection, enableVoiceAudio, speakAiAnnouncement]);
+    }, [isCameraActive, isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking, enableVoiceAudio, speakAiAnnouncement]);
 
     // --- 60 FPS Smooth Canvas Render Loop ---
     const processFrame = useCallback(() => {
@@ -339,7 +369,7 @@ const AiVisionStudio: React.FC = () => {
 
             const time = Date.now() * 0.002;
             // Animated Cyber Grid
-            ctx.strokeStyle = 'rgba(0, 238, 255, 0.12)';
+            ctx.strokeStyle = 'rgba(0, 255, 102, 0.12)';
             ctx.lineWidth = 1;
             for (let x = 0; x < width; x += 40) {
                 ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
@@ -353,10 +383,45 @@ const AiVisionStudio: React.FC = () => {
             const centerY = height / 2 + Math.cos(time * 0.8) * 15;
 
             if (showFaceDetection) {
-                drawCyberBox(ctx, centerX - 90, centerY - 110, 180, 220, '#00eeff', 'FACE TARGET #01');
+                drawCyberBox(ctx, centerX - 90, centerY - 110, 180, 220, '#00ff66', 'FACE TARGET #01');
             }
             if (showObjectDetection) {
                 drawCyberBox(ctx, width * 0.18, height * 0.35, 160, 200, '#00ff66', 'LAPTOP 96%');
+            }
+
+            // Simulated Pose Skeleton in Demo Mode
+            if (showPoseTracking) {
+                const sY = centerY + 30;
+                const eY = sY + 80;
+                const wY = eY + 70;
+                const lHandX = centerX - 160;
+                const rHandX = centerX + 160;
+
+                ctx.strokeStyle = '#00ff66';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                // Arms outstretched
+                ctx.moveTo(lHandX, wY); ctx.lineTo(centerX - 90, eY); ctx.lineTo(centerX - 40, sY);
+                ctx.lineTo(centerX + 40, sY); ctx.lineTo(centerX + 90, eY); ctx.lineTo(rHandX, wY);
+                ctx.stroke();
+
+                // Joint Nodes
+                [
+                    { x: lHandX, y: wY, label: 'LEFT WRIST' },
+                    { x: centerX - 90, y: eY, label: 'LEFT ELBOW' },
+                    { x: centerX - 40, y: sY, label: 'LEFT SHOULDER' },
+                    { x: centerX + 40, y: sY, label: 'RIGHT SHOULDER' },
+                    { x: centerX + 90, y: eY, label: 'RIGHT ELBOW' },
+                    { x: rHandX, y: wY, label: 'RIGHT WRIST' }
+                ].forEach(j => {
+                    ctx.fillStyle = 'rgba(0, 255, 102, 0.4)';
+                    ctx.beginPath(); ctx.arc(j.x, j.y, 9, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath(); ctx.arc(j.x, j.y, 4, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#00ff66';
+                    ctx.font = '800 10px Inter, sans-serif';
+                    ctx.fillText(j.label, j.x - 20, j.y - 12);
+                });
             }
 
             setDetectedFaces([{
@@ -377,8 +442,8 @@ const AiVisionStudio: React.FC = () => {
             // Draw real webcam stream onto main canvas
             ctx.drawImage(video, 0, 0, width, height);
 
-            // Fast non-blocking motion estimation (sample 1/64th downscaled offscreen buffer)
-            if (showMotionTracking) {
+            // Fast motion estimation
+            if (showPoseTracking || showFaceDetection) {
                 if (!offscreenCanvasRef.current) {
                     offscreenCanvasRef.current = document.createElement('canvas');
                     offscreenCanvasRef.current.width = 80;
@@ -401,7 +466,79 @@ const AiVisionStudio: React.FC = () => {
                 }
             }
 
-            // Draw Cached Object Detections (COCO-SSD)
+            // 2. Draw Realtime MoveNet Full-Body Pose Kinematic Skeleton
+            if (showPoseTracking && cachedPosesRef.current.length > 0) {
+                cachedPosesRef.current.forEach(pose => {
+                    if (!pose.keypoints) return;
+                    const kps = pose.keypoints;
+                    const minConf = 0.25;
+
+                    const kpMap: Record<string, { x: number; y: number; score?: number; name?: string }> = {};
+                    kps.forEach((k, idx) => {
+                        if (k.name) kpMap[k.name] = k;
+                        else kpMap[idx] = k;
+                    });
+
+                    // MoveNet 17-Keypoint Skeleton Bones
+                    const connections = [
+                        ['nose', 'left_eye'], ['nose', 'right_eye'],
+                        ['left_eye', 'left_ear'], ['right_eye', 'right_ear'],
+                        ['left_shoulder', 'right_shoulder'],
+                        ['left_shoulder', 'left_elbow'], ['left_elbow', 'left_wrist'],
+                        ['right_shoulder', 'right_elbow'], ['right_elbow', 'right_wrist'],
+                        ['left_shoulder', 'left_hip'], ['right_shoulder', 'right_hip'],
+                        ['left_hip', 'right_hip'],
+                        ['left_hip', 'left_knee'], ['left_knee', 'left_ankle'],
+                        ['right_hip', 'right_knee'], ['right_knee', 'right_ankle']
+                    ];
+
+                    // Draw Skeleton Bones with Glowing Neon Emerald Green
+                    ctx.strokeStyle = '#00ff66';
+                    ctx.lineWidth = 3.5;
+                    ctx.shadowColor = '#00ff66';
+                    ctx.shadowBlur = 10;
+
+                    connections.forEach(([p1Name, p2Name]) => {
+                        const p1 = kpMap[p1Name];
+                        const p2 = kpMap[p2Name];
+                        if (p1 && p2 && (p1.score ?? 1) > minConf && (p2.score ?? 1) > minConf) {
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    });
+
+                    ctx.shadowBlur = 0; // Reset glow
+
+                    // Draw Joint Reticle Nodes
+                    kps.forEach(kp => {
+                        if ((kp.score ?? 1) > minConf) {
+                            // Outer aura
+                            ctx.fillStyle = 'rgba(0, 255, 102, 0.45)';
+                            ctx.beginPath();
+                            ctx.arc(kp.x, kp.y, 8, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            // Inner core node
+                            ctx.fillStyle = '#ffffff';
+                            ctx.beginPath();
+                            ctx.arc(kp.x, kp.y, 4, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            // Label for key limbs (Wrists, Elbows, Shoulders, Knees, Ankles)
+                            const labelName = kp.name || '';
+                            if (['left_wrist', 'right_wrist', 'left_elbow', 'right_elbow', 'left_shoulder', 'right_shoulder', 'left_knee', 'right_knee'].includes(labelName)) {
+                                ctx.fillStyle = '#00ff66';
+                                ctx.font = '800 10px Inter, sans-serif';
+                                ctx.fillText(labelName.replace('_', ' ').toUpperCase(), kp.x + 10, kp.y + 4);
+                            }
+                        }
+                    });
+                });
+            }
+
+            // 3. Draw Cached Object Detections (COCO-SSD)
             if (showObjectDetection && cachedObjectsRef.current.length > 0) {
                 cachedObjectsRef.current.forEach(obj => {
                     const [x, y, w, h] = obj.bbox;
@@ -409,24 +546,24 @@ const AiVisionStudio: React.FC = () => {
                 });
             }
 
-            // Draw Cached 3D Face Wireframe & Biometric HUD
+            // 4. Draw Cached 3D Face Wireframe & Biometric HUD
             if (showFaceDetection && cachedFacesRef.current.length > 0) {
                 cachedFacesRef.current.forEach((face, fIdx) => {
                     const { x, y, width: w, height: h } = face.box;
 
                     // Cyber Bounding Box
-                    drawCyberBox(ctx, x, y, w, h, '#00eeff', `FACE LOCK #${fIdx + 1}`);
+                    drawCyberBox(ctx, x, y, w, h, '#00ff66', `FACE LOCK #${fIdx + 1}`);
 
                     // Scanning Laser Line
                     const scanY = y + ((Date.now() * 0.2) % h);
-                    ctx.strokeStyle = 'rgba(0, 238, 255, 0.8)';
+                    ctx.strokeStyle = 'rgba(0, 255, 102, 0.8)';
                     ctx.lineWidth = 1.5;
                     ctx.beginPath();
                     ctx.moveTo(x + 4, scanY);
                     ctx.lineTo(x + w - 4, scanY);
                     ctx.stroke();
 
-                    // Clean Cyberpunk 3D Facial Landmark Contour Connections
+                    // Clean 3D Facial Landmark Contour Connections
                     if (face.landmarks && face.landmarks.length > 0) {
                         const pts = face.landmarks;
 
@@ -445,24 +582,24 @@ const AiVisionStudio: React.FC = () => {
                         };
 
                         // Jawline (0-16)
-                        drawContour(Array.from({ length: 17 }, (_, i) => i), 'rgba(0, 238, 255, 0.7)');
-                        // Left Eyebrow (17-21), Right Eyebrow (22-26)
+                        drawContour(Array.from({ length: 17 }, (_, i) => i), 'rgba(0, 255, 102, 0.7)');
+                        // Eyebrows (17-21, 22-26)
                         drawContour([17, 18, 19, 20, 21], '#00ff66');
                         drawContour([22, 23, 24, 25, 26], '#00ff66');
-                        // Nose Bridge (27-30) & Nose Tip (31-35)
-                        drawContour([27, 28, 29, 30], '#a855f7');
-                        drawContour([31, 32, 33, 34, 35], '#a855f7');
-                        // Left Eye (36-41), Right Eye (42-47)
-                        drawContour([36, 37, 38, 39, 40, 41], '#00eeff', true);
-                        drawContour([42, 43, 44, 45, 46, 47], '#00eeff', true);
-                        // Outer Lips (48-59), Inner Lips (60-67)
-                        drawContour([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59], '#ff007f', true);
+                        // Nose (27-30, 31-35)
+                        drawContour([27, 28, 29, 30], '#00ff66');
+                        drawContour([31, 32, 33, 34, 35], '#00ff66');
+                        // Eyes (36-41, 42-47)
+                        drawContour([36, 37, 38, 39, 40, 41], '#00ff66', true);
+                        drawContour([42, 43, 44, 45, 46, 47], '#00ff66', true);
+                        // Outer Lips (48-59)
+                        drawContour([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59], '#00ff66', true);
 
-                        // Eye pupil reticles
+                        // Pupil reticles
                         [38, 43].forEach(eyeCenterIdx => {
                             if (pts[eyeCenterIdx]) {
                                 const ep = pts[eyeCenterIdx];
-                                ctx.strokeStyle = '#00eeff';
+                                ctx.strokeStyle = '#00ff66';
                                 ctx.lineWidth = 1;
                                 ctx.beginPath();
                                 ctx.arc(ep.x, ep.y, 4, 0, Math.PI * 2);
@@ -490,7 +627,7 @@ const AiVisionStudio: React.FC = () => {
         }
 
         animationFrameRef.current = requestAnimationFrame(processFrame);
-    }, [isDemoMode, showFaceDetection, showObjectDetection, showMotionTracking]);
+    }, [isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking]);
 
     // Start/Stop canvas render loop
     useEffect(() => {
@@ -504,31 +641,23 @@ const AiVisionStudio: React.FC = () => {
 
     // Helper: Draw High-Tech Cyber Corner Brackets on Bounding Boxes
     const drawCyberBox = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, color: string, label: string) => {
-        // Subtle translucent fill
         ctx.fillStyle = alpha(color, 0.08);
         ctx.fillRect(x, y, w, h);
 
-        // Thin border
         ctx.strokeStyle = alpha(color, 0.4);
         ctx.lineWidth = 1;
         ctx.strokeRect(x, y, w, h);
 
-        // Heavy Glowing Corner Brackets
         const cLen = Math.min(20, w * 0.25, h * 0.25);
         ctx.strokeStyle = color;
         ctx.lineWidth = 3;
         ctx.beginPath();
-        // Top-Left
         ctx.moveTo(x, y + cLen); ctx.lineTo(x, y); ctx.lineTo(x + cLen, y);
-        // Top-Right
         ctx.moveTo(x + w - cLen, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + cLen);
-        // Bottom-Left
         ctx.moveTo(x, y + h - cLen); ctx.lineTo(x, y + h); ctx.lineTo(x + cLen, y + h);
-        // Bottom-Right
         ctx.moveTo(x + w - cLen, y + h); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w, y + h - cLen);
         ctx.stroke();
 
-        // High-Tech Header Label Badge
         if (label) {
             ctx.fillStyle = color;
             ctx.fillRect(x, Math.max(0, y - 22), Math.min(w, 180), 20);
@@ -553,9 +682,11 @@ const AiVisionStudio: React.FC = () => {
             inferenceTimeMs: inferenceTime,
             detectedFacesCount: detectedFaces.length,
             detectedObjectsCount: detectedObjects.length,
+            detectedPosesCount: detectedPoses.length,
             motionLevelPercent: motionLevel,
             faces: detectedFaces,
-            objects: detectedObjects
+            objects: detectedObjects,
+            poses: detectedPoses
         };
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -571,24 +702,29 @@ const AiVisionStudio: React.FC = () => {
         ? Object.entries(primaryFace.expressions).sort((a, b) => b[1] - a[1])[0]
         : null;
 
+    const primaryPose = detectedPoses[0];
+    const trackedJointsCount = primaryPose?.keypoints
+        ? primaryPose.keypoints.filter(k => (k.score ?? 1) > 0.25).length
+        : 0;
+
     return (
         <Box sx={{ pb: 8 }}>
             <Seo
-                title="Realtime AI Vision Studio — Face, Emotion, Age & Object Detection"
-                description="100% frontend realtime AI vision lab using WebGL & TensorFlow. Detect faces, emotions, age, gender, objects, and motion directly in your browser."
+                title="Realtime AI Vision Studio — Face, Emotion, Full Body Pose & Object Detection"
+                description="100% frontend realtime AI vision lab using WebGL, TensorFlow MoveNet & Face-API. Detect full-body skeletons, faces, emotions, age, objects, and motion directly in your browser."
                 keywords={[
                     "ai vision studio",
+                    "realtime pose tracking movenet",
+                    "full body skeleton tracking browser",
                     "face detection webcam",
                     "emotion recognition online",
-                    "age detection browser",
-                    "object detection tensorflow js",
-                    "motion tracking webcam"
+                    "object detection tensorflow js"
                 ]}
             />
 
             <ServicePageHero
                 title="Realtime AI Vision Studio"
-                subtitle="High-Performance Neural Vision in Your Browser — Detect Faces, Emotions, Estimated Age, Objects & Motion 100% Client-Side with Zero Latency."
+                subtitle="High-Performance Neural Vision in Your Browser — Real-Time Full Body Pose Kinematics, Face Mesh, 7 Emotions, Objects & Motion 100% Client-Side."
                 icon={Visibility}
             />
 
@@ -602,16 +738,16 @@ const AiVisionStudio: React.FC = () => {
                             p: 3,
                             mb: 4,
                             bgcolor: 'rgba(13, 17, 24, 0.85)',
-                            border: '1px solid rgba(0, 238, 255, 0.25)',
+                            border: '1px solid rgba(0, 255, 102, 0.25)',
                             borderRadius: 3,
                             backdropFilter: 'blur(12px)',
-                            boxShadow: '0 8px 32px rgba(0, 238, 255, 0.1)'
+                            boxShadow: '0 8px 32px rgba(0, 255, 102, 0.1)'
                         }}
                     >
                         <Stack spacing={2}>
                             <Stack direction="row" alignItems="center" justifyContent="space-between">
                                 <Stack direction="row" alignItems="center" spacing={1.5}>
-                                    <CircularProgress size={20} sx={{ color: '#00eeff' }} />
+                                    <CircularProgress size={20} sx={{ color: '#00ff66' }} />
                                     <Typography variant="subtitle2" fontWeight={700} color="#ffffff">
                                         {loadingStatusText}
                                     </Typography>
@@ -619,7 +755,7 @@ const AiVisionStudio: React.FC = () => {
                                 <Chip
                                     label={`${loadingProgress}%`}
                                     size="small"
-                                    sx={{ bgcolor: 'rgba(0, 238, 255, 0.15)', color: '#00eeff', fontWeight: 800 }}
+                                    sx={{ bgcolor: 'rgba(0, 255, 102, 0.15)', color: '#00ff66', fontWeight: 800 }}
                                 />
                             </Stack>
                             <LinearProgress
@@ -630,7 +766,7 @@ const AiVisionStudio: React.FC = () => {
                                     borderRadius: 4,
                                     bgcolor: 'rgba(255, 255, 255, 0.08)',
                                     '& .MuiLinearProgress-bar': {
-                                        background: 'linear-gradient(90deg, #00eeff 0%, #a855f7 100%)',
+                                        background: 'linear-gradient(90deg, #00ff66 0%, #00b347 100%)',
                                     }
                                 }}
                             />
@@ -655,7 +791,7 @@ const AiVisionStudio: React.FC = () => {
                             elevation={0}
                             sx={{
                                 bgcolor: '#080a0f',
-                                border: '1px solid rgba(0, 238, 255, 0.25)',
+                                border: '1px solid rgba(0, 255, 102, 0.25)',
                                 borderRadius: 3,
                                 overflow: 'hidden',
                                 height: '100%',
@@ -702,10 +838,10 @@ const AiVisionStudio: React.FC = () => {
                                         sx={{ bgcolor: 'rgba(0, 255, 102, 0.1)', color: '#00ff66', fontWeight: 700, border: '1px solid rgba(0, 255, 102, 0.2)' }}
                                     />
                                     <Chip
-                                        icon={<Memory sx={{ fontSize: '16px !important', color: '#00eeff !important' }} />}
+                                        icon={<Memory sx={{ fontSize: '16px !important', color: '#00ff66 !important' }} />}
                                         label={`${inferenceTime} ms`}
                                         size="small"
-                                        sx={{ bgcolor: 'rgba(0, 238, 255, 0.1)', color: '#00eeff', fontWeight: 700, border: '1px solid rgba(0, 238, 255, 0.2)' }}
+                                        sx={{ bgcolor: 'rgba(0, 255, 102, 0.1)', color: '#00ff66', fontWeight: 700, border: '1px solid rgba(0, 255, 102, 0.2)' }}
                                     />
                                     <IconButton size="small" onClick={switchCamera} title="Switch Front/Back Camera" sx={{ color: '#ffffff', bgcolor: 'rgba(255, 255, 255, 0.05)' }}>
                                         <Cameraswitch fontSize="small" />
@@ -770,8 +906,9 @@ const AiVisionStudio: React.FC = () => {
                                         </Typography>
 
                                         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 460, mb: 3.5, lineHeight: 1.6 }}>
-                                            Enable your webcam to run real-time biometric face mesh tracking, 7-emotion mood analysis, estimated age & gender classification, object bounding boxes, and optical motion tracking 100% in your browser.
+                                            Enable your webcam to run real-time MoveNet full-body pose tracking, 3D face mesh, 7-emotion mood analysis, estimated age & gender classification, object bounding boxes, and optical motion tracking 100% in your browser.
                                         </Typography>
+
                                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                             <Button
                                                 variant="contained"
@@ -839,6 +976,15 @@ const AiVisionStudio: React.FC = () => {
                                 {/* Overlay Feature Toggles */}
                                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
                                     <Chip
+                                        icon={<AccessibilityNew sx={{ fontSize: '16px !important' }} />}
+                                        label="Full Body Pose"
+                                        clickable
+                                        color={showPoseTracking ? 'success' : 'default'}
+                                        variant={showPoseTracking ? 'filled' : 'outlined'}
+                                        onClick={() => setShowPoseTracking(!showPoseTracking)}
+                                        sx={{ fontWeight: 700, fontSize: '0.75rem' }}
+                                    />
+                                    <Chip
                                         icon={<Face sx={{ fontSize: '16px !important' }} />}
                                         label="Face & Mood"
                                         clickable
@@ -854,15 +1000,6 @@ const AiVisionStudio: React.FC = () => {
                                         color={showObjectDetection ? 'success' : 'default'}
                                         variant={showObjectDetection ? 'filled' : 'outlined'}
                                         onClick={() => setShowObjectDetection(!showObjectDetection)}
-                                        sx={{ fontWeight: 700, fontSize: '0.75rem' }}
-                                    />
-                                    <Chip
-                                        icon={<Analytics sx={{ fontSize: '16px !important' }} />}
-                                        label="Motion Optical"
-                                        clickable
-                                        color={showMotionTracking ? 'success' : 'default'}
-                                        variant={showMotionTracking ? 'filled' : 'outlined'}
-                                        onClick={() => setShowMotionTracking(!showMotionTracking)}
                                         sx={{ fontWeight: 700, fontSize: '0.75rem' }}
                                     />
                                 </Stack>
@@ -935,19 +1072,61 @@ const AiVisionStudio: React.FC = () => {
                     <Grid item xs={12} lg={4}>
                         <Stack spacing={2.5} sx={{ height: '100%' }}>
 
-                            {/* 1. Biometric & Mood Analytics Panel */}
+                            {/* 1. Realtime Full-Body Pose Kinematics Panel */}
                             <Card
                                 elevation={0}
                                 sx={{
                                     p: 2.5,
                                     bgcolor: '#080a0f',
-                                    border: '1px solid rgba(0, 238, 255, 0.25)',
+                                    border: '1px solid rgba(0, 255, 102, 0.25)',
                                     borderRadius: 3,
                                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
                                 }}
                             >
                                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                                    <Psychology sx={{ color: '#00eeff', fontSize: 22 }} />
+                                    <AccessibilityNew sx={{ color: '#00ff66', fontSize: 22 }} />
+                                    <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
+                                        FULL-BODY POSE KINEMATICS
+                                    </Typography>
+                                </Stack>
+
+                                {primaryPose && trackedJointsCount > 0 ? (
+                                    <Stack spacing={1.5}>
+                                        <Paper sx={{ p: 1.5, bgcolor: 'rgba(0, 255, 102, 0.05)', border: '1px solid rgba(0, 255, 102, 0.2)', borderRadius: 2 }}>
+                                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                                SKELETON TRACKING STATUS
+                                            </Typography>
+                                            <Typography variant="h6" fontWeight={800} color="#00ff66">
+                                                {trackedJointsCount}/17 KEYPOINTS LOCKED
+                                            </Typography>
+                                            <Typography variant="caption" color="#00ff66" fontWeight={700}>
+                                                Hands, Elbows, Shoulders, Hips, Knees & Ankles Active
+                                            </Typography>
+                                        </Paper>
+                                    </Stack>
+                                ) : (
+                                    <Box sx={{ py: 3, textAlign: 'center' }}>
+                                        <AccessibilityNew sx={{ fontSize: 36, color: 'rgba(255, 255, 255, 0.2)', mb: 1 }} />
+                                        <Typography variant="body2" color="text.secondary">
+                                            Stand in camera view for full-body MoveNet pose tracking.
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Card>
+
+                            {/* 2. Biometric & Mood Analytics Panel */}
+                            <Card
+                                elevation={0}
+                                sx={{
+                                    p: 2.5,
+                                    bgcolor: '#080a0f',
+                                    border: '1px solid rgba(0, 255, 102, 0.25)',
+                                    borderRadius: 3,
+                                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+                                }}
+                            >
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                                    <Psychology sx={{ color: '#00ff66', fontSize: 22 }} />
                                     <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
                                         BIOMETRIC & MOOD ANALYTICS
                                     </Typography>
@@ -957,11 +1136,11 @@ const AiVisionStudio: React.FC = () => {
                                     <Stack spacing={2}>
                                         <Grid container spacing={2}>
                                             <Grid item xs={6}>
-                                                <Paper sx={{ p: 1.5, bgcolor: 'rgba(0, 238, 255, 0.05)', border: '1px solid rgba(0, 238, 255, 0.2)', borderRadius: 2 }}>
+                                                <Paper sx={{ p: 1.5, bgcolor: 'rgba(0, 255, 102, 0.05)', border: '1px solid rgba(0, 255, 102, 0.2)', borderRadius: 2 }}>
                                                     <Typography variant="caption" color="text.secondary" fontWeight={600}>
                                                         DOMINANT EMOTION
                                                     </Typography>
-                                                    <Typography variant="h6" fontWeight={800} color="#00eeff" sx={{ textTransform: 'uppercase' }}>
+                                                    <Typography variant="h6" fontWeight={800} color="#00ff66" sx={{ textTransform: 'uppercase' }}>
                                                         {topEmotion ? topEmotion[0] : 'NEUTRAL'}
                                                     </Typography>
                                                     <Typography variant="caption" color="#00ff66" fontWeight={700}>
@@ -970,14 +1149,14 @@ const AiVisionStudio: React.FC = () => {
                                                 </Paper>
                                             </Grid>
                                             <Grid item xs={6}>
-                                                <Paper sx={{ p: 1.5, bgcolor: 'rgba(168, 85, 247, 0.05)', border: '1px solid rgba(168, 85, 247, 0.2)', borderRadius: 2 }}>
+                                                <Paper sx={{ p: 1.5, bgcolor: 'rgba(0, 255, 102, 0.05)', border: '1px solid rgba(0, 255, 102, 0.2)', borderRadius: 2 }}>
                                                     <Typography variant="caption" color="text.secondary" fontWeight={600}>
                                                         ESTIMATED AGE / GENDER
                                                     </Typography>
-                                                    <Typography variant="h6" fontWeight={800} color="#a855f7">
+                                                    <Typography variant="h6" fontWeight={800} color="#00ff66">
                                                         {primaryFace.age ? `${primaryFace.age} Yrs` : 'N/A'}
                                                     </Typography>
-                                                    <Typography variant="caption" color="#00eeff" fontWeight={700}>
+                                                    <Typography variant="caption" color="#00ff66" fontWeight={700}>
                                                         {primaryFace.gender ? primaryFace.gender.toUpperCase() : ''}
                                                     </Typography>
                                                 </Paper>
@@ -998,7 +1177,7 @@ const AiVisionStudio: React.FC = () => {
                                                             <Typography variant="caption" color="#ffffff" fontWeight={600} sx={{ textTransform: 'capitalize' }}>
                                                                 {expr}
                                                             </Typography>
-                                                            <Typography variant="caption" color="#00eeff" fontWeight={700}>
+                                                            <Typography variant="caption" color="#00ff66" fontWeight={700}>
                                                                 {percentage}%
                                                             </Typography>
                                                         </Stack>
@@ -1010,7 +1189,7 @@ const AiVisionStudio: React.FC = () => {
                                                                 borderRadius: 3,
                                                                 bgcolor: 'rgba(255, 255, 255, 0.05)',
                                                                 '& .MuiLinearProgress-bar': {
-                                                                    bgcolor: percentage > 50 ? '#00eeff' : '#a855f7'
+                                                                    bgcolor: '#00ff66'
                                                                 }
                                                             }}
                                                         />
@@ -1020,8 +1199,8 @@ const AiVisionStudio: React.FC = () => {
                                         </Stack>
                                     </Stack>
                                 ) : (
-                                    <Box sx={{ py: 4, textAlign: 'center' }}>
-                                        <Face sx={{ fontSize: 40, color: 'rgba(255, 255, 255, 0.2)', mb: 1 }} />
+                                    <Box sx={{ py: 3, textAlign: 'center' }}>
+                                        <Face sx={{ fontSize: 36, color: 'rgba(255, 255, 255, 0.2)', mb: 1 }} />
                                         <Typography variant="body2" color="text.secondary">
                                             No face detected in video frame. Position face toward camera.
                                         </Typography>
@@ -1029,7 +1208,7 @@ const AiVisionStudio: React.FC = () => {
                                 )}
                             </Card>
 
-                            {/* 2. Detected Objects Inventory Panel */}
+                            {/* 3. Detected Objects Inventory Panel */}
                             <Card
                                 elevation={0}
                                 sx={{
@@ -1048,7 +1227,7 @@ const AiVisionStudio: React.FC = () => {
                                 </Stack>
 
                                 {detectedObjects.length > 0 ? (
-                                    <Stack spacing={1} sx={{ maxHeight: 180, overflowY: 'auto', pr: 0.5 }}>
+                                    <Stack spacing={1} sx={{ maxHeight: 150, overflowY: 'auto', pr: 0.5 }}>
                                         {detectedObjects.map((obj, idx) => (
                                             <Paper
                                                 key={idx}
@@ -1076,30 +1255,30 @@ const AiVisionStudio: React.FC = () => {
                                         ))}
                                     </Stack>
                                 ) : (
-                                    <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 3 }}>
+                                    <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 2 }}>
                                         No objects currently detected.
                                     </Typography>
                                 )}
                             </Card>
 
-                            {/* 3. Optical Motion Density Gauge */}
+                            {/* 4. Optical Motion Density Gauge */}
                             <Card
                                 elevation={0}
                                 sx={{
                                     p: 2.5,
                                     bgcolor: '#080a0f',
-                                    border: '1px solid rgba(255, 0, 127, 0.25)',
+                                    border: '1px solid rgba(0, 255, 102, 0.25)',
                                     borderRadius: 3
                                 }}
                             >
                                 <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
                                     <Stack direction="row" alignItems="center" spacing={1}>
-                                        <Analytics sx={{ color: '#ff007f', fontSize: 22 }} />
+                                        <Analytics sx={{ color: '#00ff66', fontSize: 22 }} />
                                         <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
                                             OPTICAL MOTION DENSITY
                                         </Typography>
                                     </Stack>
-                                    <Typography variant="h6" fontWeight={800} color="#ff007f">
+                                    <Typography variant="h6" fontWeight={800} color="#00ff66">
                                         {motionLevel}%
                                     </Typography>
                                 </Stack>
@@ -1112,7 +1291,7 @@ const AiVisionStudio: React.FC = () => {
                                         borderRadius: 4,
                                         bgcolor: 'rgba(255, 255, 255, 0.05)',
                                         '& .MuiLinearProgress-bar': {
-                                            background: 'linear-gradient(90deg, #ff007f 0%, #a855f7 100%)'
+                                            background: 'linear-gradient(90deg, #00ff66 0%, #00b347 100%)'
                                         }
                                     }}
                                 />
@@ -1138,7 +1317,7 @@ const AiVisionStudio: React.FC = () => {
                                             position: 'relative',
                                             borderRadius: 2,
                                             overflow: 'hidden',
-                                            border: '1px solid rgba(0, 238, 255, 0.3)',
+                                            border: '1px solid rgba(0, 255, 102, 0.3)',
                                             boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
                                         }}
                                     >
@@ -1156,8 +1335,8 @@ const AiVisionStudio: React.FC = () => {
                                                 bottom: 6,
                                                 right: 6,
                                                 bgcolor: 'rgba(0, 0, 0, 0.7)',
-                                                color: '#00eeff',
-                                                '&:hover': { bgcolor: '#00eeff', color: '#000000' }
+                                                color: '#00ff66',
+                                                '&:hover': { bgcolor: '#00ff66', color: '#000000' }
                                             }}
                                         >
                                             <Download fontSize="small" />
