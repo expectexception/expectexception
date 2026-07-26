@@ -1067,16 +1067,19 @@ const HomePage: React.FC = () => {
                   }}
                 >
                   Architecting the <br />
-                  <span style={{
-                    display: 'inline-block',
-                    background: `linear-gradient(135deg, #ffffff 30%, ${primaryColor} 100%)`,
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    color: 'transparent'
-                  }}>
+                  <Box
+                    component="span"
+                    sx={{
+                      display: 'inline-block',
+                      background: `linear-gradient(135deg, #ffffff 30%, ${primaryColor} 100%)`,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      color: 'transparent',
+                    }}
+                  >
                     Modern Web
-                  </span>
+                  </Box>
                 </Typography>
 
                 <Typography
