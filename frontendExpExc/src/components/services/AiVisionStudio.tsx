@@ -623,14 +623,20 @@ const AiVisionStudio: React.FC = () => {
             <Seo
                 title="Realtime AI Vision Studio — Face, Emotion, Age & Object Detection"
                 description="100% frontend realtime AI vision lab using WebGL & TensorFlow. Detect faces, emotions, age, gender, objects, and motion directly in your browser."
-                keywords="ai vision studio, face detection webcam, emotion recognition online, age detection browser, object detection tensorflow js, motion tracking webcam"
+                keywords={[
+                    "ai vision studio",
+                    "face detection webcam",
+                    "emotion recognition online",
+                    "age detection browser",
+                    "object detection tensorflow js",
+                    "motion tracking webcam"
+                ]}
             />
 
             <ServicePageHero
                 title="Realtime AI Vision Studio"
                 subtitle="High-Performance Neural Vision in Your Browser — Detect Faces, Emotions, Estimated Age, Objects & Motion 100% Client-Side with Zero Latency."
-                category="Edge AI & Computer Vision"
-                icon={<Visibility sx={{ fontSize: 36, color: '#00eeff' }} />}
+                icon={Visibility}
             />
 
             <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 } }}>
