@@ -64,21 +64,32 @@ export const getTheme = (primaryColor: string = '#3dfc55', colorMode: 'dark' | '
         fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
         lineHeight: 1.1,
         letterSpacing: '-0.02em',
-        color: '#ffffff',
+        color: textPrimary,
       },
       h2: {
         fontWeight: 700,
         fontSize: 'clamp(1.8rem, 4.5vw, 2.75rem)',
         lineHeight: 1.2,
         letterSpacing: '-0.01em',
+        color: textPrimary,
       },
       h3: {
         fontWeight: 700,
         fontSize: 'clamp(1.4rem, 3.5vw, 2.2rem)',
+        color: textPrimary,
       },
       h4: {
         fontWeight: 600,
         fontSize: 'clamp(1.15rem, 3vw, 1.6rem)',
+        color: textPrimary,
+      },
+      h5: {
+        fontWeight: 600,
+        color: textPrimary,
+      },
+      h6: {
+        fontWeight: 600,
+        color: textPrimary,
       },
       button: {
         fontWeight: 600,
@@ -110,6 +121,43 @@ export const getTheme = (primaryColor: string = '#3dfc55', colorMode: 'dark' | '
             },
             '&::-webkit-scrollbar-track, & *::-webkit-scrollbar-track': {
               backgroundColor: '#050505',
+            },
+          },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            fontWeight: 600,
+          },
+          outlined: {
+            borderColor: 'rgba(255, 255, 255, 0.25)',
+            color: '#ffffff',
+            '&:hover': {
+              borderColor: primaryColor,
+              backgroundColor: alpha(primaryColor, 0.1),
+            },
+          },
+          filled: {
+            color: '#000000',
+            fontWeight: 700,
+          },
+        },
+      },
+      MuiToggleButton: {
+        styleOverrides: {
+          root: {
+            color: '#94a3b8',
+            borderColor: 'rgba(255, 255, 255, 0.15)',
+            '&.Mui-selected': {
+              color: primaryColor,
+              backgroundColor: alpha(primaryColor, 0.15),
+              borderColor: primaryColor,
+              fontWeight: 700,
+            },
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              color: '#ffffff',
             },
           },
         },

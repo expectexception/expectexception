@@ -1063,13 +1063,17 @@ const HomePage: React.FC = () => {
                     lineHeight: 1.05,
                     mb: 3,
                     letterSpacing: '-0.03em',
+                    color: '#ffffff'
                   }}
                 >
                   Architecting the <br />
                   <span style={{
+                    display: 'inline-block',
                     background: `linear-gradient(135deg, #ffffff 30%, ${primaryColor} 100%)`,
                     WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
+                    color: 'transparent'
                   }}>
                     Modern Web
                   </span>
@@ -1493,7 +1497,7 @@ const HomePage: React.FC = () => {
             <Grid item xs={12} md={5}>
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 4, background: 'rgba(13, 14, 18, 0.5)' }}>
                 <CardContent>
-                  <Typography variant="h4" fontWeight="800" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Typography variant="h4" fontWeight="800" color="#ffffff" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <ColorLens sx={{ color: primaryColor }} /> Accent Customizer
                   </Typography>
                   <Typography variant="body2" color="#94a3b8" sx={{ mb: 4, lineHeight: 1.6 }}>

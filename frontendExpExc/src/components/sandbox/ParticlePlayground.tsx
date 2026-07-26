@@ -289,6 +289,14 @@ const ParticlePlayground: React.FC = () => {
                                 color={palette === p.key ? 'primary' : 'default'}
                                 variant={palette === p.key ? 'filled' : 'outlined'}
                                 onClick={() => setPalette(p.key)}
+                                sx={{
+                                    color: palette === p.key ? '#000000' : '#ffffff',
+                                    fontWeight: 700,
+                                    borderColor: palette === p.key ? 'transparent' : 'rgba(255, 255, 255, 0.25)',
+                                    '&:hover': {
+                                        borderColor: theme.palette.primary.main,
+                                    }
+                                }}
                             />
                         ))}
                     </Box>
