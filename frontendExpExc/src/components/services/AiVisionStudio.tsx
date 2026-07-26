@@ -200,6 +200,9 @@ const AiVisionStudio: React.FC = () => {
             try {
                 setLoadingStatusText('Initializing WebGL Hardware Acceleration Engine...');
                 setLoadingProgress(15);
+                try {
+                    tf.env().set('DEBUG', false);
+                } catch (_) {}
                 await tf.ready();
                 if (tf.getBackend() !== 'webgl') {
                     await tf.setBackend('webgl').catch(() => tf.setBackend('cpu'));
@@ -602,7 +605,7 @@ const AiVisionStudio: React.FC = () => {
         if (!canvasRef.current) return;
         const video = videoRef.current;
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         const width = video?.videoWidth || 1280;
@@ -691,7 +694,7 @@ const AiVisionStudio: React.FC = () => {
                     offscreenCanvasRef.current.width = 80;
                     offscreenCanvasRef.current.height = 45;
                 }
-                const offCtx = offscreenCanvasRef.current.getContext('2d');
+                const offCtx = offscreenCanvasRef.current.getContext('2d', { willReadFrequently: true });
                 if (offCtx) {
                     offCtx.drawImage(video, 0, 0, 80, 45);
                     const imgData = offCtx.getImageData(0, 0, 80, 45).data;
