@@ -205,6 +205,9 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/image-compressor" element={<PageTransition>{withAuthGuard(<ImageCompressorPage />, '/services/image-compressor', toolAccess, 'Image Compressor')}</PageTransition>} />
                     <Route path="/services/ai-detector" element={<PageTransition>{withAuthGuard(<AIDetectorPage />, '/services/ai-detector', toolAccess, 'AI Detector')}</PageTransition>} />
                     <Route path="/services/ai-vision-studio" element={<PageTransition><AiVisionStudio /></PageTransition>} />
+                    <Route path="/services/ai-vision" element={<PageTransition><AiVisionStudio /></PageTransition>} />
+                    <Route path="/services/vision-studio" element={<PageTransition><AiVisionStudio /></PageTransition>} />
+                    <Route path="/services/100" element={<PageTransition><AiVisionStudio /></PageTransition>} />
 
                     {/* Document Tools */}
                     <Route path="/services/pdf-to-doc" element={<PageTransition>{withAuthGuard(<PdfToDoc />, '/services/pdf-to-doc', toolAccess, 'PDF to Doc')}</PageTransition>} />

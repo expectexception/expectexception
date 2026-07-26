@@ -37,6 +37,7 @@ import {
   Message,
   Terminal,
   Dns,
+  Visibility,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -1096,7 +1097,30 @@ const HomePage: React.FC = () => {
                   We're ExpectException. Specializing in modern web engineering, custom AI integrations, and high-performance interactive interfaces, we turn complex concepts into responsive, elegant digital experiences.
                 </Typography>
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap" useFlexGap>
+                  <Button
+                    component={Link}
+                    to="/services/ai-vision-studio"
+                    variant="contained"
+                    size="large"
+                    startIcon={<Visibility sx={{ color: '#00eeff' }} />}
+                    sx={{
+                      borderRadius: '30px',
+                      px: 3.5,
+                      py: 1.75,
+                      fontWeight: 800,
+                      background: 'linear-gradient(135deg, #00eeff 0%, #a855f7 100%)',
+                      color: '#000000',
+                      boxShadow: '0 8px 25px rgba(0, 238, 255, 0.3)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #00cce6 0%, #9333ea 100%)',
+                        boxShadow: '0 12px 30px rgba(0, 238, 255, 0.5)',
+                        transform: 'translateY(-2px)'
+                      }
+                    }}
+                  >
+                    AI VISION STUDIO
+                  </Button>
                   <Button
                     component={Link}
                     to="/services"
