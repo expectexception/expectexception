@@ -14,6 +14,11 @@ import {
     Paper,
     CircularProgress,
     Avatar,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
     useTheme,
     alpha
 } from '@mui/material';
@@ -30,11 +35,14 @@ import {
     Category,
     Speed,
     PlayArrow,
-    CheckCircle,
     Analytics,
     Memory,
     Psychology,
-    AccessibilityNew
+    AccessibilityNew,
+    Fingerprint,
+    Timeline,
+    CheckCircle,
+    PersonAdd
 } from '@mui/icons-material';
 import ServicePageHero from './ServicePageHero';
 import Seo from '../seo/Seo';
@@ -58,11 +66,33 @@ interface FaceDetectionData {
     gender?: string;
     genderProbability?: number;
     landmarks?: Array<{ x: number; y: number }>;
+    descriptor?: Float32Array;
+    recognizedName?: string;
+    headPoseText?: string;
+}
+
+interface Keypoint {
+    x: number;
+    y: number;
+    score?: number;
+    name?: string;
 }
 
 interface BodyPoseData {
-    keypoints: Array<{ x: number; y: number; score?: number; name?: string }>;
+    keypoints: Keypoint[];
     score?: number;
+    gestureLabel?: string;
+}
+
+interface EnrolledFace {
+    name: string;
+    descriptor: number[];
+}
+
+interface MotionTrailPoint {
+    x: number;
+    y: number;
+    alpha: number;
 }
 
 const AiVisionStudio: React.FC = () => {
@@ -77,10 +107,11 @@ const AiVisionStudio: React.FC = () => {
     const [loadingStatusText, setLoadingStatusText] = useState('Initializing AI Engine...');
     const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
 
-    // Toggle overlays
+    // Toggle Overlays
     const [showFaceDetection, setShowFaceDetection] = useState(true);
     const [showObjectDetection, setShowObjectDetection] = useState(true);
     const [showPoseTracking, setShowPoseTracking] = useState(true);
+    const [showMotionTrails, setShowMotionTrails] = useState(true);
     const [enableVoiceAudio, setEnableVoiceAudio] = useState(false);
 
     // Live Metrics
@@ -90,10 +121,22 @@ const AiVisionStudio: React.FC = () => {
     const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([]);
     const [detectedFaces, setDetectedFaces] = useState<FaceDetectionData[]>([]);
     const [detectedPoses, setDetectedPoses] = useState<BodyPoseData[]>([]);
+    const [currentGesture, setCurrentGesture] = useState<string>('STANDING POSTURE');
 
-    // Snapshot state
+    // Face Enrollment & Biometric Identity Database
+    const [enrolledFaces, setEnrolledFaces] = useState<EnrolledFace[]>(() => {
+        try {
+            const saved = localStorage.getItem('ai_vision_enrolled_faces');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    });
+    const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false);
+    const [enrollNameInput, setEnrollNameInput] = useState('');
+
+    // Snapshot gallery
     const [capturedSnapshots, setCapturedSnapshots] = useState<string[]>([]);
-    const [lastSpokenText, setLastSpokenText] = useState('');
 
     // --- Refs ---
     const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -104,7 +147,12 @@ const AiVisionStudio: React.FC = () => {
     const poseDetectorRef = useRef<poseDetection.PoseDetector | null>(null);
     const isFaceApiLoadedRef = useRef<boolean>(false);
     
-    // Cached detections for 60 FPS smooth rendering without CPU stalls
+    // Smooth Kinematic Keypoint Positions (EMA filter)
+    const smoothedKeypointsRef = useRef<Record<string, { x: number; y: number }>>({});
+    // Motion Trajectory Ring Buffers for hands/feet
+    const motionTrailsRef = useRef<Record<string, MotionTrailPoint[]>>({});
+
+    // Cached detections for 60 FPS rendering
     const cachedFacesRef = useRef<FaceDetectionData[]>([]);
     const cachedObjectsRef = useRef<DetectedObject[]>([]);
     const cachedPosesRef = useRef<BodyPoseData[]>([]);
@@ -115,6 +163,15 @@ const AiVisionStudio: React.FC = () => {
     const frameCountRef = useRef<number>(0);
     const lastSpeechTimeRef = useRef<number>(0);
 
+    // Save enrolled faces to localStorage
+    useEffect(() => {
+        try {
+            localStorage.setItem('ai_vision_enrolled_faces', JSON.stringify(enrolledFaces));
+        } catch (e) {
+            console.error('Error saving face database:', e);
+        }
+    }, [enrolledFaces]);
+
     // --- Load Machine Learning Models ---
     useEffect(() => {
         let isMounted = true;
@@ -122,13 +179,13 @@ const AiVisionStudio: React.FC = () => {
         const loadAiModels = async () => {
             try {
                 setLoadingStatusText('Initializing WebGL Hardware Acceleration Engine...');
-                setLoadingProgress(20);
+                setLoadingProgress(15);
                 await tf.ready();
                 if (tf.getBackend() !== 'webgl') {
                     await tf.setBackend('webgl').catch(() => tf.setBackend('cpu'));
                 }
 
-                setLoadingStatusText('Loading MoveNet Realtime Full-Body Skeleton Detector...');
+                setLoadingStatusText('Loading MoveNet Realtime 17-Keypoint Full Body Kinematics Net...');
                 setLoadingProgress(40);
                 try {
                     const detector = await poseDetection.createDetector(
@@ -145,7 +202,7 @@ const AiVisionStudio: React.FC = () => {
                 const cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
                 if (isMounted) cocoModelRef.current = cocoModel;
 
-                setLoadingStatusText('Loading 3D Biometric Face & Mood Mesh Nets...');
+                setLoadingStatusText('Loading 3D Facial Landmark & Embedding Neural Nets...');
                 setLoadingProgress(85);
                 
                 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
@@ -153,7 +210,8 @@ const AiVisionStudio: React.FC = () => {
                     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
                     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
                     faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
-                    faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL)
+                    faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
                 ]);
 
                 isFaceApiLoadedRef.current = true;
@@ -180,7 +238,7 @@ const AiVisionStudio: React.FC = () => {
         };
     }, []);
 
-    // --- Camera Control ---
+    // --- Camera Controls ---
     const startCamera = async () => {
         try {
             setIsDemoMode(false);
@@ -238,18 +296,104 @@ const AiVisionStudio: React.FC = () => {
     const speakAiAnnouncement = useCallback((text: string) => {
         if (!enableVoiceAudio || !('speechSynthesis' in window)) return;
         const now = Date.now();
-        if (now - lastSpeechTimeRef.current < 4000) return;
+        if (now - lastSpeechTimeRef.current < 4500) return;
         lastSpeechTimeRef.current = now;
 
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.rate = 1.0;
-        utterance.pitch = 1.1;
+        utterance.pitch = 1.05;
         window.speechSynthesis.speak(utterance);
-        setLastSpokenText(text);
     }, [enableVoiceAudio]);
 
-    // --- Async AI Background Inference Loop ---
+    // --- Realtime Pose & Gesture Kinematics Classifier ---
+    const classifyGesture = (kpsMap: Record<string, Keypoint>): string => {
+        const minConf = 0.25;
+        const lWrist = kpsMap['left_wrist'];
+        const rWrist = kpsMap['right_wrist'];
+        const lShoulder = kpsMap['left_shoulder'];
+        const rShoulder = kpsMap['right_shoulder'];
+        const lElbow = kpsMap['left_elbow'];
+        const rElbow = kpsMap['right_elbow'];
+        const nose = kpsMap['nose'];
+        const lKnee = kpsMap['left_knee'];
+        const lHip = kpsMap['left_hip'];
+
+        if (!lShoulder || !rShoulder || (lShoulder.score ?? 1) < minConf || (rShoulder.score ?? 1) < minConf) {
+            return 'STANDING POSTURE';
+        }
+
+        // 1. Hands Raised / Celebration Gesture
+        if (lWrist && rWrist && (lWrist.score ?? 1) > minConf && (rWrist.score ?? 1) > minConf) {
+            if (lWrist.y < lShoulder.y - 20 && rWrist.y < rShoulder.y - 20) {
+                return 'HANDS RAISED (CELEBRATION)';
+            }
+        }
+
+        // 2. Single Arm Wave
+        if (lWrist && nose && (lWrist.score ?? 1) > minConf && lWrist.y < nose.y) {
+            return 'LEFT HAND WAVING';
+        }
+        if (rWrist && nose && (rWrist.score ?? 1) > minConf && rWrist.y < nose.y) {
+            return 'RIGHT HAND WAVING';
+        }
+
+        // 3. T-Pose Horizontal Extension
+        if (lWrist && rWrist && lElbow && rElbow) {
+            const lArmHorizontal = Math.abs(lWrist.y - lShoulder.y) < 55 && Math.abs(lElbow.y - lShoulder.y) < 45;
+            const rArmHorizontal = Math.abs(rWrist.y - rShoulder.y) < 55 && Math.abs(rElbow.y - rShoulder.y) < 45;
+            if (lArmHorizontal && rArmHorizontal) {
+                return 'T-POSE EXTENSION';
+            }
+        }
+
+        // 4. Squat Pose
+        if (lKnee && lHip && (lKnee.score ?? 1) > minConf && (lHip.score ?? 1) > minConf) {
+            if (lKnee.y - lHip.y < 90) {
+                return 'SQUAT / BENDING KINEMATICS';
+            }
+        }
+
+        return 'STANDING POSTURE';
+    };
+
+    // --- Face Recognition Matching Helper ---
+    const matchFaceIdentity = (descriptor: Float32Array): string => {
+        if (enrolledFaces.length === 0) return 'UNENROLLED SUBJECT';
+
+        let bestDistance = Infinity;
+        let bestName = 'UNENROLLED SUBJECT';
+
+        enrolledFaces.forEach(ef => {
+            const distance = faceapi.euclideanDistance(descriptor, new Float32Array(ef.descriptor));
+            if (distance < 0.55 && distance < bestDistance) {
+                bestDistance = distance;
+                bestName = `${ef.name} (${(1 - distance).toFixed(2)})`;
+            }
+        });
+
+        return bestName;
+    };
+
+    // --- Estimate 3D Head Orientation (Yaw/Pitch) ---
+    const computeHeadPoseText = (landmarks: Array<{ x: number; y: number }>): string => {
+        if (landmarks.length < 68) return 'Facing Center';
+        const noseTip = landmarks[30];
+        const leftEyeOuter = landmarks[36];
+        const rightEyeOuter = landmarks[45];
+
+        if (!noseTip || !leftEyeOuter || !rightEyeOuter) return 'Facing Center';
+
+        const leftDist = Math.abs(noseTip.x - leftEyeOuter.x);
+        const rightDist = Math.abs(noseTip.x - rightEyeOuter.x);
+        const ratio = leftDist / (rightDist || 1);
+
+        if (ratio > 1.8) return 'Turned Right';
+        if (ratio < 0.55) return 'Turned Left';
+        return 'Facing Center';
+    };
+
+    // --- Async AI Background Inference Loop (10 FPS) ---
     useEffect(() => {
         if (!isCameraActive || isDemoMode) return;
 
@@ -267,10 +411,18 @@ const AiVisionStudio: React.FC = () => {
                 if (showPoseTracking && poseDetectorRef.current) {
                     const poses = await poseDetectorRef.current.estimatePoses(video);
                     if (!isCancelled && poses.length > 0) {
-                        const formattedPoses: BodyPoseData[] = poses.map(p => ({
-                            keypoints: p.keypoints.map(k => ({ x: k.x, y: k.y, score: k.score, name: k.name })),
-                            score: p.score
-                        }));
+                        const formattedPoses: BodyPoseData[] = poses.map(p => {
+                            const kpsMap: Record<string, Keypoint> = {};
+                            p.keypoints.forEach(k => { if (k.name) kpsMap[k.name] = k; });
+                            const detectedGesture = classifyGesture(kpsMap);
+                            setCurrentGesture(detectedGesture);
+
+                            return {
+                                keypoints: p.keypoints.map(k => ({ x: k.x, y: k.y, score: k.score, name: k.name })),
+                                score: p.score,
+                                gestureLabel: detectedGesture
+                            };
+                        });
                         cachedPosesRef.current = formattedPoses;
                         setDetectedPoses(formattedPoses);
                     }
@@ -279,7 +431,7 @@ const AiVisionStudio: React.FC = () => {
                     setDetectedPoses([]);
                 }
 
-                // 2. Face & Biometrics Detection
+                // 2. Face, Biometrics & Facial Embeddings
                 if (showFaceDetection && isFaceApiLoadedRef.current) {
                     const detections = await faceapi.detectAllFaces(
                         video,
@@ -287,17 +439,26 @@ const AiVisionStudio: React.FC = () => {
                     )
                     .withFaceLandmarks()
                     .withFaceExpressions()
-                    .withAgeAndGender();
+                    .withAgeAndGender()
+                    .withFaceDescriptors();
 
                     if (!isCancelled) {
-                        const formattedFaces: FaceDetectionData[] = detections.map(d => ({
-                            box: d.detection.box,
-                            expressions: d.expressions as unknown as Record<string, number>,
-                            age: Math.round(d.age),
-                            gender: d.gender,
-                            genderProbability: d.genderProbability,
-                            landmarks: d.landmarks.positions
-                        }));
+                        const formattedFaces: FaceDetectionData[] = detections.map(d => {
+                            const recName = matchFaceIdentity(d.descriptor);
+                            const headPose = computeHeadPoseText(d.landmarks.positions);
+
+                            return {
+                                box: d.detection.box,
+                                expressions: d.expressions as unknown as Record<string, number>,
+                                age: Math.round(d.age),
+                                gender: d.gender,
+                                genderProbability: d.genderProbability,
+                                landmarks: d.landmarks.positions,
+                                descriptor: d.descriptor,
+                                recognizedName: recName,
+                                headPoseText: headPose
+                            };
+                        });
 
                         cachedFacesRef.current = formattedFaces;
                         setDetectedFaces(formattedFaces);
@@ -306,7 +467,7 @@ const AiVisionStudio: React.FC = () => {
                             const face = formattedFaces[0];
                             const topExpr = Object.entries(face.expressions).sort((a, b) => b[1] - a[1])[0];
                             if (topExpr && topExpr[1] > 0.6) {
-                                speakAiAnnouncement(`Detected ${face.gender || 'person'}, feeling ${topExpr[0]}`);
+                                speakAiAnnouncement(`Identified ${face.recognizedName || 'Subject'}, feeling ${topExpr[0]}`);
                             }
                         }
                     }
@@ -339,14 +500,14 @@ const AiVisionStudio: React.FC = () => {
             }
         };
 
-        const interval = setInterval(runAiInference, 100); // 10 AI inferences per sec
+        const interval = setInterval(runAiInference, 100);
         return () => {
             isCancelled = true;
             clearInterval(interval);
         };
-    }, [isCameraActive, isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking, enableVoiceAudio, speakAiAnnouncement]);
+    }, [isCameraActive, isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking, enableVoiceAudio, speakAiAnnouncement, enrolledFaces]);
 
-    // --- 60 FPS Smooth Canvas Render Loop ---
+    // --- 60 FPS Render Loop with Smooth EMA Keypoints & Motion Trails ---
     const processFrame = useCallback(() => {
         if (!canvasRef.current) return;
         const video = videoRef.current;
@@ -362,13 +523,12 @@ const AiVisionStudio: React.FC = () => {
             canvas.height = height;
         }
 
-        // 1. Draw Feed (Real webcam or Cyber Demo background)
+        // 1. Render Video / Cyber Background
         if (isDemoMode || !video || video.readyState !== 4) {
             ctx.fillStyle = '#06080d';
             ctx.fillRect(0, 0, width, height);
 
             const time = Date.now() * 0.002;
-            // Animated Cyber Grid
             ctx.strokeStyle = 'rgba(0, 255, 102, 0.12)';
             ctx.lineWidth = 1;
             for (let x = 0; x < width; x += 40) {
@@ -378,18 +538,16 @@ const AiVisionStudio: React.FC = () => {
                 ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
             }
 
-            // Demo Target Simulation
             const centerX = width / 2 + Math.sin(time) * 30;
             const centerY = height / 2 + Math.cos(time * 0.8) * 15;
 
             if (showFaceDetection) {
-                drawCyberBox(ctx, centerX - 90, centerY - 110, 180, 220, '#00ff66', 'FACE TARGET #01');
+                drawCyberBox(ctx, centerX - 90, centerY - 110, 180, 220, '#00ff66', 'OPERATOR #01 (ENROLLED)');
             }
             if (showObjectDetection) {
                 drawCyberBox(ctx, width * 0.18, height * 0.35, 160, 200, '#00ff66', 'LAPTOP 96%');
             }
 
-            // Simulated Pose Skeleton in Demo Mode
             if (showPoseTracking) {
                 const sY = centerY + 30;
                 const eY = sY + 80;
@@ -398,14 +556,15 @@ const AiVisionStudio: React.FC = () => {
                 const rHandX = centerX + 160;
 
                 ctx.strokeStyle = '#00ff66';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 3.5;
+                ctx.shadowColor = '#00ff66';
+                ctx.shadowBlur = 8;
                 ctx.beginPath();
-                // Arms outstretched
                 ctx.moveTo(lHandX, wY); ctx.lineTo(centerX - 90, eY); ctx.lineTo(centerX - 40, sY);
                 ctx.lineTo(centerX + 40, sY); ctx.lineTo(centerX + 90, eY); ctx.lineTo(rHandX, wY);
                 ctx.stroke();
+                ctx.shadowBlur = 0;
 
-                // Joint Nodes
                 [
                     { x: lHandX, y: wY, label: 'LEFT WRIST' },
                     { x: centerX - 90, y: eY, label: 'LEFT ELBOW' },
@@ -414,7 +573,7 @@ const AiVisionStudio: React.FC = () => {
                     { x: centerX + 90, y: eY, label: 'RIGHT ELBOW' },
                     { x: rHandX, y: wY, label: 'RIGHT WRIST' }
                 ].forEach(j => {
-                    ctx.fillStyle = 'rgba(0, 255, 102, 0.4)';
+                    ctx.fillStyle = 'rgba(0, 255, 102, 0.45)';
                     ctx.beginPath(); ctx.arc(j.x, j.y, 9, 0, Math.PI * 2); ctx.fill();
                     ctx.fillStyle = '#ffffff';
                     ctx.beginPath(); ctx.arc(j.x, j.y, 4, 0, Math.PI * 2); ctx.fill();
@@ -429,7 +588,9 @@ const AiVisionStudio: React.FC = () => {
                 expressions: { happy: 0.94, neutral: 0.05, surprised: 0.01 },
                 age: 26,
                 gender: 'male',
-                genderProbability: 0.99
+                genderProbability: 0.99,
+                recognizedName: 'OPERATOR #01',
+                headPoseText: 'Facing Center'
             }]);
 
             setDetectedObjects([
@@ -437,12 +598,13 @@ const AiVisionStudio: React.FC = () => {
                 { bbox: [centerX - 90, centerY - 110, 180, 220], class: 'person', score: 0.98 }
             ]);
 
+            setCurrentGesture('HANDS RAISED (CELEBRATION)');
             setMotionLevel(Math.round(25 + Math.sin(time * 5) * 15));
         } else {
-            // Draw real webcam stream onto main canvas
+            // Draw real webcam stream onto canvas
             ctx.drawImage(video, 0, 0, width, height);
 
-            // Fast motion estimation
+            // Fast optical motion estimation
             if (showPoseTracking || showFaceDetection) {
                 if (!offscreenCanvasRef.current) {
                     offscreenCanvasRef.current = document.createElement('canvas');
@@ -466,20 +628,30 @@ const AiVisionStudio: React.FC = () => {
                 }
             }
 
-            // 2. Draw Realtime MoveNet Full-Body Pose Kinematic Skeleton
+            // 2. Draw MoveNet Skeleton with EMA Keypoint Smoothing & Motion Trails
             if (showPoseTracking && cachedPosesRef.current.length > 0) {
                 cachedPosesRef.current.forEach(pose => {
                     if (!pose.keypoints) return;
-                    const kps = pose.keypoints;
+                    const rawKps = pose.keypoints;
                     const minConf = 0.25;
 
-                    const kpMap: Record<string, { x: number; y: number; score?: number; name?: string }> = {};
-                    kps.forEach((k, idx) => {
-                        if (k.name) kpMap[k.name] = k;
-                        else kpMap[idx] = k;
+                    // Apply Exponential Moving Average (EMA) keypoint smoothing
+                    const smoothedMap: Record<string, { x: number; y: number; score?: number; name?: string }> = {};
+                    rawKps.forEach((k, idx) => {
+                        const key = k.name || `kp_${idx}`;
+                        const prev = smoothedKeypointsRef.current[key];
+                        if (prev && (k.score ?? 1) > minConf) {
+                            const newX = prev.x * 0.35 + k.x * 0.65;
+                            const newY = prev.y * 0.35 + k.y * 0.65;
+                            smoothedKeypointsRef.current[key] = { x: newX, y: newY };
+                            smoothedMap[key] = { x: newX, y: newY, score: k.score, name: k.name };
+                        } else {
+                            smoothedKeypointsRef.current[key] = { x: k.x, y: k.y };
+                            smoothedMap[key] = { x: k.x, y: k.y, score: k.score, name: k.name };
+                        }
                     });
 
-                    // MoveNet 17-Keypoint Skeleton Bones
+                    // 17-Keypoint MoveNet Skeleton Connections
                     const connections = [
                         ['nose', 'left_eye'], ['nose', 'right_eye'],
                         ['left_eye', 'left_ear'], ['right_eye', 'right_ear'],
@@ -499,8 +671,8 @@ const AiVisionStudio: React.FC = () => {
                     ctx.shadowBlur = 10;
 
                     connections.forEach(([p1Name, p2Name]) => {
-                        const p1 = kpMap[p1Name];
-                        const p2 = kpMap[p2Name];
+                        const p1 = smoothedMap[p1Name];
+                        const p2 = smoothedMap[p2Name];
                         if (p1 && p2 && (p1.score ?? 1) > minConf && (p2.score ?? 1) > minConf) {
                             ctx.beginPath();
                             ctx.moveTo(p1.x, p1.y);
@@ -509,26 +681,50 @@ const AiVisionStudio: React.FC = () => {
                         }
                     });
 
-                    ctx.shadowBlur = 0; // Reset glow
+                    ctx.shadowBlur = 0;
+
+                    // Draw Motion Trajectory Trails for Wrists & Ankles
+                    if (showMotionTrails) {
+                        ['left_wrist', 'right_wrist', 'left_ankle', 'right_ankle'].forEach(limb => {
+                            const node = smoothedMap[limb];
+                            if (node && (node.score ?? 1) > minConf) {
+                                if (!motionTrailsRef.current[limb]) motionTrailsRef.current[limb] = [];
+                                const trail = motionTrailsRef.current[limb];
+                                trail.push({ x: node.x, y: node.y, alpha: 1.0 });
+                                if (trail.length > 12) trail.shift();
+
+                                // Draw Fading Motion Trail Arc
+                                for (let i = 0; i < trail.length - 1; i++) {
+                                    const pt1 = trail[i];
+                                    const pt2 = trail[i + 1];
+                                    const trailAlpha = (i / trail.length) * 0.7;
+
+                                    ctx.strokeStyle = `rgba(0, 255, 102, ${trailAlpha})`;
+                                    ctx.lineWidth = (i / trail.length) * 4;
+                                    ctx.beginPath();
+                                    ctx.moveTo(pt1.x, pt1.y);
+                                    ctx.lineTo(pt2.x, pt2.y);
+                                    ctx.stroke();
+                                }
+                            }
+                        });
+                    }
 
                     // Draw Joint Reticle Nodes
-                    kps.forEach(kp => {
+                    Object.values(smoothedMap).forEach(kp => {
                         if ((kp.score ?? 1) > minConf) {
-                            // Outer aura
                             ctx.fillStyle = 'rgba(0, 255, 102, 0.45)';
                             ctx.beginPath();
                             ctx.arc(kp.x, kp.y, 8, 0, Math.PI * 2);
                             ctx.fill();
 
-                            // Inner core node
                             ctx.fillStyle = '#ffffff';
                             ctx.beginPath();
                             ctx.arc(kp.x, kp.y, 4, 0, Math.PI * 2);
                             ctx.fill();
 
-                            // Label for key limbs (Wrists, Elbows, Shoulders, Knees, Ankles)
                             const labelName = kp.name || '';
-                            if (['left_wrist', 'right_wrist', 'left_elbow', 'right_elbow', 'left_shoulder', 'right_shoulder', 'left_knee', 'right_knee'].includes(labelName)) {
+                            if (['left_wrist', 'right_wrist', 'left_elbow', 'right_elbow', 'left_shoulder', 'right_shoulder'].includes(labelName)) {
                                 ctx.fillStyle = '#00ff66';
                                 ctx.font = '800 10px Inter, sans-serif';
                                 ctx.fillText(labelName.replace('_', ' ').toUpperCase(), kp.x + 10, kp.y + 4);
@@ -538,7 +734,7 @@ const AiVisionStudio: React.FC = () => {
                 });
             }
 
-            // 3. Draw Cached Object Detections (COCO-SSD)
+            // 3. Draw Cached Object Bounding Boxes (COCO-SSD)
             if (showObjectDetection && cachedObjectsRef.current.length > 0) {
                 cachedObjectsRef.current.forEach(obj => {
                     const [x, y, w, h] = obj.bbox;
@@ -546,15 +742,19 @@ const AiVisionStudio: React.FC = () => {
                 });
             }
 
-            // 4. Draw Cached 3D Face Wireframe & Biometric HUD
+            // 4. Draw 3D Biometric Facial Mesh & Identity Tag
             if (showFaceDetection && cachedFacesRef.current.length > 0) {
                 cachedFacesRef.current.forEach((face, fIdx) => {
                     const { x, y, width: w, height: h } = face.box;
 
-                    // Cyber Bounding Box
-                    drawCyberBox(ctx, x, y, w, h, '#00ff66', `FACE LOCK #${fIdx + 1}`);
+                    // Cyber Bounding Box with Identity Name
+                    const badgeLabel = face.recognizedName
+                        ? `${face.recognizedName.toUpperCase()}`
+                        : `FACE LOCK #${fIdx + 1}`;
 
-                    // Scanning Laser Line
+                    drawCyberBox(ctx, x, y, w, h, '#00ff66', badgeLabel);
+
+                    // Scanning Laser Beam
                     const scanY = y + ((Date.now() * 0.2) % h);
                     ctx.strokeStyle = 'rgba(0, 255, 102, 0.8)';
                     ctx.lineWidth = 1.5;
@@ -563,7 +763,7 @@ const AiVisionStudio: React.FC = () => {
                     ctx.lineTo(x + w - 4, scanY);
                     ctx.stroke();
 
-                    // Clean 3D Facial Landmark Contour Connections
+                    // 3D Landmark Mesh Contours
                     if (face.landmarks && face.landmarks.length > 0) {
                         const pts = face.landmarks;
 
@@ -595,7 +795,7 @@ const AiVisionStudio: React.FC = () => {
                         // Outer Lips (48-59)
                         drawContour([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59], '#00ff66', true);
 
-                        // Pupil reticles
+                        // Pupil Reticles
                         [38, 43].forEach(eyeCenterIdx => {
                             if (pts[eyeCenterIdx]) {
                                 const ep = pts[eyeCenterIdx];
@@ -617,7 +817,7 @@ const AiVisionStudio: React.FC = () => {
             }
         }
 
-        // Compute 60 FPS Counter
+        // 60 FPS Counter Computation
         frameCountRef.current++;
         const now = performance.now();
         if (now - lastFpsTimeRef.current >= 1000) {
@@ -627,7 +827,7 @@ const AiVisionStudio: React.FC = () => {
         }
 
         animationFrameRef.current = requestAnimationFrame(processFrame);
-    }, [isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking]);
+    }, [isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking, showMotionTrails]);
 
     // Start/Stop canvas render loop
     useEffect(() => {
@@ -660,11 +860,31 @@ const AiVisionStudio: React.FC = () => {
 
         if (label) {
             ctx.fillStyle = color;
-            ctx.fillRect(x, Math.max(0, y - 22), Math.min(w, 180), 20);
+            ctx.fillRect(x, Math.max(0, y - 22), Math.min(w, 220), 20);
             ctx.fillStyle = '#000000';
             ctx.font = '800 11px Inter, sans-serif';
             ctx.fillText(label, x + 6, Math.max(14, y - 7));
         }
+    };
+
+    // Enroll Face Identity Handler
+    const handleEnrollFace = () => {
+        if (!enrollNameInput.trim()) return;
+        const currentFace = detectedFaces[0];
+        if (!currentFace || !currentFace.descriptor) {
+            alert('No face detected in video frame to enroll! Please face the camera.');
+            return;
+        }
+
+        const descriptorArray = Array.from(currentFace.descriptor);
+        const newEnrollment: EnrolledFace = {
+            name: enrollNameInput.trim(),
+            descriptor: descriptorArray
+        };
+
+        setEnrolledFaces(prev => [...prev.filter(e => e.name !== newEnrollment.name), newEnrollment]);
+        setEnrollNameInput('');
+        setIsEnrollDialogOpen(false);
     };
 
     // Snapshot Handler
@@ -680,9 +900,11 @@ const AiVisionStudio: React.FC = () => {
             timestamp: new Date().toISOString(),
             fps,
             inferenceTimeMs: inferenceTime,
+            currentGesture,
             detectedFacesCount: detectedFaces.length,
             detectedObjectsCount: detectedObjects.length,
             detectedPosesCount: detectedPoses.length,
+            enrolledIdentitiesCount: enrolledFaces.length,
             motionLevelPercent: motionLevel,
             faces: detectedFaces,
             objects: detectedObjects,
@@ -711,12 +933,12 @@ const AiVisionStudio: React.FC = () => {
         <Box sx={{ pb: 8 }}>
             <Seo
                 title="Realtime AI Vision Studio — Face, Emotion, Full Body Pose & Object Detection"
-                description="100% frontend realtime AI vision lab using WebGL, TensorFlow MoveNet & Face-API. Detect full-body skeletons, faces, emotions, age, objects, and motion directly in your browser."
+                description="100% frontend realtime AI vision lab using WebGL, TensorFlow MoveNet & Face-API. Detect full-body skeletons, faces, gestures, age, objects, and motion directly in your browser."
                 keywords={[
                     "ai vision studio",
                     "realtime pose tracking movenet",
-                    "full body skeleton tracking browser",
-                    "face detection webcam",
+                    "gesture recognition browser",
+                    "face recognition embedding vector",
                     "emotion recognition online",
                     "object detection tensorflow js"
                 ]}
@@ -724,7 +946,7 @@ const AiVisionStudio: React.FC = () => {
 
             <ServicePageHero
                 title="Realtime AI Vision Studio"
-                subtitle="High-Performance Neural Vision in Your Browser — Real-Time Full Body Pose Kinematics, Face Mesh, 7 Emotions, Objects & Motion 100% Client-Side."
+                subtitle="High-Performance Neural Vision in Your Browser — Real-Time 17-Keypoint Full Body Kinematics, Gesture Classification, Biometric Identity Matching, 7 Emotions & Object Detection 100% Client-Side."
                 icon={Visibility}
             />
 
@@ -906,7 +1128,7 @@ const AiVisionStudio: React.FC = () => {
                                         </Typography>
 
                                         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 460, mb: 3.5, lineHeight: 1.6 }}>
-                                            Enable your webcam to run real-time MoveNet full-body pose tracking, 3D face mesh, 7-emotion mood analysis, estimated age & gender classification, object bounding boxes, and optical motion tracking 100% in your browser.
+                                            Enable your webcam to run real-time MoveNet full-body pose tracking, gesture classification, 128-d biometric identity recognition, 3D face mesh, 7-emotion mood analysis, object bounding boxes, and optical motion tracking 100% in your browser.
                                         </Typography>
 
                                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
@@ -960,7 +1182,7 @@ const AiVisionStudio: React.FC = () => {
                                 )}
                             </Box>
 
-                            {/* Canvas Toolbar & Action Buttons */}
+                            {/* Canvas Toolbar & Feature Toggles */}
                             <Box
                                 sx={{
                                     p: 2,
@@ -973,7 +1195,7 @@ const AiVisionStudio: React.FC = () => {
                                     gap: 1.5
                                 }}
                             >
-                                {/* Overlay Feature Toggles */}
+                                {/* Feature Toggle Chips */}
                                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
                                     <Chip
                                         icon={<AccessibilityNew sx={{ fontSize: '16px !important' }} />}
@@ -982,6 +1204,15 @@ const AiVisionStudio: React.FC = () => {
                                         color={showPoseTracking ? 'success' : 'default'}
                                         variant={showPoseTracking ? 'filled' : 'outlined'}
                                         onClick={() => setShowPoseTracking(!showPoseTracking)}
+                                        sx={{ fontWeight: 700, fontSize: '0.75rem' }}
+                                    />
+                                    <Chip
+                                        icon={<Timeline sx={{ fontSize: '16px !important' }} />}
+                                        label="Motion Trails"
+                                        clickable
+                                        color={showMotionTrails ? 'success' : 'default'}
+                                        variant={showMotionTrails ? 'filled' : 'outlined'}
+                                        onClick={() => setShowMotionTrails(!showMotionTrails)}
                                         sx={{ fontWeight: 700, fontSize: '0.75rem' }}
                                     />
                                     <Chip
@@ -1005,7 +1236,27 @@ const AiVisionStudio: React.FC = () => {
                                 </Stack>
 
                                 {/* Action Buttons */}
-                                <Stack direction="row" spacing={1.5} alignItems="center">
+                                <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
+                                    <Tooltip title="Enroll Face Identity into Local Browser Database">
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            startIcon={<PersonAdd />}
+                                            onClick={() => setIsEnrollDialogOpen(true)}
+                                            disabled={!isCameraActive}
+                                            sx={{
+                                                borderRadius: '20px',
+                                                borderColor: 'rgba(0, 255, 102, 0.4)',
+                                                color: '#00ff66',
+                                                fontWeight: 700,
+                                                fontSize: '0.75rem',
+                                                '&:hover': { borderColor: '#00ff66', bgcolor: 'rgba(0, 255, 102, 0.08)' }
+                                            }}
+                                        >
+                                            Enroll Face
+                                        </Button>
+                                    </Tooltip>
+
                                     <Tooltip title={enableVoiceAudio ? 'Mute AI Audio' : 'Enable Voice Audio Announcements'}>
                                         <IconButton
                                             onClick={() => setEnableVoiceAudio(!enableVoiceAudio)}
@@ -1029,10 +1280,8 @@ const AiVisionStudio: React.FC = () => {
                                             borderColor: 'rgba(0, 255, 102, 0.4)',
                                             color: '#00ff66',
                                             fontWeight: 700,
-                                            '&:hover': {
-                                                borderColor: '#00ff66',
-                                                bgcolor: 'rgba(0, 255, 102, 0.08)'
-                                            }
+                                            fontSize: '0.75rem',
+                                            '&:hover': { borderColor: '#00ff66', bgcolor: 'rgba(0, 255, 102, 0.08)' }
                                         }}
                                     >
                                         Snapshot
@@ -1048,6 +1297,7 @@ const AiVisionStudio: React.FC = () => {
                                             background: 'linear-gradient(135deg, #00ff66 0%, #00b347 100%)',
                                             color: '#000000',
                                             fontWeight: 800,
+                                            fontSize: '0.75rem',
                                             boxShadow: '0 4px 15px rgba(0, 255, 102, 0.3)',
                                             '&:hover': {
                                                 background: 'linear-gradient(135deg, #00e65c 0%, #00993d 100%)',
@@ -1072,7 +1322,7 @@ const AiVisionStudio: React.FC = () => {
                     <Grid item xs={12} lg={4}>
                         <Stack spacing={2.5} sx={{ height: '100%' }}>
 
-                            {/* 1. Realtime Full-Body Pose Kinematics Panel */}
+                            {/* 1. Realtime Gesture & Action Kinematics Panel */}
                             <Card
                                 elevation={0}
                                 sx={{
@@ -1086,7 +1336,7 @@ const AiVisionStudio: React.FC = () => {
                                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
                                     <AccessibilityNew sx={{ color: '#00ff66', fontSize: 22 }} />
                                     <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
-                                        FULL-BODY POSE KINEMATICS
+                                        GESTURE & POSE KINEMATICS
                                     </Typography>
                                 </Stack>
 
@@ -1094,27 +1344,27 @@ const AiVisionStudio: React.FC = () => {
                                     <Stack spacing={1.5}>
                                         <Paper sx={{ p: 1.5, bgcolor: 'rgba(0, 255, 102, 0.05)', border: '1px solid rgba(0, 255, 102, 0.2)', borderRadius: 2 }}>
                                             <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                                                SKELETON TRACKING STATUS
+                                                ACTIVE GESTURE CLASSIFICATION
                                             </Typography>
                                             <Typography variant="h6" fontWeight={800} color="#00ff66">
-                                                {trackedJointsCount}/17 KEYPOINTS LOCKED
+                                                {currentGesture}
                                             </Typography>
                                             <Typography variant="caption" color="#00ff66" fontWeight={700}>
-                                                Hands, Elbows, Shoulders, Hips, Knees & Ankles Active
+                                                {trackedJointsCount}/17 Keypoints Tracked (Hands, Elbows, Shoulders)
                                             </Typography>
                                         </Paper>
                                     </Stack>
                                 ) : (
-                                    <Box sx={{ py: 3, textAlign: 'center' }}>
-                                        <AccessibilityNew sx={{ fontSize: 36, color: 'rgba(255, 255, 255, 0.2)', mb: 1 }} />
+                                    <Box sx={{ py: 2.5, textAlign: 'center' }}>
+                                        <AccessibilityNew sx={{ fontSize: 32, color: 'rgba(255, 255, 255, 0.2)', mb: 1 }} />
                                         <Typography variant="body2" color="text.secondary">
-                                            Stand in camera view for full-body MoveNet pose tracking.
+                                            Stand in camera view for real-time gesture & pose classification.
                                         </Typography>
                                     </Box>
                                 )}
                             </Card>
 
-                            {/* 2. Biometric & Mood Analytics Panel */}
+                            {/* 2. Biometric & Identity Recognition Panel */}
                             <Card
                                 elevation={0}
                                 sx={{
@@ -1125,15 +1375,37 @@ const AiVisionStudio: React.FC = () => {
                                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
                                 }}
                             >
-                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                                    <Psychology sx={{ color: '#00ff66', fontSize: 22 }} />
-                                    <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
-                                        BIOMETRIC & MOOD ANALYTICS
-                                    </Typography>
+                                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                        <Fingerprint sx={{ color: '#00ff66', fontSize: 22 }} />
+                                        <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
+                                            BIOMETRIC IDENTITY & MOOD
+                                        </Typography>
+                                    </Stack>
+                                    {enrolledFaces.length > 0 && (
+                                        <Chip
+                                            label={`${enrolledFaces.length} Enrolled`}
+                                            size="small"
+                                            sx={{ bgcolor: 'rgba(0, 255, 102, 0.15)', color: '#00ff66', fontWeight: 800 }}
+                                        />
+                                    )}
                                 </Stack>
 
                                 {primaryFace ? (
                                     <Stack spacing={2}>
+                                        {/* Identity Badge */}
+                                        <Paper sx={{ p: 1.5, bgcolor: 'rgba(0, 255, 102, 0.08)', border: '1px solid rgba(0, 255, 102, 0.3)', borderRadius: 2 }}>
+                                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                                FACIAL EMBEDDING IDENTITY MATCH
+                                            </Typography>
+                                            <Typography variant="h6" fontWeight={800} color="#00ff66">
+                                                {primaryFace.recognizedName || 'UNENROLLED SUBJECT'}
+                                            </Typography>
+                                            <Typography variant="caption" color="#ffffff" fontWeight={600}>
+                                                Head Orientation: {primaryFace.headPoseText || 'Facing Center'}
+                                            </Typography>
+                                        </Paper>
+
                                         <Grid container spacing={2}>
                                             <Grid item xs={6}>
                                                 <Paper sx={{ p: 1.5, bgcolor: 'rgba(0, 255, 102, 0.05)', border: '1px solid rgba(0, 255, 102, 0.2)', borderRadius: 2 }}>
@@ -1199,8 +1471,8 @@ const AiVisionStudio: React.FC = () => {
                                         </Stack>
                                     </Stack>
                                 ) : (
-                                    <Box sx={{ py: 3, textAlign: 'center' }}>
-                                        <Face sx={{ fontSize: 36, color: 'rgba(255, 255, 255, 0.2)', mb: 1 }} />
+                                    <Box sx={{ py: 2.5, textAlign: 'center' }}>
+                                        <Face sx={{ fontSize: 32, color: 'rgba(255, 255, 255, 0.2)', mb: 1 }} />
                                         <Typography variant="body2" color="text.secondary">
                                             No face detected in video frame. Position face toward camera.
                                         </Typography>
@@ -1227,7 +1499,7 @@ const AiVisionStudio: React.FC = () => {
                                 </Stack>
 
                                 {detectedObjects.length > 0 ? (
-                                    <Stack spacing={1} sx={{ maxHeight: 150, overflowY: 'auto', pr: 0.5 }}>
+                                    <Stack spacing={1} sx={{ maxHeight: 140, overflowY: 'auto', pr: 0.5 }}>
                                         {detectedObjects.map((obj, idx) => (
                                             <Paper
                                                 key={idx}
@@ -1349,6 +1621,66 @@ const AiVisionStudio: React.FC = () => {
                 )}
 
             </Container>
+
+            {/* --- Enroll Face Identity Dialog --- */}
+            <Dialog
+                open={isEnrollDialogOpen}
+                onClose={() => setIsEnrollDialogOpen(false)}
+                PaperProps={{
+                    sx: {
+                        bgcolor: '#0d1117',
+                        border: '1px solid rgba(0, 255, 102, 0.3)',
+                        borderRadius: 3,
+                        color: '#ffffff',
+                        minWidth: 320
+                    }
+                }}
+            >
+                <DialogTitle fontWeight={800} color="#00ff66">
+                    Enroll Biometric Face Profile
+                </DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Enter a label/name for the currently detected face. The 128-dimensional facial feature embedding vector will be saved locally in your browser database for real-time identity recognition.
+                    </Typography>
+                    <TextField
+                        autoFocus
+                        fullWidth
+                        label="User Name or Identity Tag"
+                        variant="outlined"
+                        value={enrollNameInput}
+                        onChange={(e) => setEnrollNameInput(e.target.value)}
+                        placeholder="e.g. Operator Alex"
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                color: '#ffffff',
+                                '& fieldset': { borderColor: 'rgba(0, 255, 102, 0.3)' },
+                                '&:hover fieldset': { borderColor: '#00ff66' },
+                                '&.Mui-focused fieldset': { borderColor: '#00ff66' }
+                            },
+                            '& .MuiInputLabel-root': { color: 'text.secondary' }
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2.5 }}>
+                    <Button onClick={() => setIsEnrollDialogOpen(false)} sx={{ color: 'text.secondary' }}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleEnrollFace}
+                        disabled={!enrollNameInput.trim()}
+                        sx={{
+                            bgcolor: '#00ff66',
+                            color: '#000000',
+                            fontWeight: 800,
+                            '&:hover': { bgcolor: '#00e65c' }
+                        }}
+                    >
+                        Save Profile
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
