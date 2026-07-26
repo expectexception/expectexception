@@ -57,6 +57,22 @@ import * as faceapi from '@vladmandic/face-api';
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
 
+// Suppress duplicate TFJS kernel registration warnings caused by multi-model bundles
+if (typeof window !== 'undefined') {
+    const originalWarn = console.warn;
+    console.warn = (...args: any[]) => {
+        if (
+            typeof args[0] === 'string' &&
+            (args[0].includes('already registered') ||
+             args[0].includes('Overwriting the platform') ||
+             args[0].includes('Reusing existing backend factory'))
+        ) {
+            return;
+        }
+        originalWarn.apply(console, args);
+    };
+}
+
 interface DetectedObject {
     bbox: [number, number, number, number];
     class: string;
