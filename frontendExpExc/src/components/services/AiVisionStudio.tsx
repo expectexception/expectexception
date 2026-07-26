@@ -404,11 +404,88 @@ const AiVisionStudio: React.FC = () => {
                         ctx.lineWidth = 2.5;
                         ctx.strokeRect(x, y, w, h);
 
-                        // Draw Landmarks Mesh
+                        // Draw 3D-styled Face Mesh Wireframe Connections (Eyes, Brows, Nose, Lips, Outline)
                         if (d.landmarks) {
-                            ctx.fillStyle = 'rgba(0, 238, 255, 0.8)';
-                            d.landmarks.positions.forEach(pt => {
-                                ctx.fillRect(pt.x - 1, pt.y - 1, 2.5, 2.5);
+                            const pts = d.landmarks.positions;
+
+                            // Draw Connecting Wireframes for futuristic Cyberpunk look
+                            const drawFeaturePath = (indices: number[], color: string, closed: boolean = false) => {
+                                ctx.strokeStyle = color;
+                                ctx.lineWidth = 1.2;
+                                ctx.beginPath();
+                                indices.forEach((idx, i) => {
+                                    if (pts[idx]) {
+                                        if (i === 0) ctx.moveTo(pts[idx].x, pts[idx].y);
+                                        else ctx.lineTo(pts[idx].x, pts[idx].y);
+                                    }
+                                });
+                                if (closed && pts[indices[0]]) ctx.closePath();
+                                ctx.stroke();
+                            };
+
+                            // Jaw outline (0-16)
+                            drawFeaturePath(Array.from({ length: 17 }, (_, i) => i), 'rgba(0, 238, 255, 0.6)');
+                            // Left eyebrow (17-21), Right eyebrow (22-26)
+                            drawFeaturePath([17, 18, 19, 20, 21], '#00ff66');
+                            drawFeaturePath([22, 23, 24, 25, 26], '#00ff66');
+                            // Nose bridge & tip (27-35)
+                            drawFeaturePath([27, 28, 29, 30, 31, 32, 33, 34, 35], '#ff007f');
+                            // Left Eye (36-41), Right Eye (42-47)
+                            drawFeaturePath([36, 37, 38, 39, 40, 41], '#00eeff', true);
+                            drawFeaturePath([42, 43, 44, 45, 46, 47], '#00eeff', true);
+                            // Outer Lips (48-59), Inner Lips (60-67)
+                            drawFeaturePath([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59], '#a855f7', true);
+                            drawFeaturePath([60, 61, 62, 63, 64, 65, 66, 67], '#ff9900', true);
+
+                            // Draw Glowing Landmark Nodes
+                            ctx.fillStyle = '#ffffff';
+                            pts.forEach(pt => {
+                                ctx.fillRect(pt.x - 1.5, pt.y - 1.5, 3, 3);
+                            });
+                        }
+
+                        // Full Body Cyber Kinematic Pose Skeleton (Estimated from COCO-SSD person bounding box & biometrics)
+                        if (showMotionTracking) {
+                            const shoulderY = y + h * 1.15;
+                            const waistY = y + h * 2.3;
+                            const kneeY = y + h * 3.4;
+                            const ankleY = y + h * 4.4;
+                            const leftArmX = x - w * 0.4;
+                            const rightArmX = x + w * 1.4;
+                            const leftLegX = x + w * 0.2;
+                            const rightLegX = x + w * 0.8;
+
+                            ctx.strokeStyle = 'rgba(255, 0, 127, 0.7)';
+                            ctx.lineWidth = 2.5;
+                            ctx.setLineDash([4, 2]);
+
+                            // Shoulders & Spine
+                            ctx.beginPath();
+                            ctx.moveTo(leftArmX, shoulderY); ctx.lineTo(rightArmX, shoulderY);
+                            ctx.moveTo(x + w / 2, y + h); ctx.lineTo(x + w / 2, waistY);
+                            // Left Arm & Right Arm
+                            ctx.moveTo(leftArmX, shoulderY); ctx.lineTo(leftArmX - 25, shoulderY + 80);
+                            ctx.moveTo(rightArmX, shoulderY); ctx.lineTo(rightArmX + 25, shoulderY + 80);
+                            // Hip Pelvis & Legs
+                            ctx.moveTo(x + w / 2, waistY); ctx.lineTo(leftLegX, kneeY);
+                            ctx.moveTo(leftLegX, kneeY); ctx.lineTo(leftLegX - 10, ankleY);
+                            ctx.moveTo(x + w / 2, waistY); ctx.lineTo(rightLegX, kneeY);
+                            ctx.moveTo(rightLegX, kneeY); ctx.lineTo(rightLegX + 10, ankleY);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+
+                            // Kinematic Joint Nodes
+                            [
+                                { x: leftArmX, y: shoulderY }, { x: rightArmX, y: shoulderY },
+                                { x: x + w / 2, y: waistY }, { x: leftLegX, y: kneeY },
+                                { x: rightLegX, y: kneeY }
+                            ].forEach(joint => {
+                                ctx.fillStyle = '#ff007f';
+                                ctx.beginPath();
+                                ctx.arc(joint.x, joint.y, 5, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.stroke();
                             });
                         }
 
