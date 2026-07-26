@@ -1103,105 +1103,170 @@ const AiVisionStudio: React.FC = () => {
         <Card
             elevation={0}
             sx={{
-                p: 2.5,
+                p: 2,
                 bgcolor: '#080a0f',
                 border: '1px solid rgba(0, 255, 102, 0.25)',
                 borderRadius: 3,
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                position: 'relative',
+                overflow: 'hidden'
             }}
         >
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+            {/* Animated Header Scan Beam */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 2,
+                    background: 'linear-gradient(90deg, transparent, #00ff66, transparent)',
+                    animation: 'scanHeader 3s ease-in-out infinite',
+                    '@keyframes scanHeader': {
+                        '0%': { transform: 'translateX(-100%)' },
+                        '100%': { transform: 'translateX(100%)' }
+                    }
+                }}
+            />
+
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
-                    <Fingerprint sx={{ color: '#00ff66', fontSize: 22 }} />
-                    <Typography variant="subtitle1" fontWeight={800} color="#ffffff">
-                        BIOMETRIC IDENTITY & MOOD
+                    <Box
+                        sx={{
+                            display: 'inline-flex',
+                            p: 0.75,
+                            borderRadius: '50%',
+                            bgcolor: 'rgba(0, 255, 102, 0.1)',
+                            border: '1px solid rgba(0, 255, 102, 0.3)',
+                            animation: primaryFace ? 'pulseGlow 2s infinite' : 'none',
+                            '@keyframes pulseGlow': {
+                                '0%': { boxShadow: '0 0 0 0 rgba(0, 255, 102, 0.4)' },
+                                '70%': { boxShadow: '0 0 0 8px rgba(0, 255, 102, 0)' },
+                                '100%': { boxShadow: '0 0 0 0 rgba(0, 255, 102, 0)' }
+                            }
+                        }}
+                    >
+                        <Fingerprint sx={{ color: '#00ff66', fontSize: 18 }} />
+                    </Box>
+                    <Typography variant="subtitle2" fontWeight={800} color="#ffffff" letterSpacing="0.03em">
+                        BIOMETRIC & MOOD
                     </Typography>
                 </Stack>
                 {enrolledFaces.length > 0 && (
                     <Chip
-                        label={`${enrolledFaces.length} Enrolled`}
+                        label={`${enrolledFaces.length} Saved`}
                         size="small"
-                        sx={{ bgcolor: 'rgba(0, 255, 102, 0.15)', color: '#00ff66', fontWeight: 800 }}
+                        sx={{ bgcolor: 'rgba(0, 255, 102, 0.15)', color: '#00ff66', fontWeight: 800, height: 22, fontSize: '0.7rem' }}
                     />
                 )}
             </Stack>
 
-            <Stack spacing={2}>
-                <Paper sx={{ p: 1.5, bgcolor: primaryFace ? 'rgba(0, 255, 102, 0.08)' : 'rgba(255, 255, 255, 0.03)', border: primaryFace ? '1px solid rgba(0, 255, 102, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 2 }}>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                        FACIAL EMBEDDING IDENTITY MATCH
-                    </Typography>
-                    <Typography variant="h6" fontWeight={800} color={primaryFace ? '#00ff66' : 'rgba(255, 255, 255, 0.4)'}>
-                        {primaryFace ? (primaryFace.recognizedName || 'UNENROLLED SUBJECT') : 'SCANNING FOR FACE PROFILE...'}
-                    </Typography>
-                    <Typography variant="caption" color={primaryFace ? '#ffffff' : 'text.secondary'} fontWeight={600}>
-                        Head Orientation: {primaryFace ? (primaryFace.headPoseText || 'Facing Center') : 'Position face towards camera'}
-                    </Typography>
+            <Stack spacing={1.25}>
+                {/* Identity Bar */}
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 1.25,
+                        bgcolor: primaryFace ? 'rgba(0, 255, 102, 0.06)' : 'rgba(255, 255, 255, 0.02)',
+                        border: primaryFace ? '1px solid rgba(0, 255, 102, 0.3)' : '1px solid rgba(255, 255, 255, 0.07)',
+                        borderRadius: 2
+                    }}
+                >
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Box>
+                            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                IDENTITY VECTOR MATCH
+                            </Typography>
+                            <Typography variant="body2" fontWeight={800} color={primaryFace ? '#00ff66' : 'rgba(255, 255, 255, 0.4)'}>
+                                {primaryFace ? (primaryFace.recognizedName || 'UNENROLLED SUBJECT') : 'SCANNING FOR FACE...'}
+                            </Typography>
+                        </Box>
+                        <Chip
+                            label={primaryFace ? (primaryFace.headPoseText || 'FACING CENTER') : 'SEARCHING'}
+                            size="small"
+                            sx={{
+                                height: 20,
+                                fontSize: '0.65rem',
+                                fontWeight: 800,
+                                bgcolor: primaryFace ? 'rgba(0, 255, 102, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                                color: primaryFace ? '#00ff66' : 'text.secondary'
+                            }}
+                        />
+                    </Stack>
                 </Paper>
 
-                <Grid container spacing={2}>
+                {/* Dominant Emotion & Age Row */}
+                <Grid container spacing={1}>
                     <Grid item xs={6}>
-                        <Paper sx={{ p: 1.5, bgcolor: 'rgba(0, 255, 102, 0.05)', border: '1px solid rgba(0, 255, 102, 0.2)', borderRadius: 2 }}>
-                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                                DOMINANT EMOTION
+                        <Paper elevation={0} sx={{ p: 1, bgcolor: 'rgba(0, 255, 102, 0.04)', border: '1px solid rgba(0, 255, 102, 0.15)', borderRadius: 2 }}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.62rem' }}>
+                                DOMINANT MOOD
                             </Typography>
-                            <Typography variant="h6" fontWeight={800} color={primaryFace ? '#00ff66' : 'rgba(255, 255, 255, 0.3)'} sx={{ textTransform: 'uppercase' }}>
+                            <Typography variant="body2" fontWeight={800} color={primaryFace ? '#00ff66' : 'rgba(255, 255, 255, 0.3)'} sx={{ textTransform: 'uppercase' }}>
                                 {primaryFace && topEmotion ? topEmotion[0] : 'STANDBY'}
                             </Typography>
-                            <Typography variant="caption" color="#00ff66" fontWeight={700}>
-                                {primaryFace && topEmotion ? `${Math.round(topEmotion[1] * 100)}% Confidence` : '0% Confidence'}
+                            <Typography variant="caption" color="#00ff66" fontWeight={700} sx={{ fontSize: '0.65rem' }}>
+                                {primaryFace && topEmotion ? `${Math.round(topEmotion[1] * 100)}% Match` : '0%'}
                             </Typography>
                         </Paper>
                     </Grid>
                     <Grid item xs={6}>
-                        <Paper sx={{ p: 1.5, bgcolor: 'rgba(0, 255, 102, 0.05)', border: '1px solid rgba(0, 255, 102, 0.2)', borderRadius: 2 }}>
-                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                                ESTIMATED AGE / GENDER
+                        <Paper elevation={0} sx={{ p: 1, bgcolor: 'rgba(0, 255, 102, 0.04)', border: '1px solid rgba(0, 255, 102, 0.15)', borderRadius: 2 }}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.62rem' }}>
+                                AGE / GENDER
                             </Typography>
-                            <Typography variant="h6" fontWeight={800} color={primaryFace ? '#00ff66' : 'rgba(255, 255, 255, 0.3)'}>
-                                {primaryFace && primaryFace.age ? `${primaryFace.age} Yrs` : '-- Yrs'}
+                            <Typography variant="body2" fontWeight={800} color={primaryFace ? '#00ff66' : 'rgba(255, 255, 255, 0.3)'}>
+                                {primaryFace && primaryFace.age ? `${primaryFace.age} Yrs` : '--'}
                             </Typography>
-                            <Typography variant="caption" color="#00ff66" fontWeight={700}>
-                                {primaryFace && primaryFace.gender ? primaryFace.gender.toUpperCase() : 'SEARCHING'}
+                            <Typography variant="caption" color="#00ff66" fontWeight={700} sx={{ fontSize: '0.65rem' }}>
+                                {primaryFace && primaryFace.gender ? primaryFace.gender.toUpperCase() : 'NO LOCK'}
                             </Typography>
                         </Paper>
                     </Grid>
                 </Grid>
 
-                <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    EMOTION SPECTRUM
-                </Typography>
+                {/* 2-Column Compact Emotion Grid */}
+                <Box>
+                    <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75, display: 'block' }}>
+                        EMOTION SPECTRUM GAUGE
+                    </Typography>
 
-                <Stack spacing={1}>
-                    {(primaryFace?.expressions
-                        ? Object.entries(primaryFace.expressions)
-                        : [['neutral', 0], ['happy', 0], ['sad', 0], ['angry', 0], ['fearful', 0], ['disgusted', 0], ['surprised', 0]]
-                    ).map(([expr, val]) => {
-                        const percentage = Math.round((val as number) * 100);
-                        return (
-                            <Box key={expr}>
-                                <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
-                                    <Typography variant="caption" color={primaryFace ? '#ffffff' : 'text.secondary'} fontWeight={600} sx={{ textTransform: 'capitalize' }}>
-                                        {expr}
-                                    </Typography>
-                                    <Typography variant="caption" color={primaryFace ? '#00ff66' : 'text.secondary'} fontWeight={700}>
-                                        {percentage}%
-                                    </Typography>
-                                </Stack>
-                                <LinearProgress
-                                    variant="determinate"
-                                    value={percentage}
-                                    sx={{
-                                        height: 5,
-                                        borderRadius: 3,
-                                        bgcolor: 'rgba(255, 255, 255, 0.05)',
-                                        '& .MuiLinearProgress-bar': { bgcolor: primaryFace ? '#00ff66' : 'rgba(0, 255, 102, 0.2)' }
-                                    }}
-                                />
-                            </Box>
-                        );
-                    })}
-                </Stack>
+                    <Grid container spacing={0.75}>
+                        {(primaryFace?.expressions
+                            ? Object.entries(primaryFace.expressions)
+                            : [['neutral', 0], ['happy', 0], ['sad', 0], ['angry', 0], ['fearful', 0], ['disgusted', 0], ['surprised', 0]]
+                        ).map(([expr, val]) => {
+                            const percentage = Math.round((val as number) * 100);
+                            return (
+                                <Grid item xs={6} key={expr}>
+                                    <Box sx={{ p: 0.75, bgcolor: 'rgba(255, 255, 255, 0.02)', borderRadius: 1.5, border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.3 }}>
+                                            <Typography variant="caption" color={primaryFace ? '#ffffff' : 'text.secondary'} fontWeight={700} sx={{ textTransform: 'capitalize', fontSize: '0.68rem' }}>
+                                                {expr}
+                                            </Typography>
+                                            <Typography variant="caption" color={primaryFace && percentage > 0 ? '#00ff66' : 'text.secondary'} fontWeight={800} sx={{ fontSize: '0.68rem' }}>
+                                                {percentage}%
+                                            </Typography>
+                                        </Stack>
+                                        <LinearProgress
+                                            variant="determinate"
+                                            value={percentage}
+                                            sx={{
+                                                height: 4,
+                                                borderRadius: 2,
+                                                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                                '& .MuiLinearProgress-bar': {
+                                                    bgcolor: primaryFace && percentage > 30 ? '#00ff66' : 'rgba(0, 255, 102, 0.4)',
+                                                    borderRadius: 2
+                                                }
+                                            }}
+                                        />
+                                    </Box>
+                                </Grid>
+                            );
+                        })}
+                    </Grid>
+                </Box>
             </Stack>
         </Card>
     );
