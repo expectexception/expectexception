@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import { SportsEsports } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const BEST_KEY = 'sandbox_breakout_best_score';
 const W = 480;
@@ -196,18 +196,18 @@ const Breakout: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 gameId={12}
                 title="Breakout | Free Online Brick Breaker Arcade Game"
                 keywords={['breakout game', 'brick breaker online', 'arkanoid game free', 'classic arcade game', 'ball and paddle game', 'brick breaking game']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={SportsEsports}
                 title="Breakout"
                 subtitle="Bounce the ball off your paddle to smash every brick. Touch drag or tap the buttons to move."
-            />
-
+                onRestart={handleStartClick}
+            >
             <Card
                 ref={cardRef}
                 sx={{
@@ -302,7 +302,8 @@ const Breakout: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

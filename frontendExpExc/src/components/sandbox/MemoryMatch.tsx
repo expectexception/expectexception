@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import { Extension, Refresh } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const BEST_KEY = 'sandbox_memory_match_best_moves';
 const SYMBOLS = ['🚀', '⚡', '🎯', '🧩', '🎨', '🔮', '🎲', '💎'];
@@ -97,18 +97,18 @@ const MemoryMatch: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 gameId={10}
                 title="Memory Match | Free Online Card Matching Game"
                 keywords={['memory match game', 'card matching game', 'concentration game online', 'memory game free', 'brain training game', 'pairs matching game']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Extension}
                 title="Memory Match"
                 subtitle="Flip cards two at a time and match every pair in as few moves as possible."
-            />
-
+                onRestart={reset}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -170,7 +170,8 @@ const MemoryMatch: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

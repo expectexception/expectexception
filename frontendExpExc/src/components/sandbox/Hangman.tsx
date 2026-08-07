@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Box, Button, Typography, useTheme } from '@mui/material';
 import { Spellcheck, RestartAlt } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const WORDS = [
     'PYTHON', 'DJANGO', 'REACT', 'BROWSER', 'FUNCTION', 'VARIABLE', 'KEYBOARD',
@@ -53,14 +53,14 @@ const Hangman: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Hangman - Classic Word Guessing Game" gameId={22} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Spellcheck}
                 title="Hangman"
                 subtitle="Guess the hidden word one letter at a time. Six wrong guesses and the drawing is complete."
-            />
-
+                onRestart={handleRestart}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -117,7 +117,8 @@ const Hangman: React.FC = () => {
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

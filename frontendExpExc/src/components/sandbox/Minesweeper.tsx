@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import { Flag, GridView, Refresh } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const SIZE = 9;
 const MINES = 10;
@@ -161,18 +161,18 @@ const Minesweeper: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 gameId={13}
                 title="Minesweeper | Free Online Classic Game"
                 keywords={['minesweeper game', 'play minesweeper online', 'minesweeper free', 'classic minesweeper', 'online puzzle game', 'minesweeper browser']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={GridView}
                 title="Minesweeper"
                 subtitle="Clear the board without hitting a mine. Tap to reveal, long-press or use the flag button to mark mines."
-            />
-
+                onRestart={reset}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -245,7 +245,8 @@ const Minesweeper: React.FC = () => {
                     </Typography>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

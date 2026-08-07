@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Typography } from '@mui/material';
+import { Card, CardContent, Box, Button, Typography } from '@mui/material';
 import { SportsEsports, RestartAlt } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const PADDLE_H = 70;
 const PADDLE_W = 10;
@@ -148,14 +148,15 @@ const Pong: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Pong - Classic Arcade Game" gameId={21} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={SportsEsports}
                 title="Pong"
                 subtitle="The original arcade classic. Move your mouse or finger up and down to control the left paddle | first to 7 wins."
-            />
-
+                maxWidth="md"
+                onRestart={handleRestart}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -201,7 +202,8 @@ const Pong: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

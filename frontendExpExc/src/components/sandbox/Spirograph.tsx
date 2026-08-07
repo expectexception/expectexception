@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Typography, Slider, Grid } from '@mui/material';
+import { Card, CardContent, Box, Button, Typography, Slider, Grid } from '@mui/material';
 import { Circle, Delete, Casino } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 /** Renders a hypotrochoid curve (the math behind a mechanical Spirograph):
  * a small circle of radius r rolls inside a fixed circle of radius R, and a
@@ -103,14 +103,15 @@ const Spirograph: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Spirograph Generator - Parametric Curve Art" gameId={20} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Circle}
                 title="Spirograph"
                 subtitle="The math behind the classic toy: drag the sliders to change the gear ratio and pen offset, and watch the curve draw itself."
-            />
-
+                maxWidth="md"
+                onRestart={handleClear}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -161,7 +162,8 @@ const Spirograph: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

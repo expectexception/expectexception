@@ -37,6 +37,10 @@ import {
   BubbleChart,
   Stairs,
   AltRoute,
+  Style,
+  Quiz,
+  Grid4x4,
+  DirectionsRun,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,6 +69,10 @@ const ICONS: Record<string, React.ReactElement> = {
   BubbleChart: <BubbleChart fontSize="large" />,
   Stairs: <Stairs fontSize="large" />,
   AltRoute: <AltRoute fontSize="large" />,
+  Style: <Style fontSize="large" />,
+  Quiz: <Quiz fontSize="large" />,
+  Grid4x4: <Grid4x4 fontSize="large" />,
+  DirectionsRun: <DirectionsRun fontSize="large" />,
 };
 
 const CATEGORY_LABELS: Record<string, string> = {

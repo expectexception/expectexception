@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { Container, Card, CardContent, Box, Button, Typography } from '@mui/material';
+import { Card, CardContent, Box, Button, Typography } from '@mui/material';
 import { Pets, RestartAlt } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const BOID_COUNT = 90;
 const VISUAL_RANGE = 55;
@@ -163,14 +163,15 @@ const Boids: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Boids Flocking Simulation - Emergent Behavior Toy" gameId={19} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Pets}
                 title="Boids"
                 subtitle="Craig Reynolds' classic flocking algorithm (separation, alignment, and cohesion) produce lifelike flocking from three simple rules. Click to scatter a burst."
-            />
-
+                maxWidth="md"
+                onRestart={handleReset}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -209,7 +210,8 @@ const Boids: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

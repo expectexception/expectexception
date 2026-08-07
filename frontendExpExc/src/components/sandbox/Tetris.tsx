@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, IconButton, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import {
     ViewModule,
     KeyboardArrowLeft,
@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const BEST_KEY = 'sandbox_tetris_best_score';
 
@@ -503,19 +503,116 @@ const Tetris: React.FC = () => {
         }
     };
 
+    const controllerDock = (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, width: '100%' }}>
+            <Stack direction="row" spacing={1.5} justifyContent="center">
+                <IconButton
+                    aria-label="Move left"
+                    disabled={!isPlaying}
+                    onPointerDown={() => startHold(() => moveHorizontal(-1))}
+                    onPointerUp={stopHold}
+                    onPointerLeave={stopHold}
+                    onPointerCancel={stopHold}
+                    sx={{
+                        minWidth: 56, minHeight: 56,
+                        bgcolor: 'rgba(255,255,255,0.06)',
+                        border: '1.5px solid rgba(255,255,255,0.15)',
+                        borderRadius: '14px',
+                        color: '#ffffff',
+                        touchAction: 'none',
+                        '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
+                    }}
+                >
+                    <KeyboardArrowLeft fontSize="large" />
+                </IconButton>
+                <IconButton
+                    aria-label="Rotate piece"
+                    disabled={!isPlaying}
+                    onClick={rotatePiece}
+                    sx={{
+                        minWidth: 56, minHeight: 56,
+                        bgcolor: 'rgba(255,255,255,0.06)',
+                        border: '1.5px solid rgba(255,255,255,0.15)',
+                        borderRadius: '14px',
+                        color: '#ffffff',
+                        '&:active': { bgcolor: theme.palette.secondary.main, color: '#000000' }
+                    }}
+                >
+                    <RotateRight fontSize="large" />
+                </IconButton>
+                <IconButton
+                    aria-label="Move right"
+                    disabled={!isPlaying}
+                    onPointerDown={() => startHold(() => moveHorizontal(1))}
+                    onPointerUp={stopHold}
+                    onPointerLeave={stopHold}
+                    onPointerCancel={stopHold}
+                    sx={{
+                        minWidth: 56, minHeight: 56,
+                        bgcolor: 'rgba(255,255,255,0.06)',
+                        border: '1.5px solid rgba(255,255,255,0.15)',
+                        borderRadius: '14px',
+                        color: '#ffffff',
+                        touchAction: 'none',
+                        '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
+                    }}
+                >
+                    <KeyboardArrowRight fontSize="large" />
+                </IconButton>
+            </Stack>
+            <Stack direction="row" spacing={1.5} justifyContent="center">
+                <IconButton
+                    aria-label="Soft drop"
+                    disabled={!isPlaying}
+                    onPointerDown={() => startHold(softDrop)}
+                    onPointerUp={stopHold}
+                    onPointerLeave={stopHold}
+                    onPointerCancel={stopHold}
+                    sx={{
+                        minWidth: 56, minHeight: 56,
+                        bgcolor: 'rgba(255,255,255,0.06)',
+                        border: '1.5px solid rgba(255,255,255,0.15)',
+                        borderRadius: '14px',
+                        color: '#ffffff',
+                        touchAction: 'none',
+                        '&:active': { bgcolor: theme.palette.warning.main, color: '#000000' }
+                    }}
+                >
+                    <KeyboardArrowDown fontSize="large" />
+                </IconButton>
+                <IconButton
+                    aria-label="Hard drop"
+                    disabled={!isPlaying}
+                    onClick={hardDrop}
+                    sx={{
+                        minWidth: 56, minHeight: 56,
+                        bgcolor: 'rgba(255,255,255,0.06)',
+                        border: '1.5px solid rgba(255,255,255,0.15)',
+                        borderRadius: '14px',
+                        color: '#ffffff',
+                        '&:active': { bgcolor: theme.palette.error.main, color: '#ffffff' }
+                    }}
+                >
+                    <KeyboardDoubleArrowDown fontSize="large" />
+                </IconButton>
+            </Stack>
+        </Box>
+    );
+
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 gameId={25}
                 title="Tetris | Play Classic Block-Stacking Puzzle Online Free"
                 keywords={['tetris online', 'tetris game free', 'block stacking game', 'classic arcade puzzle', 'tetromino game', 'falling blocks game']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={ViewModule}
                 title="Tetris"
                 subtitle="Rotate and stack the falling tetrominoes to clear full lines before the board fills up."
-            />
-
+                onRestart={handleStartClick}
+                controls={controllerDock}
+            >
             <Card
                 ref={cardRef}
                 sx={{
@@ -631,103 +728,13 @@ const Tetris: React.FC = () => {
                         </Box>
                     </Box>
 
-                    {/* Touch Gaming Arcade Controller */}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, mt: 3, width: '100%' }}>
-                        <Stack direction="row" spacing={1.5} justifyContent="center">
-                            <IconButton
-                                aria-label="Move left"
-                                disabled={!isPlaying}
-                                onPointerDown={() => startHold(() => moveHorizontal(-1))}
-                                onPointerUp={stopHold}
-                                onPointerLeave={stopHold}
-                                onPointerCancel={stopHold}
-                                sx={{
-                                    minWidth: 56, minHeight: 56,
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    touchAction: 'none',
-                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
-                                }}
-                            >
-                                <KeyboardArrowLeft fontSize="large" />
-                            </IconButton>
-                            <IconButton
-                                aria-label="Rotate piece"
-                                disabled={!isPlaying}
-                                onClick={rotatePiece}
-                                sx={{
-                                    minWidth: 56, minHeight: 56,
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    '&:active': { bgcolor: theme.palette.secondary.main, color: '#000000' }
-                                }}
-                            >
-                                <RotateRight fontSize="large" />
-                            </IconButton>
-                            <IconButton
-                                aria-label="Move right"
-                                disabled={!isPlaying}
-                                onPointerDown={() => startHold(() => moveHorizontal(1))}
-                                onPointerUp={stopHold}
-                                onPointerLeave={stopHold}
-                                onPointerCancel={stopHold}
-                                sx={{
-                                    minWidth: 56, minHeight: 56,
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    touchAction: 'none',
-                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
-                                }}
-                            >
-                                <KeyboardArrowRight fontSize="large" />
-                            </IconButton>
-                        </Stack>
-                        <Stack direction="row" spacing={1.5} justifyContent="center">
-                            <IconButton
-                                aria-label="Soft drop"
-                                disabled={!isPlaying}
-                                onPointerDown={() => startHold(softDrop)}
-                                onPointerUp={stopHold}
-                                onPointerLeave={stopHold}
-                                onPointerCancel={stopHold}
-                                sx={{
-                                    minWidth: 56, minHeight: 56,
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    touchAction: 'none',
-                                    '&:active': { bgcolor: theme.palette.warning.main, color: '#000000' }
-                                }}
-                            >
-                                <KeyboardArrowDown fontSize="large" />
-                            </IconButton>
-                            <IconButton
-                                aria-label="Hard drop"
-                                disabled={!isPlaying}
-                                onClick={hardDrop}
-                                sx={{
-                                    minWidth: 56, minHeight: 56,
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    '&:active': { bgcolor: theme.palette.error.main, color: '#ffffff' }
-                                }}
-                            >
-                                <KeyboardDoubleArrowDown fontSize="large" />
-                            </IconButton>
-                        </Stack>
+                    <Box sx={{ display: { xs: 'none', sm: 'flex' }, justifyContent: 'center', mt: 3, width: '100%' }}>
+                        {controllerDock}
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

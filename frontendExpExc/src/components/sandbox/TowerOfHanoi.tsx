@@ -1,12 +1,12 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import {
-    Box, Button, Card, CardContent, Chip, Container, Stack, Typography,
+    Box, Button, Card, CardContent, Chip, Stack, Typography,
     ToggleButton, ToggleButtonGroup, useTheme,
 } from '@mui/material';
 import { Stairs } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const STATS_KEY = 'sandbox_hanoi_stats';
 const MIN_DISKS = 3;
@@ -139,18 +139,17 @@ const TowerOfHanoi: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 gameId={28}
                 title="Tower of Hanoi - Free Online Disk Puzzle Game"
                 keywords={['tower of hanoi', 'hanoi puzzle online', 'disk puzzle game', 'classic logic puzzle', 'brain teaser game']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Stairs}
                 title="Tower of Hanoi"
                 subtitle="Move the whole stack from the first peg to the last, one disk at a time - and never place a bigger disk on a smaller one."
-            />
-
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -308,7 +307,8 @@ const TowerOfHanoi: React.FC = () => {
                     </Typography>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

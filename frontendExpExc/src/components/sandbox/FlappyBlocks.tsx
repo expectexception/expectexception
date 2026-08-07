@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Typography } from '@mui/material';
+import { Card, CardContent, Box, Button, Typography } from '@mui/material';
 import { Bolt, RestartAlt } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
+import ActionButtons from './shared/ActionButtons';
 
 const GRAVITY = 0.45;
 const FLAP_VELOCITY = -7.5;
@@ -159,14 +160,16 @@ const FlappyBlocks: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Flappy Blocks - Tap to Flap Arcade Game" gameId={24} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Bolt}
                 title="Flappy Blocks"
                 subtitle="Click, tap, or press space to flap and weave through the gaps."
-            />
-
+                maxWidth="md"
+                onRestart={resetGame}
+                controls={<ActionButtons buttons={[{ key: 'flap', label: 'FLAP', icon: Bolt, onPress: flap, accentColor: '#39ff88' }]} />}
+            >
             <Card
                 ref={cardRef}
                 sx={{
@@ -218,32 +221,15 @@ const FlappyBlocks: React.FC = () => {
                         )}
                     </Box>
 
-                    {/* Dedicated Mobile Big Tap Button */}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center' }}>
-                        <Button
-                            variant="contained"
-                            onPointerDown={handleFlapOrStart}
-                            sx={{
-                                width: '100%',
-                                py: 1.8,
-                                borderRadius: '14px',
-                                background: 'linear-gradient(135deg, #00e5ff 0%, #39ff88 100%)',
-                                color: '#000000',
-                                fontWeight: 900,
-                                fontSize: '1.2rem',
-                                boxShadow: '0 4px 20px rgba(0,229,255,0.4)',
-                                '&:active': { transform: 'scale(0.97)' }
-                            }}
-                        >
-                            🚀 TAP TO FLAP 🚀
-                        </Button>
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                         <Button variant="outlined" size="small" startIcon={<RestartAlt />} onClick={resetGame} sx={{ borderRadius: '10px' }}>
                             Restart
                         </Button>
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

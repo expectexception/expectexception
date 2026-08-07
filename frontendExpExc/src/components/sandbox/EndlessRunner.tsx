@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Box, Button, Typography, useTheme } from '@mui/material';
 import { DirectionsRun, RestartAlt } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
+import ActionButtons from './shared/ActionButtons';
 
 const STATS_KEY = 'sandbox_endless_runner_stats';
 
@@ -278,18 +279,21 @@ const EndlessRunner: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 title="Endless Runner - Free Online Dino Style Arcade Game"
                 description="Play a free online endless runner: jump over obstacles as the speed ramps up, track your distance score, and beat your best run. No download needed."
                 keywords={['endless runner game', 'dino game online', 'chrome dino run', 'no internet game online', 'jumping game free', 'browser arcade game']}
+                gameId={33}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={DirectionsRun}
                 title="Endless Runner"
                 subtitle="Press space, click, or tap to jump over obstacles racing toward you. One hit ends the run | how far can you go before the speed catches you?"
-            />
-
+                maxWidth="md"
+                onRestart={resetGame}
+                controls={<ActionButtons buttons={[{ key: 'jump', label: 'JUMP', icon: DirectionsRun, onPress: jump, accentColor: theme.palette.primary.main }]} />}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -354,7 +358,8 @@ const EndlessRunner: React.FC = () => {
                     </Typography>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

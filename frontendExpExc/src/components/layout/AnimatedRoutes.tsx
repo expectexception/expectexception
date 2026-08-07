@@ -146,6 +146,10 @@ const Sudoku = lazy(() => import('../sandbox/Sudoku'));
 const BubbleShooter = lazy(() => import('../sandbox/BubbleShooter'));
 const TowerOfHanoi = lazy(() => import('../sandbox/TowerOfHanoi'));
 const MazeRunner = lazy(() => import('../sandbox/MazeRunner'));
+const Solitaire = lazy(() => import('../sandbox/Solitaire'));
+const TriviaQuiz = lazy(() => import('../sandbox/TriviaQuiz'));
+const Checkers = lazy(() => import('../sandbox/Checkers'));
+const EndlessRunner = lazy(() => import('../sandbox/EndlessRunner'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -165,7 +169,7 @@ const withAuthGuard = (
 
 const AnimatedRoutes: React.FC = () => {
     const location = useLocation();
-    const isYtd = window.location.hostname.startsWith('ytdown.');
+    const isYtd = window.location.hostname.startsWith('ytd.');
 
     // Fetch tool access configuration
     const [toolAccess, setToolAccess] = useState<Record<string, boolean>>({});
@@ -304,6 +308,10 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/sandbox/bubble-shooter" element={<PageTransition><BubbleShooter /></PageTransition>} />
                     <Route path="/sandbox/tower-of-hanoi" element={<PageTransition><TowerOfHanoi /></PageTransition>} />
                     <Route path="/sandbox/maze-runner" element={<PageTransition><MazeRunner /></PageTransition>} />
+                    <Route path="/sandbox/solitaire" element={<PageTransition><Solitaire /></PageTransition>} />
+                    <Route path="/sandbox/trivia-quiz" element={<PageTransition><TriviaQuiz /></PageTransition>} />
+                    <Route path="/sandbox/checkers" element={<PageTransition><Checkers /></PageTransition>} />
+                    <Route path="/sandbox/endless-runner" element={<PageTransition><EndlessRunner /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />

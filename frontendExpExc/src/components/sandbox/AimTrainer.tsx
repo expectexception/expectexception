@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Card, CardContent, Container, Typography, Button, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Typography, Button, useTheme } from '@mui/material';
 import { GpsFixed } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const BEST_KEY = 'sandbox_aim_trainer_best';
 const SESSION_MS = 30000;
@@ -178,14 +178,15 @@ const AimTrainer: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Aim Trainer - Free Online Reflex Game" gameId={9} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={GpsFixed}
                 title="Aim Trainer"
                 subtitle="Click the targets as fast as you can. You have 30 seconds - how many can you hit?"
-            />
-
+                onRestart={startSession}
+                maxWidth="md"
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -304,7 +305,8 @@ const AimTrainer: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

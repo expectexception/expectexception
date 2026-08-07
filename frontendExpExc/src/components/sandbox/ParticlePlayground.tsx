@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
 import { AutoAwesome, Delete } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 interface Particle {
     x: number;
@@ -235,14 +235,14 @@ const ParticlePlayground: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Particle Playground - Interactive Canvas Toy" gameId={4} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={AutoAwesome}
                 title="Particle Playground"
                 subtitle="A drifting field of particles that react to your cursor or finger. Click or tap to trigger a burst of sparks."
-            />
-
+                maxWidth="md"
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -308,7 +308,8 @@ const ParticlePlayground: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
 import { AutoAwesome, Delete } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const SYMMETRY_OPTIONS = [4, 6, 8, 12];
 
@@ -129,14 +129,15 @@ const Kaleidoscope: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Kaleidoscope Drawing - Symmetric Art Toy" gameId={17} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={AutoAwesome}
                 title="Kaleidoscope"
                 subtitle="Draw anywhere and the stroke mirrors around the center with radial symmetry. One gesture, an instant mandala."
-            />
-
+                maxWidth="md"
+                onRestart={handleClear}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -194,7 +195,8 @@ const Kaleidoscope: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

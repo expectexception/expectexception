@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import { Casino, Refresh } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const ROWS = 6;
 const COLS = 7;
@@ -117,18 +117,18 @@ const ConnectFour: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 gameId={14}
                 title="Connect Four | Play Free Online vs AI"
                 keywords={['connect four game', 'connect 4 online', 'play connect four vs computer', 'four in a row game', 'connect four free', 'strategy board game online']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Casino}
                 title="Connect Four"
                 subtitle="Drop your discs and line up four in a row | horizontally, vertically, or diagonally | before the AI does."
-            />
-
+                onRestart={reset}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -184,7 +184,8 @@ const ConnectFour: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

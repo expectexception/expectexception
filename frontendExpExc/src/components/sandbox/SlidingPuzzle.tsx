@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Typography, Button, Stack, Chip } from '@mui/material';
+import { Card, CardContent, Box, Typography, Button, Stack, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Extension, Refresh } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const SIZE = 4; // 4x4 grid
 const TILE_COUNT = SIZE * SIZE; // 16 cells, values 1..15 + blank (0)
@@ -150,14 +150,14 @@ const SlidingPuzzle: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Sliding Puzzle - Free Online 15-Puzzle Brain Game" gameId={7} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Extension}
                 title="Sliding Puzzle"
                 subtitle="Slide the numbered tiles into order, 1 through 15, by moving pieces into the empty space. A classic brain teaser, right in your browser."
-            />
-
+                onRestart={newGame}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -231,7 +231,8 @@ const SlidingPuzzle: React.FC = () => {
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

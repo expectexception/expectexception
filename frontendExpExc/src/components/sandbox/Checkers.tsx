@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Typography, Button, Stack, useTheme, alpha } from '@mui/material';
+import { Card, CardContent, Box, Typography, Button, Stack, useTheme, alpha } from '@mui/material';
 import { Grid4x4, Star } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const BOARD_SIZE = 8;
 
@@ -565,18 +565,19 @@ const Checkers: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 title="Checkers - Play Free Online vs AI"
                 description="Play classic American checkers against a minimax AI opponent right in your browser. Mandatory captures, forced multi-jumps, and kings - free, no sign-up."
                 keywords={['checkers game', 'play checkers online', 'checkers vs computer', 'american checkers', 'draughts online', 'board game ai']}
+                gameId={32}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Grid4x4}
                 title="Checkers"
                 subtitle="Classic American checkers against a minimax-powered AI. Captures are mandatory, chain jumps are forced, and reaching the back row crowns a king."
-            />
-
+                onRestart={resetGame}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -655,7 +656,8 @@ const Checkers: React.FC = () => {
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

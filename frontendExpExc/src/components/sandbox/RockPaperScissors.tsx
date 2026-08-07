@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Typography } from '@mui/material';
+import { Card, CardContent, Box, Button, Typography } from '@mui/material';
 import { Casino, RestartAlt } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 type Move = 'rock' | 'paper' | 'scissors';
 const MOVES: { key: Move; emoji: string; label: string }[] = [
@@ -66,14 +66,14 @@ const RockPaperScissors: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Rock Paper Scissors vs AI - Classic Game" gameId={23} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Casino}
                 title="Rock Paper Scissors"
                 subtitle="Play against an AI that quietly learns your habits | favor one move too often and it starts countering you."
-            />
-
+                onRestart={handleReset}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -122,7 +122,8 @@ const RockPaperScissors: React.FC = () => {
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

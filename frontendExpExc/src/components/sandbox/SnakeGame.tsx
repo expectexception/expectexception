@@ -1,14 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Typography, Button, IconButton, useTheme, alpha } from '@mui/material';
-import {
-    VideogameAsset,
-    KeyboardArrowUp,
-    KeyboardArrowDown,
-    KeyboardArrowLeft,
-    KeyboardArrowRight,
-} from '@mui/icons-material';
+import { Card, CardContent, Box, Typography, Button, useTheme, alpha } from '@mui/material';
+import { VideogameAsset } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
+import DPadControls from './shared/DPadControls';
 
 const GRID_SIZE = 20;
 const CELL_SIZE = 18; // px, canvas = GRID_SIZE * CELL_SIZE
@@ -313,14 +308,15 @@ const SnakeGame: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Play Snake Online - Free Browser Game" gameId={1} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={VideogameAsset}
                 title="Snake"
                 subtitle="The classic snake game, right in your browser. Use arrow keys, WASD, touch D-pad, or swipe to steer."
-            />
-
+                onRestart={resetGame}
+                controls={<DPadControls onDirection={requestDirection} accentColor={theme.palette.primary.main} />}
+            >
             <Card
                 ref={cardRef}
                 sx={{
@@ -395,75 +391,6 @@ const SnakeGame: React.FC = () => {
                         )}
                     </Box>
 
-                    {/* Touch & D-Pad controls for mobile gaming setup */}
-                    <Box sx={{ mt: 2.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, width: '100%' }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 58px)', gridTemplateRows: 'repeat(3, 58px)', gap: 1 }}>
-                            <Box />
-                            <IconButton
-                                aria-label="Move up"
-                                onClick={() => requestDirection('UP')}
-                                sx={{
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
-                                }}
-                            >
-                                <KeyboardArrowUp fontSize="large" />
-                            </IconButton>
-                            <Box />
-
-                            <IconButton
-                                aria-label="Move left"
-                                onClick={() => requestDirection('LEFT')}
-                                sx={{
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
-                                }}
-                            >
-                                <KeyboardArrowLeft fontSize="large" />
-                            </IconButton>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Typography variant="caption" sx={{ color: 'grey.500', fontSize: '0.65rem', fontWeight: 800 }}>
-                                    SWIPE
-                                </Typography>
-                            </Box>
-                            <IconButton
-                                aria-label="Move right"
-                                onClick={() => requestDirection('RIGHT')}
-                                sx={{
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
-                                }}
-                            >
-                                <KeyboardArrowRight fontSize="large" />
-                            </IconButton>
-
-                            <Box />
-                            <IconButton
-                                aria-label="Move down"
-                                onClick={() => requestDirection('DOWN')}
-                                sx={{
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
-                                }}
-                            >
-                                <KeyboardArrowDown fontSize="large" />
-                            </IconButton>
-                            <Box />
-                        </Box>
-                    </Box>
-
                     {!isGameOver && (
                         <Button sx={{ mt: 2, borderRadius: '12px' }} variant="outlined" size="small" onClick={resetGame}>
                             Restart Game
@@ -471,7 +398,8 @@ const SnakeGame: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

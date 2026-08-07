@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme, alpha } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme, alpha } from '@mui/material';
 import { Grid3x3, Timer, RestartAlt, Backspace, EmojiEvents } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 type Grid = number[][];
 type Difficulty = 'easy' | 'medium' | 'hard';
@@ -337,18 +337,18 @@ const Sudoku: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 gameId={26}
                 title="Sudoku | Free Online 9x9 Puzzle"
                 keywords={['sudoku', 'play sudoku online', 'free sudoku puzzle', 'sudoku easy medium hard', 'number puzzle game']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Grid3x3}
                 title="Sudoku"
                 subtitle="Fill the grid so every row, column, and 3x3 box holds the numbers 1 to 9 exactly once. Pick a difficulty and race the clock."
-            />
-
+                onRestart={backToMenu}
+            >
             <Card ref={cardRef}
                 sx={{
                     background: 'rgba(13, 14, 18, 0.4)',
@@ -558,7 +558,8 @@ const Sudoku: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

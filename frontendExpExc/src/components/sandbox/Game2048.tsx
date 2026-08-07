@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Typography, Button, useTheme, alpha } from '@mui/material';
+import { Card, CardContent, Box, Typography, Button, useTheme, alpha } from '@mui/material';
 import { Apps } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
+import DPadControls from './shared/DPadControls';
 
 const GRID_SIZE = 4;
 const BEST_SCORE_KEY = 'sandbox_2048_best';
@@ -348,14 +349,15 @@ const Game2048: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo title="Play 2048 Online - Free Browser Puzzle Game" gameId={2} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Apps}
                 title="2048"
                 subtitle="Slide tiles with swipe, arrow keys, or the on-screen buttons to merge matching numbers."
-            />
-
+                onRestart={handleResetClick}
+                controls={<DPadControls onDirection={performMove} accentColor={theme.palette.primary.main} />}
+            >
             <Card
                 ref={cardRef}
                 sx={{
@@ -504,89 +506,19 @@ const Game2048: React.FC = () => {
                         )}
                     </Box>
 
-                    {/* Touch Controller D-Pad */}
-                    <Box sx={{ mt: 2.5, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 56px)', gridTemplateRows: 'repeat(3, 56px)', gap: 1 }}>
-                            <Box />
-                            <Button
-                                aria-label="Move Up"
-                                onClick={() => performMove('UP')}
-                                sx={{
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    minWidth: 0,
-                                    fontSize: '1.2rem',
-                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
-                                }}
-                            >
-                                ⬆️
-                            </Button>
-                            <Box />
-
-                            <Button
-                                aria-label="Move Left"
-                                onClick={() => performMove('LEFT')}
-                                sx={{
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    minWidth: 0,
-                                    fontSize: '1.2rem',
-                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
-                                }}
-                            >
-                                ⬅️
-                            </Button>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Typography variant="caption" sx={{ color: 'grey.500', fontSize: '0.65rem', fontWeight: 800 }}>
-                                    SWIPE
-                                </Typography>
-                            </Box>
-                            <Button
-                                aria-label="Move Right"
-                                onClick={() => performMove('RIGHT')}
-                                sx={{
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    minWidth: 0,
-                                    fontSize: '1.2rem',
-                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
-                                }}
-                            >
-                                ➡️
-                            </Button>
-
-                            <Box />
-                            <Button
-                                aria-label="Move Down"
-                                onClick={() => performMove('DOWN')}
-                                sx={{
-                                    bgcolor: 'rgba(255,255,255,0.06)',
-                                    border: '1.5px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    minWidth: 0,
-                                    fontSize: '1.2rem',
-                                    '&:active': { bgcolor: theme.palette.primary.main, color: '#000000' }
-                                }}
-                            >
-                                ⬇️
-                            </Button>
-                            <Box />
-                        </Box>
+                    <Box sx={{ mt: 2.5, display: 'flex', justifyContent: 'center', width: '100%' }}>
+                        <DPadControls onDirection={performMove} accentColor={theme.palette.primary.main} />
                     </Box>
 
-                    <Button sx={{ mt: 2, borderRadius: '12px' }} variant="outlined" size="small" onClick={handleResetClick}>
-                        New Game
-                    </Button>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                        <Button sx={{ borderRadius: '12px' }} variant="outlined" size="small" onClick={handleResetClick}>
+                            New Game
+                        </Button>
+                    </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

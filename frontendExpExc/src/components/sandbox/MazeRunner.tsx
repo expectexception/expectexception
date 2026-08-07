@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    Box, Button, Card, CardContent, Chip, Container, IconButton, Stack, Typography,
+    Box, Button, Card, CardContent, Chip, Stack, Typography,
     ToggleButton, ToggleButtonGroup, useTheme, alpha,
 } from '@mui/material';
-import {
-    AltRoute, Flag, KeyboardArrowUp, KeyboardArrowDown, KeyboardArrowLeft, KeyboardArrowRight, Refresh,
-} from '@mui/icons-material';
+import { AltRoute, Flag, Refresh } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
+import DPadControls, { type Direction as PadDirection } from './shared/DPadControls';
 
 const STATS_KEY = 'sandbox_maze_stats';
 const CANVAS = 450;
@@ -239,6 +238,11 @@ const MazeRunner: React.FC = () => {
         else move(dy > 0 ? 'S' : 'N');
     };
 
+    const handlePadDirection = (padDir: PadDirection) => {
+        const map: Record<PadDirection, Dir> = { UP: 'N', DOWN: 'S', LEFT: 'W', RIGHT: 'E' };
+        move(map[padDir]);
+    };
+
     const playerRow = Math.floor(playerIndex / size);
     const playerCol = playerIndex % size;
     const playerLeftPct = ((playerCol + 0.5) / size) * 100;
@@ -248,18 +252,19 @@ const MazeRunner: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 gameId={29}
                 title="Maze Runner - Free Online Random Maze Game"
                 keywords={['maze game online', 'maze runner free', 'random maze generator', 'maze puzzle game', 'labyrinth game']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={AltRoute}
                 title="Maze Runner"
                 subtitle="Navigate a freshly generated maze from start to goal. Arrow keys, on-screen arrows, or a swipe - every maze is guaranteed solvable."
-            />
-
+                onRestart={() => newMaze()}
+                controls={<DPadControls onDirection={handlePadDirection} accentColor={theme.palette.primary.main} />}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -364,31 +369,8 @@ const MazeRunner: React.FC = () => {
                         />
                     </Box>
 
-                    <Box sx={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 48px)',
-                        gridTemplateRows: 'repeat(3, 48px)',
-                        gap: 1,
-                        justifyContent: 'center',
-                        mb: 3,
-                    }}>
-                        <Box />
-                        <IconButton onClick={() => move('N')} sx={{ bgcolor: 'rgba(255,255,255,0.06)' }}>
-                            <KeyboardArrowUp />
-                        </IconButton>
-                        <Box />
-                        <IconButton onClick={() => move('W')} sx={{ bgcolor: 'rgba(255,255,255,0.06)' }}>
-                            <KeyboardArrowLeft />
-                        </IconButton>
-                        <Box />
-                        <IconButton onClick={() => move('E')} sx={{ bgcolor: 'rgba(255,255,255,0.06)' }}>
-                            <KeyboardArrowRight />
-                        </IconButton>
-                        <Box />
-                        <IconButton onClick={() => move('S')} sx={{ bgcolor: 'rgba(255,255,255,0.06)' }}>
-                            <KeyboardArrowDown />
-                        </IconButton>
-                        <Box />
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                        <DPadControls onDirection={handlePadDirection} accentColor={theme.palette.primary.main} />
                     </Box>
 
                     <Button fullWidth variant="outlined" startIcon={<Refresh />} onClick={() => newMaze()}>
@@ -400,7 +382,8 @@ const MazeRunner: React.FC = () => {
                     </Typography>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

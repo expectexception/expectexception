@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme, alpha } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme, alpha } from '@mui/material';
 import { BubbleChart } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const STATS_KEY = 'sandbox_bubbleshooter_stats';
 
@@ -437,18 +437,18 @@ const BubbleShooter: React.FC = () => {
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 6 }, px: { xs: 1.5, sm: 3 } }}>
+        <>
             <Seo
                 gameId={27}
                 title="Bubble Shooter - Free Online Bubble Pop Arcade Game"
                 keywords={['bubble shooter game', 'bubble pop online', 'match 3 bubbles', 'free arcade game', 'bubble shooter free']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={BubbleChart}
                 title="Bubble Shooter"
                 subtitle="Aim with your mouse or finger and fire colored bubbles into the grid. Match 3 or more of the same color to pop them - clear the board before the bubbles reach the bottom."
-            />
-
+                onRestart={start}
+            >
             <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
@@ -533,7 +533,8 @@ const BubbleShooter: React.FC = () => {
                     </Typography>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 
