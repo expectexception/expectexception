@@ -226,6 +226,8 @@ const AiVisionStudio: React.FC = () => {
     const cachedHandsRef = useRef<HandData[]>([]);
     const isAiDetectingRef = useRef<boolean>(false);
     const prevFrameSampleRef = useRef<Uint8ClampedArray | null>(null);
+    // On mobile, face-api and coco-ssd alternate across ticks instead of both running every tick
+    const inferenceTickRef = useRef<number>(0);
 
     const lastFpsTimeRef = useRef<number>(performance.now());
     const frameCountRef = useRef<number>(0);
@@ -333,7 +335,12 @@ const AiVisionStudio: React.FC = () => {
             }
 
             const constraints = {
-                video: {
+                video: isMobile ? {
+                    facingMode: facingMode,
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    frameRate: { ideal: 24 }
+                } : {
                     facingMode: facingMode,
                     width: { ideal: 1280 },
                     height: { ideal: 720 },
@@ -524,6 +531,12 @@ const AiVisionStudio: React.FC = () => {
 
             isAiDetectingRef.current = true;
             const startTime = performance.now();
+            const tick = inferenceTickRef.current;
+            inferenceTickRef.current += 1;
+            // Mobile: alternate the two heaviest models (face + object) across ticks instead
+            // of running all 4 models every tick, to roughly halve peak per-tick CPU/GPU cost.
+            const runFaceThisTick = !isMobile || tick % 2 === 0;
+            const runObjectThisTick = !isMobile || tick % 2 === 1;
 
             try {
                 // 1. MediaPipe 21 3D Finger & Hand Landmark Tracking
@@ -600,7 +613,7 @@ const AiVisionStudio: React.FC = () => {
                 }
 
                 // 3. Face, Biometrics & Facial Embeddings
-                if (showFaceDetection && isFaceApiLoadedRef.current) {
+                if (showFaceDetection && isFaceApiLoadedRef.current && runFaceThisTick) {
                     const detections = await faceapi.detectAllFaces(
                         video,
                         new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.45 })
@@ -645,7 +658,7 @@ const AiVisionStudio: React.FC = () => {
                 }
 
                 // 4. Object Detection (COCO-SSD)
-                if (showObjectDetection && cocoModelRef.current) {
+                if (showObjectDetection && cocoModelRef.current && runObjectThisTick) {
                     const predictions = await cocoModelRef.current.detect(video);
                     if (!isCancelled) {
                         const formattedObjects = predictions as DetectedObject[];
@@ -668,12 +681,12 @@ const AiVisionStudio: React.FC = () => {
             }
         };
 
-        const interval = setInterval(runAiInference, 90);
+        const interval = setInterval(runAiInference, isMobile ? 160 : 90);
         return () => {
             isCancelled = true;
             clearInterval(interval);
         };
-    }, [isCameraActive, isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking, showHandTracking, enableVoiceAudio, speakAiAnnouncement, enrolledFaces]);
+    }, [isCameraActive, isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking, showHandTracking, enableVoiceAudio, speakAiAnnouncement, enrolledFaces, isMobile]);
 
     // --- 60 FPS Render Loop with Hand Wireframes, Body Pose & EMA Smoothing ---
     const processFrame = useCallback(() => {
@@ -805,8 +818,10 @@ const AiVisionStudio: React.FC = () => {
 
                     ctx.strokeStyle = '#00ff66';
                     ctx.lineWidth = 2.5;
-                    ctx.shadowColor = '#00ff66';
-                    ctx.shadowBlur = 8;
+                    if (!isMobile) {
+                        ctx.shadowColor = '#00ff66';
+                        ctx.shadowBlur = 8;
+                    }
 
                     // Draw 5 Finger Bones
                     fingerChains.forEach(chain => {
@@ -897,8 +912,10 @@ const AiVisionStudio: React.FC = () => {
 
                     ctx.strokeStyle = '#00ff66';
                     ctx.lineWidth = 3.5;
-                    ctx.shadowColor = '#00ff66';
-                    ctx.shadowBlur = 10;
+                    if (!isMobile) {
+                        ctx.shadowColor = '#00ff66';
+                        ctx.shadowBlur = 10;
+                    }
 
                     connections.forEach(([p1Name, p2Name]) => {
                         const p1 = smoothedMap[p1Name];
@@ -1030,7 +1047,7 @@ const AiVisionStudio: React.FC = () => {
         }
 
         animationFrameRef.current = requestAnimationFrame(processFrame);
-    }, [isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking, showHandTracking, showMotionTrails]);
+    }, [isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking, showHandTracking, showMotionTrails, isMobile]);
 
     useEffect(() => {
         if (isCameraActive) {
@@ -1556,7 +1573,7 @@ const AiVisionStudio: React.FC = () => {
                 <Grid container spacing={3} alignItems="flex-start">
 
                     {/* Left Column: Clean Video Canvas Feed & Optical Motion Telemetry */}
-                    <Grid item xs={12} lg={7}>
+                    <Grid item xs={12} md={7}>
                         <Stack spacing={2.5}>
                             <Card
                                 elevation={0}
@@ -1631,11 +1648,12 @@ const AiVisionStudio: React.FC = () => {
                                     overflow: 'hidden'
                                 }}
                             >
-                                <canvas
+                                <Box
+                                    component="canvas"
                                     ref={canvasRef}
-                                    style={{
+                                    sx={{
                                         width: '100%',
-                                        maxHeight: '68vh',
+                                        maxHeight: { xs: '42vh', sm: '55vh', md: '68vh' },
                                         objectFit: 'contain',
                                         display: 'block'
                                     }}
@@ -1854,7 +1872,7 @@ const AiVisionStudio: React.FC = () => {
                 </Grid>
 
                 {/* Right Column / Mobile Tabs Viewport */}
-                <Grid item xs={12} lg={5}>
+                <Grid item xs={12} md={5}>
                     {isMobile ? (
                         <Box>
                             <Paper sx={{ bgcolor: '#080a0f', border: '1px solid rgba(0, 255, 102, 0.3)', borderRadius: 3, mb: 2, overflow: 'hidden' }}>

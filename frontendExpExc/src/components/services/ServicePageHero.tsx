@@ -18,8 +18,8 @@ const ServicePageHero: React.FC<ServicePageHeroProps> = ({ icon: Icon, title, su
     const secondary = theme.palette.secondary.main;
 
     return (
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-            <Box sx={{ position: 'relative', display: 'inline-block', width: 120, height: 120, mb: 1 }}>
+        <Box sx={{ textAlign: 'center', mb: { xs: 4, sm: 6, md: 8 } }}>
+            <Box sx={{ position: 'relative', display: 'inline-block', width: { xs: 72, sm: 96, md: 120 }, height: { xs: 72, sm: 96, md: 120 }, mb: 1 }}>
                 <Box
                     component={motion.svg}
                     viewBox="0 0 120 120"
@@ -43,7 +43,7 @@ const ServicePageHero: React.FC<ServicePageHeroProps> = ({ icon: Icon, title, su
                         zIndex: 1,
                     }}
                 >
-                    <Icon sx={{ fontSize: 60, color: 'primary.main', filter: `drop-shadow(0 0 15px ${alpha(primary, 0.5)})` }} />
+                    <Icon sx={{ fontSize: { xs: 36, sm: 48, md: 60 }, color: 'primary.main', filter: `drop-shadow(0 0 15px ${alpha(primary, 0.5)})` }} />
                 </Box>
             </Box>
 
@@ -59,6 +59,8 @@ const ServicePageHero: React.FC<ServicePageHeroProps> = ({ icon: Icon, title, su
                     WebkitTextFillColor: 'transparent',
                     letterSpacing: '-0.02em',
                     mb: 2,
+                    fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' },
+                    px: { xs: 1, sm: 0 },
                 }}>
                     {title}
                 </Typography>
@@ -68,7 +70,7 @@ const ServicePageHero: React.FC<ServicePageHeroProps> = ({ icon: Icon, title, su
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.15 }}
             >
-                <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
+                <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2, sm: 0 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                     {subtitle}
                 </Typography>
             </motion.div>
