@@ -114,7 +114,7 @@ const ImageResizer: React.FC = () => {
             title="Image Resizer"
             subtitle="Resize images to custom dimensions"
             maxWidth="md"
-            about="Image Resizer sends your image to the server, where Pillow resizes it with high-quality Lanczos resampling. Enter just a width or just a height with Maintain aspect ratio on and the other dimension is calculated automatically; enter both to fit the image within that box while keeping its proportions, or turn the toggle off to stretch to exact dimensions. The estimated file size shown before you click Resize Image is a rough client-side approximation based on the change in pixel area | the real output size (shown after resizing) can differ, especially for photos with a lot of fine detail."
+            about="Image Resizer sends your image to the server, where it's resized using high-quality resampling. Enter just a width or just a height with Maintain aspect ratio on and the other dimension is calculated automatically; enter both to fit the image within that box while keeping its proportions, or turn the toggle off to stretch to exact dimensions. The estimated file size shown before you click Resize Image is a rough client-side approximation based on the change in pixel area | the real output size (shown after resizing) can differ, especially for photos with a lot of fine detail."
             howToSteps={[
                 { name: 'Upload an image', text: 'Click the upload box and select the image you want to resize.' },
                 { name: 'Enter dimensions', text: 'Type a new Width (px) and/or Height (px) | leave one blank to have it calculated automatically.' },

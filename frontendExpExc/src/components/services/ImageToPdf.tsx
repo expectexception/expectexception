@@ -58,7 +58,7 @@ const ImageToPdf: React.FC = () => {
             icon={PictureAsPdf}
             title="Image to PDF Converter"
             subtitle="Combine multiple images into a single PDF"
-            about="Image to PDF Converter combines multiple images into a single multi-page PDF, with each image becoming one page in the order it was added. The merge happens on the server using Pillow, images are opened, any transparency is flattened onto a white background (since PDF pages can't have an alpha channel), and the first image's dimensions set the page size for the rest. It's handy for turning a batch of scanned photos or screenshots into one shareable document instead of sending files individually."
+            about="Image to PDF Converter combines multiple images into a single multi-page PDF, with each image becoming one page in the order it was added. The merge happens on the server: images are opened, any transparency is flattened onto a white background (since PDF pages can't have an alpha channel), and the first image's dimensions set the page size for the rest. It's handy for turning a batch of scanned photos or screenshots into one shareable document instead of sending files individually."
             howToSteps={[
                 { name: 'Add images', text: 'Click Add images and select one or more JPG, PNG, GIF, WEBP, or BMP files | repeat this to add more.' },
                 { name: 'Review the list', text: "Check the file list below the upload box and remove any image you don't want using its delete icon." },

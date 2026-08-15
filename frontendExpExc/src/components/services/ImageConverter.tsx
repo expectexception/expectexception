@@ -67,7 +67,7 @@ const ImageConverter: React.FC = () => {
             title="Image Format Converter"
             subtitle="Convert images between PNG, JPG, WebP, GIF, and more"
             maxWidth="md"
-            about="Image Format Converter re-encodes an uploaded image into a different file format, PNG, JPG, WebP, GIF, BMP, TIFF, or ICO, using Pillow on the server, not in your browser. Converting to JPG (which has no alpha channel) automatically flattens any transparency onto a white background first, and every output is saved at quality 95 for near-lossless results. It's useful when a site or tool needs a specific format your image isn't already in, for example ICO for a favicon, or WebP for a smaller web asset."
+            about="Image Format Converter re-encodes an uploaded image into a different file format, PNG, JPG, WebP, GIF, BMP, TIFF, or ICO, processed on the server, not in your browser. Converting to JPG (which has no alpha channel) automatically flattens any transparency onto a white background first, and every output is saved at quality 95 for near-lossless results. It's useful when a site or tool needs a specific format your image isn't already in, for example ICO for a favicon, or WebP for a smaller web asset."
             howToSteps={[
                 { name: 'Upload an image', text: 'Click the upload box and choose an image file from your device.' },
                 { name: 'Pick the output format', text: 'Open the Output Format dropdown and select PNG, JPG, WebP, GIF, BMP, TIFF, or ICO.' },

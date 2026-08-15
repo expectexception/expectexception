@@ -258,7 +258,7 @@ const AiVisionStudio: React.FC = () => {
                     await tf.setBackend('webgl').catch(() => tf.setBackend('cpu'));
                 }
 
-                setLoadingStatusText('Loading MoveNet Realtime 17-Keypoint Body Pose Model...');
+                setLoadingStatusText('Calibrating body pose tracking...');
                 setLoadingProgress(35);
                 try {
                     const detector = await poseDetection.createDetector(
@@ -267,10 +267,10 @@ const AiVisionStudio: React.FC = () => {
                     );
                     if (isMounted) poseDetectorRef.current = detector;
                 } catch (e) {
-                    console.warn('MoveNet load warning:', e);
+                    console.warn('Pose detector load warning:', e);
                 }
 
-                setLoadingStatusText('Loading MediaPipe 21 3D Finger & Hand Landmark Net...');
+                setLoadingStatusText('Calibrating hand & finger tracking...');
                 setLoadingProgress(55);
                 try {
                     const handModel = handPoseDetection.SupportedModels.MediaPipeHands;
@@ -284,12 +284,12 @@ const AiVisionStudio: React.FC = () => {
                     console.warn('Hand detector load warning:', e);
                 }
 
-                setLoadingStatusText('Loading COCO-SSD Neural Object Detector...');
+                setLoadingStatusText('Calibrating object detection...');
                 setLoadingProgress(75);
                 const cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
                 if (isMounted) cocoModelRef.current = cocoModel;
 
-                setLoadingStatusText('Loading 3D Facial Landmark & Embedding Neural Nets...');
+                setLoadingStatusText('Calibrating face tracking & recognition...');
                 setLoadingProgress(90);
                 
                 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
@@ -1486,7 +1486,7 @@ const AiVisionStudio: React.FC = () => {
                     <Paper elevation={0} sx={{ p: 1, bgcolor: 'rgba(0, 255, 102, 0.04)', border: '1px solid rgba(0, 255, 102, 0.15)', borderRadius: 2 }}>
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
                             <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.62rem' }}>
-                                COCO OBJECT SUMMARY
+                                DETECTED OBJECTS
                             </Typography>
                             <Chip label={`${detectedObjects.length} Detected`} size="small" sx={{ height: 18, fontSize: '0.62rem', color: '#00ff66', bgcolor: 'rgba(0, 255, 102, 0.15)', fontWeight: 800 }} />
                         </Stack>
@@ -1516,7 +1516,7 @@ const AiVisionStudio: React.FC = () => {
 
             <ServicePageHero
                 title="Realtime AI Vision Studio"
-                subtitle="High-Performance Neural Vision: 21 3D Finger Landmarks per Hand, 17 Body Kinematics Keypoints, 128-d Biometric Face Matching, 7 Emotions & Object Detection 100% Client-Side."
+                subtitle="High-Performance Vision: 21 3D Finger Landmarks per Hand, 17 Body Kinematics Keypoints, Biometric Face Matching, 7 Emotions & Object Detection 100% Client-Side."
                 icon={Visibility}
             />
 
@@ -1641,6 +1641,7 @@ const AiVisionStudio: React.FC = () => {
                                 sx={{
                                     position: 'relative',
                                     width: '100%',
+                                    minHeight: isCameraActive ? undefined : { xs: 460, sm: 520, md: 560 },
                                     bgcolor: '#040508',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -1655,7 +1656,7 @@ const AiVisionStudio: React.FC = () => {
                                         width: '100%',
                                         maxHeight: { xs: '42vh', sm: '55vh', md: '68vh' },
                                         objectFit: 'contain',
-                                        display: 'block'
+                                        display: isCameraActive ? 'block' : 'none'
                                     }}
                                 />
 
@@ -1694,7 +1695,7 @@ const AiVisionStudio: React.FC = () => {
                                         </Typography>
 
                                         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 460, mb: 3.5, lineHeight: 1.6 }}>
-                                            Enable webcam for 21 3D hand finger landmarks, MoveNet body pose tracking, 128-d facial identity recognition, 3D face mesh, 7 emotions & object detection.
+                                            Enable your webcam for 21 3D hand finger landmarks, full-body pose tracking, facial identity recognition, 3D face mesh, 7 emotions & object detection.
                                         </Typography>
 
                                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
@@ -1791,7 +1792,7 @@ const AiVisionStudio: React.FC = () => {
                                     />
                                     <Chip
                                         icon={<Category sx={{ fontSize: '16px !important' }} />}
-                                        label="COCO Objects"
+                                        label="Objects"
                                         clickable
                                         color={showObjectDetection ? 'success' : 'default'}
                                         variant={showObjectDetection ? 'filled' : 'outlined'}
@@ -1981,7 +1982,7 @@ const AiVisionStudio: React.FC = () => {
                 </DialogTitle>
                 <DialogContent>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        Enter a label/name for the currently detected face to save its 128-dimensional facial embedding vector locally in your browser.
+                        Enter a label/name for the currently detected face to save its facial profile locally in your browser.
                     </Typography>
                     <TextField
                         autoFocus
