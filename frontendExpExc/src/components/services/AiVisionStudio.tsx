@@ -1867,7 +1867,7 @@ const AiVisionStudio: React.FC = () => {
                                 </Stack>
                             </Box>
                         </Card>
-                        {!isMobile && <RenderMetricsPanel />}
+                        {!isMobile && RenderMetricsPanel()}
                     </Stack>
                 </Grid>
 
@@ -1895,16 +1895,16 @@ const AiVisionStudio: React.FC = () => {
                                 </Tabs>
                             </Paper>
 
-                            {mobileTab === 0 && <RenderKinematicsPanel />}
-                            {mobileTab === 1 && <RenderBiometricsPanel />}
-                            {mobileTab === 2 && <RenderObjectsPanel />}
-                            {mobileTab === 3 && <RenderMetricsPanel />}
+                            {mobileTab === 0 && RenderKinematicsPanel()}
+                            {mobileTab === 1 && RenderBiometricsPanel()}
+                            {mobileTab === 2 && RenderObjectsPanel()}
+                            {mobileTab === 3 && RenderMetricsPanel()}
                         </Box>
                     ) : (
                         <Stack spacing={2.5}>
-                            <RenderKinematicsPanel />
-                            <RenderBiometricsPanel />
-                            <RenderObjectsPanel />
+                            {RenderKinematicsPanel()}
+                            {RenderBiometricsPanel()}
+                            {RenderObjectsPanel()}
                         </Stack>
                     )}
                 </Grid>
@@ -1963,13 +1963,16 @@ const AiVisionStudio: React.FC = () => {
             <Dialog
                 open={isEnrollDialogOpen}
                 onClose={() => setIsEnrollDialogOpen(false)}
+                fullWidth
+                maxWidth="xs"
                 PaperProps={{
                     sx: {
                         bgcolor: '#0d1117',
                         border: '1px solid rgba(0, 255, 102, 0.3)',
                         borderRadius: 3,
                         color: '#ffffff',
-                        minWidth: 320
+                        width: '100%',
+                        minWidth: { xs: 0, sm: 320 }
                     }
                 }}
             >

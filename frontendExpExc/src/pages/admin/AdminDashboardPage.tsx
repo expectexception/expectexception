@@ -109,7 +109,8 @@ interface BackupSnapshot {
 interface AdminUser {
     id: number;
     email: string;
-    username: string;
+    first_name: string;
+    last_name: string;
     is_staff: boolean;
     is_active: boolean;
     date_joined: string;
@@ -625,7 +626,8 @@ const AdminDashboardPage: React.FC = () => {
     // ============ Filter Functions ============
     const filteredUsers = users.filter(u =>
         u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.username.toLowerCase().includes(searchQuery.toLowerCase())
+        (u.first_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (u.last_name || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const filteredBlogs = blogs.filter(b =>
@@ -946,7 +948,9 @@ const AdminDashboardPage: React.FC = () => {
                                                             </Avatar>
                                                             <Box>
                                                                 <Typography sx={{ color: 'white', fontWeight: 500 }}>{user.email}</Typography>
-                                                                <Typography variant="caption" sx={{ color: 'grey.500' }}>@{user.username}</Typography>
+                                                                {(user.first_name || user.last_name) && (
+                                                                    <Typography variant="caption" sx={{ color: 'grey.500' }}>{`${user.first_name || ''} ${user.last_name || ''}`.trim()}</Typography>
+                                                                )}
                                                             </Box>
                                                         </Box>
                                                     </TableCell>
@@ -1280,7 +1284,7 @@ const AdminDashboardPage: React.FC = () => {
                                                                         <Tooltip title="Set as default">
                                                                             <IconButton
                                                                                 size="small"
-                                                                                onClick={() => handleOllamaAction('set_default', model.name)}
+                                                                                onClick={() => handleOllamaAction('load', model.name)}
                                                                                 sx={{ color: 'grey.500', '&:hover': { color: '#10b981' } }}
                                                                             >
                                                                                 <CheckCircle fontSize="small" />
@@ -1743,10 +1747,18 @@ const AdminDashboardPage: React.FC = () => {
                         />
                         <TextField
                             margin="dense"
-                            label="Username"
+                            label="First Name"
                             fullWidth
-                            value={userDialog.data.username || ''}
-                            onChange={(e) => setUserDialog({ ...userDialog, data: { ...userDialog.data, username: e.target.value } })}
+                            value={userDialog.data.first_name || ''}
+                            onChange={(e) => setUserDialog({ ...userDialog, data: { ...userDialog.data, first_name: e.target.value } })}
+                            sx={{ mt: 2, input: { color: 'white' }, label: { color: 'grey.500' } }}
+                        />
+                        <TextField
+                            margin="dense"
+                            label="Last Name"
+                            fullWidth
+                            value={userDialog.data.last_name || ''}
+                            onChange={(e) => setUserDialog({ ...userDialog, data: { ...userDialog.data, last_name: e.target.value } })}
                             sx={{ mt: 2, input: { color: 'white' }, label: { color: 'grey.500' } }}
                         />
                         {(userDialog.type === 'create' || userDialog.type === 'edit') && (

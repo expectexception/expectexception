@@ -164,7 +164,7 @@ apiClient.interceptors.response.use(
             if (refreshToken) {
                 try {
                     const refreshBaseUrl = isRenderMarkedDown() ? FALLBACK_BASE_URL : API_BASE_URL;
-                    const response = await axios.post(`${refreshBaseUrl}/api/auth/token/refresh/`, {
+                    const response = await axios.post(`${refreshBaseUrl}/api/auth/refresh/`, {
                         refresh: refreshToken,
                     });
 

@@ -150,7 +150,7 @@ const PdfToDocPage: React.FC = () => {
 
   const pollStatus = async (id: string) => {
     try {
-      const response = await apiClient.get(`${endpoints.services.pdfToDoc}/status/${id}/`);
+      const response = await apiClient.get(endpoints.services.pdfToDocStatus(id));
       setConversionStatus(response.data);
 
       if (response.data.status === 'success' || response.data.file_url) {

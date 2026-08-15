@@ -129,7 +129,7 @@ const RandomDataGenerator: React.FC = () => {
                         ))}
                     </Box>
 
-                    <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 3 }}>
                         <TextField
                             select
                             label="Rows"
