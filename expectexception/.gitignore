@@ -1,0 +1,9 @@
+*.pyc
+__pycache__/
+.env
+db.sqlite3
+media/
+.venv/
+# AI model caches (docker-compose.yml volume mounts) — gigabytes of
+# downloaded HuggingFace/torch-hub/rembg model binaries, not source.
+cache/

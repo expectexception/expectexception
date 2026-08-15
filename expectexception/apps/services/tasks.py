@@ -1,0 +1,520 @@
+import os
+import uuid
+import zipfile
+import shutil
+import subprocess
+import time
+import datetime
+from celery import shared_task, current_task
+from django.conf import settings
+from django.core.cache import cache
+
+
+def _normalize_model_name(name: str) -> str:
+    return name or getattr(settings, 'AUDIO_SEPARATOR_MODEL', 'htdemucs')
+
+
+def _prepare_dirs(unique_id: str):
+    base_dir = os.path.join(settings.MEDIA_ROOT, 'audio_separator', unique_id)
+    input_dir = os.path.join(base_dir, 'input')
+    output_dir = os.path.join(base_dir, 'output')
+    os.makedirs(input_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
+    return base_dir, input_dir, output_dir
+
+
+def _run_demucs(demucs_cmd, model_name, output_dir, input_path, timeout):
+    cmd = [demucs_cmd, '--two-stems=vocals', '-n', model_name, '-o', output_dir, input_path]
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=timeout)
+    return proc
+
+
+@shared_task(bind=True)
+def process_audio_separator(self, input_path: str, original_name: str, unique_id: str, timeout: int = 300):
+    """Process audio separation asynchronously using Demucs.
+
+    Stores the result in Django cache under key `audio_sep_result:{task_id}`.
+    """
+    started_at = time.time()
+    model_name = _normalize_model_name(getattr(settings, 'AUDIO_SEPARATOR_MODEL', None))
+
+    # Find demucs binary
+    venv_demucs = os.path.join(settings.BASE_DIR, '.venv', 'bin', 'demucs')
+    demucs_cmd = venv_demucs if os.path.exists(venv_demucs) else 'demucs'
+
+    try:
+        base_dir, input_dir, output_dir = _prepare_dirs(unique_id)
+
+        # Move given file into input_dir (if not already there)
+        target_input = os.path.join(input_dir, original_name)
+        if os.path.abspath(input_path) != os.path.abspath(target_input):
+            shutil.copy(input_path, target_input)
+            input_path = target_input
+
+        # Run demucs
+        proc = _run_demucs(demucs_cmd, model_name, output_dir, input_path, timeout)
+
+        if proc.returncode != 0:
+            raise Exception(f"Demucs failed: {proc.stderr}")
+
+        # Locate outputs
+        model_dir = os.path.join(output_dir, model_name)
+        if not os.path.exists(model_dir):
+            # try htdemucs folder fallback
+            model_dir = os.path.join(output_dir, 'htdemucs')
+
+        subdirs = [d for d in os.listdir(model_dir) if os.path.isdir(os.path.join(model_dir, d))]
+        if not subdirs:
+            raise Exception("No output folder created by Demucs.")
+
+        song_dir = os.path.join(model_dir, subdirs[0])
+        vocals_path = os.path.join(song_dir, 'vocals.wav')
+        accompaniment_path = os.path.join(song_dir, 'no_vocals.wav')
+
+        if not os.path.exists(vocals_path) or not os.path.exists(accompaniment_path):
+            raise Exception(f"Output stems missing in {song_dir}")
+
+        # Copy to base_dir for easy serving
+        out_vocals = os.path.join(base_dir, 'vocals.wav')
+        out_music = os.path.join(base_dir, 'music.wav')
+        shutil.copy(vocals_path, out_vocals)
+        shutil.copy(accompaniment_path, out_music)
+
+        # Create zip
+        zip_filename = f"stems_{unique_id}.zip"
+        zip_path = os.path.join(base_dir, zip_filename)
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            zipf.write(out_vocals, 'vocals.wav')
+            zipf.write(out_music, 'music.wav')
+
+        result = {
+            'zip_path': zip_path,
+            'vocals_path': out_vocals,
+            'accompaniment_path': out_music,
+            'zip_url': f"{settings.MEDIA_URL}audio_separator/{unique_id}/{zip_filename}",
+            'vocals_url': f"{settings.MEDIA_URL}audio_separator/{unique_id}/vocals.wav",
+            'accompaniment_url': f"{settings.MEDIA_URL}audio_separator/{unique_id}/music.wav",
+            'duration': time.time() - started_at,
+            'status': 'success'
+        }
+
+        cache_key = f"audio_sep_result:{self.request.id}"
+        cache.set(cache_key, result, timeout=getattr(settings, 'AUDIO_SEPARATOR_CACHE_TIMEOUT', 24 * 3600))
+
+        return result
+
+    except Exception as exc:
+        cache_key = f"audio_sep_result:{self.request.id}"
+        cache.set(cache_key, {'status': 'failed', 'error': str(exc)}, timeout=3600)
+        raise
+
+
+@shared_task(bind=True)
+def convert_pdf_task(self, input_path: str, output_format: str, ocr_enabled: bool, ocr_lang: str, original_name: str):
+    """
+    Convert PDF to Doc/Docx/ODT/RTF/TXT asynchronously.
+
+    Engine strategy (handled by smart_convert_pdf):
+      DOCX → pdf2docx (layout-preserving) with soffice fallback
+      other formats → soffice with isolated user profile
+      OCR → pytesseract pipeline then convert
+    """
+    import logging
+    from .pdf_utils import smart_convert_pdf, PDFConversionError
+
+    logger = logging.getLogger(__name__)
+    unique_id = self.request.id
+    cache_key = f"pdf_convert_result:{unique_id}"
+
+    try:
+        logger.info(f"PDF conversion task started: {original_name} → {output_format} (ocr={ocr_enabled})")
+
+        # Prepare output path
+        converted_dir = os.path.join(settings.MEDIA_ROOT, 'converted')
+        os.makedirs(converted_dir, exist_ok=True)
+
+        base_name = os.path.splitext(original_name)[0]
+        # Replace spaces/special chars for safe filenames
+        safe_base = "".join(c if c.isalnum() or c in ('_', '-') else '_' for c in base_name)
+        final_filename = f"{safe_base}_{uuid.uuid4().hex[:8]}.{output_format.lower()}"
+        final_path = os.path.join(converted_dir, final_filename)
+
+        # Run multi-engine smart conversion
+        conversion_info = smart_convert_pdf(
+            input_pdf=input_path,
+            output_format=output_format,
+            output_path=final_path,
+            ocr_enabled=ocr_enabled,
+            ocr_lang=ocr_lang,
+        )
+
+        file_url = f"{settings.MEDIA_URL}converted/{final_filename}"
+
+        result = {
+            'status': 'success',
+            'file_url': file_url,
+            'filename': final_filename,
+            'original_name': original_name,
+            'format': output_format.upper(),
+            'original_size': conversion_info.get('original_size', 0),
+            'converted_size': conversion_info.get('converted_size', 0),
+            'ocr_used': conversion_info.get('ocr_used', False),
+            'engine_used': conversion_info.get('engine_used', 'unknown'),
+        }
+
+        logger.info(
+            f"PDF conversion done: {final_filename} "
+            f"({result['converted_size']} bytes, engine={result['engine_used']})"
+        )
+        cache.set(cache_key, result, timeout=3600)
+        return result
+
+    except PDFConversionError as exc:
+        logger.error(f"PDF conversion failed: {exc}")
+        error_result = {'status': 'failed', 'error': str(exc), 'error_type': 'conversion_error'}
+        cache.set(cache_key, error_result, timeout=3600)
+        raise
+
+    except Exception as exc:
+        logger.exception(f"Unexpected error during PDF conversion: {exc}")
+        error_result = {'status': 'failed', 'error': str(exc), 'error_type': 'unexpected_error'}
+        cache.set(cache_key, error_result, timeout=3600)
+        raise
+
+    finally:
+        # Clean up uploaded temp file
+        try:
+            if os.path.exists(input_path) and 'temp_uploads' in input_path:
+                os.remove(input_path)
+                logger.debug(f"Cleaned up temp input: {input_path}")
+        except Exception as e:
+            logger.warning(f"Failed to clean up input file: {e}")
+
+
+@shared_task(name='apps.services.tasks.run_uptime_monitors_task')
+def run_uptime_monitors_task():
+    """Periodic (CELERY_BEAT_SCHEDULE, every 1 minute) check of every active
+    per-user UptimeMonitor whose own interval has elapsed. Replaces the old
+    self-rescheduling run_uptime_scheduler_task (apply_async(countdown=15) on
+    itself) — a normal Beat entry means a single failed run doesn't silently
+    kill all future checks; Beat just fires again next minute regardless."""
+    lock_key = "celery_uptime_scheduler_lock"
+    if cache.get(lock_key):
+        return "Skipping: another worker is currently executing."
+
+    cache.set(lock_key, "running", timeout=120)
+    cache.set("last_celery_uptime_run", "active", timeout=90)
+
+    try:
+        from .models import UptimeMonitor
+        from .views import run_monitor_check
+        from django.utils import timezone
+
+        now = timezone.now()
+        checked = 0
+
+        for monitor in UptimeMonitor.objects.filter(status='active'):
+            if monitor.monitor_type != 'heartbeat':
+                if monitor.last_run_at and now < monitor.last_run_at + datetime.timedelta(minutes=monitor.interval_minutes):
+                    continue
+            run_monitor_check(monitor)
+            monitor.save()
+            checked += 1
+
+        return f"Checked {checked} monitor(s)."
+    finally:
+        cache.delete(lock_key)
+
+
+BACKUP_DIR = os.path.join(settings.BASE_DIR, 'backups')
+BACKUP_RETENTION_COUNT = 14
+
+
+@shared_task(name='apps.services.tasks.backup_local_data_task')
+def backup_local_data_task():
+    """Daily snapshot of db.sqlite3 (the primary datastore on this server —
+    Render uses Postgres and has its own managed backups; MongoDB Atlas has
+    its own point-in-time recovery) plus media/, into backups/<timestamp>/,
+    pruning beyond BACKUP_RETENTION_COUNT. Nothing backed this up before.
+
+    Uses sqlite3's own online backup API rather than a plain file copy —
+    copying the raw file while a writer holds a transaction open can capture
+    a torn, inconsistent snapshot; the backup API goes through SQLite's own
+    locking so it's always a consistent point-in-time copy regardless of
+    concurrent access.
+    """
+    if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+        return "Skipped: this server's data (SQLite, media) doesn't exist on Render."
+
+    lock_key = "celery_backup_lock"
+    if cache.get(lock_key):
+        return "Skipping: another backup is already running."
+    cache.set(lock_key, "running", timeout=600)
+
+    try:
+        os.makedirs(BACKUP_DIR, exist_ok=True)
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        snapshot_dir = os.path.join(BACKUP_DIR, timestamp)
+        os.makedirs(snapshot_dir, exist_ok=True)
+
+        db_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
+        db_backed_up = False
+        if os.path.exists(db_path):
+            import sqlite3
+            src = sqlite3.connect(db_path)
+            dest = sqlite3.connect(os.path.join(snapshot_dir, 'db.sqlite3'))
+            try:
+                src.backup(dest)
+                db_backed_up = True
+            finally:
+                dest.close()
+                src.close()
+
+        media_root = str(settings.MEDIA_ROOT)
+        media_backed_up = False
+        if os.path.isdir(media_root) and os.listdir(media_root):
+            shutil.make_archive(os.path.join(snapshot_dir, 'media'), 'zip', media_root)
+            media_backed_up = True
+
+        # Prune snapshots beyond the retention count — names are
+        # timestamp-sortable, so a reverse sort is oldest-last.
+        snapshots = sorted(
+            (d for d in os.listdir(BACKUP_DIR) if os.path.isdir(os.path.join(BACKUP_DIR, d))),
+            reverse=True,
+        )
+        pruned = 0
+        for old in snapshots[BACKUP_RETENTION_COUNT:]:
+            shutil.rmtree(os.path.join(BACKUP_DIR, old), ignore_errors=True)
+            pruned += 1
+
+        return (
+            f"Backup created at {snapshot_dir} "
+            f"(db={'yes' if db_backed_up else 'no'}, media={'yes' if media_backed_up else 'no'}); "
+            f"pruned {pruned} old snapshot(s)."
+        )
+    finally:
+        cache.delete(lock_key)
+
+
+@shared_task(bind=True, time_limit=120, soft_time_limit=100, name='apps.services.tasks.remove_background_task')
+def remove_background_task(self, input_path: str, quality_preset: str, output_format: str) -> dict:
+    """Async background removal via rembg."""
+    import io
+    from PIL import Image
+    try:
+        from rembg import remove, new_session
+        session = new_session('u2net', providers=['CPUExecutionProvider'])
+
+        QUALITY_PRESETS = {
+            'fast': {'max_dimension': 1024, 'quality': 75},
+            'balanced': {'max_dimension': 2048, 'quality': 90},
+            'best': {'max_dimension': 4096, 'quality': 95},
+        }
+        preset = QUALITY_PRESETS.get(quality_preset, QUALITY_PRESETS['balanced'])
+        max_dim = preset['max_dimension']
+        quality = preset['quality']
+
+        with open(input_path, 'rb') as f:
+            input_data = f.read()
+
+        img = Image.open(io.BytesIO(input_data))
+        if img.width > max_dim or img.height > max_dim:
+            ratio = min(max_dim / img.width, max_dim / img.height)
+            img = img.resize((int(img.width * ratio), int(img.height * ratio)), Image.LANCZOS)
+
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format='PNG')
+        img_bytes.seek(0)
+
+        result = remove(img_bytes.read(), session=session)
+        result_img = Image.open(io.BytesIO(result))
+
+        output_dir = os.path.join(settings.MEDIA_ROOT, 'bg_removed')
+        os.makedirs(output_dir, exist_ok=True)
+        ext = '.png' if output_format == 'png' else '.jpg'
+        filename = f"bg_removed_{uuid.uuid4().hex[:8]}{ext}"
+        output_path = os.path.join(output_dir, filename)
+
+        if output_format in ('jpg', 'jpeg') and result_img.mode == 'RGBA':
+            bg = Image.new('RGB', result_img.size, (255, 255, 255))
+            bg.paste(result_img, mask=result_img.split()[3])
+            bg.save(output_path, 'JPEG', quality=quality)
+        else:
+            result_img.save(output_path, 'PNG', optimize=True)
+
+        try:
+            os.remove(input_path)
+        except Exception:
+            pass
+
+        file_url = f"{settings.MEDIA_URL}bg_removed/{filename}"
+        return {'success': True, 'file_url': file_url, 'filename': filename}
+
+    except Exception as exc:
+        try:
+            os.remove(input_path)
+        except Exception:
+            pass
+        raise self.retry(exc=exc, max_retries=0)
+
+
+@shared_task(bind=True, time_limit=60, soft_time_limit=50, name='apps.services.tasks.upscale_image_task')
+def upscale_image_task(self, input_path: str, scale: float, sharpness: float, denoise: bool, boost_color: bool) -> dict:
+    """Async image upscaling task."""
+    import io
+    from PIL import Image, ImageFilter, ImageEnhance
+    try:
+        with open(input_path, 'rb') as f:
+            image = Image.open(io.BytesIO(f.read()))
+            image.load()
+
+        source_mode = image.mode
+        if image.mode not in ('RGB', 'RGBA'):
+            image = image.convert('RGB')
+
+        new_size = (int(image.width * scale), int(image.height * scale))
+        upscaled = image.resize(new_size, Image.LANCZOS)
+
+        if denoise:
+            upscaled = upscaled.filter(ImageFilter.SMOOTH_MORE)
+        if sharpness != 1.0:
+            upscaled = ImageEnhance.Sharpness(upscaled).enhance(sharpness)
+        if boost_color:
+            upscaled = ImageEnhance.Color(upscaled).enhance(1.05)
+            upscaled = ImageEnhance.Contrast(upscaled).enhance(1.03)
+
+        output_dir = os.path.join(settings.MEDIA_ROOT, 'enhanced')
+        os.makedirs(output_dir, exist_ok=True)
+        output_format = 'PNG' if upscaled.mode == 'RGBA' else 'JPEG'
+        ext = '.png' if output_format == 'PNG' else '.jpg'
+        filename = f"upscaled_{uuid.uuid4().hex[:8]}{ext}"
+        output_path = os.path.join(output_dir, filename)
+        upscaled.save(output_path, format=output_format, quality=95)
+
+        try:
+            os.remove(input_path)
+        except Exception:
+            pass
+
+        file_url = f"{settings.MEDIA_URL}enhanced/{filename}"
+        return {
+            'success': True,
+            'file_url': file_url,
+            'filename': filename,
+            'original_size': f"{image.width}x{image.height}",
+            'upscaled_size': f"{upscaled.width}x{upscaled.height}",
+            'output_format': output_format,
+        }
+
+    except Exception as exc:
+        try:
+            os.remove(input_path)
+        except Exception:
+            pass
+        raise self.retry(exc=exc, max_retries=0)
+
+
+
+
+# ---------------------------------------------------------------------------
+# Cross-instance Mongo mirror tasks (Render <-> local server failover sync).
+# Best-effort: mirror_to_mongo() already swallows its own errors and logs,
+# so these tasks never raise — a Mongo hiccup must never fail a save().
+# Queued on 'default' so they never compete with heavy AI/processing queues.
+# ---------------------------------------------------------------------------
+
+@shared_task(queue='default', name='apps.services.tasks.mirror_user_task')
+def mirror_user_task(user_id):
+    from django.contrib.auth import get_user_model
+    from .mongodb import mirror_to_mongo
+
+    User = get_user_model()
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return
+    mirror_to_mongo('users', user.id, {
+        'email': user.email,
+        'password': user.password,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'is_active': user.is_active,
+        'is_staff': user.is_staff,
+        'is_superuser': user.is_superuser,
+        'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+        'auth_provider': user.auth_provider,
+        'google_id': user.google_id,
+        'avatar_url': user.avatar_url,
+    })
+
+
+@shared_task(queue='default', name='apps.services.tasks.mirror_post_task')
+def mirror_post_task(post_id):
+    from apps.blog.models import Post
+    from .mongodb import mirror_to_mongo
+
+    try:
+        post = Post.objects.get(pk=post_id)
+    except Post.DoesNotExist:
+        return
+    mirror_to_mongo('blog_posts', post.id, {
+        'slug': post.slug,
+        'title': post.title,
+        'content': post.content,
+        'author_id': post.author_id,
+        'status': post.status,
+        'seo_title': post.seo_title,
+        'seo_description': post.seo_description,
+        'created_at': post.created_at.isoformat() if post.created_at else None,
+        'updated_at': post.updated_at.isoformat() if post.updated_at else None,
+        'published_at': post.published_at.isoformat() if post.published_at else None,
+    })
+
+
+@shared_task(queue='default', name='apps.services.tasks.mirror_thread_task')
+def mirror_thread_task(thread_id):
+    from apps.community.models import Thread
+    from .mongodb import mirror_to_mongo
+
+    try:
+        thread = Thread.objects.get(pk=thread_id)
+    except Thread.DoesNotExist:
+        return
+    mirror_to_mongo('community_threads', thread.id, {
+        'slug': thread.slug,
+        'title': thread.title,
+        'body': thread.body,
+        'author_id': thread.author_id,
+        'category_id': thread.category_id,
+        'tags': thread.tags,
+        'is_pinned': thread.is_pinned,
+        'is_closed': thread.is_closed,
+        'is_solved': thread.is_solved,
+        'created_at': thread.created_at.isoformat() if thread.created_at else None,
+        'updated_at': thread.updated_at.isoformat() if thread.updated_at else None,
+    })
+
+
+@shared_task(queue='default', name='apps.services.tasks.mirror_contact_inquiry_task')
+def mirror_contact_inquiry_task(inquiry_id):
+    from apps.contact.models import ContactInquiry
+    from .mongodb import mirror_to_mongo
+
+    try:
+        inquiry = ContactInquiry.objects.get(pk=inquiry_id)
+    except ContactInquiry.DoesNotExist:
+        return
+    mirror_to_mongo('contact_inquiries', inquiry.id, {
+        'name': inquiry.name,
+        'email': inquiry.email,
+        'subject': inquiry.subject,
+        'message': inquiry.message,
+        'inquiry_type': inquiry.inquiry_type,
+        'project_type': inquiry.project_type,
+        'budget': inquiry.budget,
+        'status': inquiry.status,
+        'ip_address': inquiry.ip_address,
+        'user_agent': inquiry.user_agent,
+        'source_page': inquiry.source_page,
+        'created_at': inquiry.created_at.isoformat() if inquiry.created_at else None,
+    })
