@@ -87,6 +87,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.services.middleware.ProLevelLoggingMiddleware',
     'apps.services.middleware.RateLimitMiddleware',
+    'apps.services.middleware.ToolAccessMiddleware',
     'apps.services.security.SecurityHeadersMiddleware',  # Add security headers
 ]
 

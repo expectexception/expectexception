@@ -79,6 +79,10 @@ from .admin_views import (
     OllamaModelsView,
     OllamaModelControlView,
     OllamaStatusView,
+    AdminToolRestrictionListCreateView,
+    AdminToolRestrictionDetailView,
+    AdminUserToolUsageView,
+    AdminUsageAnalyticsView,
 )
 from rest_framework.routers import DefaultRouter
 
@@ -105,6 +109,10 @@ admin_urlpatterns = [
     path('admin/ollama/models/', OllamaModelsView.as_view(), name='admin-ollama-models'),
     path('admin/ollama/control/', OllamaModelControlView.as_view(), name='admin-ollama-control'),
     path('admin/ollama/status/', OllamaStatusView.as_view(), name='admin-ollama-status'),
+    path('admin/tool-restrictions/', AdminToolRestrictionListCreateView.as_view(), name='admin-tool-restrictions'),
+    path('admin/tool-restrictions/<int:pk>/', AdminToolRestrictionDetailView.as_view(), name='admin-tool-restriction-detail'),
+    path('admin/users/<int:pk>/tool-usage/', AdminUserToolUsageView.as_view(), name='admin-user-tool-usage'),
+    path('admin/usage-analytics/', AdminUsageAnalyticsView.as_view(), name='admin-usage-analytics'),
 ]
 
 urlpatterns = [
