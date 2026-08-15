@@ -1641,7 +1641,7 @@ const AiVisionStudio: React.FC = () => {
                                 sx={{
                                     position: 'relative',
                                     width: '100%',
-                                    minHeight: isCameraActive ? undefined : { xs: 460, sm: 520, md: 560 },
+                                    minHeight: isCameraActive ? undefined : { xs: 520, sm: 560, md: 580 },
                                     bgcolor: '#040508',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -1654,7 +1654,7 @@ const AiVisionStudio: React.FC = () => {
                                     ref={canvasRef}
                                     sx={{
                                         width: '100%',
-                                        maxHeight: { xs: '42vh', sm: '55vh', md: '68vh' },
+                                        maxHeight: { xs: '45vh', sm: '55vh', md: '68vh' },
                                         objectFit: 'contain',
                                         display: isCameraActive ? 'block' : 'none'
                                     }}
@@ -1666,49 +1666,50 @@ const AiVisionStudio: React.FC = () => {
                                         sx={{
                                             position: 'absolute',
                                             inset: 0,
-                                            bgcolor: 'rgba(6, 8, 14, 0.94)',
+                                            bgcolor: 'rgba(6, 8, 14, 0.95)',
                                             backdropFilter: 'blur(8px)',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            p: 4,
+                                            p: { xs: 2.5, sm: 4 },
+                                            overflowY: 'auto',
                                             textAlign: 'center',
                                             zIndex: 5
                                         }}
                                     >
                                         <Avatar
                                             sx={{
-                                                width: 72,
-                                                height: 72,
+                                                width: { xs: 56, sm: 72 },
+                                                height: { xs: 56, sm: 72 },
                                                 bgcolor: alpha(primaryColor, 0.12),
                                                 border: `2px solid ${primaryColor}`,
-                                                mb: 2.5,
+                                                mb: { xs: 1.5, sm: 2.5 },
                                                 boxShadow: `0 0 30px ${alpha(primaryColor, 0.4)}`
                                             }}
                                         >
-                                            <Videocam sx={{ fontSize: 36, color: primaryColor }} />
+                                            <Videocam sx={{ fontSize: { xs: 28, sm: 36 }, color: primaryColor }} />
                                         </Avatar>
 
-                                        <Typography variant="h5" fontWeight={800} color="#ffffff" gutterBottom>
+                                        <Typography variant="h5" fontWeight={800} color="#ffffff" gutterBottom sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                                             ACTIVATE AI CAMERA FEED
                                         </Typography>
 
-                                        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 460, mb: 3.5, lineHeight: 1.6 }}>
-                                            Enable your webcam for 21 3D hand finger landmarks, full-body pose tracking, facial identity recognition, 3D face mesh, 7 emotions & object detection.
+                                        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 460, mb: { xs: 2, sm: 3.5 }, lineHeight: 1.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                                            Enable webcam for 21 3D hand finger landmarks, full-body pose tracking, facial identity recognition, 3D face mesh, 7 emotions & object detection.
                                         </Typography>
 
-                                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' }, maxWidth: 360 }}>
                                             <Button
                                                 variant="contained"
-                                                size="large"
+                                                size={isMobile ? 'medium' : 'large'}
                                                 startIcon={<Videocam sx={{ color: '#000000' }} />}
                                                 onClick={startCamera}
                                                 disabled={isModelsLoading}
                                                 sx={{
                                                     borderRadius: '28px',
-                                                    px: 4,
-                                                    py: 1.5,
+                                                    px: 3.5,
+                                                    py: 1.25,
                                                     fontWeight: 800,
                                                     background: 'linear-gradient(135deg, #00ff66 0%, #00b347 100%)',
                                                     color: '#000000',
@@ -1724,14 +1725,14 @@ const AiVisionStudio: React.FC = () => {
 
                                             <Button
                                                 variant="outlined"
-                                                size="large"
+                                                size={isMobile ? 'medium' : 'large'}
                                                 startIcon={<PlayArrow />}
                                                 onClick={() => { setIsDemoMode(true); setIsCameraActive(true); }}
                                                 disabled={isModelsLoading}
                                                 sx={{
                                                     borderRadius: '28px',
-                                                    px: 3.5,
-                                                    py: 1.5,
+                                                    px: 3,
+                                                    py: 1.25,
                                                     fontWeight: 700,
                                                     borderColor: 'rgba(0, 255, 102, 0.4)',
                                                     color: '#ffffff',

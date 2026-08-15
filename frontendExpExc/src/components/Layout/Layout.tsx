@@ -44,6 +44,8 @@ import {
     LightMode,
     SettingsBrightness,
     Visibility,
+    Keyboard,
+    Extension,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -53,6 +55,8 @@ import ScrollToTop from '../layout/ScrollToTop';
 import SearchDialog from '../layout/SearchDialog';
 import CommandPalette from '../layout/CommandPalette';
 import ChatbotWidget from '../layout/ChatbotWidget';
+import KeyboardShortcutsModal from '../layout/KeyboardShortcutsModal';
+import ToolPipelineModal from '../tools/ToolPipelineModal';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, logout, user } = useAuth();
@@ -109,15 +113,30 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         if (url) window.location.href = url;
     };
 
-    // Search / Command Palette
+    // Search / Command Palette / Shortcuts / Pipeline Modals
     const [searchOpen, setSearchOpen] = useState(false);
     const [cmdOpen, setCmdOpen] = useState(false);
+    const [shortcutsOpen, setShortcutsOpen] = useState(false);
+    const [pipelineOpen, setPipelineOpen] = useState(false);
     const handleSearchOpen = () => setCmdOpen(true);
     const handleSearchClose = () => setSearchOpen(false);
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setCmdOpen(o => !o); }
+            const target = e.target as HTMLElement;
+            const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+            if (isInput) return;
+
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                setCmdOpen(o => !o);
+            } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
+                e.preventDefault();
+                setPipelineOpen(o => !o);
+            } else if (e.key === '?') {
+                e.preventDefault();
+                setShortcutsOpen(o => !o);
+            }
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
@@ -478,6 +497,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
                             {/* Right Side Actions */}
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5, md: 2 }, ml: 'auto' }}>
+                                <Tooltip title="Tool Pipeline Studio (Shift+P)">
+                                    <IconButton onClick={() => setPipelineOpen(true)} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
+                                        <Extension sx={{ fontSize: 20 }} />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Keyboard Shortcuts (?)">
+                                    <IconButton onClick={() => setShortcutsOpen(true)} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
+                                        <Keyboard sx={{ fontSize: 20 }} />
+                                    </IconButton>
+                                </Tooltip>
                                 <Tooltip title="Search  ⌘K">
                                     <IconButton onClick={handleSearchOpen} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
                                         <Search sx={{ fontSize: 22 }} />
@@ -842,6 +871,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <SearchDialog open={searchOpen} onClose={handleSearchClose} />
             {/* Command Palette */}
             <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
+            {/* Keyboard Shortcuts Modal */}
+            <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+            {/* Tool Pipeline Builder Modal */}
+            <ToolPipelineModal open={pipelineOpen} onClose={() => setPipelineOpen(false)} />
 
             {/* Global Chatbot Widget */}
             <ChatbotWidget isOpen={chatbotOpen} setIsOpen={setChatbotOpen} />
