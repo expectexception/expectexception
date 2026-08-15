@@ -1,9 +1,22 @@
 *.pyc
 __pycache__/
-.env
+
+# Django & Application Logs
+*.log
+*.log.*
+logs/
+**/logs/
+requests_analysis.state.json
+**/requests_analysis.state.json
+local_settings.py
 db.sqlite3
+db.sqlite3-journal
+/media
+**/staticfiles/
+**/static/
 media/
+
+# Environment variables
+.env
 .venv/
-# AI model caches (docker-compose.yml volume mounts) — gigabytes of
-# downloaded HuggingFace/torch-hub/rembg model binaries, not source.
 cache/
