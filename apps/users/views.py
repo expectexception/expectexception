@@ -20,16 +20,54 @@ logger = logging.getLogger(__name__)
 
 
 class EmailClaimTokenObtainPairSerializer(TokenObtainPairSerializer):
-    """Adds an `email` claim to login-issued tokens.
+    """Adds an `email` claim to login-issued tokens and supports email/username payload normalization."""
+    
+    def validate(self, attrs):
+        email_input = attrs.get('email') or attrs.get('username') or self.initial_data.get('email') or self.initial_data.get('username')
+        password_input = attrs.get('password') or self.initial_data.get('password')
 
-    Render and the local server assign user pks independently, so a JWT's
-    numeric user_id can collide with a *different* real account on whichever
-    instance validates it. JITMongoJWTAuthentication cross-checks this claim
-    against the resolved user's email on every request (not just the
-    JIT-hydration fallback) to catch that collision — see
-    apps/users/authentication.py. RegisterView/GoogleAuthView get the same
-    claim via TokenPairSerializer.for_user().
-    """
+        if email_input:
+            email_input = email_input.strip().lower()
+            attrs[self.username_field] = email_input
+            attrs['username'] = email_input
+            attrs['email'] = email_input
+
+        from django.contrib.auth import authenticate
+        from rest_framework import exceptions
+
+        user = authenticate(request=self.context.get('request'), email=email_input, username=email_input, password=password_input)
+        
+        # Mongo fallback if user exists in Mongo Atlas but not in local SQLite instance
+        if user is None and email_input:
+            from apps.services.mongodb import find_one_in_mongo
+            from apps.users.models import User
+            mongo_doc = find_one_in_mongo('users', {'email': email_input})
+            if mongo_doc:
+                try:
+                    user, _ = User.objects.update_or_create(
+                        email=email_input,
+                        defaults={
+                            'password': mongo_doc.get('password', ''),
+                            'is_active': mongo_doc.get('is_active', True),
+                            'is_staff': mongo_doc.get('is_staff', False),
+                            'is_superuser': mongo_doc.get('is_superuser', False),
+                        }
+                    )
+                    user = authenticate(request=self.context.get('request'), email=email_input, username=email_input, password=password_input)
+                except Exception as e:
+                    logger.error("Failed Mongo JIT hydration during login: %s", e)
+
+        if not user:
+            raise exceptions.AuthenticationFailed('No active account found with the given credentials', code='no_active_account')
+        if not user.is_active:
+            raise exceptions.AuthenticationFailed('User account is disabled', code='user_inactive')
+
+        refresh = self.get_token(user)
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }
+
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
