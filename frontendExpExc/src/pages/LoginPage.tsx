@@ -60,7 +60,12 @@ const LoginPage: React.FC = () => {
         setError(null);
 
         try {
-            const response = await apiClient.post(endpoints.auth.login, formData);
+            const cleanEmail = formData.email.trim().toLowerCase();
+            const response = await apiClient.post(endpoints.auth.login, {
+                email: cleanEmail,
+                username: cleanEmail,
+                password: formData.password,
+            });
             const { access, refresh } = response.data;
 
             login(access, refresh);
