@@ -202,7 +202,7 @@ class SecurityHeadersMiddleware(BaseMiddleware):
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
             "img-src 'self' data: https:; "
             "font-src 'self' https://fonts.gstatic.com; "
-            "connect-src 'self' https://api.github.com; "
+            "connect-src 'self' https://api.expectexception.com https://expectexception.com https://www.expectexception.com https://ytd.expectexception.com https://expectexception.onrender.com https://api.github.com wss:; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self'"
