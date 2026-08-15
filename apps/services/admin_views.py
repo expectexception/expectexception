@@ -5,14 +5,18 @@ Provides endpoints for user management, log viewing, and Ollama model control.
 import os
 import subprocess
 import logging
+from datetime import timedelta
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db.models import Count, Max, Q
+from django.db.models.functions import TruncDate
+from django.utils import timezone
 from apps.blog.models import Post
-from .models import DownloadableResource
+from .models import DownloadableResource, Service, UserToolRestriction, ToolUsage
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -694,4 +698,158 @@ class OllamaStatusView(APIView):
                 'active_models': [],
                 'active_model': None
             })
+
+
+class AdminToolRestrictionListCreateView(APIView):
+    """List all per-user tool restrictions, or ban a user from a tool.
+
+    Enforced at request time by apps.services.middleware.ToolAccessMiddleware,
+    not by this view — this is just the admin CRUD surface for the
+    UserToolRestriction table it reads from.
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        restrictions = UserToolRestriction.objects.select_related('user', 'service', 'restricted_by').all()
+        data = [{
+            'id': r.id,
+            'user_id': r.user_id,
+            'user_email': r.user.email,
+            'service_id': r.service_id,
+            'service_title': r.service.title,
+            'reason': r.reason,
+            'restricted_by_email': r.restricted_by.email if r.restricted_by else None,
+            'created_at': r.created_at.isoformat(),
+        } for r in restrictions]
+        return Response({'restrictions': data, 'count': len(data)})
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        service_id = request.data.get('service_id')
+        reason = request.data.get('reason', '')
+
+        if not user_id or not service_id:
+            return Response({'error': 'user_id and service_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            service = Service.objects.get(pk=service_id)
+        except Service.DoesNotExist:
+            return Response({'error': 'Service not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        restriction, created = UserToolRestriction.objects.get_or_create(
+            user=user,
+            service=service,
+            defaults={'reason': reason, 'restricted_by': request.user},
+        )
+        if not created:
+            return Response({'error': 'This user is already restricted from this tool'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            'id': restriction.id,
+            'user_id': user.id,
+            'user_email': user.email,
+            'service_id': service.id,
+            'service_title': service.title,
+            'reason': restriction.reason,
+            'created_at': restriction.created_at.isoformat(),
+        }, status=status.HTTP_201_CREATED)
+
+
+class AdminToolRestrictionDetailView(APIView):
+    """Lift a per-user tool restriction (admin only)."""
+    permission_classes = [IsAdminUser]
+
+    def delete(self, request, pk):
+        try:
+            restriction = UserToolRestriction.objects.get(pk=pk)
+        except UserToolRestriction.DoesNotExist:
+            return Response({'error': 'Restriction not found'}, status=status.HTTP_404_NOT_FOUND)
+        restriction.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdminUserToolUsageView(APIView):
+    """Per-user tool usage breakdown: which tools a specific user has used,
+    how many times, and when they last used each one — drawn from the
+    ToolUsage audit log every tool call already writes to.
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, pk):
+        try:
+            target_user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        usage = (
+            ToolUsage.objects.filter(user_id=pk)
+            .values('tool_name')
+            .annotate(
+                total_calls=Count('id'),
+                success_calls=Count('id', filter=Q(status='success')),
+                failed_calls=Count('id', filter=Q(status='failed')),
+                last_used=Max('created_at'),
+            )
+            .order_by('-total_calls')
+        )
+
+        restricted_service_ids = set(
+            UserToolRestriction.objects.filter(user_id=pk).values_list('service_id', flat=True)
+        )
+        restricted_services = {
+            s.id: s.title
+            for s in Service.objects.filter(id__in=restricted_service_ids)
+        }
+
+        return Response({
+            'user_id': target_user.id,
+            'user_email': target_user.email,
+            'tool_usage': [{
+                'tool_name': u['tool_name'],
+                'total_calls': u['total_calls'],
+                'success_calls': u['success_calls'],
+                'failed_calls': u['failed_calls'],
+                'last_used': u['last_used'].isoformat() if u['last_used'] else None,
+            } for u in usage],
+            'restrictions': [
+                {'service_id': sid, 'service_title': title} for sid, title in restricted_services.items()
+            ],
+        })
+
+
+class AdminUsageAnalyticsView(APIView):
+    """Site-wide tool usage analytics: most-used tools and daily call volume
+    over the trailing 30 days, for the admin dashboard's analytics charts.
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        since = timezone.now() - timedelta(days=30)
+        recent = ToolUsage.objects.filter(created_at__gte=since)
+
+        top_tools = list(
+            recent.values('tool_name')
+            .annotate(total_calls=Count('id'))
+            .order_by('-total_calls')[:15]
+        )
+
+        daily_trend = list(
+            recent.annotate(day=TruncDate('created_at'))
+            .values('day')
+            .annotate(total_calls=Count('id'))
+            .order_by('day')
+        )
+
+        return Response({
+            'window_days': 30,
+            'total_calls': recent.count(),
+            'unique_tools_used': recent.values('tool_name').distinct().count(),
+            'top_tools': [{'tool_name': t['tool_name'], 'total_calls': t['total_calls']} for t in top_tools],
+            'daily_trend': [{'date': d['day'].isoformat(), 'total_calls': d['total_calls']} for d in daily_trend],
+        })
 

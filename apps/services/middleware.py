@@ -8,6 +8,9 @@ from django.db import connection, reset_queries
 from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
 
+from apps.services.models import Service, UserToolRestriction
+from apps.users.authentication import JITMongoJWTAuthentication
+
 logger = logging.getLogger('apps.services.requests')
 
 # Paths that should be rate-limited (POST only) and their limits (requests, seconds)
@@ -184,3 +187,77 @@ class ProLevelLoggingMiddleware(MiddlewareMixin):
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+
+def _resolve_service_for_path(request_path):
+    """Match an API request path against the Service record it belongs to.
+
+    Service.path is the *frontend* route, e.g. /services/qr-generator, while
+    the API path is /api/services/qr-generator/... — strip the /api prefix
+    and try a direct match, then fall back to matching the URL's last path
+    segment against Service.path (tool slugs vary slightly between the two,
+    e.g. /api/services/pdf-to-doc/ vs /services/pdf-to-doc-converter).
+    """
+    path = request_path.rstrip('/')
+    if path.startswith('/api'):
+        path = path[4:]
+
+    service = Service.objects.filter(path=path, is_active=True).first()
+    if service is not None:
+        return service
+
+    segments = [s for s in path.split('/') if s]
+    if segments:
+        service = Service.objects.filter(path__icontains=segments[-1], is_active=True).first()
+    return service
+
+
+class ToolAccessMiddleware(MiddlewareMixin):
+    """Enforces Service.requires_login and admin-imposed UserToolRestriction bans.
+
+    This runs centrally rather than as a per-view DRF permission because
+    almost every tool view sets its own explicit `permission_classes`
+    (usually AllowAny), which fully replaces rather than merges with any
+    shared permission class — a prior attempt at this
+    (apps.services.permissions.ToolAccessPermission) was correct in isolation
+    but was never actually attached to a single view, so it did nothing.
+    Also, JWT auth normally only resolves inside DRF's view dispatch, not in
+    Django middleware, so this authenticates the token itself directly
+    instead of relying on request.user (which is session-auth-only here).
+    """
+
+    ADMIN_PREFIX = '/api/services/admin/'
+
+    def process_request(self, request):
+        if not request.path.startswith('/api/services/') or request.path.startswith(self.ADMIN_PREFIX):
+            return None
+
+        service = _resolve_service_for_path(request.path)
+        if service is None:
+            return None
+
+        user = None
+        try:
+            auth_result = JITMongoJWTAuthentication().authenticate(request)
+            if auth_result:
+                user, _ = auth_result
+        except Exception:
+            user = None
+
+        if user is not None and getattr(user, 'is_staff', False):
+            return None
+
+        if service.requires_login and not (user is not None and user.is_authenticated):
+            return JsonResponse(
+                {'detail': 'This tool requires you to be logged in. Please sign in to continue.'},
+                status=401,
+            )
+
+        if user is not None and user.is_authenticated:
+            if UserToolRestriction.objects.filter(user=user, service=service).exists():
+                return JsonResponse(
+                    {'detail': 'Access to this tool has been restricted for your account.'},
+                    status=403,
+                )
+
+        return None
