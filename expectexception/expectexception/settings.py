@@ -407,13 +407,13 @@ FILE_UPLOAD_TEMP_DIR = '/tmp/django_uploads'
 
 # VAPID keys for web push notifications
 # Generate with: python generate_vapid.py
-# VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', 'BGcxbIdFOOx06gl9Nt_D0IMsNM1pfe4_nCx2_bB9rSi-fTabOnGvNY1To4WzL6laMTqYcl7ALDQRrbnDoeCBrZk')
-# VAPID_PRIVATE_KEY_PEM = os.getenv('VAPID_PRIVATE_KEY_PEM', '''-----BEGIN PRIVATE KEY-----
-# MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgzMlUEwcRRAhPj6UO
-# zlziQq7uXAKEeLyinMl8p1RHPPWhRANCAARnMWyHRTjsdOoJfTbfw9CDLDTNaX3u
-# P5wsdv2wfa0ovn02mzpxrzWNU6OFsy+pWjE6mHJewCw0Ea25w6Hgga2Z
-# -----END PRIVATE KEY-----''')
-# VAPID_EMAIL = os.getenv('VAPID_EMAIL', 'admin@expectexception.com')
+VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', 'BGcxbIdFOOx06gl9Nt_D0IMsNM1pfe4_nCx2_bB9rSi-fTabOnGvNY1To4WzL6laMTqYcl7ALDQRrbnDoeCBrZk')
+VAPID_PRIVATE_KEY_PEM = os.getenv('VAPID_PRIVATE_KEY_PEM', '''-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgzMlUEwcRRAhPj6UO
+zlziQq7uXAKEeLyinMl8p1RHPPWhRANCAARnMWyHRTjsdOoJfTbfw9CDLDTNaX3u
+P5wsdv2wfa0ovn02mzpxrzWNU6OFsy+pWjE6mHJewCw0Ea25w6Hgga2Z
+-----END PRIVATE KEY-----''')
+VAPID_EMAIL = os.getenv('VAPID_EMAIL', 'admin@expectexception.com')
 
 # =============================================================================
 # OCR (Optical Character Recognition) Settings
