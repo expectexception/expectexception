@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('blog', '0003_comment_parent'),
         ('users', '0004_add_subscription'),
-        ('profiles', '0001_initial'),
+        ('profiles', '0002_profile_reputation_badges'),
     ]
 
     operations = [
