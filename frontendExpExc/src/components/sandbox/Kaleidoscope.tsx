@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Box, Button, Chip, Typography } from '@mui/material';
 import { AutoAwesome, Delete } from '@mui/icons-material';
 import Seo from '../seo/Seo';
 import GamePlayShell from './shared/GamePlayShell';
@@ -10,7 +10,6 @@ const SYMMETRY_OPTIONS = [4, 6, 8, 12];
  * with N-fold radial symmetry, so a single freehand gesture becomes a
  * kaleidoscope pattern. Pure canvas + pointer events, no backend. */
 const Kaleidoscope: React.FC = () => {
-    const theme = useTheme();
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const drawingRef = useRef(false);

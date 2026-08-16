@@ -17,9 +17,6 @@ import {
   Tooltip,
   alpha,
   useTheme,
-  Slider,
-  Switch,
-  FormControlLabel,
 } from '@mui/material';
 import {
   Search,
@@ -34,7 +31,7 @@ import {
   History,
 } from '@mui/icons-material';
 import { getServiceSvgIcon } from '../components/layout/AnimatedSvgs';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../components/seo/Seo';
 import apiClient from '../api/config';
@@ -86,7 +83,6 @@ const ServicesPage: React.FC = () => {
   const { toggle: toggleBookmark, isBookmarked } = useToolBookmarks();
   const { history: toolHistory, addToHistory } = useToolHistory();
   const [showBookmarked, setShowBookmarked] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [services, setServices] = useState<any[]>(() => {
@@ -94,53 +90,6 @@ const ServicesPage: React.FC = () => {
   });
   const [toolAccess, setToolAccess] = useState<Record<string, boolean>>({});
   const [stats, setStats] = useState(staticStats);
-
-  // --- Cost Estimator State ---
-  const [pages, setPages] = useState(3);
-  const [complexity, setComplexity] = useState('standard');
-  const [includeAi, setIncludeAi] = useState(false);
-  const [timeline, setTimeline] = useState('standard');
-  const [estimatedCost, setEstimatedCost] = useState(0);
-  const [estimatedDays, setEstimatedDays] = useState(0);
-
-  useEffect(() => {
-    let basePrice = 500;
-    let baseDays = 5;
-
-    // Pages multiplier
-    basePrice += pages * 150;
-    baseDays += pages * 1.5;
-
-    // Complexity
-    if (complexity === 'simple') {
-      basePrice += 0;
-      baseDays += 0;
-    } else if (complexity === 'standard') {
-      basePrice += 400;
-      baseDays += 4;
-    } else if (complexity === 'advanced') {
-      basePrice += 1200;
-      baseDays += 10;
-    }
-
-    // AI Feature
-    if (includeAi) {
-      basePrice += 800;
-      baseDays += 5;
-    }
-
-    // Timeline factor
-    if (timeline === 'relaxed') {
-      basePrice *= 0.9;
-      baseDays *= 1.3;
-    } else if (timeline === 'rush') {
-      basePrice *= 1.35;
-      baseDays *= 0.6;
-    }
-
-    setEstimatedCost(Math.round(basePrice));
-    setEstimatedDays(Math.round(baseDays));
-  }, [pages, complexity, includeAi, timeline]);
 
   useEffect(() => {
     const fetchServicesAndStats = async () => {

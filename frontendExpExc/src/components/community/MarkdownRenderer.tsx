@@ -1,16 +1,11 @@
 import React from 'react';
-import { Box, Typography, useTheme, alpha } from '@mui/material';
+import { Box, useTheme, alpha } from '@mui/material';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface Props {
     content: string;
 }
-
-const CODE_BLOCK_RE = /```(\w+)?\n([\s\S]*?)```/g;
-const INLINE_CODE_RE = /`([^`]+)`/g;
-const BOLD_RE = /\*\*(.+?)\*\*/g;
-const ITALIC_RE = /\*(.+?)\*/g;
 
 type Segment =
     | { type: 'text'; value: string }

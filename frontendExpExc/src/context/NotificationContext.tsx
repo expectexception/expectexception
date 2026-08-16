@@ -38,7 +38,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { token } = useAuth();
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications] = useState<Notification[]>([]);
     const [inAppNotifications, setInAppNotifications] = useState<InAppNotification[]>([]);
 
     // Toast State

@@ -18,7 +18,6 @@ declare module '@mui/material/styles' {
 }
 
 export const getTheme = (primaryColor: string = '#3dfc55', _colorMode: 'dark' | 'light' = 'dark'): Theme => {
-  const isDark = true;
   const bg = '#050505';
   const paper = '#0d0e12';
   const textPrimary = '#ffffff';

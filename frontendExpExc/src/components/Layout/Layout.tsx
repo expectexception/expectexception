@@ -24,34 +24,28 @@ import {
 import { alpha, useTheme } from '@mui/material/styles';
 import BrandLogo from '../layout/BrandLogo';
 import {
-    Menu as MenuIcon,
-    Home,
-    Build,
-    Article,
-    Notifications,
-    Search,
-    Person,
-    Close,
-    Dashboard,
-    Login,
-    Logout,
-    AppRegistration,
-    AdminPanelSettings,
-    ChatBubbleOutline,
-    SportsEsports,
-    Forum,
-    DarkMode,
-    LightMode,
-    SettingsBrightness,
-    Visibility,
-    Keyboard,
-    Extension,
+  Menu as MenuIcon,
+  Home,
+  Build,
+  Article,
+  Notifications,
+  Search,
+  Person,
+  Close,
+  Login,
+  Logout,
+  AppRegistration,
+  AdminPanelSettings,
+  ChatBubbleOutline,
+  SportsEsports,
+  Forum,
+  Visibility,
+  Keyboard,
+  Extension,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
-import { useCustomTheme } from '../../context/CustomThemeContext';
-import ScrollToTop from '../layout/ScrollToTop';
 import SearchDialog from '../layout/SearchDialog';
 import CommandPalette from '../layout/CommandPalette';
 import ChatbotWidget from '../layout/ChatbotWidget';
@@ -65,13 +59,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [chatbotOpen, setChatbotOpen] = useState(false);
     const theme = useTheme();
     const location = useLocation();
-    const { colorMode, setColorMode } = useCustomTheme();
-
-    const cycleModeIcon = colorMode === 'dark' ? <DarkMode sx={{ fontSize: 20 }} />
-        : colorMode === 'light' ? <LightMode sx={{ fontSize: 20 }} />
-        : <SettingsBrightness sx={{ fontSize: 20 }} />;
-    const nextMode = colorMode === 'dark' ? 'light' : colorMode === 'light' ? 'system' : 'dark';
-    const modeLabel = colorMode === 'dark' ? 'Switch to Light Mode' : colorMode === 'light' ? 'Switch to System Mode' : 'Switch to Dark Mode';
 
     // Scroll detection for navbar effects
     React.useEffect(() => {
@@ -96,7 +83,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     };
 
     // Notification Menu
-    const { notifications, inAppNotifications, unreadCount, markAllRead, markOneRead } = useNotifications();
+    const { inAppNotifications, unreadCount, markAllRead, markOneRead } = useNotifications();
     const [notificationAnchorEl, setNotificationAnchorEl] = useState<null | HTMLElement>(null);
 
     const handleNotificationClick = (event: React.MouseEvent<HTMLElement>) => {

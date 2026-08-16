@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
     Dialog, DialogTitle, DialogContent, Typography, Box, Grid, Chip, IconButton, alpha, useTheme,
 } from '@mui/material';
-import { Close, Keyboard, LocalOffer, Search, Terminal, Bookmark, Extension } from '@mui/icons-material';
+import { Close, Keyboard, Search, Bookmark, Extension } from '@mui/icons-material';
 
 interface Props {
     open: boolean;

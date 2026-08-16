@@ -1,6 +1,17 @@
-import React, { useState, useCallback } from 'react';
-import { Box, Card, CardContent, Typography, Stack, Grid, Tooltip, Chip, Button, useTheme, alpha, Paper, Slider } from '@mui/material';
-import { Palette, ContentCopy, Check } from '@mui/icons-material';
+import React, { useState } from 'react';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Tooltip,
+  useTheme,
+  alpha,
+  Paper,
+  Slider,
+} from '@mui/material';
+import { Palette, Check } from '@mui/icons-material';
 import ServicePageShell from './ServicePageShell';
 
 const hexToHsl = (hex: string): [number, number, number] => {

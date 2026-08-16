@@ -19,14 +19,6 @@ interface CustomThemeContextType {
 
 const CustomThemeContext = createContext<CustomThemeContextType | undefined>(undefined);
 
-function getSystemMode(): 'dark' | 'light' {
-  try {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  } catch {
-    return 'dark';
-  }
-}
-
 export const CustomThemeContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [primaryColor, setPrimaryColorState] = useState<string>(() => {
     try { return localStorage.getItem(STORAGE_KEY) || DEFAULT_COLOR; }

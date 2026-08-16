@@ -6,7 +6,6 @@ import {
     Typography,
     Stack,
     Alert,
-    useTheme,
     Paper,
     alpha,
     Card,
@@ -26,7 +25,6 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import Seo from '../seo/Seo';
-import ServicePageShell from './ServicePageShell';
 import ToolInfoSection from './ToolInfoSection';
 
 // @ts-ignore
@@ -38,9 +36,6 @@ interface SpeedPoint {
 }
 
 const SpeedTest: React.FC = () => {
-    const theme = useTheme();
-    const downloadColor = theme.palette.secondary.main;
-    const uploadColor = theme.palette.primary.main;
     const [running, setRunning] = useState(false);
     const [phase, setPhase] = useState<'idle' | 'download' | 'upload' | 'complete'>('idle');
     const [downloadSpeed, setDownloadSpeed] = useState(0);
@@ -59,7 +54,6 @@ const SpeedTest: React.FC = () => {
     const MAX_SPEED = 1000;
 
     // Derived active values
-    const activeSpeed = phase === 'upload' ? uploadSpeed : downloadSpeed;
     const activeColor = phase === 'upload' ? '#bd00ff' : '#00eeff';
     const activeSpeedSmoothed = phase === 'upload' ? smoothedUpload : smoothedDownload;
     const progress = Math.min(activeSpeedSmoothed / MAX_SPEED * 100, 100);

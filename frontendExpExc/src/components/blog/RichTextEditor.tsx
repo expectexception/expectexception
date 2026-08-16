@@ -21,11 +21,22 @@ import {
     Select, MenuItem, FormControl, InputLabel, Menu
 } from '@mui/material';
 import {
-    FormatBold, FormatItalic, FormatUnderlined, FormatListBulleted, FormatListNumbered,
-    Image as ImageIcon, Title, FormatQuote, Code, Highlight as HighlightIcon,
-    FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify,
-    Link as LinkIcon, TableChart, CheckBox, FormatColorText, FontDownload,
-    AddPhotoAlternate, Undo, Redo, Fullscreen, FullscreenExit
+  FormatBold,
+  FormatItalic,
+  FormatUnderlined,
+  FormatListBulleted,
+  FormatListNumbered,
+  Title,
+  FormatQuote,
+  Code,
+  Link as LinkIcon,
+  TableChart,
+  FormatColorText,
+  AddPhotoAlternate,
+  Undo,
+  Redo,
+  Fullscreen,
+  FullscreenExit,
 } from '@mui/icons-material';
 import apiClient, { API_BASE_URL } from '../../api/config';
 import { endpoints } from '../../api/endpoints';

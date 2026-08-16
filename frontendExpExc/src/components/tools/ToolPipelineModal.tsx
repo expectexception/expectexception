@@ -3,7 +3,7 @@ import {
     Dialog, DialogTitle, DialogContent, Typography, Box, Button, Stack, Chip,
     IconButton, MenuItem, Select, FormControl, InputLabel, CircularProgress, alpha, useTheme, Alert
 } from '@mui/material';
-import { Close, Extension, ArrowForward, PlayArrow, CheckCircle, SwapHoriz } from '@mui/icons-material';
+import { Close, Extension, ArrowForward, PlayArrow, SwapHoriz } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import toolsConfig from '../../data/tools.json';
 
@@ -67,7 +67,7 @@ const ToolPipelineModal: React.FC<Props> = ({ open, onClose }) => {
     ]);
 
     const [isRunning, setIsRunning] = useState(false);
-    const [currentStepIndex, setCurrentStepIndex] = useState(0);
+    const [, setCurrentStepIndex] = useState(0);
 
     const handleSelectPreset = (preset: typeof PRESET_PIPELINES[0]) => {
         setSelectedSteps(preset.steps);

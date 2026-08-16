@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { Box, Card, CardContent, TextField, Typography, Chip, Alert, Stack, Paper, useTheme, alpha, Divider } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Typography,
+  Chip,
+  Alert,
+  Stack,
+  Paper,
+  useTheme,
+  alpha,
+} from '@mui/material';
 import { VpnKey, CheckCircle, Warning } from '@mui/icons-material';
 import ServicePageShell from './ServicePageShell';
 
@@ -25,7 +37,6 @@ const decodeJwt = (token: string): DecodedJwt | null => {
 };
 
 const JsonDisplay: React.FC<{ data: any; label: string; color: string }> = ({ data, label, color }) => {
-    const theme = useTheme();
     return (
         <Paper sx={{ p: 2, bgcolor: alpha(color, 0.04), border: `1px solid ${alpha(color, 0.15)}`, borderRadius: 2 }}>
             <Typography variant="caption" fontWeight="700" color={color} sx={{ textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 1 }}>{label}</Typography>

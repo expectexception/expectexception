@@ -1,14 +1,34 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-    Box, Container, Typography, Grid, Card, CardContent, Button,
-    TextField, InputAdornment, Chip, Stack, Avatar, Divider,
-    Tab, Tabs, Badge, Skeleton, Paper, IconButton, Tooltip,
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  TextField,
+  InputAdornment,
+  Chip,
+  Stack,
+  Divider,
+  Skeleton,
+  Paper,
 } from '@mui/material';
 import Seo from '../components/seo/Seo';
 import {
-    Search, Add, Forum, ThumbUp, ChatBubble, Visibility,
-    CheckCircle, PushPin, Lock, TrendingUp, AccessTime,
-    QuestionAnswer, LocalOffer, EmojiEvents,
+  Search,
+  Add,
+  Forum,
+  ThumbUp,
+  Visibility,
+  CheckCircle,
+  PushPin,
+  Lock,
+  TrendingUp,
+  AccessTime,
+  QuestionAnswer,
+  EmojiEvents,
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
