@@ -9,6 +9,10 @@ export interface User {
     username: string;
     first_name?: string;
     last_name?: string;
+    /** Safe-to-render public name — never a raw email. Use this for any
+     * visible byline (blog authorship, etc); `.email` is for account
+     * management contexts only. */
+    display_name?: string;
     is_staff: boolean;
     profile_image?: string;
     avatar_url?: string;

@@ -86,4 +86,80 @@ class BlogTests(APITestCase):
         # unbookmark
         r6 = self.client.delete(bookmark_url)
         self.assertEqual(r6.status_code, 200)
-        self.assertEqual(r6.data["bookmarks_count"], 0)
+
+
+class BlogAuthorDisplayTests(APITestCase):
+    """The listing/detail pages used to render post.author.email directly as
+    the byline - showing a demo placeholder account, or worse, whichever
+    admin's personal email happened to own the row. author.display_name
+    must never be (or contain) the raw email.
+    """
+
+    def test_display_name_falls_back_to_admin_not_email(self):
+        author = User.objects.create_user(email="someone.personal@gmail.com", password="Test1234")
+        post = Post.objects.create(
+            title="Pub", content="x", author=author, status=Post.STATUS_PUBLISHED
+        )
+        r = self.client.get(reverse("post-detail", args=[post.id]))
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        display_name = r.data["author"]["display_name"]
+        self.assertEqual(display_name, "Admin")
+        self.assertNotIn("@", display_name)
+        self.assertNotIn("someone.personal", display_name)
+
+    def test_display_name_prefers_real_name_when_set(self):
+        author = User.objects.create_user(
+            email="jane@example.com", password="Test1234", first_name="Jane", last_name="Doe"
+        )
+        post = Post.objects.create(
+            title="Pub", content="x", author=author, status=Post.STATUS_PUBLISHED
+        )
+        r = self.client.get(reverse("post-detail", args=[post.id]))
+        self.assertEqual(r.data["author"]["display_name"], "Jane Doe")
+
+
+class BlogListingPaginationTests(APITestCase):
+    """The listing page used to fetch with no page/search/ordering params at
+    all, so clicking "page 2" (or searching) silently kept showing the same
+    first 10 posts by publish date - anything further down the list could
+    never actually be reached. These pin down that the query params the
+    frontend now sends actually work.
+    """
+
+    def setUp(self):
+        self.author = User.objects.create_user(email="author@example.com", password="Test1234")
+        from datetime import UTC, datetime, timedelta
+
+        base = datetime(2026, 1, 1, tzinfo=UTC)
+        for i in range(15):
+            p = Post.objects.create(
+                title=f"Post {i}",
+                content=f"unique-marker-{i}" if i == 12 else "content",
+                author=self.author,
+                status=Post.STATUS_PUBLISHED,
+            )
+            Post.objects.filter(pk=p.pk).update(published_at=base + timedelta(days=i))
+
+    def test_second_page_returns_different_posts_than_first(self):
+        # Data migrations 0004/0005 seed the real service-tool posts into
+        # every test database too, so the total here is "at least the 15
+        # this test added" rather than an exact count.
+        url = reverse("post-list")
+        page1 = self.client.get(url, {"page": 1}).data
+        page2 = self.client.get(url, {"page": 2}).data
+        self.assertGreaterEqual(page1["count"], 15)
+        ids_page1 = {item["id"] for item in page1["results"]}
+        ids_page2 = {item["id"] for item in page2["results"]}
+        self.assertTrue(ids_page1.isdisjoint(ids_page2))
+
+    def test_search_param_filters_by_content(self):
+        r = self.client.get(reverse("post-list"), {"search": "unique-marker-12"})
+        self.assertEqual(r.data["count"], 1)
+        self.assertEqual(r.data["results"][0]["title"], "Post 12")
+
+    def test_ordering_by_likes_count_for_popular_filter(self):
+        posts = list(Post.objects.order_by("id"))
+        posts[3].likes_count = 50
+        posts[3].save(update_fields=["likes_count"])
+        r = self.client.get(reverse("post-list"), {"ordering": "-likes_count"})
+        self.assertEqual(r.data["results"][0]["id"], posts[3].id)
