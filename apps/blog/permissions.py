@@ -5,9 +5,9 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request for published posts
         if request.method in permissions.SAFE_METHODS:
-            if hasattr(obj, 'status'):
+            if hasattr(obj, "status"):
                 # If it's a Post, only allow reading published posts to anonymous users
-                if obj.status == 'published':
+                if obj.status == "published":
                     return True
                 return request.user and request.user.is_authenticated
             return True

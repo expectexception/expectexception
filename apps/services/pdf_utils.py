@@ -20,14 +20,14 @@ Two invariants worth knowing before editing:
 """
 
 import io
+import logging
 import os
 import shutil
 import subprocess
 import tempfile
-import logging
 import uuid
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any
 
 from django.conf import settings
 
@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 class PDFConversionError(Exception):
     """Raised when PDF conversion fails."""
+
     pass
 
 
@@ -43,13 +44,14 @@ class PDFConversionError(Exception):
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def get_soffice_path() -> str:
     """Return path to LibreOffice soffice binary."""
-    if hasattr(settings, 'SOFFICE_CMD') and settings.SOFFICE_CMD:
+    if hasattr(settings, "SOFFICE_CMD") and settings.SOFFICE_CMD:
         if os.path.exists(settings.SOFFICE_CMD):
             return settings.SOFFICE_CMD
 
-    for path in ['/usr/bin/soffice', '/usr/bin/libreoffice']:
+    for path in ["/usr/bin/soffice", "/usr/bin/libreoffice"]:
         if os.path.exists(path):
             return path
 
@@ -58,16 +60,16 @@ def get_soffice_path() -> str:
     )
 
 
-def validate_pdf_file(file_path: str, max_size: Optional[int] = None) -> None:
+def validate_pdf_file(file_path: str, max_size: int | None = None) -> None:
     """Validate PDF file exists, is a PDF, and is within size limits."""
     if not os.path.exists(file_path):
         raise PDFConversionError(f"Input file not found: {file_path}")
 
-    if not file_path.lower().endswith('.pdf'):
+    if not file_path.lower().endswith(".pdf"):
         raise PDFConversionError("Input file must have a .pdf extension")
 
     if max_size is None:
-        max_size = getattr(settings, 'PDF_MAX_FILE_SIZE', 50 * 1024 * 1024)
+        max_size = getattr(settings, "PDF_MAX_FILE_SIZE", 50 * 1024 * 1024)
 
     file_size = os.path.getsize(file_path)
     if file_size > max_size:
@@ -80,14 +82,14 @@ def validate_pdf_file(file_path: str, max_size: Optional[int] = None) -> None:
 def _soffice_env(home_dir: str) -> dict:
     """Build a clean environment for soffice with an isolated user profile."""
     env = {
-        'PATH': '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+        "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
         # Each call gets its own HOME so LibreOffice profiles never clash
-        'HOME': home_dir,
+        "HOME": home_dir,
         # Suppress D-Bus / display requirements
-        'DISPLAY': '',
-        'DBUS_SESSION_BUS_ADDRESS': 'disabled:',
+        "DISPLAY": "",
+        "DBUS_SESSION_BUS_ADDRESS": "disabled:",
     }
-    for key in ('LANG', 'LC_ALL', 'LC_CTYPE', 'TZ'):
+    for key in ("LANG", "LC_ALL", "LC_CTYPE", "TZ"):
         if key in os.environ:
             env[key] = os.environ[key]
     return env
@@ -99,28 +101,28 @@ def _soffice_env(home_dir: str) -> dict:
 
 # Correct LibreOffice export filter names
 _SOFFICE_FILTERS = {
-    'docx': 'MS Word 2007 XML',
-    'doc':  'MS Word 97',
-    'odt':  'writer8',
-    'rtf':  'Rich Text Format',
-    'txt':  'Text (encoded)',
-    'pdf':  'writer_pdf_Export',
+    "docx": "MS Word 2007 XML",
+    "doc": "MS Word 97",
+    "odt": "writer8",
+    "rtf": "Rich Text Format",
+    "txt": "Text (encoded)",
+    "pdf": "writer_pdf_Export",
 }
 
 _SOFFICE_EXTENSIONS = {
-    'docx': '.docx',
-    'doc':  '.doc',
-    'odt':  '.odt',
-    'rtf':  '.rtf',
-    'txt':  '.txt',
-    'pdf':  '.pdf',
+    "docx": ".docx",
+    "doc": ".doc",
+    "odt": ".odt",
+    "rtf": ".rtf",
+    "txt": ".txt",
+    "pdf": ".pdf",
 }
 
 
 def convert_pdf_with_soffice(
     input_pdf: str,
     output_format: str,
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     timeout: int = 180,
 ) -> str:
     """
@@ -136,8 +138,7 @@ def convert_pdf_with_soffice(
     output_format = output_format.lower()
     if output_format not in _SOFFICE_FILTERS:
         raise PDFConversionError(
-            f"Unsupported format '{output_format}'. "
-            f"Supported: {', '.join(_SOFFICE_FILTERS)}"
+            f"Unsupported format '{output_format}'. " f"Supported: {', '.join(_SOFFICE_FILTERS)}"
         )
 
     extension = _SOFFICE_EXTENSIONS[output_format]
@@ -145,7 +146,7 @@ def convert_pdf_with_soffice(
     soffice_path = get_soffice_path()
 
     # Create isolated temp dirs for this conversion
-    run_dir = tempfile.mkdtemp(prefix='soffice_run_')
+    run_dir = tempfile.mkdtemp(prefix="soffice_run_")
     try:
         # soffice writes output as <stem><ext> in --outdir
         out_dir = run_dir
@@ -154,11 +155,13 @@ def convert_pdf_with_soffice(
 
         cmd = [
             soffice_path,
-            '--headless',
-            '--norestore',
-            '--nofirststartwizard',
-            '--convert-to', f"{output_format}:{filter_name}",
-            '--outdir', out_dir,
+            "--headless",
+            "--norestore",
+            "--nofirststartwizard",
+            "--convert-to",
+            f"{output_format}:{filter_name}",
+            "--outdir",
+            out_dir,
             input_pdf,
         ]
 
@@ -176,7 +179,7 @@ def convert_pdf_with_soffice(
         # and still returns 0), so the return code alone proves nothing — the
         # real test is whether an output file appeared.
         if result.returncode != 0:
-            msg = (result.stderr or result.stdout or 'no output').strip()
+            msg = (result.stderr or result.stdout or "no output").strip()
             raise PDFConversionError(f"LibreOffice failed (rc={result.returncode}): {msg}")
 
         if not os.path.exists(expected_output):
@@ -191,7 +194,7 @@ def convert_pdf_with_soffice(
 
         # Move to the caller-specified output path (or MEDIA_ROOT/converted)
         if output_path is None:
-            converted_dir = os.path.join(settings.MEDIA_ROOT, 'converted')
+            converted_dir = os.path.join(settings.MEDIA_ROOT, "converted")
             os.makedirs(converted_dir, exist_ok=True)
             output_path = os.path.join(converted_dir, Path(expected_output).name)
 
@@ -202,9 +205,7 @@ def convert_pdf_with_soffice(
         return output_path
 
     except subprocess.TimeoutExpired:
-        raise PDFConversionError(
-            f"Conversion timed out after {timeout}s. Try a smaller file."
-        )
+        raise PDFConversionError(f"Conversion timed out after {timeout}s. Try a smaller file.")
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)
 
@@ -224,22 +225,22 @@ def convert_pdf_with_soffice(
 # too (1290 KB -> 101 KB in that test). Photographic documents compress worse
 # losslessly, so it stays configurable.
 _PDF_EXPORT_OPTIONS = {
-    'UseLosslessCompression': os.getenv('PDF_EXPORT_LOSSLESS', 'True') == 'True',
-    'ReduceImageResolution': False,
-    'EmbedStandardFonts': True,
-    'UseTaggedPDF': True,
-    'ExportBookmarks': True,
-    'ExportNotes': False,
+    "UseLosslessCompression": os.getenv("PDF_EXPORT_LOSSLESS", "True") == "True",
+    "ReduceImageResolution": False,
+    "EmbedStandardFonts": True,
+    "UseTaggedPDF": True,
+    "ExportBookmarks": True,
+    "ExportNotes": False,
 }
 
 # Input filters that LibreOffice guesses badly when left to itself.
 _SOFFICE_INFILTERS = {
     # Without this the encoding is sniffed from the bytes and non-ASCII text
     # comes out as mojibake.
-    '.txt': 'Text (encoded):UTF8',
+    ".txt": "Text (encoded):UTF8",
 }
 
-_DOC_TO_PDF_EXTENSIONS = ('.doc', '.docx', '.odt', '.rtf', '.txt')
+_DOC_TO_PDF_EXTENSIONS = (".doc", ".docx", ".odt", ".rtf", ".txt")
 
 
 def _pdf_export_filter() -> str:
@@ -247,7 +248,7 @@ def _pdf_export_filter() -> str:
     import json
 
     options = {
-        key: {'type': 'boolean', 'value': str(value).lower()}
+        key: {"type": "boolean", "value": str(value).lower()}
         for key, value in _PDF_EXPORT_OPTIONS.items()
     }
     return f"pdf:writer_pdf_Export:{json.dumps(options)}"
@@ -275,13 +276,13 @@ def convert_document_to_pdf(
         )
 
     soffice_path = get_soffice_path()
-    run_dir = tempfile.mkdtemp(prefix='doc2pdf_run_')
+    run_dir = tempfile.mkdtemp(prefix="doc2pdf_run_")
     try:
-        cmd = [soffice_path, '--headless', '--norestore', '--nofirststartwizard']
+        cmd = [soffice_path, "--headless", "--norestore", "--nofirststartwizard"]
         infilter = _SOFFICE_INFILTERS.get(extension)
         if infilter:
-            cmd.append(f'--infilter={infilter}')
-        cmd += ['--convert-to', _pdf_export_filter(), '--outdir', run_dir, input_doc]
+            cmd.append(f"--infilter={infilter}")
+        cmd += ["--convert-to", _pdf_export_filter(), "--outdir", run_dir, input_doc]
 
         logger.info("soffice: %s → pdf", input_doc)
         result = subprocess.run(
@@ -290,13 +291,13 @@ def convert_document_to_pdf(
 
         produced = os.path.join(run_dir, f"{Path(input_doc).stem}.pdf")
         if not os.path.exists(produced):
-            candidates = list(Path(run_dir).glob('*.pdf'))
+            candidates = list(Path(run_dir).glob("*.pdf"))
             if not candidates:
-                msg = (result.stderr or result.stdout or 'no output').strip()
+                msg = (result.stderr or result.stdout or "no output").strip()
                 raise PDFConversionError(f"LibreOffice produced no PDF: {msg}")
             produced = str(candidates[0])
 
-        os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+        os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
         shutil.move(produced, output_path)
         logger.info("doc→pdf conversion done: %s", output_path)
         return output_path
@@ -311,12 +312,13 @@ def convert_document_to_pdf(
 # pdf2docx conversion
 # ---------------------------------------------------------------------------
 
+
 def convert_pdf_with_pdf2docx(
     input_pdf: str,
     output_docx: str,
-    password: Optional[str] = None,
+    password: str | None = None,
     start_page: int = 0,
-    end_page: Optional[int] = None,
+    end_page: int | None = None,
 ) -> str:
     """
     Convert PDF → DOCX using pdf2docx (best layout/table fidelity).
@@ -333,9 +335,7 @@ def convert_pdf_with_pdf2docx(
     try:
         from pdf2docx import Converter
     except ImportError:
-        raise PDFConversionError(
-            "pdf2docx not installed. Run: pip install pdf2docx"
-        )
+        raise PDFConversionError("pdf2docx not installed. Run: pip install pdf2docx")
 
     logger.info(f"pdf2docx: {input_pdf} → {output_docx}")
     cv = None
@@ -372,13 +372,13 @@ def _dominant_font_size(page) -> float:
     from collections import Counter
 
     sizes = Counter()
-    for block in page.get_text('dict')['blocks']:
-        if block.get('type') != 0:
+    for block in page.get_text("dict")["blocks"]:
+        if block.get("type") != 0:
             continue
-        for line in block['lines']:
-            for span in line['spans']:
-                if span['text'].strip():
-                    sizes[round(span['size'], 1)] += len(span['text'])
+        for line in block["lines"]:
+            for span in line["spans"]:
+                if span["text"].strip():
+                    sizes[round(span["size"], 1)] += len(span["text"])
     return sizes.most_common(1)[0][0] if sizes else 11.0
 
 
@@ -400,7 +400,7 @@ def convert_pdf_to_docx_native(input_pdf: str, output_docx: str) -> str:
     from docx.shared import Pt
 
     validate_pdf_file(input_pdf)
-    os.makedirs(os.path.dirname(output_docx) or '.', exist_ok=True)
+    os.makedirs(os.path.dirname(output_docx) or ".", exist_ok=True)
 
     doc = fitz.open(input_pdf)
     out = Document()
@@ -423,39 +423,39 @@ def convert_pdf_to_docx_native(input_pdf: str, output_docx: str) -> str:
                         continue
                     table_rects.append(fitz.Rect(table.bbox))
                     docx_table = out.add_table(rows=len(rows), cols=max(len(r) for r in rows))
-                    docx_table.style = 'Table Grid'
+                    docx_table.style = "Table Grid"
                     for r, row in enumerate(rows):
                         for c, cell in enumerate(row):
                             if c < len(docx_table.columns):
-                                docx_table.cell(r, c).text = (cell or '').strip()
+                                docx_table.cell(r, c).text = (cell or "").strip()
             except Exception as e:
                 logger.warning("Table extraction failed on page %d: %s", page_index, e)
 
-            for block in page.get_text('dict')['blocks']:
-                if block.get('type') != 0:
+            for block in page.get_text("dict")["blocks"]:
+                if block.get("type") != 0:
                     continue
-                block_rect = fitz.Rect(block['bbox'])
+                block_rect = fitz.Rect(block["bbox"])
                 if any(block_rect.intersects(tr) for tr in table_rects):
                     continue
 
-                for line in block['lines']:
-                    spans = [s for s in line['spans'] if s['text'].strip()]
+                for line in block["lines"]:
+                    spans = [s for s in line["spans"] if s["text"].strip()]
                     if not spans:
                         continue
 
-                    largest = max(s['size'] for s in spans)
+                    largest = max(s["size"] for s in spans)
                     if largest >= body_size * 1.6:
-                        paragraph = out.add_heading('', level=1)
+                        paragraph = out.add_heading("", level=1)
                     elif largest >= body_size * 1.2:
-                        paragraph = out.add_heading('', level=2)
+                        paragraph = out.add_heading("", level=2)
                     else:
                         paragraph = out.add_paragraph()
 
                     for span in spans:
-                        run = paragraph.add_run(span['text'])
-                        run.bold = bool(span['flags'] & _FITZ_FLAG_BOLD)
-                        run.italic = bool(span['flags'] & _FITZ_FLAG_ITALIC)
-                        run.font.size = Pt(round(span['size'], 1))
+                        run = paragraph.add_run(span["text"])
+                        run.bold = bool(span["flags"] & _FITZ_FLAG_BOLD)
+                        run.italic = bool(span["flags"] & _FITZ_FLAG_ITALIC)
+                        run.font.size = Pt(round(span["size"], 1))
 
         out.save(output_docx)
     finally:
@@ -472,10 +472,11 @@ def convert_pdf_to_docx_native(input_pdf: str, output_docx: str) -> str:
 # OCR pipeline (pytesseract → reconstructed PDF → convert)
 # ---------------------------------------------------------------------------
 
+
 def perform_ocr_on_pdf(
     input_pdf: str,
     output_pdf: str,
-    language: str = 'eng',
+    language: str = "eng",
     dpi: int = 300,
     timeout: int = 300,
 ) -> str:
@@ -493,7 +494,7 @@ def perform_ocr_on_pdf(
     Returns: path to OCR'd PDF.
     """
     validate_pdf_file(input_pdf)
-    os.makedirs(os.path.dirname(output_pdf) or '.', exist_ok=True)
+    os.makedirs(os.path.dirname(output_pdf) or ".", exist_ok=True)
 
     try:
         import fitz
@@ -510,18 +511,18 @@ def perform_ocr_on_pdf(
     matrix = fitz.Matrix(zoom, zoom)
 
     try:
-        for index, page in enumerate(source):
+        for _index, page in enumerate(source):
             pixmap = page.get_pixmap(matrix=matrix)
-            with Image.open(io.BytesIO(pixmap.tobytes('png'))) as image:
+            with Image.open(io.BytesIO(pixmap.tobytes("png"))) as image:
                 pdf_bytes = pytesseract.image_to_pdf_or_hocr(
                     image,
                     lang=language,
-                    extension='pdf',
-                    config='--psm 3',  # Fully automatic page segmentation
+                    extension="pdf",
+                    config="--psm 3",  # Fully automatic page segmentation
                 )
             del pixmap
 
-            with fitz.open('pdf', pdf_bytes) as page_pdf:
+            with fitz.open("pdf", pdf_bytes) as page_pdf:
                 result.insert_pdf(page_pdf)
 
         if result.page_count == 0:
@@ -544,13 +545,14 @@ def perform_ocr_on_pdf(
 # High-level smart converter (used by the Celery task)
 # ---------------------------------------------------------------------------
 
+
 def smart_convert_pdf(
     input_pdf: str,
     output_format: str,
     output_path: str,
     ocr_enabled: bool = False,
-    ocr_lang: str = 'eng',
-) -> Dict[str, Any]:
+    ocr_lang: str = "eng",
+) -> dict[str, Any]:
     """
     Smart PDF conversion with multi-engine fallback strategy.
 
@@ -575,7 +577,7 @@ def smart_convert_pdf(
         # nothing at all when the suffix case differs (".DOCX"). When it matched
         # nothing the OCR result was written straight to output_path, so the
         # converter then read and wrote the same file.
-        ocr_output = str(Path(output_path).with_suffix('')) + '_ocr_tmp.pdf'
+        ocr_output = str(Path(output_path).with_suffix("")) + "_ocr_tmp.pdf"
         try:
             working_pdf = perform_ocr_on_pdf(input_pdf, ocr_output, language=ocr_lang)
             ocr_actually_used = True
@@ -587,21 +589,21 @@ def smart_convert_pdf(
     # Step 2: Convert to target format
     engine_used = None
 
-    if output_format.lower() == 'docx':
+    if output_format.lower() == "docx":
         # Try pdf2docx first (better layout preservation), then rebuild the
         # document natively. The old fallback here asked LibreOffice for a
         # Writer filter on a PDF, which it loads in Draw — that combination
         # cannot produce a file, so a pdf2docx failure used to fail the request.
         try:
             final_path = convert_pdf_with_pdf2docx(working_pdf, output_path)
-            engine_used = 'pdf2docx'
+            engine_used = "pdf2docx"
         except PDFConversionError as e:
             logger.warning(f"pdf2docx failed ({e}), rebuilding natively")
             final_path = convert_pdf_to_docx_native(working_pdf, output_path)
-            engine_used = 'native-fallback'
+            engine_used = "native-fallback"
     else:
         final_path = convert_pdf_with_soffice(working_pdf, output_format, output_path)
-        engine_used = 'soffice'
+        engine_used = "soffice"
 
     # Clean up OCR temp
     if ocr_actually_used and os.path.exists(working_pdf) and working_pdf != input_pdf:
@@ -613,12 +615,12 @@ def smart_convert_pdf(
     converted_size = os.path.getsize(final_path)
 
     return {
-        'file_path': final_path,
-        'format': output_format.upper(),
-        'original_size': original_size,
-        'converted_size': converted_size,
-        'ocr_used': ocr_actually_used,
-        'engine_used': engine_used,
+        "file_path": final_path,
+        "format": output_format.upper(),
+        "original_size": original_size,
+        "converted_size": converted_size,
+        "ocr_used": ocr_actually_used,
+        "engine_used": engine_used,
     }
 
 
@@ -626,34 +628,34 @@ def smart_convert_pdf(
 # Batch helper (unchanged API)
 # ---------------------------------------------------------------------------
 
+
 def batch_convert_pdf(
     input_pdf: str,
     output_formats: list,
-    output_dir: Optional[str] = None,
-) -> Dict[str, Dict[str, Any]]:
+    output_dir: str | None = None,
+) -> dict[str, dict[str, Any]]:
     """Convert PDF to multiple formats in one call."""
     validate_pdf_file(input_pdf)
 
     if output_dir is None:
-        output_dir = os.path.join(settings.MEDIA_ROOT, 'converted')
+        output_dir = os.path.join(settings.MEDIA_ROOT, "converted")
     os.makedirs(output_dir, exist_ok=True)
 
     results = {}
     for fmt in output_formats:
         try:
             output_path = os.path.join(
-                output_dir,
-                f"{Path(input_pdf).stem}_{uuid.uuid4().hex[:6]}.{fmt.lower()}"
+                output_dir, f"{Path(input_pdf).stem}_{uuid.uuid4().hex[:6]}.{fmt.lower()}"
             )
             info = smart_convert_pdf(input_pdf, fmt, output_path)
             results[fmt] = {
-                'status': 'success',
-                'path': info['file_path'],
-                'size': info['converted_size'],
-                'url': f"{settings.MEDIA_URL}converted/{os.path.basename(info['file_path'])}",
-                'engine': info['engine_used'],
+                "status": "success",
+                "path": info["file_path"],
+                "size": info["converted_size"],
+                "url": f"{settings.MEDIA_URL}converted/{os.path.basename(info['file_path'])}",
+                "engine": info["engine_used"],
             }
         except PDFConversionError as exc:
-            results[fmt] = {'status': 'failed', 'error': str(exc)}
+            results[fmt] = {"status": "failed", "error": str(exc)}
 
     return results

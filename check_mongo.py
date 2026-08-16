@@ -1,10 +1,11 @@
 import os
 import sys
+
 import django
 
 # Setup Django environment so settings and .env are loaded
-sys.path.append('/home/rjt/expexcV2/expectexception')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'expectexception.settings')
+sys.path.append("/home/rjt/expexcV2/expectexception")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "expectexception.settings")
 django.setup()
 
 from apps.services.mongodb import get_mongodb_client, get_mongodb_db
@@ -22,4 +23,6 @@ if client:
     else:
         print("ERROR: Database instance could not be retrieved.")
 else:
-    print("FAILED: Could not connect to MongoDB Atlas. Please check your credentials and IP access list.")
+    print(
+        "FAILED: Could not connect to MongoDB Atlas. Please check your credentials and IP access list."
+    )

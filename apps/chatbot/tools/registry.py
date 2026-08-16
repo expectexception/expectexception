@@ -1,9 +1,8 @@
 """Ordered tool registry. First match wins, so specific tools (qr, health,
 contact) come before the more generic blog_search/skills_services."""
-from typing import Optional, Tuple
 
+from . import blog_search, contact_handoff, health_check, qr_generator, skills_services
 from .base import Tool
-from . import qr_generator, health_check, contact_handoff, blog_search, skills_services
 
 TOOLS = [
     qr_generator.tool,
@@ -14,7 +13,7 @@ TOOLS = [
 ]
 
 
-def detect_tool(message: str) -> Optional[Tuple[Tool, object]]:
+def detect_tool(message: str) -> tuple[Tool, object] | None:
     for tool in TOOLS:
         m = tool.matches(message)
         if m is not None:

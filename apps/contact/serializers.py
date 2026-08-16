@@ -1,22 +1,24 @@
 """Serializers for contact inquiries."""
+
 from rest_framework import serializers
+
 from .models import ContactInquiry
 
 
 class ContactInquirySerializer(serializers.ModelSerializer):
     """Serializer for creating contact inquiries from frontend."""
-    
+
     class Meta:
         model = ContactInquiry
         fields = [
-            'name',
-            'email',
-            'phone',
-            'inquiry_type',
-            'subject',
-            'message',
-            'project_type',
-            'budget',
+            "name",
+            "email",
+            "phone",
+            "inquiry_type",
+            "subject",
+            "message",
+            "project_type",
+            "budget",
         ]
 
     def validate_email(self, value):
@@ -28,13 +30,16 @@ class ContactInquirySerializer(serializers.ModelSerializer):
         return value.strip()
 
     def validate(self, attrs):
-        if not attrs.get('email') and not attrs.get('phone'):
-            raise serializers.ValidationError('Provide at least an email or a phone number so we can reach you.')
+        if not attrs.get("email") and not attrs.get("phone"):
+            raise serializers.ValidationError(
+                "Provide at least an email or a phone number so we can reach you."
+            )
         return attrs
 
 
 class ContactInquiryResponseSerializer(serializers.Serializer):
     """Response serializer for contact form submission."""
+
     success = serializers.BooleanField()
     message = serializers.CharField()
     inquiry_id = serializers.IntegerField(required=False)

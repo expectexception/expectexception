@@ -1,9 +1,12 @@
-from rest_framework import viewsets, permissions
+from rest_framework import permissions, viewsets
+
 from .models import Profile
 from .serializers import ProfileSerializer
 
+
 class ProfileViewSet(viewsets.ModelViewSet):
     """ViewSet for user profiles. Users can retrieve and update their own profile."""
+
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated]

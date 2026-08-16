@@ -9,6 +9,7 @@ arrives here and the user id isn't in the local DB (this instance is
 standing in as a failover), rehydrate the user from the Mongo mirror and
 create a local shadow row on the fly instead of failing the request.
 """
+
 import logging
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 class JITMongoJWTAuthentication(JWTAuthentication):
     def get_user(self, validated_token):
-        token_email = validated_token.get('email')
+        token_email = validated_token.get("email")
 
         try:
             user = super().get_user(validated_token)
@@ -46,20 +47,21 @@ class JITMongoJWTAuthentication(JWTAuthentication):
                 f"resolved locally to {user.email!r} but the token claims "
                 f"{token_email!r} — cross-instance id collision, not the same account."
             )
-            raise AuthenticationFailed('Token identity mismatch', code='user_mismatch')
+            raise AuthenticationFailed("Token identity mismatch", code="user_mismatch")
         return user
 
     def _hydrate_shadow_user(self, user_id, token_email=None):
         from django.contrib.auth import get_user_model
+
         from apps.services.mongodb import find_in_mongo
 
-        doc = find_in_mongo('users', user_id)
+        doc = find_in_mongo("users", user_id)
         if not doc:
             return None
 
         # Belt-and-suspenders: if the token itself carries an email claim,
         # it must agree with what the Mongo mirror says this pk's owner is.
-        if token_email and doc.get('email') != token_email:
+        if token_email and doc.get("email") != token_email:
             logger.warning(
                 f"Refusing to JIT-hydrate user id={user_id}: token claims "
                 f"{token_email!r} but the Mongo mirror has {doc.get('email')!r}."
@@ -77,7 +79,7 @@ class JITMongoJWTAuthentication(JWTAuthentication):
         # this same person (matched by email) — never overwrite a different
         # local user's data just because the pk number matches.
         existing = User.objects.filter(pk=user_id).first()
-        if existing is not None and existing.email != doc.get('email'):
+        if existing is not None and existing.email != doc.get("email"):
             logger.warning(
                 f"Refusing to JIT-hydrate user id={user_id}: pk belongs to a "
                 f"different local user ({existing.email!r} != {doc.get('email')!r}). "
@@ -89,16 +91,16 @@ class JITMongoJWTAuthentication(JWTAuthentication):
             user, created = User.objects.update_or_create(
                 pk=user_id,
                 defaults={
-                    'email': doc.get('email'),
-                    'password': doc.get('password') or '!',
-                    'first_name': doc.get('first_name', ''),
-                    'last_name': doc.get('last_name', ''),
-                    'is_active': doc.get('is_active', True),
-                    'is_staff': doc.get('is_staff', False),
-                    'is_superuser': doc.get('is_superuser', False),
-                    'auth_provider': doc.get('auth_provider', 'email'),
-                    'google_id': doc.get('google_id'),
-                    'avatar_url': doc.get('avatar_url', ''),
+                    "email": doc.get("email"),
+                    "password": doc.get("password") or "!",
+                    "first_name": doc.get("first_name", ""),
+                    "last_name": doc.get("last_name", ""),
+                    "is_active": doc.get("is_active", True),
+                    "is_staff": doc.get("is_staff", False),
+                    "is_superuser": doc.get("is_superuser", False),
+                    "auth_provider": doc.get("auth_provider", "email"),
+                    "google_id": doc.get("google_id"),
+                    "avatar_url": doc.get("avatar_url", ""),
                 },
             )
         except Exception as e:
@@ -108,5 +110,5 @@ class JITMongoJWTAuthentication(JWTAuthentication):
         if created:
             logger.info(f"JIT-created shadow user id={user_id} from Mongo mirror (failover path).")
         if not user.is_active:
-            raise AuthenticationFailed('User is inactive', code='user_inactive')
+            raise AuthenticationFailed("User is inactive", code="user_inactive")
         return user
