@@ -1,15 +1,14 @@
+import logging
+from datetime import timedelta
+
 from celery import shared_task
-from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from django.db.models import Count
-from datetime import timedelta
-import logging
 
 logger = logging.getLogger(__name__)
 
 
-@shared_task(name='notifications.send_weekly_digest', bind=True, max_retries=2)
+@shared_task(name="notifications.send_weekly_digest", bind=True, max_retries=2)
 def send_weekly_digest(self):
     """
     Send a weekly digest email to all active users.
@@ -17,35 +16,38 @@ def send_weekly_digest(self):
     Runs every Sunday at 09:00 UTC via Celery Beat.
     """
     from django.contrib.auth import get_user_model
+
     User = get_user_model()
 
     one_week_ago = timezone.now() - timedelta(days=7)
 
     # Top threads from the last week
     import html
+
     try:
         from apps.community.models import Thread
-        top_threads = Thread.objects.filter(
-            created_at__gte=one_week_ago, is_active=True
-        ).order_by('-vote_count', '-reply_count')[:5]
-        threads_html = ''.join(
+
+        top_threads = Thread.objects.filter(created_at__gte=one_week_ago, is_active=True).order_by(
+            "-vote_count", "-reply_count"
+        )[:5]
+        threads_html = "".join(
             f'<li><a href="https://expectexception.com/community/thread/{t.slug}" style="color:#3dfc55">{html.escape(t.title)}</a> '
-            f'— {t.reply_count} replies</li>'
+            f"— {t.reply_count} replies</li>"
             for t in top_threads
         )
     except Exception:
-        threads_html = '<li>Check the community for the latest threads.</li>'
+        threads_html = "<li>Check the community for the latest threads.</li>"
 
     # Recipient list: active users with email
     recipients = list(
         User.objects.filter(is_active=True, email__isnull=False)
-        .exclude(email='')
-        .values_list('email', flat=True)[:500]  # hard cap
+        .exclude(email="")
+        .values_list("email", flat=True)[:500]  # hard cap
     )
 
     if not recipients:
-        logger.info('Weekly digest: no recipients found.')
-        return {'sent': 0}
+        logger.info("Weekly digest: no recipients found.")
+        return {"sent": 0}
 
     html_body = f"""
     <html>
@@ -87,25 +89,26 @@ def send_weekly_digest(self):
     </html>
     """
 
-    from django.core.mail import get_connection, EmailMultiAlternatives
+    from django.core.mail import EmailMultiAlternatives, get_connection
+
     sent_count = 0
     try:
         connection = get_connection()
         messages = []
         for email in recipients:
             msg = EmailMultiAlternatives(
-                subject='📬 Your weekly digest from ExpectException',
-                body='Check the latest community threads and new tools at https://expectexception.com',
+                subject="📬 Your weekly digest from ExpectException",
+                body="Check the latest community threads and new tools at https://expectexception.com",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=[email],
-                connection=connection
+                connection=connection,
             )
             msg.attach_alternative(html_body, "text/html")
             messages.append(msg)
-        
+
         sent_count = connection.send_messages(messages)
     except Exception as exc:
-        logger.error(f'Weekly digest sending failed: {exc}')
+        logger.error(f"Weekly digest sending failed: {exc}")
 
-    logger.info(f'Weekly digest sent to {sent_count} users.')
-    return {'sent': sent_count}
+    logger.info(f"Weekly digest sent to {sent_count} users.")
+    return {"sent": sent_count}

@@ -1,0 +1,33 @@
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+extend-exclude = '''
+/(
+    \.venv
+    | migrations
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["*/migrations/*", ".venv"]
+
+[tool.ruff.lint]
+# E/F: pyflakes + pycodestyle errors (unused imports, undefined names, etc).
+# I: import sorting. UP: pyupgrade (drop dead Python-2-era patterns).
+# B: bugbear (common correctness footguns: mutable defaults, bare except, ...).
+select = ["E", "F", "I", "UP", "B"]
+ignore = [
+    "E501",  # line length is black's job, not ruff's
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Django settings modules do star-import-adjacent patterns (importing * from
+# a base settings module) and intentionally reference names that appear
+# "unused" to a linter that doesn't know about Django's runtime wiring.
+"*/settings*.py" = ["F403", "F405"]
+"manage.py" = ["E402"]
+# Manual deploy-debug script: imports rembg purely to check it succeeds,
+# never uses the names it binds.
+"test_import.py" = ["F401"]

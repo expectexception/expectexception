@@ -4,7 +4,7 @@ import uuid
 
 import qrcode
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _
+
 
 def environment_callback(request):
     """
@@ -16,7 +16,7 @@ def environment_callback(request):
     return ["Production", "danger"]
 
 
-def generate_qr_image(data: str, fg_color: str = '#000000', bg_color: str = '#ffffff') -> str:
+def generate_qr_image(data: str, fg_color: str = "#000000", bg_color: str = "#ffffff") -> str:
     """Generate a QR code PNG for `data` and return its media URL. Shared by QrGeneratorView and the chatbot's qr_generator tool."""
     qr = qrcode.QRCode(
         version=1,
@@ -34,10 +34,10 @@ def generate_qr_image(data: str, fg_color: str = '#000000', bg_color: str = '#ff
     buffer.seek(0)
 
     filename = f"qr_{uuid.uuid4()}.png"
-    file_path = os.path.join(settings.MEDIA_ROOT, 'qr')
+    file_path = os.path.join(settings.MEDIA_ROOT, "qr")
     os.makedirs(file_path, exist_ok=True)
 
-    with open(os.path.join(file_path, filename), 'wb') as f:
+    with open(os.path.join(file_path, filename), "wb") as f:
         f.write(buffer.getvalue())
 
     return f"{settings.MEDIA_URL}qr/{filename}"

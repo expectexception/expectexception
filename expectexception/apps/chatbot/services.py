@@ -1,10 +1,13 @@
 """Ollama service for chat completions."""
+
+import json
 import logging
 import time
-import requests
+from collections.abc import AsyncGenerator, Generator
+from typing import Any
+
 import httpx
-import json
-from typing import Generator, AsyncGenerator, Optional, Dict, Any, List
+import requests
 from django.conf import settings
 from django.core.cache import cache
 
@@ -16,8 +19,8 @@ logger = logging.getLogger(__name__)
 # instead of failing fast for the (N+1)th. Backed by Redis (django-redis
 # CACHES backend) so the counter is process-wide across all gunicorn
 # workers, not per-process.
-MAX_CONCURRENT_CHATS = getattr(settings, 'CHATBOT_MAX_CONCURRENT', 3)
-_ACTIVE_CHATS_KEY = 'chatbot:active_calls'
+MAX_CONCURRENT_CHATS = getattr(settings, "CHATBOT_MAX_CONCURRENT", 3)
+_ACTIVE_CHATS_KEY = "chatbot:active_calls"
 _ACTIVE_CHATS_TTL = 300  # safety net: self-heals if a release is ever missed
 
 
@@ -50,23 +53,19 @@ def release_chat_slot() -> None:
 class OllamaService:
     """Service for interacting with Ollama API."""
 
-    _client: Optional[httpx.AsyncClient] = None
+    _client: httpx.AsyncClient | None = None
 
     def __init__(self):
-        self.base_url = getattr(settings, 'OLLAMA_BASE_URL', 'http://localhost:11434')
-        self.model = getattr(settings, 'CHATBOT_MODEL', 'phi3:mini')
-        self.max_tokens = getattr(settings, 'CHATBOT_MAX_TOKENS', 2048)
-    
+        self.base_url = getattr(settings, "OLLAMA_BASE_URL", "http://localhost:11434")
+        self.model = getattr(settings, "CHATBOT_MODEL", "phi3:mini")
+        self.max_tokens = getattr(settings, "CHATBOT_MAX_TOKENS", 2048)
+
     def get_async_client(self) -> httpx.AsyncClient:
         """Get or create singleton async client."""
         if self._client is None or self._client.is_closed:
             timeout = httpx.Timeout(300.0, connect=20.0)
             # Use HTTP/2 for better concurrency
-            self._client = httpx.AsyncClient(
-                timeout=timeout, 
-                verify=False,
-                http2=True 
-            )
+            self._client = httpx.AsyncClient(timeout=timeout, verify=False, http2=True)
         return self._client
 
     def is_available(self) -> bool:
@@ -81,32 +80,32 @@ class OllamaService:
         except requests.RequestException as e:
             logger.warning(f"✗ Ollama unavailable at {self.base_url}: {e}")
             return False
-    
-    def get_models(self) -> List[Dict[str, Any]]:
+
+    def get_models(self) -> list[dict[str, Any]]:
         """Get detailed list of available models."""
         try:
             response = requests.get(f"{self.base_url}/api/tags", timeout=10, verify=False)
             if response.status_code == 200:
                 data = response.json()
-                return data.get('models', [])
+                return data.get("models", [])
             return []
         except requests.RequestException as e:
             logger.error(f"Failed to get models: {e}")
             return []
 
-    def get_running_models(self) -> List[Dict[str, Any]]:
+    def get_running_models(self) -> list[dict[str, Any]]:
         """Get list of currently loaded/running models."""
         try:
             response = requests.get(f"{self.base_url}/api/ps", timeout=10, verify=False)
             if response.status_code == 200:
                 data = response.json()
-                return data.get('models', [])
+                return data.get("models", [])
             return []
         except requests.RequestException as e:
             logger.error(f"Failed to get running models: {e}")
             return []
 
-    def model_info(self, model_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def model_info(self, model_name: str | None = None) -> dict[str, Any] | None:
         """Get detailed info about a specific model (size, parameters, quantization)."""
         model_name = model_name or self.model
         try:
@@ -123,7 +122,7 @@ class OllamaService:
             logger.error(f"Failed to get model info for {model_name}: {e}")
             return None
 
-    def pull_model(self, model_name: str) -> Dict[str, Any]:
+    def pull_model(self, model_name: str) -> dict[str, Any]:
         """Pull/download a model from Ollama Hub.
 
         Returns a status dict with 'status' key.
@@ -147,7 +146,7 @@ class OllamaService:
             logger.error(f"Pull model request failed for {model_name}: {e}")
             return {"status": "error", "error": str(e)}
 
-    def delete_model(self, model_name: str) -> Dict[str, Any]:
+    def delete_model(self, model_name: str) -> dict[str, Any]:
         """Delete a model from Ollama."""
         try:
             response = requests.delete(
@@ -168,17 +167,14 @@ class OllamaService:
             return {"status": "error", "error": str(e)}
 
     def chat(
-        self,
-        messages: List[Dict[str, str]],
-        model: Optional[str] = None,
-        stream: bool = True
+        self, messages: list[dict[str, str]], model: str | None = None, stream: bool = True
     ) -> Generator[str, None, None]:
         """
         Send chat request to Ollama and yield streaming response.
         """
         model = model or self.model
         url = f"{self.base_url}/api/chat"
-        
+
         payload = {
             "model": model,
             "messages": messages,
@@ -188,35 +184,37 @@ class OllamaService:
                 "num_predict": self.max_tokens,
                 "num_ctx": 4096,
                 "temperature": 0.7,
-            }
+            },
         }
-        
+
         max_retries = 2
         retry_count = 0
-        
+
         while retry_count <= max_retries:
             try:
                 # verify=False for local https support
-                with requests.post(url, json=payload, stream=stream, timeout=120, verify=False) as response:
+                with requests.post(
+                    url, json=payload, stream=stream, timeout=120, verify=False
+                ) as response:
                     response.raise_for_status()
-                    
+
                     if stream:
                         for line in response.iter_lines():
                             if line:
                                 try:
                                     data = json.loads(line)
-                                    if 'message' in data and 'content' in data['message']:
-                                        yield data['message']['content']
-                                    if data.get('done', False):
+                                    if "message" in data and "content" in data["message"]:
+                                        yield data["message"]["content"]
+                                    if data.get("done", False):
                                         break
                                 except json.JSONDecodeError:
                                     continue
                     else:
                         data = response.json()
-                        if 'message' in data and 'content' in data['message']:
-                            yield data['message']['content']
-                    return 
-                            
+                        if "message" in data and "content" in data["message"]:
+                            yield data["message"]["content"]
+                    return
+
             except (requests.Timeout, requests.ConnectionError):
                 # Transient — worth retrying.
                 retry_count += 1
@@ -241,11 +239,9 @@ class OllamaService:
                 logger.error(f"Ollama chat error: {type(e).__name__}")
                 yield "Error: AI Service is temporarily unavailable. Please try again."
                 return
-    
+
     async def chat_async(
-        self,
-        messages: List[Dict[str, str]],
-        model: Optional[str] = None
+        self, messages: list[dict[str, str]], model: str | None = None
     ) -> AsyncGenerator[str, None]:
         """
         Send async chat request to Ollama and yield streaming response.
@@ -254,7 +250,7 @@ class OllamaService:
         """
         model = model or self.model
         url = f"{self.base_url}/api/chat"
-        
+
         payload = {
             "model": model,
             "messages": messages,
@@ -264,9 +260,9 @@ class OllamaService:
                 "num_predict": self.max_tokens,
                 "num_ctx": 4096,
                 "temperature": 0.7,
-            }
+            },
         }
-        
+
         max_retries = 3
         import asyncio
 
@@ -287,8 +283,10 @@ class OllamaService:
                         error_text = await response.aread()
                         logger.error(f"Ollama async error {response.status_code}: {error_text}")
                         if attempt < max_retries - 1:
-                            wait = 2 ** attempt
-                            logger.info(f"Retrying Ollama chat in {wait}s (attempt {attempt + 1}/{max_retries})")
+                            wait = 2**attempt
+                            logger.info(
+                                f"Retrying Ollama chat in {wait}s (attempt {attempt + 1}/{max_retries})"
+                            )
                             await asyncio.sleep(wait)
                             continue
                         yield "Error: AI model failed to respond."
@@ -298,11 +296,11 @@ class OllamaService:
                         if line:
                             try:
                                 data = json.loads(line)
-                                if 'message' in data and 'content' in data['message']:
-                                    chunk = data['message']['content']
+                                if "message" in data and "content" in data["message"]:
+                                    chunk = data["message"]["content"]
                                     if chunk:
                                         yield chunk
-                                if data.get('done', False):
+                                if data.get("done", False):
                                     break
                             except json.JSONDecodeError as e:
                                 logger.debug(f"JSON parse error in stream: {e}")
@@ -311,8 +309,10 @@ class OllamaService:
 
             except httpx.TimeoutException:
                 if attempt < max_retries - 1:
-                    wait = 2 ** attempt
-                    logger.warning(f"Ollama timeout, retrying in {wait}s (attempt {attempt + 1}/{max_retries})")
+                    wait = 2**attempt
+                    logger.warning(
+                        f"Ollama timeout, retrying in {wait}s (attempt {attempt + 1}/{max_retries})"
+                    )
                     await asyncio.sleep(wait)
                 else:
                     logger.error("Ollama async chat timeout after all retries")
@@ -320,8 +320,10 @@ class OllamaService:
 
             except Exception as e:
                 if attempt < max_retries - 1:
-                    wait = 2 ** attempt
-                    logger.warning(f"Ollama error: {e}, retrying in {wait}s (attempt {attempt + 1}/{max_retries})")
+                    wait = 2**attempt
+                    logger.warning(
+                        f"Ollama error: {e}, retrying in {wait}s (attempt {attempt + 1}/{max_retries})"
+                    )
                     await asyncio.sleep(wait)
                 else:
                     logger.error(f"Ollama async chat error: {e}", exc_info=True)
@@ -332,24 +334,24 @@ class OllamaService:
         messages = [
             {
                 "role": "system",
-                "content": "Generate a very short title (3-5 words) for a conversation that starts with the following message. Only output the title, nothing else."
+                "content": "Generate a very short title (3-5 words) for a conversation that starts with the following message. Only output the title, nothing else.",
             },
-            {"role": "user", "content": first_message}
+            {"role": "user", "content": first_message},
         ]
-        
+
         try:
             url = f"{self.base_url}/api/chat"
             payload = {
                 "model": self.model,
                 "messages": messages,
                 "stream": False,
-                "options": {"num_predict": 20}
+                "options": {"num_predict": 20},
             }
-            
+
             response = requests.post(url, json=payload, timeout=30)
             if response.status_code == 200:
                 data = response.json()
-                title = data.get('message', {}).get('content', '').strip()
+                title = data.get("message", {}).get("content", "").strip()
                 return title[:50] if title else "New Chat"
             return "New Chat"
         except Exception as e:
@@ -359,4 +361,3 @@ class OllamaService:
 
 # Singleton instance
 ollama_service = OllamaService()
-
