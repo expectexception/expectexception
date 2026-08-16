@@ -9,16 +9,25 @@ def _execute(message: str, match) -> ToolResult:
     )
     return ToolResult(
         success=True,
-        summary='Provided contact info',
+        summary="Provided contact info",
         context_text=context,
-        data={'contact_url': '/contact', 'hire_url': '/hire'},
+        data={"contact_url": "/contact", "hire_url": "/hire"},
     )
 
 
 tool = Tool(
-    name='contact_handoff',
-    step_label='Pulling up contact details...',
-    keywords=['hire', 'contact you', 'work with you', 'get in touch', 'reach out', 'hire you', 'hire him', 'how do i contact'],
+    name="contact_handoff",
+    step_label="Pulling up contact details...",
+    keywords=[
+        "hire",
+        "contact you",
+        "work with you",
+        "get in touch",
+        "reach out",
+        "hire you",
+        "hire him",
+        "how do i contact",
+    ],
     patterns=[],
     execute=_execute,
 )

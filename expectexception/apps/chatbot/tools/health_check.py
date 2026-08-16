@@ -23,9 +23,17 @@ def _execute(message: str, match) -> ToolResult:
 
 
 tool = Tool(
-    name='health_check',
-    step_label='Checking system health...',
-    keywords=['is the site down', 'system status', 'is everything working', 'health check', 'server status', 'is the server up', 'site down'],
+    name="health_check",
+    step_label="Checking system health...",
+    keywords=[
+        "is the site down",
+        "system status",
+        "is everything working",
+        "health check",
+        "server status",
+        "is the server up",
+        "site down",
+    ],
     patterns=[],
     execute=_execute,
 )

@@ -1,9 +1,8 @@
-import subprocess
 import shutil
-import os
+import subprocess
 
 print("Checking soffice...")
-soffice_path = shutil.which('soffice')
+soffice_path = shutil.which("soffice")
 print(f"soffice path: {soffice_path}")
 
 if not soffice_path:
@@ -12,7 +11,7 @@ if not soffice_path:
 
 print("Attempting to run soffice --version")
 try:
-    result = subprocess.run([soffice_path, '--version'], capture_output=True, text=True, timeout=10)
+    result = subprocess.run([soffice_path, "--version"], capture_output=True, text=True, timeout=10)
     print(f"Return code: {result.returncode}")
     print(f"Stdout: {result.stdout}")
     print(f"Stderr: {result.stderr}")

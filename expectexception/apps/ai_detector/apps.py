@@ -1,15 +1,16 @@
-from django.apps import AppConfig
 import logging
 import os
 import sys
+
+from django.apps import AppConfig
 
 logger = logging.getLogger(__name__)
 
 
 class AiDetectorConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.ai_detector'
-    verbose_name = 'AI Image Detector'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.ai_detector"
+    verbose_name = "AI Image Detector"
 
     def ready(self):
         """Preload detection models on startup — but only in the Celery
@@ -28,18 +29,21 @@ class AiDetectorConfig(AppConfig):
         how docker-compose distinguishes worker-heavy (has ai_detection)
         from worker-light/beat/gunicorn (don't).
         """
-        argv = ' '.join(sys.argv)
+        argv = " ".join(sys.argv)
         is_ai_detection_worker = (
-            os.path.basename(sys.argv[0] if sys.argv else '') == 'celery'
-            and 'worker' in sys.argv
-            and 'ai_detection' in argv
+            os.path.basename(sys.argv[0] if sys.argv else "") == "celery"
+            and "worker" in sys.argv
+            and "ai_detection" in argv
         )
         if not is_ai_detection_worker:
             return
         try:
             from .detector import _HAS_TRANSFORMERS, EnsembleDetector, get_detection_models
+
             if not _HAS_TRANSFORMERS:
-                logger.info("AI Detector: transformers package not installed — running without detection models.")
+                logger.info(
+                    "AI Detector: transformers package not installed — running without detection models."
+                )
                 return
             logger.info("AI Detector: Preloading detection models...")
             detector = EnsembleDetector()

@@ -1,42 +1,44 @@
+from datetime import UTC, datetime
+
 from django.core.management.base import BaseCommand
-from apps.users.models import User
+
 from apps.blog.models import Post, Tag
-from django.utils import timezone
-from datetime import datetime, timezone as dt_timezone
+from apps.users.models import User
+
 
 class Command(BaseCommand):
-    help = 'Seeds the database with high-quality authentic engineering posts'
+    help = "Seeds the database with high-quality authentic engineering posts"
 
     def handle(self, *args, **options):
         # 1. Ensure demo user exists
-        if not User.objects.filter(email='demo@example.com').exists():
-            user = User.objects.create_user(email='demo@example.com', password='DemoPass123')
-            user.profile.bio = 'Senior Software Engineer & Systems Architect'
+        if not User.objects.filter(email="demo@example.com").exists():
+            user = User.objects.create_user(email="demo@example.com", password="DemoPass123")
+            user.profile.bio = "Senior Software Engineer & Systems Architect"
             user.profile.save()
-            self.stdout.write('Created demo user.')
+            self.stdout.write("Created demo user.")
         else:
-            user = User.objects.get(email='demo@example.com')
+            user = User.objects.get(email="demo@example.com")
 
         # 2. Get or create tags
-        t_redis, _ = Tag.objects.get_or_create(name='redis')
-        t_python, _ = Tag.objects.get_or_create(name='python')
-        t_postgres, _ = Tag.objects.get_or_create(name='postgresql')
-        t_db, _ = Tag.objects.get_or_create(name='database')
-        t_ai, _ = Tag.objects.get_or_create(name='ai-agents')
-        t_systems, _ = Tag.objects.get_or_create(name='systems')
-        t_react, _ = Tag.objects.get_or_create(name='react')
-        t_frontend, _ = Tag.objects.get_or_create(name='frontend')
-        t_devops, _ = Tag.objects.get_or_create(name='devops')
-        t_docker, _ = Tag.objects.get_or_create(name='docker')
-        t_security, _ = Tag.objects.get_or_create(name='security')
-        t_django, _ = Tag.objects.get_or_create(name='django')
-        t_llm, _ = Tag.objects.get_or_create(name='llm')
+        t_redis, _ = Tag.objects.get_or_create(name="redis")
+        t_python, _ = Tag.objects.get_or_create(name="python")
+        t_postgres, _ = Tag.objects.get_or_create(name="postgresql")
+        t_db, _ = Tag.objects.get_or_create(name="database")
+        t_ai, _ = Tag.objects.get_or_create(name="ai-agents")
+        t_systems, _ = Tag.objects.get_or_create(name="systems")
+        t_react, _ = Tag.objects.get_or_create(name="react")
+        t_frontend, _ = Tag.objects.get_or_create(name="frontend")
+        t_devops, _ = Tag.objects.get_or_create(name="devops")
+        t_docker, _ = Tag.objects.get_or_create(name="docker")
+        t_security, _ = Tag.objects.get_or_create(name="security")
+        t_django, _ = Tag.objects.get_or_create(name="django")
+        t_llm, _ = Tag.objects.get_or_create(name="llm")
 
         # Define the authentic posts
         posts_data = [
             {
-                'title': 'Designing Concurrent Task Queues with Redis and Python',
-                'content': '''In distributed systems, offloading heavy, non-blocking tasks from the main request-response cycle is crucial for maintaining low latency. While heavy frameworks like Celery are the industry standard, they often introduce significant complexity. In this article, we'll build a lightweight, concurrent task queue from scratch using Redis and Python's `asyncio` library.
+                "title": "Designing Concurrent Task Queues with Redis and Python",
+                "content": """In distributed systems, offloading heavy, non-blocking tasks from the main request-response cycle is crucial for maintaining low latency. While heavy frameworks like Celery are the industry standard, they often introduce significant complexity. In this article, we'll build a lightweight, concurrent task queue from scratch using Redis and Python's `asyncio` library.
 
 ### Why Redis?
 
@@ -94,16 +96,16 @@ if __name__ == "__main__":
 To scale this queue:
 1. **Connection Pooling**: Always reuse Redis connections via a pool.
 2. **Multiple Workers**: Run multiple instances of the worker script across different CPU cores or containers.
-3. **Redis Pipeline**: When enqueueing tasks in bulk, use Redis pipelines to minimize round-trip times (RTT).''',
-                'published_at': datetime(2025, 10, 14, 10, 0, 0, tzinfo=dt_timezone.utc),
-                'likes_count': 142,
-                'view_count': 1250,
-                'tags': [t_redis, t_python, t_systems],
-                'featured': True
+3. **Redis Pipeline**: When enqueueing tasks in bulk, use Redis pipelines to minimize round-trip times (RTT).""",
+                "published_at": datetime(2025, 10, 14, 10, 0, 0, tzinfo=UTC),
+                "likes_count": 142,
+                "view_count": 1250,
+                "tags": [t_redis, t_python, t_systems],
+                "featured": True,
             },
             {
-                'title': 'Optimizing PostgreSQL Query Performance: A Case Study on Indexes',
-                'content': '''A database-heavy application often starts fast but degrades as data grows. Most query performance issues stem from incorrect indexing or N+1 queries. In this article, we'll walk through diagnosing and optimizing a slow PostgreSQL query using real-world scenarios.
+                "title": "Optimizing PostgreSQL Query Performance: A Case Study on Indexes",
+                "content": """A database-heavy application often starts fast but degrades as data grows. Most query performance issues stem from incorrect indexing or N+1 queries. In this article, we'll walk through diagnosing and optimizing a slow PostgreSQL query using real-world scenarios.
 
 ### Step 1: Diagnose with EXPLAIN ANALYZE
 
@@ -151,16 +153,16 @@ for post in posts:
     print(post.author.email)
 ```
 
-By combining composite indexes and `select_related`/`prefetch_related`, you can easily reduce page load times from seconds to milliseconds.''',
-                'published_at': datetime(2026, 1, 8, 14, 30, 0, tzinfo=dt_timezone.utc),
-                'likes_count': 189,
-                'view_count': 1940,
-                'tags': [t_postgres, t_db, t_systems],
-                'featured': True
+By combining composite indexes and `select_related`/`prefetch_related`, you can easily reduce page load times from seconds to milliseconds.""",
+                "published_at": datetime(2026, 1, 8, 14, 30, 0, tzinfo=UTC),
+                "likes_count": 189,
+                "view_count": 1940,
+                "tags": [t_postgres, t_db, t_systems],
+                "featured": True,
             },
             {
-                'title': 'Demystifying Multi-Agent Orchestration: Designing Cognitive Loops',
-                'content': '''Multi-agent systems are the next frontier in software automation. However, pulling in massive frameworks can make debugging nearly impossible. In this guide, we'll design a clean, framework-free cognitive loop that orchestrates three distinct agents to collaborate on a software task.
+                "title": "Demystifying Multi-Agent Orchestration: Designing Cognitive Loops",
+                "content": """Multi-agent systems are the next frontier in software automation. However, pulling in massive frameworks can make debugging nearly impossible. In this guide, we'll design a clean, framework-free cognitive loop that orchestrates three distinct agents to collaborate on a software task.
 
 ### The Architecture: Router, Executor, and Critic
 
@@ -229,16 +231,16 @@ class CognitiveLoop:
 The most critical challenge in multi-agent orchestration is the **infinite loop**: where the Executor and Critic disagree indefinitely. To mitigate this:
 - **Strict Iteration Limits**: Always cap the maximum execution loops.
 - **Decaying Temperature**: Reduce the LLM temperature on successive attempts to force deterministic, corrective behavior.
-- **Human-in-the-loop (HITL)**: Inject a human approval step if consensus is not reached after N loops.''',
-                'published_at': datetime(2026, 4, 3, 9, 15, 0, tzinfo=dt_timezone.utc),
-                'likes_count': 256,
-                'view_count': 2480,
-                'tags': [t_ai, t_python, t_systems],
-                'featured': True
+- **Human-in-the-loop (HITL)**: Inject a human approval step if consensus is not reached after N loops.""",
+                "published_at": datetime(2026, 4, 3, 9, 15, 0, tzinfo=UTC),
+                "likes_count": 256,
+                "view_count": 2480,
+                "tags": [t_ai, t_python, t_systems],
+                "featured": True,
             },
             {
-                'title': 'React Re-render Hell: Diagnosing Wasted Renders with the Profiler',
-                'content': '''A component re-rendering isn't inherently a bug, but unnecessary re-renders cascading through a deep tree absolutely are. Before reaching for `memo` or `useCallback` everywhere, you need actual evidence of where time is being spent. The React DevTools Profiler is the right starting point, not intuition.
+                "title": "React Re-render Hell: Diagnosing Wasted Renders with the Profiler",
+                "content": """A component re-rendering isn't inherently a bug, but unnecessary re-renders cascading through a deep tree absolutely are. Before reaching for `memo` or `useCallback` everywhere, you need actual evidence of where time is being spent. The React DevTools Profiler is the right starting point, not intuition.
 
 ### Step 1: Record, Don't Guess
 
@@ -279,16 +281,16 @@ const themeValue = useMemo(() => ({ theme }), [theme]);
 
 If a parent re-renders 60 times a second (a live chart, a streaming chat response), wrapping children in `memo` only helps if the equality check is actually cheap. For high-frequency updates, it's often faster to push the changing value down into a leaf component via a ref or a dedicated state slice, so only that leaf re-renders instead of memo-checking the whole subtree on every tick.
 
-The rule that holds up in practice: profile first, memoize the specific prop or value causing the diff, and stop once the flame graph is flat - not before.''',
-                'published_at': datetime(2026, 2, 12, 11, 0, 0, tzinfo=dt_timezone.utc),
-                'likes_count': 167,
-                'view_count': 1610,
-                'tags': [t_react, t_frontend, t_systems],
-                'featured': False
+The rule that holds up in practice: profile first, memoize the specific prop or value causing the diff, and stop once the flame graph is flat - not before.""",
+                "published_at": datetime(2026, 2, 12, 11, 0, 0, tzinfo=UTC),
+                "likes_count": 167,
+                "view_count": 1610,
+                "tags": [t_react, t_frontend, t_systems],
+                "featured": False,
             },
             {
-                'title': 'Zero-Downtime Deploys with Docker and Blue-Green Routing',
-                'content': '''Restarting a single container on every deploy means every in-flight request during that window gets dropped. Blue-green deployment fixes this by keeping two identical environments running side by side and switching traffic only once the new one is confirmed healthy.
+                "title": "Zero-Downtime Deploys with Docker and Blue-Green Routing",
+                "content": """Restarting a single container on every deploy means every in-flight request during that window gets dropped. Blue-green deployment fixes this by keeping two identical environments running side by side and switching traffic only once the new one is confirmed healthy.
 
 ### The Setup
 
@@ -339,16 +341,16 @@ docker compose stop app_blue
 
 ### The Rollback Path Is the Real Point
 
-The actual value of blue-green isn't the deploy, it's that rollback is just as instant: if green starts erroring under real traffic, switch the Nginx upstream back to blue and you're done in seconds, no rebuild required. That property alone is worth the extra container.''',
-                'published_at': datetime(2026, 3, 5, 8, 30, 0, tzinfo=dt_timezone.utc),
-                'likes_count': 134,
-                'view_count': 1380,
-                'tags': [t_devops, t_docker, t_systems],
-                'featured': False
+The actual value of blue-green isn't the deploy, it's that rollback is just as instant: if green starts erroring under real traffic, switch the Nginx upstream back to blue and you're done in seconds, no rebuild required. That property alone is worth the extra container.""",
+                "published_at": datetime(2026, 3, 5, 8, 30, 0, tzinfo=UTC),
+                "likes_count": 134,
+                "view_count": 1380,
+                "tags": [t_devops, t_docker, t_systems],
+                "featured": False,
             },
             {
-                'title': 'Hardening a Django API: CORS, CSRF, and Rate Limiting Done Right',
-                'content': '''Most Django API security mistakes aren't exotic - they're misconfigured defaults left over from local development that quietly ship to production. Here's what actually matters, in the order it tends to bite people.
+                "title": "Hardening a Django API: CORS, CSRF, and Rate Limiting Done Right",
+                "content": """Most Django API security mistakes aren't exotic - they're misconfigured defaults left over from local development that quietly ship to production. Here's what actually matters, in the order it tends to bite people.
 
 ### CORS: Stop Using Allow-All in Production
 
@@ -404,16 +406,16 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_REFERRER_POLICY = 'same-origin'
 ```
 
-None of this is advanced. It's a checklist - and most production incidents trace back to one item on it being skipped, not to a novel exploit.''',
-                'published_at': datetime(2026, 5, 20, 13, 45, 0, tzinfo=dt_timezone.utc),
-                'likes_count': 201,
-                'view_count': 1890,
-                'tags': [t_django, t_security, t_systems],
-                'featured': True
+None of this is advanced. It's a checklist - and most production incidents trace back to one item on it being skipped, not to a novel exploit.""",
+                "published_at": datetime(2026, 5, 20, 13, 45, 0, tzinfo=UTC),
+                "likes_count": 201,
+                "view_count": 1890,
+                "tags": [t_django, t_security, t_systems],
+                "featured": True,
             },
             {
-                'title': 'Grounding a Small Local LLM with Real Backend Tools',
-                'content': '''A chatbot that only generates plausible-sounding text is a parlor trick. A chatbot that can actually search your database, call your own API endpoints, and answer with real numbers is a different product entirely - and you don't need GPT-4 or a hosted API to get there.
+                "title": "Grounding a Small Local LLM with Real Backend Tools",
+                "content": """A chatbot that only generates plausible-sounding text is a parlor trick. A chatbot that can actually search your database, call your own API endpoints, and answer with real numbers is a different product entirely - and you don't need GPT-4 or a hosted API to get there.
 
 ### The Constraint: Small Models Can't Reliably Call Tools
 
@@ -458,42 +460,43 @@ result = run_tool(tool, message)
 yield f"data: {json.dumps({'type': 'step', 'label': result.summary, 'status': 'done'})}\\n\\n"
 ```
 
-This is a small amount of code, but it's the difference between a chatbot that's decoration and one that's actually wired into your product.''',
-                'published_at': datetime(2026, 6, 22, 16, 0, 0, tzinfo=dt_timezone.utc),
-                'likes_count': 98,
-                'view_count': 740,
-                'tags': [t_llm, t_ai, t_python],
-                'featured': True
-            }
+This is a small amount of code, but it's the difference between a chatbot that's decoration and one that's actually wired into your product.""",
+                "published_at": datetime(2026, 6, 22, 16, 0, 0, tzinfo=UTC),
+                "likes_count": 98,
+                "view_count": 740,
+                "tags": [t_llm, t_ai, t_python],
+                "featured": True,
+            },
         ]
 
         for p_data in posts_data:
             # Check if post already exists
             post, created = Post.objects.get_or_create(
-                title=p_data['title'],
+                title=p_data["title"],
                 defaults={
-                    'content': p_data['content'],
-                    'author': user,
-                    'status': Post.STATUS_PUBLISHED,
-                    'likes_count': p_data['likes_count'],
-                    'view_count': p_data['view_count'],
-                    'featured': p_data['featured'],
-                }
+                    "content": p_data["content"],
+                    "author": user,
+                    "status": Post.STATUS_PUBLISHED,
+                    "likes_count": p_data["likes_count"],
+                    "view_count": p_data["view_count"],
+                    "featured": p_data["featured"],
+                },
             )
-            
+
             # Associate tags
             if created:
-                for tag in p_data['tags']:
+                for tag in p_data["tags"]:
                     post.tags.add(tag)
                 post.save()
 
             # Force past publication dates and created_at bypassing auto_now_add using update()
             Post.objects.filter(pk=post.pk).update(
-                created_at=p_data['published_at'],
-                published_at=p_data['published_at']
+                created_at=p_data["published_at"], published_at=p_data["published_at"]
             )
 
             action = "Created & dated" if created else "Updated date for"
-            self.stdout.write(f"{action} post: '{post.title}' (Published: {p_data['published_at'].date()})")
+            self.stdout.write(
+                f"{action} post: '{post.title}' (Published: {p_data['published_at'].date()})"
+            )
 
-        self.stdout.write(self.style.SUCCESS('Successfully seeded high-quality engineering blogs.'))
+        self.stdout.write(self.style.SUCCESS("Successfully seeded high-quality engineering blogs."))
