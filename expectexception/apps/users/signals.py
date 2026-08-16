@@ -1,13 +1,3 @@
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from .models import User
-from apps.profiles.models import Profile
-
-
-@receiver(post_save, sender=User)
-def create_profile(sender, instance, created, **kwargs):
-    if created:
-        try:
-            Profile.objects.get_or_create(user=instance)
-        except Exception:
-            pass
+# Profile auto-creation lives in apps/profiles/signals.py, the app that owns
+# the Profile model. This module previously registered a duplicate receiver for
+# the same post_save signal.

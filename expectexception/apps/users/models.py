@@ -5,6 +5,19 @@ from django.conf import settings
 
 
 class UserManager(BaseUserManager):
+    @classmethod
+    def normalize_email(cls, email):
+        # Django's implementation lowercases only the domain, so "A@x.com"
+        # stays distinct from "a@x.com" — two accounts for one person, and a
+        # login form that lowercases its input can never match the stored
+        # address. Email local-parts are effectively case-insensitive in
+        # practice, so fold the whole thing.
+        return super().normalize_email((email or '').strip()).lower()
+
+    def get_by_natural_key(self, username):
+        # Backstops rows written before the normalization above existed.
+        return self.get(**{f'{self.model.USERNAME_FIELD}__iexact': username})
+
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('Users must have an email address')
@@ -45,6 +58,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+
+    def save(self, *args, **kwargs):
+        # Catches the paths that bypass create_user(): admin forms, JIT shadow
+        # hydration from the Mongo mirror, and Google sign-up.
+        self.email = UserManager.normalize_email(self.email)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email

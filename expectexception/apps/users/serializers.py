@@ -26,6 +26,22 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.email.split('@')[0] if obj.email else ''
 
 
+class PublicUserSerializer(serializers.ModelSerializer):
+    """Profile fields safe to expose to anyone but the account owner.
+
+    Deliberately omits email, is_staff and auth_provider — see ProfileView.
+    """
+    profile = ProfileSerializer(read_only=True)
+    username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'first_name', 'last_name', 'profile', 'avatar_url')
+
+    def get_username(self, obj):
+        return obj.email.split('@')[0] if obj.email else ''
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -33,6 +49,16 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'password', 'password2', 'first_name', 'last_name')
+
+    def validate_email(self, value):
+        from .models import UserManager
+        email = UserManager.normalize_email(value)
+        # The model's unique=True gives DRF a case-sensitive uniqueness check
+        # only, so "A@x.com" sailed past it and became a second account for
+        # someone who already had "a@x.com".
+        if User.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError('An account with this email already exists.')
+        return email
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
