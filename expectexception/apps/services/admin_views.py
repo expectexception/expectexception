@@ -22,57 +22,127 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
+def _serialize_user(u):
+    return {
+        'id': u.id,
+        'email': u.email,
+        'first_name': u.first_name,
+        'last_name': u.last_name,
+        'is_staff': u.is_staff,
+        'is_superuser': u.is_superuser,
+        'is_active': u.is_active,
+        'date_joined': u.date_joined.isoformat() if u.date_joined else None,
+        'last_login': u.last_login.isoformat() if u.last_login else None,
+    }
+
+
+def _paginate(request, queryset, default_size=50, max_size=200):
+    """Slice a queryset for an admin list endpoint.
+
+    These views used to serialize every row on every call. That is fine with a
+    handful of records and quietly turns into a multi-second response (and a
+    large one) as the tables grow, which is exactly when an admin most needs
+    the page to load.
+    """
+    try:
+        page = max(1, int(request.query_params.get('page', 1)))
+    except (TypeError, ValueError):
+        page = 1
+    try:
+        page_size = int(request.query_params.get('page_size', default_size))
+    except (TypeError, ValueError):
+        page_size = default_size
+    page_size = max(1, min(page_size, max_size))
+
+    total = queryset.count()
+    start = (page - 1) * page_size
+    return queryset[start:start + page_size], {
+        'count': total,
+        'page': page,
+        'page_size': page_size,
+        'num_pages': (total + page_size - 1) // page_size,
+    }
+
+
+def _may_manage(actor, target):
+    """Whether `actor` is allowed to modify or delete `target`.
+
+    Every endpoint here is gated on IsAdminUser, which only checks is_staff —
+    so without this, any staff account could reset a superuser's password (or
+    delete/demote them) and take over the site. Superusers are managed by
+    superusers only.
+    """
+    if target.is_superuser and not actor.is_superuser:
+        return False
+    return True
+
+
 class AdminUserListView(APIView):
     """List all users (admin only)."""
     permission_classes = [IsAdminUser]
 
     def get(self, request):
         users = User.objects.all().order_by('-date_joined')
-        data = [{
-            'id': u.id,
-            'email': u.email,
-            'first_name': u.first_name,
-            'last_name': u.last_name,
-            'is_staff': u.is_staff,
-            'is_active': u.is_active,
-            'date_joined': u.date_joined.isoformat(),
-            'last_login': u.last_login.isoformat() if u.last_login else None,
-        } for u in users]
-        return Response({'users': data, 'count': len(data)})
+
+        search = (request.query_params.get('search') or '').strip()
+        if search:
+            users = users.filter(
+                Q(email__icontains=search)
+                | Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+            )
+
+        page, meta = _paginate(request, users)
+        return Response({'users': [_serialize_user(u) for u in page], **meta})
 
     def post(self, request):
         """Create a new user."""
-        email = request.data.get('email')
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        from apps.users.models import UserManager
+
+        email = UserManager.normalize_email(request.data.get('email') or '')
         password = request.data.get('password')
         first_name = request.data.get('first_name', '')
         last_name = request.data.get('last_name', '')
-        
+
         if not email or not password:
             return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if User.objects.filter(email=email).exists():
+
+        # Case-insensitive: filter(email=...) let an admin create "A@x.com"
+        # alongside an existing "a@x.com", which the login path then treats as
+        # the same account.
+        if User.objects.filter(email__iexact=email).exists():
             return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
+        # Passwords set through the admin panel bypassed the validators that
+        # the public signup form enforces.
+        try:
+            validate_password(password)
+        except DjangoValidationError as e:
+            return Response({'error': ' '.join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
+
+        is_staff = bool(request.data.get('is_staff', False))
+        if is_staff and not request.user.is_superuser:
+            return Response(
+                {'error': 'Only superusers can create staff accounts.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         try:
             user = User.objects.create_user(
                 email=email,
                 password=password,
                 first_name=first_name,
                 last_name=last_name,
-                is_active=request.data.get('is_active', True),
-                is_staff=request.data.get('is_staff', False)
+                is_active=bool(request.data.get('is_active', True)),
+                is_staff=is_staff,
             )
-            return Response({
-                'id': user.id,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'is_staff': user.is_staff,
-                'is_active': user.is_active,
-                'date_joined': user.date_joined.isoformat(),
-            }, status=status.HTTP_201_CREATED)
+            logger.info("Admin %s created user %s", request.user.email, user.email)
+            return Response(_serialize_user(user), status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.exception("Admin user creation failed: %s", e)
+            return Response({'error': 'Could not create user.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AdminUserDetailView(APIView):
@@ -83,55 +153,89 @@ class AdminUserDetailView(APIView):
         """Delete a user."""
         try:
             user = User.objects.get(pk=pk)
-            if user == request.user:
-                return Response({'error': 'Cannot delete yourself'}, status=status.HTTP_400_BAD_REQUEST)
-            user.delete()
-            return Response({'message': 'User deleted'})
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        if user == request.user:
+            return Response({'error': 'Cannot delete yourself'}, status=status.HTTP_400_BAD_REQUEST)
+        if not _may_manage(request.user, user):
+            return Response(
+                {'error': 'Only superusers can delete a superuser account.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        email = user.email
+        user.delete()
+        logger.warning("Admin %s deleted user %s", request.user.email, email)
+        return Response({'message': 'User deleted'})
+
     def patch(self, request, pk):
         """Update user attributes."""
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        from apps.users.models import UserManager
+
         try:
             user = User.objects.get(pk=pk)
-            # Allow editing yourself, but warn frontend maybe? No, backend shouldn't block self-edit of details, 
-            # but usually admin dashboard self-edit is done via profile. 
-            # We'll stick to 'Cannot modify yourself' for dangerous things like is_active/is_staff if we want, 
-            # but usually for details it's fine.
-            
-            # Prevent demoting/deactivating yourself
-            if user == request.user:
-                if 'is_active' in request.data and not request.data['is_active']:
-                    return Response({'error': 'Cannot deactivate yourself'}, status=status.HTTP_400_BAD_REQUEST)
-                if 'is_staff' in request.data and not request.data['is_staff']:
-                    return Response({'error': 'Cannot remove your own admin status'}, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        # IsAdminUser only means is_staff, so without this any staff account
+        # could reset a superuser's password and take the site over.
+        if not _may_manage(request.user, user):
+            return Response(
+                {'error': 'Only superusers can modify a superuser account.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Prevent locking yourself out.
+        if user == request.user:
+            if 'is_active' in request.data and not request.data['is_active']:
+                return Response({'error': 'Cannot deactivate yourself'}, status=status.HTTP_400_BAD_REQUEST)
+            if 'is_staff' in request.data and not request.data['is_staff']:
+                return Response({'error': 'Cannot remove your own admin status'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'is_staff' in request.data and bool(request.data['is_staff']) != user.is_staff:
+            if not request.user.is_superuser:
+                return Response(
+                    {'error': 'Only superusers can grant or revoke admin access.'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        try:
             if 'email' in request.data:
-                user.email = request.data['email']
+                new_email = UserManager.normalize_email(request.data['email'])
+                if not new_email:
+                    return Response({'error': 'Email cannot be empty'}, status=status.HTTP_400_BAD_REQUEST)
+                # Was assigned straight onto the model, so a collision surfaced
+                # as an unhandled IntegrityError.
+                if User.objects.filter(email__iexact=new_email).exclude(pk=user.pk).exists():
+                    return Response(
+                        {'error': 'Another account already uses that email.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                user.email = new_email
             if 'first_name' in request.data:
                 user.first_name = request.data['first_name']
             if 'last_name' in request.data:
                 user.last_name = request.data['last_name']
             if 'is_active' in request.data:
-                user.is_active = request.data['is_active']
+                user.is_active = bool(request.data['is_active'])
             if 'is_staff' in request.data:
-                user.is_staff = request.data['is_staff']
-            if 'password' in request.data and request.data['password']:
+                user.is_staff = bool(request.data['is_staff'])
+            if request.data.get('password'):
+                try:
+                    validate_password(request.data['password'], user)
+                except DjangoValidationError as e:
+                    return Response({'error': ' '.join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
                 user.set_password(request.data['password'])
-                
+                logger.warning("Admin %s reset the password for %s", request.user.email, user.email)
+
             user.save()
-            return Response({
-                'id': user.id,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'is_staff': user.is_staff,
-                'is_active': user.is_active,
-            })
-        except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(_serialize_user(user))
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.exception("Admin user update failed: %s", e)
+            return Response({'error': 'Could not update user.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AdminBackupView(APIView):
@@ -235,43 +339,60 @@ class AdminLogsView(APIView):
     """View backend logs (admin only)."""
     permission_classes = [IsAdminUser]
 
+    # Whitelisted so the filename can be chosen from the dashboard without the
+    # parameter ever becoming a way to read arbitrary files off the disk.
+    AVAILABLE_LOGS = ('requests.log', 'app.log', 'errors.log', 'downloads.log')
+
     def get(self, request):
-        lines = int(request.query_params.get('lines', 100))
-        log_file = os.path.join(settings.BASE_DIR, 'logs', 'requests.log')
-        
+        # Unvalidated int() meant ?lines=abc raised ValueError -> 500, and a
+        # huge value pulled the entire file into memory.
+        try:
+            lines = int(request.query_params.get('lines', 100))
+        except (TypeError, ValueError):
+            lines = 100
+        lines = max(1, min(lines, 5000))
+
+        name = request.query_params.get('file', 'requests.log')
+        if name not in self.AVAILABLE_LOGS:
+            return Response(
+                {'error': f"Unknown log file. Available: {', '.join(self.AVAILABLE_LOGS)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # settings.LOG_DIR, not BASE_DIR/logs — the log directory is
+        # relocatable (DJANGO_LOG_DIR), and this read the stale path.
+        log_file = os.path.join(settings.LOG_DIR, name)
+
         try:
             if not os.path.exists(log_file):
-                return Response({'logs': [], 'message': 'Log file not found'})
-            
-            # Read last N lines efficiently
+                return Response({'logs': [], 'message': 'Log file not found', 'file': name})
+
             with open(log_file, 'rb') as f:
-                # Seek to end
                 f.seek(0, 2)
-                file_size = f.tell()
-                
-                # Read in chunks from end
+                position = f.tell()
                 chunk_size = 8192
-                lines_found = []
-                position = file_size
-                
-                while position > 0 and len(lines_found) < lines + 1:
+                buffer = b''
+
+                # Accumulate raw bytes and only decode once. The previous
+                # version decoded and splitlines()'d each chunk separately, so
+                # any line straddling a chunk boundary was split into two
+                # bogus lines (and a multi-byte character there decoded to a
+                # replacement character).
+                while position > 0 and buffer.count(b'\n') <= lines:
                     read_size = min(chunk_size, position)
                     position -= read_size
                     f.seek(position)
-                    chunk = f.read(read_size).decode('utf-8', errors='replace')
-                    lines_found = chunk.splitlines() + lines_found
-                
-                # Take last N lines
-                log_lines = lines_found[-lines:] if len(lines_found) >= lines else lines_found
-            
-            return Response({
-                'logs': log_lines,
-                'count': len(log_lines),
-                'file': 'requests.log'
-            })
+                    buffer = f.read(read_size) + buffer
+
+                log_lines = buffer.decode('utf-8', errors='replace').splitlines()[-lines:]
+
+            return Response({'logs': log_lines, 'count': len(log_lines), 'file': name})
         except Exception as e:
             logger.error(f"Error reading logs: {e}")
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {'error': 'Could not read log file.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class AdminBlogListView(APIView):
@@ -279,16 +400,23 @@ class AdminBlogListView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        posts = Post.objects.all().order_by('-created_at')
+        # select_related/annotate: this ran one query for the author and
+        # another for the like count on every single post.
+        posts = (
+            Post.objects.select_related('author')
+            .annotate(num_likes=Count('likes'))
+            .order_by('-created_at')
+        )
+        page, meta = _paginate(request, posts)
         data = [{
             'id': p.id,
             'title': p.title,
             'slug': p.slug,
             'author': p.author.email if p.author else 'Unknown',
             'created_at': p.created_at.isoformat(),
-            'likes_count': p.likes.count() if hasattr(p, 'likes') else 0,
-        } for p in posts]
-        return Response({'posts': data, 'count': len(data)})
+            'likes_count': p.num_likes,
+        } for p in page]
+        return Response({'posts': data, **meta})
 
 
 class AdminBlogDetailView(APIView):
@@ -327,6 +455,7 @@ class AdminDownloadListView(APIView):
 
     def get(self, request):
         resources = DownloadableResource.objects.all().order_by('-created_at')
+        page, meta = _paginate(request, resources)
         data = [{
             'id': r.id,
             'name': r.name,
@@ -335,8 +464,8 @@ class AdminDownloadListView(APIView):
             'downloads': r.downloads,
             'version': r.version,
             'created_at': r.created_at.isoformat(),
-        } for r in resources]
-        return Response({'resources': data, 'count': len(data)})
+        } for r in page]
+        return Response({'resources': data, **meta})
 
 
 class AdminDownloadDetailView(APIView):
