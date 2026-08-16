@@ -237,6 +237,11 @@ interface TabPanelProps {
     value: number;
 }
 
+// Users are paged server-side; the other admin tables are small enough to
+// request in one go, but still bounded so the response cannot grow unchecked.
+const USERS_PAGE_SIZE = 50;
+const LIST_PAGE_SIZE = 200;
+
 const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
     <div role="tabpanel" hidden={value !== index} style={{ width: '100%' }}>
         {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
@@ -329,6 +334,7 @@ const AdminDashboardPage: React.FC = () => {
     const [backups, setBackups] = useState<BackupSnapshot[]>([]);
     const [backupRunning, setBackupRunning] = useState(false);
     const [users, setUsers] = useState<AdminUser[]>([]);
+    const [usersMeta, setUsersMeta] = useState({ count: 0, page: 1, numPages: 1 });
     const [blogs, setBlogs] = useState<AdminBlog[]>([]);
     const [downloads, setDownloads] = useState<AdminDownload[]>([]);
     const [logs, setLogs] = useState<string[]>([]);
@@ -405,10 +411,20 @@ const AdminDashboardPage: React.FC = () => {
         }
     }, [fetchBackups]);
 
-    const fetchUsers = useCallback(async () => {
+    // Users are paginated and searched server-side: the table used to pull
+    // every account in one response and filter it in the browser, which gets
+    // slower and heavier with each signup.
+    const fetchUsers = useCallback(async (page = 1, search = '') => {
         try {
-            const response = await apiClient.get('/api/services/admin/users/');
+            const response = await apiClient.get('/api/services/admin/users/', {
+                params: { page, page_size: USERS_PAGE_SIZE, search: search || undefined },
+            });
             setUsers(response.data.users || []);
+            setUsersMeta({
+                count: response.data.count || 0,
+                page: response.data.page || 1,
+                numPages: response.data.num_pages || 1,
+            });
         } catch (e) {
             console.error('Failed to fetch users:', e);
         }
@@ -416,7 +432,9 @@ const AdminDashboardPage: React.FC = () => {
 
     const fetchBlogs = useCallback(async () => {
         try {
-            const response = await apiClient.get('/api/services/admin/blogs/');
+            const response = await apiClient.get('/api/services/admin/blogs/', {
+                params: { page_size: LIST_PAGE_SIZE },
+            });
             setBlogs(response.data.posts || []);
         } catch (e) {
             console.error('Failed to fetch blogs:', e);
@@ -425,7 +443,9 @@ const AdminDashboardPage: React.FC = () => {
 
     const fetchDownloads = useCallback(async () => {
         try {
-            const response = await apiClient.get('/api/services/admin/downloads/');
+            const response = await apiClient.get('/api/services/admin/downloads/', {
+                params: { page_size: LIST_PAGE_SIZE },
+            });
             setDownloads(response.data.resources || []);
         } catch (e) {
             console.error('Failed to fetch downloads:', e);
@@ -541,6 +561,17 @@ const AdminDashboardPage: React.FC = () => {
         loadData();
     }, [fetchMetrics, fetchMongoStatus, fetchBackups, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus, fetchToolServices, fetchInquiries, fetchThreads, fetchRestrictions, fetchUsageAnalytics]);
 
+    // Re-query users when the search box changes, debounced so typing does not
+    // fire a request per keystroke. Resets to page 1, since the result set the
+    // current page number refers to has changed.
+    useEffect(() => {
+        if (activeTab !== 1) return;
+        const timer = setTimeout(() => {
+            fetchUsers(1, searchQuery);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery, activeTab, fetchUsers]);
+
     // Real-time metrics polling
     useEffect(() => {
         if (activeTab === 0) {
@@ -579,7 +610,10 @@ const AdminDashboardPage: React.FC = () => {
         try {
             if (type === 'user') {
                 await apiClient.delete(`/api/services/admin/users/${id}/`);
-                setUsers(users.filter(u => u.id !== id));
+                // Refetch rather than splicing the local array: it now holds a
+                // single page, so dropping a row would leave the page short and
+                // the total count stale.
+                await fetchUsers(usersMeta.page, searchQuery);
             } else if (type === 'blog') {
                 await apiClient.delete(`/api/services/admin/blogs/${id}/`);
                 setBlogs(blogs.filter(b => b.id !== id));
@@ -603,8 +637,12 @@ const AdminDashboardPage: React.FC = () => {
         try {
             await apiClient.patch(`/api/services/admin/users/${userId}/`, { [field]: value });
             setUsers(users.map(u => u.id === userId ? { ...u, [field]: value } : u));
-        } catch (e) {
-            setError('Failed to update user');
+        } catch (e: any) {
+            // The server refuses some of these (only superusers may change a
+            // superuser, or grant admin). Surface why, and re-read the row so
+            // the switch stops showing a change that never happened.
+            setError(e.response?.data?.error || 'Failed to update user');
+            fetchUsers(usersMeta.page, searchQuery);
         }
     };
 
@@ -639,12 +677,12 @@ const AdminDashboardPage: React.FC = () => {
     const handleUserSubmit = async () => {
         try {
             if (userDialog.type === 'create') {
-                const res = await apiClient.post(endpoints.admin.users, userDialog.data);
-                setUsers([res.data, ...users]);
+                await apiClient.post(endpoints.admin.users, userDialog.data);
+                await fetchUsers(1, searchQuery);
             } else {
                 if (!userDialog.data.id) return;
-                const res = await apiClient.patch(endpoints.admin.userDetail(userDialog.data.id), userDialog.data);
-                setUsers(users.map(u => u.id === userDialog.data.id ? { ...u, ...res.data } : u));
+                await apiClient.patch(endpoints.admin.userDetail(userDialog.data.id), userDialog.data);
+                await fetchUsers(usersMeta.page, searchQuery);
             }
             setUserDialog({ open: false, type: 'create', data: {} });
         } catch (e: any) {
@@ -748,11 +786,10 @@ const AdminDashboardPage: React.FC = () => {
     };
 
     // ============ Filter Functions ============
-    const filteredUsers = users.filter(u =>
-        u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (u.first_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (u.last_name || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Users are already filtered by the server (see fetchUsers), so filtering
+    // again here would only ever search the page currently loaded and hide
+    // matches sitting on other pages.
+    const filteredUsers = users;
 
     const filteredBlogs = blogs.filter(b =>
         b.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -1133,9 +1170,36 @@ const AdminDashboardPage: React.FC = () => {
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
-                                <Typography variant="caption" sx={{ color: 'grey.600', mt: 2, display: 'block' }}>
-                                    Showing {filteredUsers.length} of {users.length} users
-                                </Typography>
+                                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+                                    <Typography variant="caption" sx={{ color: 'grey.600' }}>
+                                        {usersMeta.count === 0
+                                            ? 'No users match this search'
+                                            : `Showing ${(usersMeta.page - 1) * USERS_PAGE_SIZE + 1}–${Math.min(usersMeta.page * USERS_PAGE_SIZE, usersMeta.count)} of ${usersMeta.count} users`}
+                                    </Typography>
+                                    {usersMeta.numPages > 1 && (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Button
+                                                size="small"
+                                                disabled={usersMeta.page <= 1}
+                                                onClick={() => fetchUsers(usersMeta.page - 1, searchQuery)}
+                                                sx={{ color: 'grey.300', minWidth: 0 }}
+                                            >
+                                                Previous
+                                            </Button>
+                                            <Typography variant="caption" sx={{ color: 'grey.500' }}>
+                                                Page {usersMeta.page} of {usersMeta.numPages}
+                                            </Typography>
+                                            <Button
+                                                size="small"
+                                                disabled={usersMeta.page >= usersMeta.numPages}
+                                                onClick={() => fetchUsers(usersMeta.page + 1, searchQuery)}
+                                                sx={{ color: 'grey.300', minWidth: 0 }}
+                                            >
+                                                Next
+                                            </Button>
+                                        </Box>
+                                    )}
+                                </Box>
                             </TabPanel>
 
                             {/* ============ BLOGS TAB ============ */}
