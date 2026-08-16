@@ -2,19 +2,24 @@
 PDF conversion utilities — multi-engine strategy for maximum accuracy.
 
 Conversion strategy:
-  DOCX → pdf2docx (best layout fidelity, supports tables/images)
-       → fallback: soffice if pdf2docx fails
-  DOC/ODT/RTF/TXT → soffice (LibreOffice), isolated user profile per call
-  OCR (scanned) → pytesseract page-by-page → reassemble → convert
+  PDF → DOCX  pdf2docx (best layout fidelity: tables, images, columns)
+              → fallback: convert_pdf_to_docx_native() (PyMuPDF + python-docx)
+  PDF → other soffice (LibreOffice), isolated user profile per call
+  DOC/DOCX/ODT/RTF/TXT → PDF  soffice with fidelity-tuned export options
+  OCR (scanned)  page-at-a-time render → tesseract → reassembled searchable PDF
 
-Key fixes vs v1:
-  • soffice gets unique HOME per call (prevents concurrent-user-profile corruption)
-  • pdf2docx used for DOCX by default with soffice fallback
-  • pytesseract OCR pipeline instead of broken soffice OCR mode
-  • Correct LibreOffice filter names
-  • original_size always included in result dict
+Two invariants worth knowing before editing:
+
+  soffice exits 0 even when an export fails, so never trust its return code —
+  check that the output file exists.
+
+  soffice loads a PDF into Draw, not Writer, so it cannot export a PDF through
+  any Writer filter. PDF→DOCX via LibreOffice is impossible by construction,
+  which is why the fallback is a native rebuild rather than another soffice
+  call.
 """
 
+import io
 import os
 import shutil
 import subprocess
@@ -166,6 +171,10 @@ def convert_pdf_with_soffice(
             env=_soffice_env(run_dir),
         )
 
+        # soffice exits 0 even when the export fails (verified: converting a PDF
+        # with a Writer filter prints "Error: Please verify input parameters"
+        # and still returns 0), so the return code alone proves nothing — the
+        # real test is whether an output file appeared.
         if result.returncode != 0:
             msg = (result.stderr or result.stdout or 'no output').strip()
             raise PDFConversionError(f"LibreOffice failed (rc={result.returncode}): {msg}")
@@ -196,6 +205,104 @@ def convert_pdf_with_soffice(
         raise PDFConversionError(
             f"Conversion timed out after {timeout}s. Try a smaller file."
         )
+    finally:
+        shutil.rmtree(run_dir, ignore_errors=True)
+
+
+# ---------------------------------------------------------------------------
+# Document → PDF conversion
+# ---------------------------------------------------------------------------
+
+# LibreOffice's default PDF export downsamples images to 300 DPI, JPEG-encodes
+# them, and does not guarantee font embedding — all of which lose fidelity
+# against the source document. These options turn that off and additionally
+# emit a tagged PDF, which carries the heading/table structure through, so a
+# later PDF→DOCX round trip has something to rebuild from.
+# Measured on a 2400x1600 source image: the defaults downsampled it to
+# 1950x1300 and re-encoded it as lossy JPEG. Lossless keeps line art, diagrams
+# and screenshots exact — and for such content the PDF is usually *smaller*
+# too (1290 KB -> 101 KB in that test). Photographic documents compress worse
+# losslessly, so it stays configurable.
+_PDF_EXPORT_OPTIONS = {
+    'UseLosslessCompression': os.getenv('PDF_EXPORT_LOSSLESS', 'True') == 'True',
+    'ReduceImageResolution': False,
+    'EmbedStandardFonts': True,
+    'UseTaggedPDF': True,
+    'ExportBookmarks': True,
+    'ExportNotes': False,
+}
+
+# Input filters that LibreOffice guesses badly when left to itself.
+_SOFFICE_INFILTERS = {
+    # Without this the encoding is sniffed from the bytes and non-ASCII text
+    # comes out as mojibake.
+    '.txt': 'Text (encoded):UTF8',
+}
+
+_DOC_TO_PDF_EXTENSIONS = ('.doc', '.docx', '.odt', '.rtf', '.txt')
+
+
+def _pdf_export_filter() -> str:
+    """Build the `pdf:writer_pdf_Export:{json}` argument for --convert-to."""
+    import json
+
+    options = {
+        key: {'type': 'boolean', 'value': str(value).lower()}
+        for key, value in _PDF_EXPORT_OPTIONS.items()
+    }
+    return f"pdf:writer_pdf_Export:{json.dumps(options)}"
+
+
+def convert_document_to_pdf(
+    input_doc: str,
+    output_path: str,
+    timeout: int = 180,
+) -> str:
+    """Convert DOC/DOCX/ODT/RTF/TXT → PDF via LibreOffice.
+
+    Kept here rather than inline in the view so both conversion directions
+    share one set of soffice invariants (resolved binary path, isolated HOME,
+    D-Bus/display suppressed, output-file existence checked rather than the
+    exit code, which soffice reports as 0 even on a failed export).
+    """
+    if not os.path.exists(input_doc):
+        raise PDFConversionError(f"Input file not found: {input_doc}")
+
+    extension = Path(input_doc).suffix.lower()
+    if extension not in _DOC_TO_PDF_EXTENSIONS:
+        raise PDFConversionError(
+            f"Unsupported format '{extension}'. Supported: {', '.join(_DOC_TO_PDF_EXTENSIONS)}"
+        )
+
+    soffice_path = get_soffice_path()
+    run_dir = tempfile.mkdtemp(prefix='doc2pdf_run_')
+    try:
+        cmd = [soffice_path, '--headless', '--norestore', '--nofirststartwizard']
+        infilter = _SOFFICE_INFILTERS.get(extension)
+        if infilter:
+            cmd.append(f'--infilter={infilter}')
+        cmd += ['--convert-to', _pdf_export_filter(), '--outdir', run_dir, input_doc]
+
+        logger.info("soffice: %s → pdf", input_doc)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=timeout, env=_soffice_env(run_dir)
+        )
+
+        produced = os.path.join(run_dir, f"{Path(input_doc).stem}.pdf")
+        if not os.path.exists(produced):
+            candidates = list(Path(run_dir).glob('*.pdf'))
+            if not candidates:
+                msg = (result.stderr or result.stdout or 'no output').strip()
+                raise PDFConversionError(f"LibreOffice produced no PDF: {msg}")
+            produced = str(candidates[0])
+
+        os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+        shutil.move(produced, output_path)
+        logger.info("doc→pdf conversion done: %s", output_path)
+        return output_path
+
+    except subprocess.TimeoutExpired:
+        raise PDFConversionError(f"Conversion timed out after {timeout}s. Try a smaller file.")
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)
 
@@ -252,6 +359,116 @@ def convert_pdf_with_pdf2docx(
 
 
 # ---------------------------------------------------------------------------
+# Native PDF → DOCX rebuild (fallback when pdf2docx cannot parse a file)
+# ---------------------------------------------------------------------------
+
+# Bit flags PyMuPDF sets on each text span.
+_FITZ_FLAG_ITALIC = 1 << 1
+_FITZ_FLAG_BOLD = 1 << 4
+
+
+def _dominant_font_size(page) -> float:
+    """Most-used span size on the page — the body-text size headings stand out from."""
+    from collections import Counter
+
+    sizes = Counter()
+    for block in page.get_text('dict')['blocks']:
+        if block.get('type') != 0:
+            continue
+        for line in block['lines']:
+            for span in line['spans']:
+                if span['text'].strip():
+                    sizes[round(span['size'], 1)] += len(span['text'])
+    return sizes.most_common(1)[0][0] if sizes else 11.0
+
+
+def convert_pdf_to_docx_native(input_pdf: str, output_docx: str) -> str:
+    """Rebuild a PDF as a real DOCX using PyMuPDF for extraction.
+
+    This exists because the previous fallback — asking LibreOffice for
+    'docx:MS Word 2007 XML' — cannot work by construction: LibreOffice opens a
+    PDF in Draw, and a Draw document cannot be saved through a Writer filter.
+    It logged "Error: Please verify input parameters", wrote nothing, and still
+    exited 0. So whenever pdf2docx failed, the "fallback" failed too and the
+    whole conversion errored out.
+
+    Produces flowing, editable text (not one text box per line): headings from
+    relative font size, bold/italic runs, and real Word tables.
+    """
+    import fitz
+    from docx import Document
+    from docx.shared import Pt
+
+    validate_pdf_file(input_pdf)
+    os.makedirs(os.path.dirname(output_docx) or '.', exist_ok=True)
+
+    doc = fitz.open(input_pdf)
+    out = Document()
+
+    try:
+        for page_index, page in enumerate(doc):
+            if page_index > 0:
+                out.add_page_break()
+
+            body_size = _dominant_font_size(page)
+
+            # Tables are emitted separately, so remember their regions and skip
+            # any text inside them — otherwise every cell is duplicated as a
+            # loose paragraph next to the table.
+            table_rects = []
+            try:
+                for table in page.find_tables():
+                    rows = table.extract()
+                    if not rows or not any(any(c for c in r) for r in rows):
+                        continue
+                    table_rects.append(fitz.Rect(table.bbox))
+                    docx_table = out.add_table(rows=len(rows), cols=max(len(r) for r in rows))
+                    docx_table.style = 'Table Grid'
+                    for r, row in enumerate(rows):
+                        for c, cell in enumerate(row):
+                            if c < len(docx_table.columns):
+                                docx_table.cell(r, c).text = (cell or '').strip()
+            except Exception as e:
+                logger.warning("Table extraction failed on page %d: %s", page_index, e)
+
+            for block in page.get_text('dict')['blocks']:
+                if block.get('type') != 0:
+                    continue
+                block_rect = fitz.Rect(block['bbox'])
+                if any(block_rect.intersects(tr) for tr in table_rects):
+                    continue
+
+                for line in block['lines']:
+                    spans = [s for s in line['spans'] if s['text'].strip()]
+                    if not spans:
+                        continue
+
+                    largest = max(s['size'] for s in spans)
+                    if largest >= body_size * 1.6:
+                        paragraph = out.add_heading('', level=1)
+                    elif largest >= body_size * 1.2:
+                        paragraph = out.add_heading('', level=2)
+                    else:
+                        paragraph = out.add_paragraph()
+
+                    for span in spans:
+                        run = paragraph.add_run(span['text'])
+                        run.bold = bool(span['flags'] & _FITZ_FLAG_BOLD)
+                        run.italic = bool(span['flags'] & _FITZ_FLAG_ITALIC)
+                        run.font.size = Pt(round(span['size'], 1))
+
+        out.save(output_docx)
+    finally:
+        doc.close()
+
+    if not os.path.exists(output_docx):
+        raise PDFConversionError("Native PDF→DOCX rebuild produced no output file")
+
+    logger.info("native pdf→docx rebuild done: %s", output_docx)
+    return output_docx
+
+
+# ---------------------------------------------------------------------------
 # OCR pipeline (pytesseract → reconstructed PDF → convert)
 # ---------------------------------------------------------------------------
 
@@ -259,91 +476,59 @@ def perform_ocr_on_pdf(
     input_pdf: str,
     output_pdf: str,
     language: str = 'eng',
+    dpi: int = 300,
     timeout: int = 300,
 ) -> str:
     """
-    OCR a scanned PDF using pytesseract + pdf2image.
+    OCR a scanned PDF into a searchable PDF using PyMuPDF + pytesseract.
 
-    Strategy:
-      1. Render each PDF page to an image (pdf2image / poppler)
-      2. Run tesseract on each image → searchable PDF layer
-      3. Merge all page PDFs with PyPDF2 into one searchable PDF
-
-    The resulting PDF has a text layer, so subsequent soffice/pdf2docx
-    conversion produces editable text.
+    Renders, OCRs and appends one page at a time. The previous implementation
+    called pdf2image.convert_from_path() for the whole document, which
+    materializes every page as a PIL image before any OCR starts — at 300 DPI
+    that is roughly 25 MB of RAM per A4 page, so a 100-page scan needed
+    gigabytes and would OOM the worker. It also called
+    image_to_pdf_or_hocr() twice per page and threw the first result away,
+    doubling the tesseract time for every document.
 
     Returns: path to OCR'd PDF.
     """
     validate_pdf_file(input_pdf)
-    os.makedirs(os.path.dirname(output_pdf), exist_ok=True)
+    os.makedirs(os.path.dirname(output_pdf) or '.', exist_ok=True)
 
-    ocr_dir = tempfile.mkdtemp(prefix='ocr_run_')
     try:
-        # --- Render pages to images ---
-        try:
-            from pdf2image import convert_from_path
-        except ImportError:
-            raise PDFConversionError(
-                "pdf2image not installed. Run: pip install pdf2image"
-            )
+        import fitz
+        import pytesseract
+        from PIL import Image
+    except ImportError as e:
+        raise PDFConversionError(f"OCR dependencies missing: {e}")
 
-        logger.info(f"OCR: rendering pages of {input_pdf} (lang={language})")
-        pages = convert_from_path(
-            input_pdf,
-            dpi=300,
-            output_folder=ocr_dir,
-            fmt='png',
-            thread_count=2,
-        )
-        logger.info(f"OCR: {len(pages)} pages rendered")
+    logger.info("OCR: %s (lang=%s, dpi=%d)", input_pdf, language, dpi)
 
-        # --- Run tesseract on each page ---
-        try:
-            import pytesseract
-            from PIL import Image
-        except ImportError:
-            raise PDFConversionError("pytesseract / Pillow not installed")
+    source = fitz.open(input_pdf)
+    result = fitz.open()
+    zoom = dpi / 72.0
+    matrix = fitz.Matrix(zoom, zoom)
 
-        page_pdfs = []
-        for i, page_img in enumerate(pages):
-            page_pdf_path = os.path.join(ocr_dir, f"page_{i:04d}.pdf")
-            pytesseract.image_to_pdf_or_hocr(
-                page_img,
-                lang=language,
-                extension='pdf',
-                config='--psm 3',  # Fully automatic page segmentation
-            )
-            # pytesseract returns bytes
-            pdf_bytes = pytesseract.image_to_pdf_or_hocr(
-                page_img,
-                lang=language,
-                extension='pdf',
-                config='--psm 3',
-            )
-            with open(page_pdf_path, 'wb') as f:
-                f.write(pdf_bytes)
-            page_pdfs.append(page_pdf_path)
+    try:
+        for index, page in enumerate(source):
+            pixmap = page.get_pixmap(matrix=matrix)
+            with Image.open(io.BytesIO(pixmap.tobytes('png'))) as image:
+                pdf_bytes = pytesseract.image_to_pdf_or_hocr(
+                    image,
+                    lang=language,
+                    extension='pdf',
+                    config='--psm 3',  # Fully automatic page segmentation
+                )
+            del pixmap
 
-        logger.info(f"OCR: {len(page_pdfs)} pages processed")
+            with fitz.open('pdf', pdf_bytes) as page_pdf:
+                result.insert_pdf(page_pdf)
 
-        # --- Merge page PDFs ---
-        try:
-            from PyPDF2 import PdfMerger
-        except ImportError:
-            raise PDFConversionError("PyPDF2 not installed")
+        if result.page_count == 0:
+            raise PDFConversionError("OCR produced no pages")
 
-        merger = PdfMerger()
-        for p in page_pdfs:
-            merger.append(p)
-
-        with open(output_pdf, 'wb') as f:
-            merger.write(f)
-        merger.close()
-
-        if not os.path.exists(output_pdf):
-            raise PDFConversionError("OCR: merged PDF not created")
-
-        logger.info(f"OCR complete: {output_pdf}")
+        result.save(output_pdf)
+        logger.info("OCR complete: %s (%d pages)", output_pdf, result.page_count)
         return output_pdf
 
     except PDFConversionError:
@@ -351,7 +536,8 @@ def perform_ocr_on_pdf(
     except Exception as exc:
         raise PDFConversionError(f"OCR pipeline error: {exc}")
     finally:
-        shutil.rmtree(ocr_dir, ignore_errors=True)
+        result.close()
+        source.close()
 
 
 # ---------------------------------------------------------------------------
@@ -384,7 +570,12 @@ def smart_convert_pdf(
 
     # Step 1: OCR if requested
     if ocr_enabled:
-        ocr_output = output_path.replace(f'.{output_format}', '_ocr_tmp.pdf')
+        # Was output_path.replace(f'.{output_format}', '_ocr_tmp.pdf'), which
+        # replaces *every* occurrence of the format string in the path and does
+        # nothing at all when the suffix case differs (".DOCX"). When it matched
+        # nothing the OCR result was written straight to output_path, so the
+        # converter then read and wrote the same file.
+        ocr_output = str(Path(output_path).with_suffix('')) + '_ocr_tmp.pdf'
         try:
             working_pdf = perform_ocr_on_pdf(input_pdf, ocr_output, language=ocr_lang)
             ocr_actually_used = True
@@ -397,14 +588,17 @@ def smart_convert_pdf(
     engine_used = None
 
     if output_format.lower() == 'docx':
-        # Try pdf2docx first (better layout preservation)
+        # Try pdf2docx first (better layout preservation), then rebuild the
+        # document natively. The old fallback here asked LibreOffice for a
+        # Writer filter on a PDF, which it loads in Draw — that combination
+        # cannot produce a file, so a pdf2docx failure used to fail the request.
         try:
             final_path = convert_pdf_with_pdf2docx(working_pdf, output_path)
             engine_used = 'pdf2docx'
         except PDFConversionError as e:
-            logger.warning(f"pdf2docx failed ({e}), falling back to soffice")
-            final_path = convert_pdf_with_soffice(working_pdf, 'docx', output_path)
-            engine_used = 'soffice-fallback'
+            logger.warning(f"pdf2docx failed ({e}), rebuilding natively")
+            final_path = convert_pdf_to_docx_native(working_pdf, output_path)
+            engine_used = 'native-fallback'
     else:
         final_path = convert_pdf_with_soffice(working_pdf, output_format, output_path)
         engine_used = 'soffice'
