@@ -90,7 +90,7 @@ sync_subtree_branch() {
 # --- frontend-only / server: plain mirrors of main --------------------------
 sync_mirror_branch() {
     local target="$1"
-    local parent
+    local parent worktree
     parent=$(git rev-parse "origin/${target}")
 
     if git merge-base --is-ancestor "$SOURCE_SHA" "$parent"; then
@@ -106,16 +106,23 @@ sync_mirror_branch() {
         return
     fi
 
-    # Fast-forward when possible; these branches are meant to track main and
-    # carry no unique work of their own.
-    if git merge-base --is-ancestor "$parent" "$SOURCE_SHA"; then
-        git push origin "${SOURCE_SHA}:refs/heads/${target}"
-        echo "${target}: fast-forwarded to ${SOURCE_SHA:0:9}"
+    # These branches accumulate merge commits of their own, so main is never a
+    # fast-forward for them after the first sync. Merge rather than
+    # fast-forward, in a throwaway worktree so the caller's checkout and any
+    # in-progress work are left alone.
+    worktree=$(mktemp -d -t "sync-${target}-XXXXXX")
+    git worktree add --quiet --detach "$worktree" "$parent"
+    if git -C "$worktree" merge --no-edit "$SOURCE_SHA" >/dev/null 2>&1; then
+        git push origin "$(git -C "$worktree" rev-parse HEAD):refs/heads/${target}"
+        echo "${target}: merged and pushed"
     else
-        echo "${target}: has diverged from ${SOURCE_BRANCH} and cannot fast-forward." >&2
-        echo "${target}: resolve by hand, e.g. git checkout ${target} && git merge ${SOURCE_BRANCH}" >&2
+        echo "${target}: merge conflict; resolve by hand:" >&2
+        git -C "$worktree" diff --name-only --diff-filter=U >&2
+        git -C "$worktree" merge --abort || true
+        git worktree remove --force "$worktree"
         return 1
     fi
+    git worktree remove --force "$worktree"
 }
 
 for branch in "${MIRROR_BRANCHES[@]}"; do
