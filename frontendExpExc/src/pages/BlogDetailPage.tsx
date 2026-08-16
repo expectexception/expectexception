@@ -40,6 +40,14 @@ import ReadingProgressBar from '../components/blog/ReadingProgressBar';
 import { useAuth } from '../context/AuthContext';
 import Seo from '../components/seo/Seo';
 
+// Every post here is site-authored tool/guide content, not an individually
+// bylined article, so the byline is a fixed label rather than whichever
+// account happens to technically own the row - that previously rendered as
+// post.author.email directly (a demo placeholder, or an admin's own
+// personal address), and even the account's real name isn't the right
+// public byline for this kind of content.
+const BLOG_BYLINE = 'Admin';
+
 const BlogDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const { user } = useAuth();
@@ -293,14 +301,14 @@ const BlogDetailPage: React.FC = () => {
                     keywords={post.keywords ? post.keywords.split(',').map((k: string) => k.trim()) : post.tags.map((t: any) => t.name)}
                     type="article"
                     date={post.created_at}
-                    author={post.author?.email || 'ExpectException'}
+                    author={BLOG_BYLINE}
                     image={post.cover_image || undefined}
                     structuredData={{
                         '@context': 'https://schema.org',
                         '@type': 'Article',
                         headline: post.seo_title || post.title,
                         description: post.seo_description || post.content.replace(/<[^>]*>/g, '').substring(0, 160),
-                        author: { '@type': 'Person', name: post.author?.email || 'ExpectException' },
+                        author: { '@type': 'Person', name: BLOG_BYLINE },
                         datePublished: post.created_at,
                         dateModified: (post as any).updated_at || post.created_at,
                         publisher: { '@type': 'Organization', name: 'ExpectException', logo: 'https://expectexception.com/logo512.png' },
@@ -379,10 +387,10 @@ const BlogDetailPage: React.FC = () => {
                                 >
                                     <Stack direction="row" spacing={1} alignItems="center">
                                         <Avatar sx={{ width: 32, height: 32 }}>
-                                            {post.author.email.charAt(0).toUpperCase()}
+                                            A
                                         </Avatar>
                                         <Typography variant="subtitle2" fontWeight={600} color="text.primary">
-                                            {post.author.email}
+                                            {BLOG_BYLINE}
                                         </Typography>
                                     </Stack>
                                     <Stack direction="row" spacing={1} alignItems="center">

@@ -17,6 +17,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
     username = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -26,6 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
+            "display_name",
             "profile",
             "is_staff",
             "avatar_url",
@@ -35,6 +37,19 @@ class UserSerializer(serializers.ModelSerializer):
     def get_username(self, obj):
         """Return email prefix as username since model uses email as identifier."""
         return obj.email.split("@")[0] if obj.email else ""
+
+    def get_display_name(self, obj):
+        """A public-facing name that's safe to render as a byline.
+
+        first_name/last_name are blank on the accounts that author seeded
+        content, so the frontend used to fall back to obj.email directly —
+        showing a raw email address (in one case the site owner's own
+        personal address) as the author of every blog post. Never derive
+        this from email; every consumer that needs a byline should use it
+        instead of `.email`.
+        """
+        full_name = f"{obj.first_name} {obj.last_name}".strip()
+        return full_name or "Admin"
 
 
 class PublicUserSerializer(serializers.ModelSerializer):
