@@ -117,7 +117,6 @@ const EstimatorPage: React.FC = () => {
           {Array.from({ length: pages }).map((_, idx) => {
             const floorY = startY - (idx + 1) * floorHeight;
             const currentWidth = baseWidth - (idx * (baseWidth / 2.5 / maxFloors));
-            const isTopFloor = idx === pages - 1;
 
             return (
               <motion.g

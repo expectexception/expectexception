@@ -7,7 +7,6 @@ import GamePlayShell from './shared/GamePlayShell';
 const PADDLE_H = 70;
 const PADDLE_W = 10;
 const BALL_SIZE = 9;
-const PLAYER_SPEED = 6.5;
 const AI_SPEED = 4.6;
 const WIN_SCORE = 7;
 

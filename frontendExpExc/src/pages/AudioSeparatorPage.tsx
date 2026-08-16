@@ -24,13 +24,11 @@ import {
 } from '@mui/material';
 import {
   CloudUpload,
-  Download,
   CheckCircle,
   Error as ErrorIcon,
   GetApp,
   Mic,
   MusicNote,
-  Settings,
   Info,
   Close,
 } from '@mui/icons-material';
@@ -206,13 +204,6 @@ const AudioSeparatorPage: React.FC = () => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
-  };
-
-  const getStatusColor = (status?: string) => {
-    if (!status) return 'default';
-    if (status === 'SUCCESS') return 'success';
-    if (status === 'FAILURE') return 'error';
-    return 'info';
   };
 
   return (

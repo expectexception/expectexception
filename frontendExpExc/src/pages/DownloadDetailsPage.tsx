@@ -20,8 +20,7 @@ import {
     CalendarToday,
     Storage,
     Category,
-    VerifiedUser,
-    Share // For future use
+    VerifiedUser
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import Seo from '../components/seo/Seo';

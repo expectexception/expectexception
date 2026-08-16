@@ -69,7 +69,6 @@ const FlappyBlocks: React.FC = () => {
         stateRef.current.birdY = sizeRef.current.h / 2;
         window.addEventListener('resize', resize);
 
-        let lastTime = 0;
         const loop = (time: number) => {
             const s = stateRef.current;
             const { w, h } = sizeRef.current;
@@ -125,7 +124,6 @@ const FlappyBlocks: React.FC = () => {
             ctx.fillRect(-BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
             ctx.restore();
 
-            lastTime = time;
             rafRef.current = requestAnimationFrame(loop);
         };
         rafRef.current = requestAnimationFrame(loop);

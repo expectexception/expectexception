@@ -1,42 +1,34 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
-    Box,
-    Typography,
-    TextField,
-    IconButton,
-    Paper,
-    Avatar,
-    alpha,
-    useTheme,
-    useMediaQuery,
-    Tooltip,
-    Alert,
-    Stack,
-    Button,
+  Box,
+  Typography,
+  TextField,
+  IconButton,
+  Paper,
+  alpha,
+  useTheme,
+  useMediaQuery,
+  Tooltip,
+  Stack,
 } from '@mui/material';
 import {
-    Send,
-    Close,
-    ContentCopy,
-    AccessTime,
-    HourglassEmpty,
-    Memory,
-    CheckCircle,
-    Cancel,
-    DeleteOutline,
-    ChatBubbleOutline,
-    VolumeUp,
-    VolumeOff,
-    ThumbUpOutlined,
-    Check,
-    Mic,
-    MicOff,
-    Download,
-    Palette,
-    CloudUpload,
-    Star,
-    AutoAwesome
+  Send,
+  Close,
+  ContentCopy,
+  AccessTime,
+  HourglassEmpty,
+  CheckCircle,
+  Cancel,
+  DeleteOutline,
+  VolumeUp,
+  VolumeOff,
+  Check,
+  Mic,
+  MicOff,
+  Download,
+  Palette,
+  CloudUpload,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
@@ -926,7 +918,6 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isStreaming, setIsStreaming] = useState(false);
     const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
-    const [error, setError] = useState<string | null>(null);
     const [mood, setMood] = useState<Mood>('neutral');
     const [isDancing, setIsDancing] = useState(false);
     const [isJumping, setIsJumping] = useState(false);
@@ -957,14 +948,6 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             setIsDancing(false);
             setMood('neutral');
         }, 6000);
-    };
-
-    const triggerJump = () => {
-        setIsJumping(true);
-        playCyberSound('open', isMuted);
-        setTimeout(() => {
-            setIsJumping(false);
-        }, 1200);
     };
 
     const toggleMute = () => {
@@ -1160,7 +1143,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
         }
     };
 
-    const [isScrolling, setIsScrolling] = useState(false);
+    const [, setIsScrolling] = useState(false);
     const [isWalking, setIsWalking] = useState(false);
     const [isLanding, setIsLanding] = useState(false);
     const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -1425,7 +1408,6 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
         setMessages(prev => [...prev, userMessage]);
         setInputValue('');
         setIsLoading(true);
-        setError(null);
         accumulatedContentRef.current = '';
 
         // Mid-flow replies (the idea, then contact info) belong to the
@@ -1650,7 +1632,9 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, isMuted]);
+        // setIsOpen is the parent's useState setter (Layout.tsx passes
+        // setChatbotOpen), so it's referentially stable across renders.
+    }, [isOpen, isMuted, setIsOpen]);
 
     const formatMessage = (content: string) => {
         const parts = content.split(/(```[\s\S]*?```)/g);

@@ -28,11 +28,10 @@ import {
     AccessTime,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
 import DOMPurify from 'dompurify';
 import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
-import { Post, Comment } from '../types';
+import { Post } from '../types';
 import CommentSection from '../components/blog/CommentSection';
 import TableOfContents from '../components/blog/TableOfContents';
 import CodeBlock from '../components/blog/CodeBlock';
@@ -130,12 +129,6 @@ const BlogDetailPage: React.FC = () => {
             setIsBookmarked(!newStatus);
             setSnackbar({ open: true, message: 'Failed to update bookmark' });
         }
-    };
-
-    const handleShare = () => {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url);
-        setSnackbar({ open: true, message: 'Link copied to clipboard!' });
     };
 
     const handleCloseSnackbar = () => {

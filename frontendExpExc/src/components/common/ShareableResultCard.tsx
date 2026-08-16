@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Box, Card, CardContent, Typography, Button, Stack, Chip, useTheme, alpha } from '@mui/material';
-import { Download, Share, Check, ContentCopy, AutoAwesome } from '@mui/icons-material';
+import { Download, Check, ContentCopy, AutoAwesome } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
 import confetti from 'canvas-confetti';
 

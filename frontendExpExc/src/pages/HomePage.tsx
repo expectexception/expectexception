@@ -9,32 +9,18 @@ import {
   Box,
   Chip,
   Stack,
-  IconButton,
   useTheme,
   alpha,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Slider,
 } from '@mui/material';
 import {
   RocketLaunch,
   Code,
   ArrowForward,
-  TrendingUp,
-  Security,
-  Speed,
-  Newspaper,
   Psychology,
   ColorLens,
   TouchApp,
   CheckCircle,
-  Message,
   Terminal,
   Dns,
   Visibility,
@@ -49,7 +35,15 @@ import { staticServices, staticStats } from '../data/StaticData';
 import { isReactSnap } from '../utils/isReactSnap';
 import { excerptFromHtml } from '../utils/text';
 import { useCustomTheme } from '../context/CustomThemeContext';
-import { WebDevSvg, BackendSvg, FullStackSvg, AiSvg, PlanningAgentSvg, CodingAgentSvg, TestingAgentSvg, DeployAgentSvg } from '../components/layout/AnimatedSvgs';
+import {
+  BackendSvg,
+  FullStackSvg,
+  AiSvg,
+  PlanningAgentSvg,
+  CodingAgentSvg,
+  TestingAgentSvg,
+  DeployAgentSvg,
+} from '../components/layout/AnimatedSvgs';
 import { ChatbotPreview, CompressorPreview, PdfPreview, UrlPreview } from '../components/layout/MiniPreviews';
 import BrandLogo from '../components/layout/BrandLogo';
 
@@ -341,7 +335,7 @@ const PhysicsSandbox: React.FC = () => {
         canvas.removeEventListener('mousedown', handleMouseDown);
       }
     };
-  }, [primaryColor]);
+  }, [primaryColor, theme.palette.secondary.main]);
 
   return (
     <canvas
@@ -678,7 +672,7 @@ const HomePage: React.FC = () => {
   const skillsData = getSkillsData(theme.palette.primary.main, theme.palette.secondary.main);
   const [latestPosts, setLatestPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
-  const [services, setServices] = useState<any[]>(staticServices);
+  const [, setServices] = useState<any[]>(staticServices);
   const [stats, setStats] = useState(staticStats);
 
   // --- Agentic Simulation State ---

@@ -1,5 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Card, CardContent, TextField, Typography, Chip, Alert, Stack, Paper, Grid, Button, useTheme, alpha } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Typography,
+  Chip,
+  Stack,
+  Paper,
+  Grid,
+  useTheme,
+  alpha,
+} from '@mui/material';
 import { Schedule } from '@mui/icons-material';
 import ServicePageShell from './ServicePageShell';
 
@@ -56,7 +68,10 @@ const CronExplainer: React.FC = () => {
     const primary = theme.palette.primary.main;
     const [expression, setExpression] = useState('0 9 * * 1-5');
     const parts = expression.trim().split(/\s+/);
-    const isValid = parts.length === 5 && parts.every(p => /^[\d,*\/\-L#W]+$/.test(p));
+    // Trailing "-" (not escaped mid-class) so it can't be misread as forming
+    // a range with its neighbors, e.g. "\/-L" would silently match the whole
+    // "/" through "L" ASCII range instead of just "/" and "-" as literals.
+    const isValid = parts.length === 5 && parts.every(p => /^[\d,*/L#W-]+$/.test(p));
     const explanation = useMemo(() => isValid ? explainCron(expression) : 'Enter a valid cron expression (5 fields)', [expression, isValid]);
 
     return (
