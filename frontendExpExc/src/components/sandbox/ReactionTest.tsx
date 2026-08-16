@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Card, CardContent, Container, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Typography, useTheme } from '@mui/material';
 import { Bolt } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const BEST_KEY = 'sandbox_reaction_test_best_ms';
 const MIN_DELAY_MS = 1500;
@@ -115,30 +115,30 @@ const ReactionTest: React.FC = () => {
             boxBg = theme.palette.warning.main;
             break;
         case 'result':
-            boxLabel = `${lastResult} ms — click to try again`;
+            boxLabel = `${lastResult} ms (click to try again)`;
             boxBg = theme.palette.primary.main;
             break;
         default:
             boxLabel = 'Click to start';
             boxBg = 'rgba(255,255,255,0.06)';
     }
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo title="Reaction Time Test - Free Online Game" gameId={8} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Bolt}
                 title="Reaction Test"
                 subtitle="Measure how fast you react. Click when the box turns green - but not before!"
-            />
-
-            <Card sx={{
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box
@@ -170,7 +170,7 @@ const ReactionTest: React.FC = () => {
                                 Best
                             </Typography>
                             <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                                {best !== null ? `${best} ms` : '—'}
+                                {best !== null ? `${best} ms` : 'N/A'}
                             </Typography>
                         </Box>
                         <Box>
@@ -178,7 +178,7 @@ const ReactionTest: React.FC = () => {
                                 Average (last {history.length || 0})
                             </Typography>
                             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                {average !== null ? `${average} ms` : '—'}
+                                {average !== null ? `${average} ms` : 'N/A'}
                             </Typography>
                         </Box>
                     </Box>
@@ -210,7 +210,8 @@ const ReactionTest: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

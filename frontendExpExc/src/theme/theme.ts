@@ -17,22 +17,22 @@ declare module '@mui/material/styles' {
   }
 }
 
-export const getTheme = (primaryColor: string = '#3dfc55', colorMode: 'dark' | 'light' = 'dark'): Theme => {
-  const isDark = colorMode === 'dark';
-  const bg = isDark ? '#050505' : '#f5f5f5';
-  const paper = isDark ? '#0d0e12' : '#ffffff';
-  const textPrimary = isDark ? '#ffffff' : '#0a0a0a';
-  const textSecondary = isDark ? '#94a3b8' : '#64748b';
-  const dividerColor = isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.12);
+export const getTheme = (primaryColor: string = '#3dfc55', _colorMode: 'dark' | 'light' = 'dark'): Theme => {
+  const isDark = true;
+  const bg = '#050505';
+  const paper = '#0d0e12';
+  const textPrimary = '#ffffff';
+  const textSecondary = '#94a3b8';
+  const dividerColor = alpha('#ffffff', 0.08);
 
   return createTheme({
     palette: {
-      mode: colorMode,
+      mode: 'dark',
       primary: {
         main: primaryColor,
         light: alpha(primaryColor, 0.8),
         dark: darken(primaryColor, 0.2),
-        contrastText: isDark ? '#000000' : '#ffffff',
+        contrastText: '#000000',
       },
       secondary: {
         main: '#00e5ff',

@@ -109,7 +109,7 @@ const ImageToTextPage: React.FC = () => {
       formData.append('language', selectedLanguage);
 
       const response = await apiClient.post(
-        `${endpoints.services.imageToText}/`,
+        endpoints.services.imageToText,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },

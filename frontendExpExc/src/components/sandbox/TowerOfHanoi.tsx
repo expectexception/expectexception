@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import {
-    Box, Button, Card, CardContent, Chip, Container, Stack, Typography,
+    Box, Button, Card, CardContent, Chip, Stack, Typography,
     ToggleButton, ToggleButtonGroup, useTheme,
 } from '@mui/material';
 import { Stairs } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const STATS_KEY = 'sandbox_hanoi_stats';
 const MIN_DISKS = 3;
@@ -136,21 +136,21 @@ const TowerOfHanoi: React.FC = () => {
         ];
         return solids[(size - 1) % solids.length];
     }, [theme]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo
                 gameId={28}
                 title="Tower of Hanoi - Free Online Disk Puzzle Game"
                 keywords={['tower of hanoi', 'hanoi puzzle online', 'disk puzzle game', 'classic logic puzzle', 'brain teaser game']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Stairs}
                 title="Tower of Hanoi"
                 subtitle="Move the whole stack from the first peg to the last, one disk at a time - and never place a bigger disk on a smaller one."
-            />
-
-            <Card sx={{
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -185,7 +185,7 @@ const TowerOfHanoi: React.FC = () => {
                         <Chip size="small" label={`Moves: ${moveCount}`} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
                         <Chip size="small" label={`Optimal: ${optimalMoves(diskCount)}`} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
                         <Typography variant="body2" color="text.secondary">
-                            Best: {best[diskCount] !== undefined ? `${best[diskCount]} moves` : '—'}
+                            Best: {best[diskCount] !== undefined ? `${best[diskCount]} moves` : 'N/A'}
                         </Typography>
                     </Stack>
 
@@ -307,7 +307,8 @@ const TowerOfHanoi: React.FC = () => {
                     </Typography>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

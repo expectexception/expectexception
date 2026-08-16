@@ -129,6 +129,57 @@ apiClient.interceptors.request.use(
     }
 );
 
+// Broadcast so AuthContext can clear its React state and route to /login via
+// the router. The interceptor used to do `window.location.href = '/login'`,
+// which hard-reloads the SPA and, worse, left AuthContext still believing the
+// user was signed in because nothing told it the tokens had been discarded.
+export const AUTH_EXPIRED_EVENT = 'auth:expired';
+const notifyAuthExpired = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+    }
+};
+
+// The backend rotates refresh tokens and blacklists the previous one on every
+// refresh. Two requests 401-ing at once would each POST the same refresh
+// token: the first rotates it, the second replays a now-blacklisted token and
+// fails, logging the user out mid-session. Collapse concurrent refreshes onto
+// one in-flight request and let every caller await the same result.
+let refreshInFlight: Promise<string> | null = null;
+
+const performTokenRefresh = async (): Promise<string> => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+        throw new Error('No refresh token available');
+    }
+
+    const refreshBaseUrl = isRenderMarkedDown() ? FALLBACK_BASE_URL : API_BASE_URL;
+    const { data } = await axios.post(`${refreshBaseUrl}/api/auth/refresh/`, {
+        refresh: refreshToken,
+    });
+
+    localStorage.setItem('accessToken', data.access);
+    // With ROTATE_REFRESH_TOKENS the response carries a replacement refresh
+    // token and the one we just sent is blacklisted. Dropping it here meant
+    // the next refresh replayed a dead token, so sessions died at the access
+    // token's 60-minute lifetime no matter how active the user was.
+    if (data.refresh) {
+        localStorage.setItem('refreshToken', data.refresh);
+    }
+    return data.access;
+};
+
+const refreshAccessToken = (): Promise<string> => {
+    if (!refreshInFlight) {
+        refreshInFlight = performTokenRefresh().finally(() => {
+            refreshInFlight = null;
+        });
+    }
+    return refreshInFlight;
+};
+
 // Response interceptor for handling errors
 apiClient.interceptors.response.use(
     (response) => {
@@ -157,21 +208,20 @@ apiClient.interceptors.response.use(
         }
 
         // Handle 401 Unauthorized - token expired/invalid
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
             originalRequest._retry = true;
 
-            const refreshToken = localStorage.getItem('refreshToken');
-            if (refreshToken) {
+            // A 401 from the refresh endpoint itself means the refresh token is
+            // dead; retrying it would recurse.
+            if (originalRequest.url?.includes('/api/auth/refresh')) {
+                notifyAuthExpired();
+                return Promise.reject(error);
+            }
+
+            if (localStorage.getItem('refreshToken')) {
                 try {
-                    const refreshBaseUrl = isRenderMarkedDown() ? FALLBACK_BASE_URL : API_BASE_URL;
-                    const response = await axios.post(`${refreshBaseUrl}/api/auth/token/refresh/`, {
-                        refresh: refreshToken,
-                    });
-
-                    const { access } = response.data;
-                    localStorage.setItem('accessToken', access);
-
-                    // Retry original request with new token
+                    const access = await refreshAccessToken();
+                    originalRequest.headers = originalRequest.headers || {};
                     originalRequest.headers.Authorization = `Bearer ${access}`;
                     return apiClient(originalRequest);
                 } catch (refreshError) {
@@ -179,33 +229,14 @@ apiClient.interceptors.response.use(
                 }
             }
 
-            // If we are here, we had no refresh token, or the refresh request failed.
-            // Clear local tokens to prevent sending stale tokens with future requests.
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-
-            // Retry the original request WITHOUT the Authorization header.
-            // If the request was for a public endpoint (AllowAny), it will succeed.
-            // If the endpoint actually requires authentication, it will fail again with 401/403.
-            if (originalRequest.headers) {
-                delete originalRequest.headers.Authorization;
-            }
-
-            try {
-                // We use apiClient to retry so that standard base URLs and other interceptors still apply
-                return await apiClient(originalRequest);
-            } catch (retryError: any) {
-                // If it still fails with 401 or 403, and it's not a profile endpoint (which is used by checkAuth),
-                // we redirect to /login.
-                const isProfileRequest = originalRequest.url?.includes('/api/auth/profile');
-                if (
-                    (retryError.response?.status === 401 || retryError.response?.status === 403) &&
-                    !isProfileRequest
-                ) {
-                    window.location.href = '/login';
-                }
-                return Promise.reject(retryError);
-            }
+            // No refresh token, or refreshing failed — the session is over.
+            // The previous version retried the request with the Authorization
+            // header stripped, which turned an expired session into a silent
+            // downgrade to anonymous: authenticated endpoints that also serve
+            // anonymous callers returned public data and the UI rendered it as
+            // if the user were still signed in.
+            notifyAuthExpired();
+            return Promise.reject(error);
         }
 
         return Promise.reject(error);

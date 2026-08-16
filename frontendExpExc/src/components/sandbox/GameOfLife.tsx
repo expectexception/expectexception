@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Box, Button, Typography, useTheme } from '@mui/material';
 import { GridView, Delete, PlayArrow, Pause, Casino } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const COLS = 60;
 const ROWS = 40;
@@ -128,23 +128,25 @@ const GameOfLife: React.FC = () => {
         setGeneration(0);
         render();
     };
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <>
             <Seo title="Conway's Game of Life - Cellular Automaton" gameId={18} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={GridView}
                 title="Game of Life"
                 subtitle="Click cells to seed a pattern, then watch Conway's four simple rules produce gliders, oscillators, and chaos."
-            />
-
-            <Card sx={{
+                maxWidth="md"
+                onRestart={handleClear}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box
@@ -191,7 +193,8 @@ const GameOfLife: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

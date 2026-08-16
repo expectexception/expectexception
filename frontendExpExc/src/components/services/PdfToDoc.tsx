@@ -220,7 +220,7 @@ const PdfToDoc: React.FC = () => {
         } catch (err: any) {
             console.error('Conversion request error:', err);
             const errMsg = err.response?.data?.error ||
-                (err.code === 'ECONNABORTED' ? 'Upload timed out — try a smaller file' : 'Failed to start conversion.');
+                (err.code === 'ECONNABORTED' ? 'Upload timed out | try a smaller file' : 'Failed to start conversion.');
             setError(errMsg);
             setLoading(false);
         }
@@ -256,17 +256,17 @@ const PdfToDoc: React.FC = () => {
             title="PDF to Word Converter"
             subtitle="Convert standard and scanned PDFs to editable documents with high accuracy"
             maxWidth="md"
-            about="Converts a PDF into an editable document — DOCX, DOC, ODT, RTF, or plain TXT. For standard text-based PDFs it extracts and reflows the content directly; for scanned or image-based PDFs, enabling the OCR option runs the text through Tesseract OCR in any of 8 supported languages before converting. Conversion runs asynchronously on the server: the file is uploaded, a background job processes it and is polled every 2 seconds, and the page shows live progress until your document is ready to download. Because OCR is noticeably slower, only enable it when your PDF is actually scanned or image-only rather than real text."
+            about="Converts a PDF into an editable document | DOCX, DOC, ODT, RTF, or plain TXT. For standard text-based PDFs it extracts and reflows the content directly; for scanned or image-based PDFs, enabling the OCR option reads the text out of the images in any of 8 supported languages before converting. Conversion runs asynchronously on the server: the file is uploaded, a background job processes it and is polled every 2 seconds, and the page shows live progress until your document is ready to download. Because OCR is noticeably slower, only enable it when your PDF is actually scanned or image-only rather than real text."
             howToSteps={[
-                { name: 'Upload your PDF', text: 'Drag a PDF onto the drop zone or click it to browse — files over 50MB are rejected before upload.' },
+                { name: 'Upload your PDF', text: 'Drag a PDF onto the drop zone or click it to browse | files over 50MB are rejected before upload.' },
                 { name: 'Choose an output format', text: 'Pick DOCX, DOC, ODT, RTF, or TXT from the Output Format dropdown in the Settings panel.' },
                 { name: 'Enable OCR if needed', text: "Open Advanced Options and turn on Enable OCR (Scanned Docs) if your PDF is a scan or image rather than selectable text, then choose the document's language." },
-                { name: 'Convert and wait', text: 'Click Convert to [format] — a progress bar tracks uploading, queuing, and conversion (OCR jobs take noticeably longer).' },
+                { name: 'Convert and wait', text: 'Click Convert to [format] | a progress bar tracks uploading, queuing, and conversion (OCR jobs take noticeably longer).' },
                 { name: 'Download the result', text: 'Once conversion succeeds, review the size and engine details shown, then click Download [format] to save the file.' },
             ]}
             faq={[
                 { question: 'What is the maximum PDF size?', answer: 'Files up to 50MB. Anything larger is rejected immediately with an error, before anything is uploaded.' },
-                { question: 'When should I turn on OCR?', answer: "Only for scanned or image-based PDFs where the text can't be selected or copied in a normal PDF viewer. For regular text PDFs, leave it off — OCR adds roughly 1-3 minutes and isn't needed." },
+                { question: 'When should I turn on OCR?', answer: "Only for scanned or image-based PDFs where the text can't be selected or copied in a normal PDF viewer. For regular text PDFs, leave it off | OCR adds roughly 1-3 minutes and isn't needed." },
                 { question: 'Which languages does OCR support?', answer: 'English, Arabic, French, German, Spanish, Hindi, Simplified Chinese, and Japanese.' },
                 { question: "Why does conversion say 'queued' instead of finishing immediately?", answer: 'Conversion runs as a background job on the server; the page polls for status every 2 seconds until it finishes, which lets larger files and OCR jobs process without the browser tab timing out.' },
             ]}
@@ -471,7 +471,7 @@ const PdfToDoc: React.FC = () => {
                                         label={
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                                 <Typography variant="body2">Enable OCR (Scanned Docs)</Typography>
-                                                <Tooltip title="Use for scanned documents (images as PDF). Runs pytesseract to extract text before converting. Slower but needed for image-only PDFs.">
+                                                <Tooltip title="Use for scanned documents (images as PDF). Reads the text out of the images before converting. Slower but needed for image-only PDFs.">
                                                     <Info fontSize="small" color="action" sx={{ fontSize: 16 }} />
                                                 </Tooltip>
                                             </Box>
@@ -525,9 +525,9 @@ const PdfToDoc: React.FC = () => {
                                     </Box>
                                     {result.engine_used && (
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Typography variant="body2" color="text.secondary">Engine</Typography>
+                                            <Typography variant="body2" color="text.secondary">Conversion Mode</Typography>
                                             <Chip
-                                                label={result.engine_used === 'pdf2docx' ? 'pdf2docx (high quality)' : result.engine_used}
+                                                label={result.engine_used === 'pdf2docx' ? 'High Quality' : 'Standard'}
                                                 size="small"
                                                 color={result.engine_used === 'pdf2docx' ? 'success' : 'default'}
                                                 variant="outlined"

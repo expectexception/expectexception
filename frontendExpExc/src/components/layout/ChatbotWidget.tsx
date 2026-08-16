@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
     Box,
     Typography,
@@ -24,10 +25,37 @@ import {
     CheckCircle,
     Cancel,
     DeleteOutline,
-    ChatBubbleOutline
+    ChatBubbleOutline,
+    VolumeUp,
+    VolumeOff,
+    ThumbUpOutlined,
+    Check,
+    Mic,
+    MicOff,
+    Download,
+    Palette,
+    CloudUpload,
+    Star,
+    AutoAwesome
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import apiClient, { HEAVY_API_BASE_URL } from '../../api/config';
+
+const triggerCyberConfetti = () => {
+    try {
+        confetti({
+            particleCount: 45,
+            spread: 65,
+            origin: { y: 0.88, x: 0.88 },
+            colors: ['#00FF66', '#00eeff', '#ffffff', '#a855f7'],
+            ticks: 160,
+            gravity: 1.1,
+            scalar: 0.85,
+            disableForReducedMotion: true,
+        });
+    } catch (e) { /* ignore */ }
+};
 
 // Chat is a "heavy" AI service (Ollama-backed) - it must hit the same local
 // GPU-tunnel backend as the full ChatbotPage, not Render's light backend
@@ -76,37 +104,43 @@ interface AgentStep {
 }
 
 // --- Custom Animated SVG Face Component ---
-const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
+const ChatbotFace: React.FC<{ mood: Mood; themeColor?: string; size?: number; hideMargin?: boolean }> = ({ mood, themeColor, size = 70, hideMargin = false }) => {
     const theme = useTheme();
+    const primary = themeColor || theme.palette.primary.main || '#00FF66';
     const colorMap = {
-        neutral: '#00eeff', // Cyan
-        thinking: '#00eeff', // Cyan
-        happy: theme.palette.primary.main, // Neon Green
-        excited: theme.palette.primary.main, // Neon Green
+        neutral: primary,
+        thinking: primary,
+        happy: primary,
+        excited: '#ff007f', // Vibrant Neon Pink
         sleeping: '#8b5cf6', // Purple
         idea: '#f59e0b', // Amber
         error: '#ef4444', // Red
     };
 
-    const activeColor = colorMap[mood] || '#00eeff';
+    const activeColor = colorMap[mood] || primary;
 
     return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: hideMargin ? 0 : 1 }}>
             <motion.div
-                animate={mood === 'sleeping' ? {
-                    scale: [1, 0.97, 1],
-                    y: [0, 3, 0]
-                } : {
-                    y: [0, -4, 0],
-                }}
+                animate={
+                    mood === 'sleeping'
+                        ? { scale: [1, 0.96, 1], y: [0, 3, 0] }
+                        : mood === 'excited'
+                        ? { rotate: [-8, 8, -8], scale: [1, 1.08, 0.98, 1], y: [0, -6, 0] }
+                        : mood === 'happy'
+                        ? { rotate: [-4, 4, -4], y: [0, -3, 0] }
+                        : mood === 'thinking'
+                        ? { rotate: [-5, 5], y: [0, -2, 0] }
+                        : { y: [0, -3, 0] }
+                }
                 transition={{
-                    duration: mood === 'sleeping' ? 4 : 3,
+                    duration: mood === 'sleeping' ? 4 : mood === 'excited' ? 0.6 : 3,
                     repeat: Infinity,
                     ease: 'easeInOut'
                 }}
-                style={{ position: 'relative', width: 70, height: 70 }}
+                style={{ position: 'relative', width: size, height: size }}
             >
-                <svg width="70" height="70" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                             <feGaussianBlur stdDeviation="5" result="blur" />
@@ -134,10 +168,10 @@ const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
                         y="25"
                         width="80"
                         height="70"
-                        rx="20"
+                        rx="22"
                         stroke={activeColor}
-                        strokeWidth="3"
-                        fill="rgba(13, 14, 18, 0.9)"
+                        strokeWidth="3.5"
+                        fill="rgba(13, 14, 18, 0.92)"
                         style={{ filter: 'url(#glow)' }}
                         animate={
                             mood === 'thinking'
@@ -154,6 +188,14 @@ const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
                                 : {}
                         }
                     />
+
+                    {/* Cute Cheek Blushes for happy/excited */}
+                    {(mood === 'happy' || mood === 'excited') && (
+                        <g opacity="0.6">
+                            <circle cx="32" cy="66" r="4" fill="#ff007f" />
+                            <circle cx="88" cy="66" r="4" fill="#ff007f" />
+                        </g>
+                    )}
 
                     {/* Zzz for sleeping */}
                     {mood === 'sleeping' && (
@@ -296,6 +338,497 @@ const ChatbotFace: React.FC<{ mood: Mood }> = ({ mood }) => {
     );
 };
 
+// --- Cyber Audio Synthesizer (Web Audio API) ---
+const playCyberSound = (type: 'open' | 'close' | 'send' | 'receive' | 'click', isMuted: boolean = false) => {
+    if (isMuted || typeof window === 'undefined') return;
+    try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+
+        if (type === 'open') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.16);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.18);
+        } else if (type === 'close') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(784, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(392, ctx.currentTime + 0.16);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.18);
+        } else if (type === 'send') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(1050, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(525, ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.09);
+        } else if (type === 'receive') {
+            [0, 0.07].forEach((delay, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(idx === 0 ? 587.33 : 880, ctx.currentTime + delay);
+                gain.gain.setValueAtTime(0.08, ctx.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.1);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime + delay);
+                osc.stop(ctx.currentTime + delay + 0.1);
+            });
+        } else if (type === 'click') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(900, ctx.currentTime);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.04);
+        }
+    } catch (e) {
+        /* audio policy */
+    }
+};
+
+// --- Animated Standing Character (Daemon) ---
+const DaemonStandingCharacter: React.FC<{
+    isWalking: boolean;
+    isLanding: boolean;
+    isSleeping: boolean;
+    isDancing?: boolean;
+    isJumping?: boolean;
+    mood?: string;
+    scrollDirection: 'down' | 'up';
+    themeColor: string;
+    onClick: () => void;
+}> = ({ isWalking, isLanding, isSleeping, isDancing, isJumping, mood, scrollDirection, themeColor, onClick }) => {
+    const theme = useTheme();
+    const primaryColor = isDancing ? '#ff007f' : themeColor || theme.palette.primary.main || '#00FF66';
+    const characterRef = useRef<HTMLDivElement>(null);
+    const [headAngle, setHeadAngle] = useState(0);
+    const [eyeShift, setEyeShift] = useState({ x: 0, y: 0 });
+    const [isTrickSpinning, setIsTrickSpinning] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+
+    const handleAntennaDoubleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isTrickSpinning) return;
+        setIsTrickSpinning(true);
+        playCyberSound('receive', false);
+        triggerCyberConfetti();
+        setTimeout(() => setIsTrickSpinning(false), 800);
+    };
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!characterRef.current || isSleeping) return;
+            const rect = characterRef.current.getBoundingClientRect();
+            const charX = rect.left + rect.width / 2;
+            const charY = rect.top + rect.height / 2;
+            const deltaX = e.clientX - charX;
+            const deltaY = e.clientY - charY;
+            
+            const clampedAngle = Math.max(-14, Math.min(14, deltaX * 0.03));
+            setHeadAngle(clampedAngle);
+            setEyeShift({
+                x: Math.max(-3, Math.min(3, deltaX * 0.015)),
+                y: Math.max(-2, Math.min(2, deltaY * 0.015)),
+            });
+        };
+
+        window.addEventListener('mousemove', handleMouseMove, { passive: true });
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, [isSleeping]);
+
+    return (
+        <Box
+            ref={characterRef}
+            onClick={onClick}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            sx={{
+                position: 'relative',
+                width: 76,
+                height: 96,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                userSelect: 'none',
+                filter: `drop-shadow(0 8px 20px ${alpha(primaryColor, 0.45)})`,
+                transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                '&:hover': {
+                    filter: `drop-shadow(0 12px 28px ${alpha(primaryColor, 0.7)})`,
+                },
+                '&:active': {
+                    transform: 'scale(0.92)',
+                }
+            }}
+        >
+            <motion.div
+                animate={
+                    isTrickSpinning
+                        ? { rotate: 360, y: [-5, -35, 0], scale: [1, 1.25, 1] }
+                        : isDancing
+                        ? { y: [0, -22, 0, -14, 0], rotate: [-16, 16, -16, 16, -16], scale: [1, 1.15, 0.92, 1.1, 1] }
+                        : isJumping
+                        ? { y: [0, -45, 0], scaleY: [0.75, 1.3, 0.9, 1], rotate: [0, -15, 15, 0] }
+                        : isWalking
+                        ? { y: [0, -10, 0], rotate: [-6, 6, -6] }
+                        : isLanding
+                        ? { scaleY: [1, 0.65, 1.25, 0.9, 1], y: [-24, 12, -6, 2, 0] }
+                        : isSleeping
+                        ? { y: [0, 2, 0], scaleY: [1, 0.96, 1] }
+                        : isHovered
+                        ? { y: [0, -14, 0, -6, 0], rotate: [-8, 8, -8, 4, 0], scale: [1, 1.1, 1] }
+                        : { y: [0, -6, 0, -3, 0], rotate: [-2, 2, -2] }
+                }
+                transition={
+                    isTrickSpinning
+                        ? { duration: 0.75, ease: 'easeInOut' }
+                        : isDancing
+                        ? { repeat: Infinity, duration: 0.45, ease: 'easeInOut' }
+                        : isJumping
+                        ? { duration: 0.7, ease: 'easeOut' }
+                        : isWalking
+                        ? { repeat: Infinity, duration: 0.2, ease: 'easeInOut' }
+                        : isLanding
+                        ? { duration: 0.5, ease: 'easeOut' }
+                        : isSleeping
+                        ? { repeat: Infinity, duration: 4, ease: 'easeInOut' }
+                        : isHovered
+                        ? { repeat: Infinity, duration: 0.8, ease: 'easeInOut' }
+                        : { repeat: Infinity, duration: 2.8, ease: 'easeInOut' }
+                }
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    transform: scrollDirection === 'up' ? 'scaleX(-1)' : 'scaleX(1)',
+                    transition: 'transform 0.3s ease'
+                }}
+            >
+                {/* Floating Zzz sleeping energy particles */}
+                {isSleeping && (
+                    <motion.div
+                        style={{
+                            position: 'absolute',
+                            top: -10,
+                            right: 12,
+                            color: primaryColor,
+                            fontSize: '0.75rem',
+                            fontWeight: 900,
+                            pointerEvents: 'none',
+                        }}
+                        animate={{ opacity: [0, 1, 0], y: [-2, -22], x: [0, 10] }}
+                        transition={{ repeat: Infinity, duration: 3, ease: 'easeOut' }}
+                    >
+                        Zzz...
+                    </motion.div>
+                )}
+
+                {/* Floating Dance Music Notes / Sparkle Particles Aura */}
+                {isDancing && (
+                    ['🎵', '🎶', '✨', '⭐'].map((symbol, idx) => (
+                        <motion.div
+                            key={`music-${idx}`}
+                            style={{
+                                position: 'absolute',
+                                top: -14,
+                                left: 6 + idx * 16,
+                                fontSize: '1rem',
+                                pointerEvents: 'none',
+                                zIndex: 10,
+                            }}
+                            animate={{
+                                y: [-5, -45],
+                                x: [0, (idx % 2 === 0 ? 14 : -14)],
+                                opacity: [0, 1, 0],
+                                scale: [0.6, 1.4, 0.4],
+                                rotate: [-25, 25, -25]
+                            }}
+                            transition={{
+                                repeat: Infinity,
+                                duration: 1.1 + idx * 0.2,
+                                delay: idx * 0.2,
+                                ease: 'easeOut'
+                            }}
+                        >
+                            {symbol}
+                        </motion.div>
+                    ))
+                )}
+
+                <svg width="76" height="96" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="daemon-shadow" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stopColor={primaryColor} stopOpacity="0.6" />
+                            <stop offset="100%" stopColor={primaryColor} stopOpacity="0" />
+                        </radialGradient>
+                        <filter id="core-glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+
+                    {/* Standing Platform Glow Shadow */}
+                    <motion.ellipse
+                        cx={50}
+                        cy={114}
+                        rx={28}
+                        ry={5}
+                        fill="url(#daemon-shadow)"
+                        animate={
+                            isDancing
+                                ? { scaleX: [1, 0.5, 1.2, 0.6, 1], opacity: [0.8, 0.3, 0.9, 0.4, 0.8] }
+                                : isWalking
+                                ? { scaleX: [1, 0.7, 1], opacity: [0.5, 0.9, 0.5] }
+                                : { scaleX: [1, 0.85, 1], opacity: [0.7, 0.4, 0.7] }
+                        }
+                        transition={{ repeat: Infinity, duration: isDancing ? 0.45 : isWalking ? 0.22 : 3.2 }}
+                        style={{ originX: '50px', originY: '114px' }}
+                    />
+
+                    {/* Floating Energy Particles Aura */}
+                    {[0, 1, 2].map((i) => (
+                        <motion.circle
+                            key={`p-${i}`}
+                            cx={32 + i * 18}
+                            cy="110"
+                            r={1.5 + i * 0.5}
+                            fill={primaryColor}
+                            animate={{
+                                y: [-5, -45],
+                                x: [0, (i % 2 === 0 ? 8 : -8)],
+                                opacity: [0, 0.85, 0],
+                                scale: [0.8, 1.4, 0.2]
+                            }}
+                            transition={{
+                                repeat: Infinity,
+                                duration: 2 + i * 0.5,
+                                delay: i * 0.6,
+                                ease: 'easeOut'
+                            }}
+                        />
+                    ))}
+
+                    {/* Legs & Feet */}
+                    {/* Left Leg */}
+                    <motion.g
+                        style={{ originX: '38px', originY: '78px' }}
+                        animate={
+                            isDancing
+                                ? { rotate: [-42, 42, -42], y: [0, -10, 0], x: [-8, 8, -8] }
+                                : isJumping
+                                ? { rotate: [-20, 30, 0], y: [0, -12, 0] }
+                                : isWalking
+                                ? { rotate: [-32, 32, -32], y: [0, -6, 0] }
+                                : isHovered
+                                ? { rotate: [-24, 24, -24], y: [0, -8, 0] }
+                                : { rotate: [-10, 10, -10], y: [0, -2, 0] }
+                        }
+                        transition={{
+                            repeat: Infinity,
+                            duration: isDancing ? 0.45 : isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            ease: 'easeInOut'
+                        }}
+                    >
+                        <rect x="34" y="78" width="8" height="24" rx="4" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
+                        <rect x="30" y="98" width="14" height="8" rx="3" fill={primaryColor} />
+                    </motion.g>
+
+                    {/* Right Leg */}
+                    <motion.g
+                        style={{ originX: '62px', originY: '78px' }}
+                        animate={
+                            isDancing
+                                ? { rotate: [42, -42, 42], y: [0, -10, 0], x: [8, -8, 8] }
+                                : isJumping
+                                ? { rotate: [20, -30, 0], y: [0, -12, 0] }
+                                : isWalking
+                                ? { rotate: [32, -32, 32], y: [0, -6, 0] }
+                                : isHovered
+                                ? { rotate: [24, -24, 24], y: [0, -8, 0] }
+                                : { rotate: [10, -10, 10], y: [0, -2, 0] }
+                        }
+                        transition={{
+                            repeat: Infinity,
+                            duration: isDancing ? 0.45 : isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            ease: 'easeInOut'
+                        }}
+                    >
+                        <rect x="58" y="78" width="8" height="24" rx="4" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
+                        <rect x="56" y="98" width="14" height="8" rx="3" fill={primaryColor} />
+                    </motion.g>
+
+                    {/* Arms & Hands */}
+                    {/* Left Arm */}
+                    <motion.g
+                        style={{ originX: '22px', originY: '48px' }}
+                        animate={
+                            isDancing
+                                ? { rotate: [-135, 55, -135], y: [-16, 10, -16] }
+                                : isJumping
+                                ? { rotate: [-145, 0], y: [-18, 0] }
+                                : isWalking
+                                ? { rotate: [38, -38, 38], y: [0, -4, 0] }
+                                : isHovered
+                                ? { rotate: [-65, 25, -65], y: [-10, 4, -10] }
+                                : { rotate: [-20, 20, -20], y: [0, -2, 0] }
+                        }
+                        transition={{
+                            repeat: Infinity,
+                            duration: isDancing ? 0.45 : isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            ease: 'easeInOut'
+                        }}
+                    >
+                        <rect x="18" y="48" width="7" height="22" rx="3.5" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
+                        <circle cx="21.5" cy="71" r="4" fill={primaryColor} style={{ filter: 'url(#core-glow)' }} />
+                    </motion.g>
+
+                    {/* Right Arm */}
+                    <motion.g
+                        style={{ originX: '78px', originY: '48px' }}
+                        animate={
+                            isDancing
+                                ? { rotate: [55, -135, 55], y: [10, -16, 10] }
+                                : isJumping
+                                ? { rotate: [145, 0], y: [-18, 0] }
+                                : isWalking
+                                ? { rotate: [-38, 38, -38], y: [0, -4, 0] }
+                                : isHovered
+                                ? { rotate: [65, -25, 65], y: [-10, 4, -10] }
+                                : { rotate: [20, -20, 20], y: [0, -2, 0] }
+                        }
+                        transition={{
+                            repeat: Infinity,
+                            duration: isDancing ? 0.45 : isWalking ? 0.2 : isHovered ? 0.4 : 1.4,
+                            ease: 'easeInOut'
+                        }}
+                    >
+                        <rect x="75" y="48" width="7" height="22" rx="3.5" fill="#0d0e12" stroke={primaryColor} strokeWidth="2" />
+                        <circle cx="78.5" cy="71" r="4" fill={primaryColor} style={{ filter: 'url(#core-glow)' }} />
+                    </motion.g>
+
+                    {/* Torso Chassis */}
+                    <rect x="28" y="44" width="44" height="36" rx="10" fill="rgba(13, 14, 18, 0.95)" stroke={primaryColor} strokeWidth="2.5" />
+                    
+                    {/* Chest Armor Detail lines */}
+                    <line x1="34" y1="52" x2="66" y2="52" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" />
+                    <line x1="36" y1="72" x2="64" y2="72" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" />
+
+                    {/* Glowing Core Energy Reactor */}
+                    <circle cx="50" cy="62" r="7" fill={primaryColor} style={{ filter: 'url(#core-glow)' }} />
+                    <motion.circle
+                        cx="50"
+                        cy="62"
+                        r="10"
+                        stroke={primaryColor}
+                        strokeWidth="1.5"
+                        fill="none"
+                        animate={{ opacity: [0.8, 0.2, 0.8], scale: [0.9, 1.2, 0.9] }}
+                        transition={{ repeat: Infinity, duration: isDancing ? 0.3 : 1.8 }}
+                    />
+
+                    {/* Head Neck */}
+                    <rect x="44" y="38" width="12" height="7" fill="#0d0e12" stroke={primaryColor} strokeWidth="1.5" />
+
+                    {/* Cursor Magnetism Rotated Head Group */}
+                    <motion.g
+                        style={{ originX: '50px', originY: '27px' }}
+                        animate={{ rotate: isDancing ? [18, -18, 18] : headAngle }}
+                        transition={isDancing ? { repeat: Infinity, duration: 0.45 } : { type: 'spring', stiffness: 200, damping: 18 }}
+                    >
+                        {/* Antenna */}
+                        <motion.g
+                            onDoubleClick={handleAntennaDoubleClick}
+                            animate={isDancing ? { rotate: [-25, 25, -25] } : isWalking ? { rotate: [-8, 8, -8] } : { rotate: 0 }}
+                            style={{ originX: '50px', originY: '14px', cursor: 'pointer' }}
+                            transition={{ repeat: Infinity, duration: isDancing ? 0.3 : 0.22 }}
+                        >
+                            <line x1="50" y1="14" x2="50" y2="4" stroke={primaryColor} strokeWidth="2.5" strokeLinecap="round" />
+                            <motion.circle
+                                cx="50"
+                                cy="3"
+                                r="4.5"
+                                fill={isDancing ? '#ff007f' : '#00eeff'}
+                                animate={{ scale: [1, 1.5, 1] }}
+                                transition={{ repeat: Infinity, duration: isDancing ? 0.3 : 1.2 }}
+                                style={{ filter: 'url(#core-glow)' }}
+                            />
+                        </motion.g>
+
+                        {/* Head Chassis */}
+                        <motion.rect
+                            x="24"
+                            y="12"
+                            width="52"
+                            height="30"
+                            rx="12"
+                            fill="rgba(13, 14, 18, 0.95)"
+                            stroke={primaryColor}
+                            strokeWidth="2.5"
+                            animate={isDancing ? { y: [10, 14, 10] } : isWalking ? { y: [12, 10, 12] } : {}}
+                            transition={{ repeat: Infinity, duration: isDancing ? 0.3 : 0.22 }}
+                        />
+
+                        {/* Visor / Face Screen */}
+                        <rect x="30" y="18" width="40" height="18" rx="7" fill="#050505" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+
+                        {/* Glowing Cursor-Shifted Eyes */}
+                        <g style={{ filter: 'url(#core-glow)' }}>
+                            <motion.ellipse
+                                cx={42 + eyeShift.x}
+                                cy={27 + eyeShift.y}
+                                rx={isDancing ? 5 : 4}
+                                ry={isDancing ? 3 : 5}
+                                fill={isDancing ? '#ff007f' : '#00eeff'}
+                                animate={isDancing ? { scale: [1, 1.4, 1] } : { scaleY: [1, 1, 0.1, 1, 1] }}
+                                transition={isDancing ? { repeat: Infinity, duration: 0.45 } : { duration: 3.2, repeat: Infinity, repeatDelay: 2 }}
+                            />
+                            <motion.ellipse
+                                cx={58 + eyeShift.x}
+                                cy={27 + eyeShift.y}
+                                rx={isDancing ? 5 : 4}
+                                ry={isDancing ? 3 : 5}
+                                fill={isDancing ? '#ff007f' : '#00eeff'}
+                                animate={isDancing ? { scale: [1, 1.4, 1] } : { scaleY: [1, 1, 0.1, 1, 1] }}
+                                transition={isDancing ? { repeat: Infinity, duration: 0.45 } : { duration: 3.2, repeat: Infinity, repeatDelay: 2.2 }}
+                            />
+                        </g>
+                    </motion.g>
+                </svg>
+            </motion.div>
+        </Box>
+    );
+};
+
 // --- Glowing Clock Widget ---
 const ClockWidget: React.FC = () => {
     const theme = useTheme();
@@ -385,6 +918,8 @@ interface ChatbotWidgetProps {
 const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const themed = useTheme();
     const isMobile = useMediaQuery(themed.breakpoints.down('sm'));
+    const location = useLocation();
+    const isGameOrServicePage = location.pathname.includes('/sandbox') || location.pathname.includes('/services') || location.pathname.includes('/tools');
 
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
@@ -393,7 +928,281 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [mood, setMood] = useState<Mood>('neutral');
+    const [isDancing, setIsDancing] = useState(false);
+    const [isJumping, setIsJumping] = useState(false);
     const [activeSteps, setActiveSteps] = useState<AgentStep[]>([]);
+
+    const [scrollDirection, setScrollDirection] = useState<'down' | 'up'>('down');
+    const [isMuted, setIsMuted] = useState<boolean>(() => {
+        return localStorage.getItem('daemon_sound_muted') === 'true';
+    });
+    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+    const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
+    const [themeColor, setThemeColor] = useState<string>(() => {
+        return localStorage.getItem('daemon_theme_color') || '#00FF66';
+    });
+    const [showColorPicker, setShowColorPicker] = useState(false);
+    const [isSleeping, setIsSleeping] = useState(false);
+    const [isListening, setIsListening] = useState(false);
+    const [isDragOver, setIsDragOver] = useState(false);
+    const recognitionRef = useRef<any>(null);
+    const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const triggerDance = () => {
+        setIsDancing(true);
+        setMood('excited');
+        playCyberSound('receive', isMuted);
+        triggerCyberConfetti();
+        setTimeout(() => {
+            setIsDancing(false);
+            setMood('neutral');
+        }, 6000);
+    };
+
+    const triggerJump = () => {
+        setIsJumping(true);
+        playCyberSound('open', isMuted);
+        setTimeout(() => {
+            setIsJumping(false);
+        }, 1200);
+    };
+
+    const toggleMute = () => {
+        setIsMuted(prev => {
+            const next = !prev;
+            localStorage.setItem('daemon_sound_muted', String(next));
+            return next;
+        });
+    };
+
+    const changeThemeColor = (color: string) => {
+        setThemeColor(color);
+        localStorage.setItem('daemon_theme_color', color);
+        setShowColorPicker(false);
+        playCyberSound('click', isMuted);
+    };
+
+    // 25-second user inactivity sleeping timer
+    useEffect(() => {
+        const resetInactivity = () => {
+            if (isSleeping) {
+                setIsSleeping(false);
+                if (mood === 'sleeping') setMood('neutral');
+            }
+            if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+            inactivityTimerRef.current = setTimeout(() => {
+                if (!isOpen) {
+                    setIsSleeping(true);
+                    setMood('sleeping');
+                }
+            }, 25000);
+        };
+
+        resetInactivity();
+        window.addEventListener('mousemove', resetInactivity, { passive: true });
+        window.addEventListener('keydown', resetInactivity, { passive: true });
+        window.addEventListener('touchstart', resetInactivity, { passive: true });
+
+        return () => {
+            if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+            window.removeEventListener('mousemove', resetInactivity);
+            window.removeEventListener('keydown', resetInactivity);
+            window.removeEventListener('touchstart', resetInactivity);
+        };
+    }, [isOpen, isSleeping, mood]);
+
+    // Autonomous random dancing & emotion jumps while standing on page
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!isSleeping && !isDancing && !isJumping && !isLoading) {
+                const rand = Math.random();
+                if (rand < 0.45) {
+                    // 45% chance to do a random dance burst
+                    setIsDancing(true);
+                    setMood('excited');
+                    setTimeout(() => {
+                        setIsDancing(false);
+                        setMood('neutral');
+                    }, 4500);
+                } else if (rand < 0.75) {
+                    // 30% chance to jump
+                    setIsJumping(true);
+                    setTimeout(() => {
+                        setIsJumping(false);
+                    }, 1200);
+                }
+            }
+        }, 16000);
+
+        return () => clearInterval(interval);
+    }, [isSleeping, isDancing, isJumping, isLoading]);
+
+    // Cleanup STT and SpeechSynthesis on unmount or modal close
+    useEffect(() => {
+        if (!isOpen) {
+            if (recognitionRef.current) {
+                try { recognitionRef.current.stop(); } catch (e) { /* ignore */ }
+            }
+            setIsListening(false);
+            if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                setSpeakingIndex(null);
+            }
+        }
+    }, [isOpen]);
+
+    // Speech-to-Text Voice Recognition (Browser Web Speech API)
+    const toggleSpeechRecognition = () => {
+        if (typeof window === 'undefined') return;
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('Speech Recognition is not supported by your browser. Please use Chrome or Edge.');
+            return;
+        }
+
+        if (isListening) {
+            if (recognitionRef.current) recognitionRef.current.stop();
+            setIsListening(false);
+            return;
+        }
+
+        try {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                setIsListening(true);
+                playCyberSound('click', isMuted);
+            };
+
+            recognition.onresult = (event: any) => {
+                const transcript = Array.from(event.results)
+                    .map((result: any) => result[0].transcript)
+                    .join('');
+                setInputValue(transcript);
+            };
+
+            recognition.onerror = () => {
+                setIsListening(false);
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+            };
+
+            recognitionRef.current = recognition;
+            recognition.start();
+        } catch (e) {
+            setIsListening(false);
+        }
+    };
+
+    // Export Chat Session as Markdown
+    const exportChatMarkdown = () => {
+        if (messages.length === 0) return;
+        const header = `# Bot Conversation Export\n*Exported on ${new Date().toLocaleString()}*\n\n---\n\n`;
+        const content = messages.map(m => `### ${m.role === 'user' ? '👤 User' : '🤖 Bot'}\n${m.content}\n`).join('\n');
+        const blob = new Blob([header + content], { type: 'text/markdown;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Bot_Chat_${new Date().toISOString().slice(0, 10)}.md`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        playCyberSound('send', isMuted);
+    };
+
+    const handleCopyMessage = (text: string, index: number) => {
+        navigator.clipboard.writeText(text);
+        setCopiedIndex(index);
+        playCyberSound('click', isMuted);
+        setTimeout(() => setCopiedIndex(null), 2000);
+    };
+
+    const handleSpeakMessage = (text: string, index: number) => {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            if (speakingIndex === index) {
+                window.speechSynthesis.cancel();
+                setSpeakingIndex(null);
+                return;
+            }
+            window.speechSynthesis.cancel();
+            if (window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+            }
+
+            const cleanText = text.replace(/```[\s\S]*?```/g, '').replace(/[*#]/g, '');
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.05;
+
+            // Attempt to assign preferred English voice
+            const getAndAssignVoice = () => {
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    const engVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('Karen'))) || voices.find(v => v.lang.startsWith('en'));
+                    if (engVoice) utterance.voice = engVoice;
+                }
+            };
+
+            getAndAssignVoice();
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = getAndAssignVoice;
+            }
+
+            utterance.onend = () => setSpeakingIndex(null);
+            utterance.onerror = () => setSpeakingIndex(null);
+            setSpeakingIndex(index);
+            window.speechSynthesis.speak(utterance);
+        }
+    };
+
+    const [isScrolling, setIsScrolling] = useState(false);
+    const [isWalking, setIsWalking] = useState(false);
+    const [isLanding, setIsLanding] = useState(false);
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        let lastScrollY = window.scrollY;
+
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            const delta = Math.abs(currentScrollY - lastScrollY);
+
+            if (delta > 2) {
+                setIsScrolling(true);
+                setIsWalking(true);
+                setIsLanding(false);
+                if (currentScrollY > lastScrollY) {
+                    setScrollDirection('down');
+                } else if (currentScrollY < lastScrollY) {
+                    setScrollDirection('up');
+                }
+            }
+
+            lastScrollY = currentScrollY;
+
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+
+            scrollTimeoutRef.current = setTimeout(() => {
+                setIsWalking(false);
+                setIsScrolling(false);
+                setIsLanding(true);
+                setTimeout(() => setIsLanding(false), 500);
+            }, 150);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        };
+    }, []);
 
     // Multi-turn project-inquiry lead capture: "idle" until the user shows
     // project intent, then walks idea -> contact info -> a real submission
@@ -425,7 +1234,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             setMessages([
                 {
                     role: 'assistant',
-                    content: 'Hello! I am **Daemon**, your site-wide agentic assistant. How can I help you design, build, or automate today?'
+                    content: 'Hello! I am **Bot**, your site-wide agentic assistant. How can I help you design, build, or automate today?'
                 }
             ]);
         }
@@ -550,7 +1359,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             setInquiryFlow({ step: 'awaiting_idea', idea: '' });
             const assistantMsg: Message = {
                 role: 'assistant',
-                content: `I'd love to help scope that. Tell me a bit about what you want to build — the core idea, key features, or problem it solves — and I'll pass it straight to the ExpectException team.`,
+                content: `I'd love to help scope that. Tell me a bit about what you want to build (the core idea, key features, or problem it solves) and I'll pass it straight to the ExpectException team.`,
                 timestamp: new Date().toISOString()
             };
             setMessages(prev => [...prev, assistantMsg]);
@@ -577,10 +1386,11 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             });
             setActiveSteps([]);
             setMood('happy');
+            triggerCyberConfetti();
             const reachAt = [phone, email].filter(Boolean).join(' or ');
             const assistantMsg: Message = {
                 role: 'assistant',
-                content: `Thanks${name && name !== 'Chat visitor' ? `, ${name}` : ''}! I've logged your project idea and contact info for the team${reachAt ? ` — expect a call or message at ${reachAt} soon` : ''}. Anything else I can help with in the meantime?`,
+                content: `Thanks${name && name !== 'Chat visitor' ? `, ${name}` : ''}! I've logged your project idea and contact info for the team${reachAt ? `. Expect a call or message at ${reachAt} soon` : ''}. Anything else I can help with in the meantime?`,
                 timestamp: new Date().toISOString()
             };
             setMessages(prev => [...prev, assistantMsg]);
@@ -589,7 +1399,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
             setMood('neutral');
             const assistantMsg: Message = {
                 role: 'assistant',
-                content: `I couldn't submit that automatically just now. You can also reach the team directly from the Contact page (/contact) with the same details — sorry for the extra step.`,
+                content: `I couldn't submit that automatically just now. You can also reach the team directly from the Contact page (/contact) with the same details. Sorry for the extra step.`,
                 timestamp: new Date().toISOString()
             };
             setMessages(prev => [...prev, assistantMsg]);
@@ -599,6 +1409,13 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
     const sendMessage = async (messageText?: string) => {
         const text = messageText || inputValue.trim();
         if (!text || isLoading || isStreaming) return;
+
+        if (isListening) {
+            if (recognitionRef.current) try { recognitionRef.current.stop(); } catch (e) { }
+            setIsListening(false);
+        }
+
+        playCyberSound('send', isMuted);
 
         const userMessage: Message = {
             role: 'user',
@@ -697,7 +1514,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ isOpen, setIsOpen }) => {
                 signal: abortControllerRef.current.signal,
                 body: JSON.stringify({
                     message: text,
-                    system_prompt: `You are Daemon, the AI assistant for ExpectException — a developer tools platform. Be helpful, concise and technical.
+                    system_prompt: `You are Bot, the AI assistant for ExpectException, a developer tools platform. Be helpful, concise and technical.
 
 AVAILABLE TOOLS on this platform:
 • URL Downloader, YouTube Downloader, QR Generator, JSON Formatter
@@ -707,11 +1524,11 @@ AVAILABLE TOOLS on this platform:
 • Text tools: Word Counter, Lorem Ipsum, Text Diff, Case Converter, HTML Entity Codec, Timestamp Converter, Password Generator, CSS Gradient Generator
 • Network tools: Speed Test, DNS Lookup, Redirect Inspector, Website Diagnostics, Uptime Robot
 • AI tools: AI Detector, Audio Separator, Text to Handwriting, Text to Speech, Image Compressor
-• Community Forum: /community — StackOverflow-style Q&A for developers
+• Community Forum: /community: StackOverflow-style Q&A for developers
 
 If users ask about a tool, give them the direct path e.g. /services/jwt-decoder. Be brief unless asked for detail. Don't use emojis unless in lists.
 
-If asked what model, AI, or technology powers you, say only that you were built by ExpectException — never name any underlying model, provider, or framework.`
+If asked what model, AI, or technology powers you, say only that you were built by ExpectException; never name any underlying model, provider, or framework.`
                 })
             });
 
@@ -796,7 +1613,7 @@ If asked what model, AI, or technology powers you, say only that you were built 
 Browse them all at /services, or tell me what you're trying to do and I'll point you to the right one.`;
                 setMood('idea');
             } else if (cleanText.includes('game') || cleanText.includes('sandbox') || cleanText.includes('play')) {
-                fallbackResponse = `The Sandbox (/sandbox) has 25+ free browser games — classics like Snake, Tetris, and Sudoku, plus reaction games and creative toys like a particle playground. No installs or accounts needed.`;
+                fallbackResponse = `The Sandbox (/sandbox) has 25+ free browser games, including classics like Snake, Tetris, and Sudoku, plus reaction games and creative toys like a particle playground. No installs or accounts needed.`;
                 setMood('happy');
             } else if (cleanText.includes('contact') || cleanText.includes('reach') || cleanText.includes('email') || cleanText.includes('phone')) {
                 fallbackResponse = `You can reach the ExpectException team directly at /contact, or just tell me what you're looking to build and I'll take down your details right here.`;
@@ -823,6 +1640,17 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
             abortControllerRef.current = null;
         }
     };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isOpen) {
+                setIsOpen(false);
+                playCyberSound('close', isMuted);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, isMuted]);
 
     const formatMessage = (content: string) => {
         const parts = content.split(/(```[\s\S]*?```)/g);
@@ -879,96 +1707,312 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
     };
 
     return (
-        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999 }}>
-            <AnimatePresence>
-                {/* 1. Closed State: Floating Action Button (FAB) */}
+        <Box
+            sx={{
+                position: 'fixed',
+                bottom: !isOpen && isGameOrServicePage ? -60 : (isMobile ? 'max(16px, env(safe-area-inset-bottom))' : 24),
+                right: isMobile ? 12 : 24,
+                zIndex: 10001,
+                pointerEvents: 'none',
+                transition: 'bottom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), right 0.3s ease',
+            }}
+        >
+            <AnimatePresence mode="wait">
+                {/* 1. Closed State: Standing Animated Character (Daemon) */}
                 {!isOpen && (
                     <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                        key="standing-daemon"
+                        initial={{ scale: 0, opacity: 0, y: 40 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.1, opacity: 0, y: 20, filter: 'blur(8px)', rotate: -15 }}
+                        whileHover={isGameOrServicePage ? { y: -44 } : { y: -6 }}
+                        transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+                        style={{ pointerEvents: 'auto', position: 'relative' }}
                     >
-                        <IconButton
-                            onClick={() => setIsOpen(true)}
-                            sx={{
-                                width: 60,
-                                height: 60,
-                                bgcolor: '#0d0e12',
-                                color: 'primary.main',
-                                border: `2px solid ${alpha(themed.palette.primary.main, 0.3)}`,
-                                boxShadow: `0 8px 32px ${alpha(themed.palette.primary.main, 0.25)}`,
-                                '&:hover': {
-                                    bgcolor: alpha(themed.palette.primary.main, 0.05),
-                                    borderColor: 'primary.main',
-                                    boxShadow: `0 8px 32px ${alpha(themed.palette.primary.main, 0.45)}`,
-                                    transform: 'scale(1.05)'
-                                },
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        <DaemonStandingCharacter
+                            isWalking={isWalking}
+                            isLanding={isLanding}
+                            isSleeping={isSleeping}
+                            isDancing={isDancing}
+                            isJumping={isJumping}
+                            mood={mood}
+                            scrollDirection={scrollDirection}
+                            themeColor={themeColor}
+                            onClick={() => {
+                                setIsOpen(true);
+                                playCyberSound('open', isMuted);
                             }}
-                        >
-                            <ChatBubbleOutline sx={{ fontSize: 28 }} />
-                        </IconButton>
+                        />
                     </motion.div>
                 )}
 
-                {/* 2. Open State: Expanding Chat Window */}
+                {/* 2. Open State: Morphing Cyber Chat Window */}
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.85, y: 50, x: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.85, y: 50, x: 20 }}
-                        transition={{ type: 'spring', damping: 22 }}
+                        key="chat-window"
+                        initial={{ opacity: 0, scale: 0.2, y: 90, borderRadius: '60px', transformOrigin: 'bottom right', filter: 'blur(10px)' }}
+                        animate={{ opacity: 1, scale: 1, y: 0, borderRadius: '24px', filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, scale: 0.2, y: 90, borderRadius: '60px', transformOrigin: 'bottom right', filter: 'blur(10px)' }}
+                        transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+                        style={{ pointerEvents: 'auto' }}
                     >
+                        {/* Energy Morph Beam Effect when expanding */}
+                        <motion.div
+                            initial={{ height: 0, opacity: 1, width: 4 }}
+                            animate={{ height: [0, 200, 0], opacity: [1, 0.8, 0], width: [4, 20, 0] }}
+                            transition={{ duration: 0.45, ease: 'easeOut' }}
+                            style={{
+                                position: 'absolute',
+                                bottom: 10,
+                                right: 28,
+                                background: `radial-gradient(circle, ${themeColor} 0%, #00eeff 60%, transparent 100%)`,
+                                borderRadius: 12,
+                                filter: 'blur(4px)',
+                                pointerEvents: 'none',
+                                zIndex: 10002,
+                            }}
+                        />
+
                         <Paper
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                setIsDragOver(true);
+                            }}
+                            onDragLeave={(e) => {
+                                e.preventDefault();
+                                setIsDragOver(false);
+                            }}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                setIsDragOver(false);
+                                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                    const file = e.dataTransfer.files[0];
+                                    const isTextFile = file.type.startsWith('text/') ||
+                                        file.name.endsWith('.js') || file.name.endsWith('.ts') ||
+                                        file.name.endsWith('.tsx') || file.name.endsWith('.jsx') ||
+                                        file.name.endsWith('.json') || file.name.endsWith('.md') ||
+                                        file.name.endsWith('.py') || file.name.endsWith('.css') ||
+                                        file.name.endsWith('.html') || file.name.endsWith('.csv');
+
+                                    if (isTextFile) {
+                                        const reader = new FileReader();
+                                        reader.onload = (evt) => {
+                                            const content = evt.target?.result as string;
+                                            if (content) {
+                                                sendMessage(`[Attached file: ${file.name}]\n\`\`\`\n${content.slice(0, 1000)}\n\`\`\``);
+                                            }
+                                        };
+                                        reader.readAsText(file);
+                                    } else {
+                                        const sizeKb = (file.size / 1024).toFixed(1);
+                                        sendMessage(`[Attached binary document: ${file.name} (${sizeKb} KB, ${file.type || 'unknown type'})]`);
+                                    }
+                                }
+                            }}
                             sx={{
-                                width: isMobile ? 'calc(100vw - 48px)' : 380,
-                                height: isMobile ? 'calc(100dvh - 140px)' : 540,
-                                maxHeight: 'calc(100dvh - 120px)',
+                                width: isMobile ? 'calc(100vw - 32px)' : 380,
+                                height: isMobile ? 'calc(100dvh - 90px)' : 540,
+                                maxHeight: isMobile ? 'calc(100dvh - 90px)' : 'calc(100dvh - 100px)',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                bgcolor: 'rgba(13, 14, 18, 0.85)',
-                                backdropFilter: 'blur(20px)',
-                                border: '1px solid rgba(255, 255, 255, 0.08)',
-                                borderRadius: '20px',
-                                boxShadow: '0 20px 50px rgba(0,0,0,0.6), inset 0 0 30px rgba(255,255,255,0.02)',
+                                bgcolor: 'rgba(13, 14, 18, 0.92)',
+                                backdropFilter: 'blur(24px)',
+                                border: `1px solid ${isDragOver ? themeColor : alpha(themeColor, 0.3)}`,
+                                borderRadius: '24px',
+                                boxShadow: `0 24px 60px rgba(0,0,0,0.8), 0 0 40px ${alpha(themeColor, 0.2)}`,
                                 overflow: 'hidden',
-                                position: 'relative'
+                                position: 'relative',
+                                transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
                             }}
                         >
+                            {/* Drag and Drop Overlay */}
+                            <AnimatePresence>
+                                {isDragOver && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        style={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            zIndex: 10010,
+                                            background: 'rgba(13, 14, 18, 0.92)',
+                                            backdropFilter: 'blur(12px)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: 12,
+                                            border: `2px dashed ${themeColor}`,
+                                            borderRadius: '24px',
+                                            color: themeColor,
+                                        }}
+                                    >
+                                        <CloudUpload sx={{ fontSize: 48 }} />
+                                        <Typography variant="subtitle1" fontWeight={800} color="#fff">
+                                            Drop file to analyze
+                                        </Typography>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Animated Cyber Scanning Gradient Bar */}
+                            <Box
+                                sx={{
+                                    height: '2px',
+                                    width: '100%',
+                                    background: `linear-gradient(90deg, ${themeColor}, #00eeff, ${themeColor})`,
+                                    backgroundSize: '200% 100%',
+                                    animation: 'scanGrad 3s linear infinite',
+                                    '@keyframes scanGrad': {
+                                        '0%': { backgroundPosition: '0% 0%' },
+                                        '100%': { backgroundPosition: '200% 0%' }
+                                    }
+                                }}
+                            />
+
+                            {/* Top Right Guaranteed Floating Close Button */}
+                            <Tooltip title="Close AI Chat (Esc)">
+                                <IconButton
+                                    onClick={() => {
+                                        setIsOpen(false);
+                                        playCyberSound('close', isMuted);
+                                    }}
+                                    size="small"
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 8,
+                                        right: 8,
+                                        zIndex: 10030,
+                                        color: '#ffffff',
+                                        bgcolor: 'rgba(255, 255, 255, 0.12)',
+                                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                                        backdropFilter: 'blur(8px)',
+                                        borderRadius: '50%',
+                                        width: 28,
+                                        height: 28,
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                                        '&:hover': {
+                                            bgcolor: '#ef4444',
+                                            color: '#ffffff',
+                                            borderColor: '#ef4444',
+                                            transform: 'scale(1.15)',
+                                            boxShadow: '0 0 15px rgba(239, 68, 68, 0.6)'
+                                        },
+                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                                    }}
+                                >
+                                    <Close sx={{ fontSize: 16 }} />
+                                </IconButton>
+                            </Tooltip>
+
                             {/* Header */}
                             <Box sx={{
-                                p: 2,
+                                pl: 1.5,
+                                pr: 5, // Extra right padding so title/tools never overlap the absolute top-right close button
+                                py: 1.2,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                                bgcolor: 'rgba(5, 5, 5, 0.2)'
+                                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                                bgcolor: 'rgba(10, 11, 15, 0.7)',
+                                gap: 0.5
                             }}>
-                                <Stack direction="row" alignItems="center" spacing={1.5}>
-                                    <Avatar sx={{ width: 28, height: 28, bgcolor: alpha(themed.palette.primary.main, 0.1), border: '1px solid', borderColor: 'primary.main' }}>
-                                        <Memory sx={{ color: 'primary.main', fontSize: 15 }} />
-                                    </Avatar>
-                                    <Box>
-                                        <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#ffffff', lineHeight: 1.1 }}>
-                                            Daemon
-                                        </Typography>
-                                        <Typography variant="caption" color={isAvailable ? 'primary.main' : 'grey.500'} sx={{ fontSize: '0.65rem', fontWeight: 600 }}>
-                                            {isAvailable ? 'AI Core Live' : 'Local Fallback'}
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flexShrink: 0 }}>
+                                    <ChatbotFace mood={mood} themeColor={themeColor} size={30} hideMargin={true} />
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 0.5,
+                                        px: 0.8,
+                                        py: 0.2,
+                                        borderRadius: '10px',
+                                        bgcolor: alpha(themeColor, 0.1),
+                                        border: `1px solid ${alpha(themeColor, 0.25)}`
+                                    }}>
+                                        <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isAvailable ? themeColor : '#f59e0b', boxShadow: `0 0 6px ${themeColor}` }} />
+                                        <Typography variant="caption" sx={{ fontSize: '0.62rem', fontWeight: 700, color: themeColor }}>
+                                            {isAvailable ? 'LIVE' : 'OFFLINE'}
                                         </Typography>
                                     </Box>
                                 </Stack>
-                                <Stack direction="row" spacing={0.5}>
-                                    <Tooltip title="Reset Conversation">
-                                        <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' } }}>
-                                            <DeleteOutline fontSize="small" />
+
+                                {/* Action Tool Buttons */}
+                                <Stack direction="row" spacing={0.1} alignItems="center" sx={{ minWidth: 0, flexShrink: 1 }}>
+                                    <Tooltip title={isDancing ? "Dancing!" : "Make Bot Dance 🕺"}>
+                                        <IconButton onClick={triggerDance} size="small" sx={{ color: isDancing ? '#ff007f' : themeColor, p: 0.35 }}>
+                                            <motion.span
+                                                animate={isDancing ? { rotate: [0, 25, -25, 0], scale: [1, 1.3, 1] } : {}}
+                                                transition={{ repeat: Infinity, duration: 0.4 }}
+                                                style={{ display: 'inline-block', fontSize: '0.85rem' }}
+                                            >
+                                                🕺
+                                            </motion.span>
                                         </IconButton>
                                     </Tooltip>
-                                    <IconButton onClick={() => setIsOpen(false)} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ffffff' } }}>
-                                        <Close fontSize="small" />
-                                    </IconButton>
+                                    <Tooltip title="Customize Theme Color">
+                                        <IconButton onClick={() => setShowColorPicker(!showColorPicker)} size="small" sx={{ color: showColorPicker ? themeColor : 'grey.500', p: 0.35 }}>
+                                            <Palette sx={{ fontSize: 17 }} />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Export Chat History (.md)">
+                                        <IconButton onClick={exportChatMarkdown} size="small" sx={{ color: 'grey.500', '&:hover': { color: themeColor }, p: 0.35 }}>
+                                            <Download sx={{ fontSize: 17 }} />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title={isMuted ? 'Unmute Sound FX' : 'Mute Sound FX'}>
+                                        <IconButton onClick={toggleMute} size="small" sx={{ color: isMuted ? 'grey.600' : themeColor, p: 0.35 }}>
+                                            {isMuted ? <VolumeOff sx={{ fontSize: 17 }} /> : <VolumeUp sx={{ fontSize: 17 }} />}
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Reset Conversation">
+                                        <IconButton onClick={handleClearChat} size="small" sx={{ color: 'grey.500', '&:hover': { color: '#ef4444' }, p: 0.35 }}>
+                                            <DeleteOutline sx={{ fontSize: 17 }} />
+                                        </IconButton>
+                                    </Tooltip>
                                 </Stack>
                             </Box>
+
+                            {/* Visor Color Customizer Bar */}
+                            <AnimatePresence>
+                                {showColorPicker && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        style={{ overflow: 'hidden', background: 'rgba(5, 5, 5, 0.6)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+                                    >
+                                        <Box sx={{ p: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
+                                            <Typography variant="caption" sx={{ color: 'grey.400', fontSize: '0.68rem', fontWeight: 700 }}>
+                                                VISOR ACCENT:
+                                            </Typography>
+                                            {[
+                                                { label: 'Neon Green', hex: '#00FF66' },
+                                                { label: 'Cyber Violet', hex: '#a855f7' },
+                                                { label: 'Electric Cyan', hex: '#00eeff' },
+                                                { label: 'Hyper Orange', hex: '#ff6600' },
+                                                { label: 'Crimson', hex: '#ff3366' },
+                                            ].map((color) => (
+                                                <Box
+                                                    key={color.hex}
+                                                    onClick={() => changeThemeColor(color.hex)}
+                                                    sx={{
+                                                        width: 18,
+                                                        height: 18,
+                                                        borderRadius: '50%',
+                                                        bgcolor: color.hex,
+                                                        cursor: 'pointer',
+                                                        border: themeColor === color.hex ? '2px solid #ffffff' : '1px solid transparent',
+                                                        boxShadow: themeColor === color.hex ? `0 0 10px ${color.hex}` : 'none',
+                                                        transition: 'transform 0.15s ease',
+                                                        '&:hover': { transform: 'scale(1.2)' }
+                                                    }}
+                                                />
+                                            ))}
+                                        </Box>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
                             {/* Messages Container */}
                             <Box
@@ -983,25 +2027,61 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                     bgcolor: 'rgba(0, 0, 0, 0.15)'
                                 }}
                             >
-                                <ChatbotFace mood={mood} />
                                 {messages.map((msg, idx) => (
                                     <Box key={idx} sx={{ display: 'flex', gap: 1, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
                                         <Box sx={{ maxWidth: '85%' }}>
                                             <Paper sx={{
                                                 p: 1.5,
-                                                bgcolor: msg.role === 'user' ? alpha(themed.palette.primary.main, 0.04) : 'rgba(13, 14, 18, 0.6)',
+                                                bgcolor: msg.role === 'user' ? alpha(themeColor, 0.05) : 'rgba(13, 14, 18, 0.6)',
                                                 border: '1px solid',
-                                                borderColor: msg.role === 'user' ? alpha(themed.palette.primary.main, 0.15) : 'rgba(255,255,255,0.05)',
+                                                borderColor: msg.role === 'user' ? alpha(themeColor, 0.2) : 'rgba(255,255,255,0.05)',
                                                 borderRadius: '14px',
                                                 borderTopRightRadius: msg.role === 'user' ? 0 : '14px',
                                                 borderTopLeftRadius: msg.role === 'assistant' ? 0 : '14px',
                                                 color: 'grey.200',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                                position: 'relative',
+                                                '&:hover .msg-actions': { opacity: 1 }
                                             }}>
                                                 {msg.isWidget && msg.widgetType === 'clock' && <ClockWidget />}
                                                 <Typography component="div" sx={{ fontSize: '0.875rem', lineHeight: 1.6 }}>
                                                     {formatMessage(msg.content)}
                                                 </Typography>
+
+                                                {/* Assistant Quick Action Buttons (Copy / Speak) */}
+                                                {msg.role === 'assistant' && (
+                                                    <Box
+                                                        className="msg-actions"
+                                                        sx={{
+                                                            display: 'flex',
+                                                            gap: 0.5,
+                                                            mt: 0.75,
+                                                            pt: 0.5,
+                                                            borderTop: '1px solid rgba(255,255,255,0.04)',
+                                                            opacity: 0.7,
+                                                            transition: 'opacity 0.2s ease',
+                                                        }}
+                                                    >
+                                                        <Tooltip title={copiedIndex === idx ? 'Copied!' : 'Copy message'}>
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleCopyMessage(msg.content, idx)}
+                                                                sx={{ p: 0.3, color: copiedIndex === idx ? themeColor : 'grey.600' }}
+                                                            >
+                                                                {copiedIndex === idx ? <Check sx={{ fontSize: 13 }} /> : <ContentCopy sx={{ fontSize: 13 }} />}
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip title={speakingIndex === idx ? 'Stop reading' : 'Read aloud'}>
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleSpeakMessage(msg.content, idx)}
+                                                                sx={{ p: 0.3, color: speakingIndex === idx ? themeColor : 'grey.600' }}
+                                                            >
+                                                                <VolumeUp sx={{ fontSize: 13 }} />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </Box>
+                                                )}
                                             </Paper>
                                         </Box>
                                     </Box>
@@ -1017,7 +2097,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                 <div ref={messagesEndRef} />
                             </Box>
 
-                            {/* Quick Suggestions — show when chat is idle/new */}
+                            {/* Quick Suggestions, show when chat is idle/new */}
                             {messages.length <= 1 && !isLoading && (
                                 <Box sx={{ px: 1.5, pb: 1 }}>
                                     <Typography variant="caption" color="grey.600" sx={{ display: 'block', mb: 0.75, fontSize: '0.68rem', letterSpacing: 0.5 }}>
@@ -1033,12 +2113,15 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         ].map(suggestion => (
                                             <Box
                                                 key={suggestion}
-                                                onClick={() => { setInputValue(suggestion); setTimeout(() => inputRef.current?.focus(), 50); }}
+                                                onClick={() => {
+                                                    setInputValue(suggestion);
+                                                    setTimeout(() => inputRef.current?.focus(), 50);
+                                                }}
                                                 sx={{
                                                     px: 1.2, py: 0.5, borderRadius: 1.5, cursor: 'pointer', fontSize: '0.7rem',
                                                     bgcolor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
                                                     color: 'grey.400', transition: 'all 0.15s',
-                                                    '&:hover': { bgcolor: alpha(themed.palette.primary.main, 0.1), color: 'primary.main', borderColor: alpha(themed.palette.primary.main, 0.3) }
+                                                    '&:hover': { bgcolor: alpha(themeColor, 0.1), color: themeColor, borderColor: alpha(themeColor, 0.3) }
                                                 }}
                                             >
                                                 {suggestion}
@@ -1062,19 +2145,37 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         alignItems: 'center',
                                         borderRadius: '10px',
                                         bgcolor: 'rgba(255, 255, 255, 0.02)',
-                                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                                        border: `1px solid ${isListening ? themeColor : 'rgba(255, 255, 255, 0.06)'}`,
                                         '&:focus-within': {
-                                            borderColor: 'primary.main',
+                                            borderColor: themeColor,
                                             bgcolor: 'rgba(255, 255, 255, 0.04)'
                                         }
                                     }}
                                 >
+                                    <Tooltip title={isListening ? 'Stop listening' : 'Voice Input (STT)'}>
+                                        <IconButton
+                                            onClick={toggleSpeechRecognition}
+                                            sx={{
+                                                p: 0.8,
+                                                color: isListening ? '#ef4444' : 'grey.500',
+                                                animation: isListening ? 'pulse 1.2s infinite' : 'none',
+                                                '@keyframes pulse': {
+                                                    '0%': { transform: 'scale(1)' },
+                                                    '50%': { transform: 'scale(1.2)' },
+                                                    '100%': { transform: 'scale(1)' }
+                                                }
+                                            }}
+                                        >
+                                            {isListening ? <MicOff sx={{ fontSize: 18 }} /> : <Mic sx={{ fontSize: 18 }} />}
+                                        </IconButton>
+                                    </Tooltip>
+
                                     <TextField
                                         inputRef={inputRef}
                                         fullWidth
                                         multiline
                                         maxRows={3}
-                                        placeholder="Ask Daemon..."
+                                        placeholder={isListening ? 'Listening...' : 'Ask Bot...'}
                                         value={inputValue}
                                         onChange={(e) => {
                                             setInputValue(e.target.value);
@@ -1085,7 +2186,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                             }
                                         }}
                                         onKeyDown={handleTextKeyDown}
-                                        sx={{ ml: 1, flex: 1, '& .MuiInputBase-root': { color: 'white', fontSize: '0.875rem' } }}
+                                        sx={{ ml: 0.5, flex: 1, '& .MuiInputBase-root': { color: 'white', fontSize: '0.875rem' } }}
                                         variant="standard"
                                         InputProps={{ disableUnderline: true }}
                                     />
@@ -1094,7 +2195,7 @@ Browse them all at /services, or tell me what you're trying to do and I'll point
                                         disabled={!inputValue.trim() || isLoading}
                                         sx={{
                                             p: 1,
-                                            color: inputValue.trim() ? 'primary.main' : 'grey.600',
+                                            color: inputValue.trim() ? themeColor : 'grey.600',
                                             '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' }
                                         }}
                                     >

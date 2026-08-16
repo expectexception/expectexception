@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Typography } from '@mui/material';
+import React, { useRef, useState } from 'react';
+import { Card, CardContent, Box, Button, Typography } from '@mui/material';
 import { Casino, RestartAlt } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 type Move = 'rock' | 'paper' | 'scissors';
 const MOVES: { key: Move; emoji: string; label: string }[] = [
@@ -63,23 +63,24 @@ const RockPaperScissors: React.FC = () => {
 
     const resultText = result === 'win' ? 'You Win!' : result === 'lose' ? 'AI Wins!' : result === 'tie' ? "It's a Tie" : '';
     const resultColor = result === 'win' ? 'primary.main' : result === 'lose' ? 'error.main' : 'text.secondary';
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo title="Rock Paper Scissors vs AI - Classic Game" gameId={23} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Casino}
                 title="Rock Paper Scissors"
-                subtitle="Play against an AI that quietly learns your habits — favor one move too often and it starts countering you."
-            />
-
-            <Card sx={{
+                subtitle="Play against an AI that quietly learns your habits | favor one move too often and it starts countering you."
+                onRestart={handleReset}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1, textAlign: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 6, mb: 3 }}>
@@ -121,7 +122,8 @@ const RockPaperScissors: React.FC = () => {
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

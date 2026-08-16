@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import { Hearing } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const BEST_KEY = 'sandbox_simon_best_round';
 
@@ -98,23 +98,24 @@ const SimonSays: React.FC = () => {
 
     const statusText = phase === 'idle' ? 'Press Start to play'
         : phase === 'showing' ? 'Watch the pattern…'
-        : phase === 'input' ? 'Your turn — repeat it'
-        : `Game over — you reached round ${round - 1}`;
+        : phase === 'input' ? 'Your turn! Repeat it'
+        : `Game over! You reached round ${round - 1}`;
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo
                 gameId={11}
-                title="Simon Says — Memory Sequence Game Online"
+                title="Simon Says | Memory Sequence Game Online"
                 keywords={['simon says game', 'memory sequence game', 'color memory game', 'simon game online', 'pattern memory game', 'brain memory test']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Hearing}
                 title="Simon Says"
                 subtitle="Watch the colour pattern, then repeat it back. Each round adds one more step."
-            />
-
-            <Card sx={{
+                onRestart={start}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -165,7 +166,8 @@ const SimonSays: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

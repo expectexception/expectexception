@@ -35,6 +35,7 @@ const RegisterPage = lazy(() => import('../../pages/RegisterPage'));
 const TextToSpeechPage = lazy(() => import('../../pages/TextToSpeechPage'));
 const ImageCompressorPage = lazy(() => import('../../pages/ImageCompressorPage'));
 const AIDetectorPage = lazy(() => import('../../pages/AIDetectorPage'));
+const AiVisionStudio = lazy(() => import('../services/AiVisionStudio'));
 const CreateBlogPage = lazy(() => import('../../pages/admin/CreateBlogPage'));
 const UploadResourcePage = lazy(() => import('../../pages/admin/UploadResourcePage'));
 const AdminDashboardPage = lazy(() => import('../../pages/admin/AdminDashboardPage'));
@@ -145,6 +146,10 @@ const Sudoku = lazy(() => import('../sandbox/Sudoku'));
 const BubbleShooter = lazy(() => import('../sandbox/BubbleShooter'));
 const TowerOfHanoi = lazy(() => import('../sandbox/TowerOfHanoi'));
 const MazeRunner = lazy(() => import('../sandbox/MazeRunner'));
+const Solitaire = lazy(() => import('../sandbox/Solitaire'));
+const TriviaQuiz = lazy(() => import('../sandbox/TriviaQuiz'));
+const Checkers = lazy(() => import('../sandbox/Checkers'));
+const EndlessRunner = lazy(() => import('../sandbox/EndlessRunner'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -164,7 +169,7 @@ const withAuthGuard = (
 
 const AnimatedRoutes: React.FC = () => {
     const location = useLocation();
-    const isYtd = window.location.hostname.startsWith('ytdown.');
+    const isYtd = window.location.hostname.startsWith('ytd.');
 
     // Fetch tool access configuration
     const [toolAccess, setToolAccess] = useState<Record<string, boolean>>({});
@@ -203,6 +208,10 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/text-to-speech" element={<PageTransition>{withAuthGuard(<TextToSpeechPage />, '/services/text-to-speech', toolAccess, 'Text to Speech')}</PageTransition>} />
                     <Route path="/services/image-compressor" element={<PageTransition>{withAuthGuard(<ImageCompressorPage />, '/services/image-compressor', toolAccess, 'Image Compressor')}</PageTransition>} />
                     <Route path="/services/ai-detector" element={<PageTransition>{withAuthGuard(<AIDetectorPage />, '/services/ai-detector', toolAccess, 'AI Detector')}</PageTransition>} />
+                    <Route path="/services/ai-vision-studio" element={<PageTransition><AiVisionStudio /></PageTransition>} />
+                    <Route path="/services/ai-vision" element={<PageTransition><AiVisionStudio /></PageTransition>} />
+                    <Route path="/services/vision-studio" element={<PageTransition><AiVisionStudio /></PageTransition>} />
+                    <Route path="/services/100" element={<PageTransition><AiVisionStudio /></PageTransition>} />
 
                     {/* Document Tools */}
                     <Route path="/services/pdf-to-doc" element={<PageTransition>{withAuthGuard(<PdfToDoc />, '/services/pdf-to-doc', toolAccess, 'PDF to Doc')}</PageTransition>} />
@@ -242,7 +251,7 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/website-diagnostics" element={<PageTransition>{withAuthGuard(<WebsiteDiagnostics />, '/services/website-diagnostics', toolAccess, 'Website Diagnostics')}</PageTransition>} />
                     <Route path="/services/speed-test" element={<PageTransition>{withAuthGuard(<SpeedTest />, '/services/speed-test', toolAccess, 'Speed Test')}</PageTransition>} />
                     <Route path="/services/audio-separator" element={<PageTransition>{withAuthGuard(<AudioSeparator />, '/services/audio-separator', toolAccess, 'Audio Separator')}</PageTransition>} />
-                    {/* No withAuthGuard here on purpose — UptimeRobot renders its own
+                    {/* No withAuthGuard here on purpose, UptimeRobot renders its own
                         richer logged-out landing/marketing view instead of the generic
                         bare "Sign In Required" wall, then gates the real command center
                         internally via useAuth(). */}
@@ -299,6 +308,10 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/sandbox/bubble-shooter" element={<PageTransition><BubbleShooter /></PageTransition>} />
                     <Route path="/sandbox/tower-of-hanoi" element={<PageTransition><TowerOfHanoi /></PageTransition>} />
                     <Route path="/sandbox/maze-runner" element={<PageTransition><MazeRunner /></PageTransition>} />
+                    <Route path="/sandbox/solitaire" element={<PageTransition><Solitaire /></PageTransition>} />
+                    <Route path="/sandbox/trivia-quiz" element={<PageTransition><TriviaQuiz /></PageTransition>} />
+                    <Route path="/sandbox/checkers" element={<PageTransition><Checkers /></PageTransition>} />
+                    <Route path="/sandbox/endless-runner" element={<PageTransition><EndlessRunner /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />

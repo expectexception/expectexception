@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
 import { AutoAwesome, Delete } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const SYMMETRY_OPTIONS = [4, 6, 8, 12];
 
@@ -126,23 +126,25 @@ const Kaleidoscope: React.FC = () => {
         const dpr = window.devicePixelRatio || 1;
         ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
     };
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <>
             <Seo title="Kaleidoscope Drawing - Symmetric Art Toy" gameId={17} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={AutoAwesome}
                 title="Kaleidoscope"
                 subtitle="Draw anywhere and the stroke mirrors around the center with radial symmetry. One gesture, an instant mandala."
-            />
-
-            <Card sx={{
+                maxWidth="md"
+                onRestart={handleClear}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box
@@ -193,7 +195,8 @@ const Kaleidoscope: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

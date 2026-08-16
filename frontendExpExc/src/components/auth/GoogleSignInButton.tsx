@@ -39,7 +39,7 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
         if (response?.credential) {
             onSuccess(response.credential);
         } else {
-            onError?.('Google sign-in failed — no credential received.');
+            onError?.('Google sign-in failed: no credential received.');
         }
     }, [onSuccess, onError]);
 

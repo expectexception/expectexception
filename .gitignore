@@ -22,8 +22,13 @@ MANIFEST
 __pycache__/
 *.pyc
 
-# Django
+# Django & Application Logs
 *.log
+*.log.*
+logs/
+**/logs/
+requests_analysis.state.json
+**/requests_analysis.state.json
 local_settings.py
 db.sqlite3
 db.sqlite3-journal

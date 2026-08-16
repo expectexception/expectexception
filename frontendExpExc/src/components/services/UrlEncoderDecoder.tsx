@@ -15,7 +15,7 @@ const UrlEncoderDecoder: React.FC = () => {
         try { setEncoded(encodeURIComponent(input)); } catch { setEncoded('Encoding failed'); }
     };
     const handleDecode = () => {
-        try { setDecoded(decodeURIComponent(input)); } catch { setDecoded('Decoding failed — input may already be decoded'); }
+        try { setDecoded(decodeURIComponent(input)); } catch { setDecoded('Decoding failed | input may already be decoded'); }
     };
 
     const copy = (val: string, type: 'encoded' | 'decoded') => {
@@ -32,23 +32,23 @@ const UrlEncoderDecoder: React.FC = () => {
         <ServicePageShell
             icon={LinkIcon}
             title="URL Encoder / Decoder"
-            subtitle="Safely encode and decode URL components — runs entirely in your browser"
+            subtitle="Safely encode and decode URL components | runs entirely in your browser"
             maxWidth="md"
-            seoTitle="URL Encoder / Decoder Online — Percent Encoding Tool"
+            seoTitle="URL Encoder / Decoder Online | Percent Encoding Tool"
             toolId={39}
             keywords={['url encode online', 'url decode', 'percent encoding', 'encodeuricomponent online', 'query string encoder', 'url escape characters', 'decode url online', 'uri encoder decoder']}
-            about="Percent-encodes text so it's safe to use inside a URL — spaces, &, =, ?, and other reserved characters get converted to %XX sequences — or decodes an already-encoded string back to plain text. It calls the browser's built-in encodeURIComponent and decodeURIComponent directly, the same functions your own code would use, so the result matches exactly what you'd get at runtime. Encode and Decode write to separate result panels, so you can run the same input through both and compare them side by side. Everything happens client-side; nothing is sent anywhere."
+            about="Percent-encodes text so it's safe to use inside a URL, spaces, &, =, ?, and other reserved characters get converted to %XX sequences | or decodes an already-encoded string back to plain text. It calls the browser's built-in encodeURIComponent and decodeURIComponent directly, the same functions your own code would use, so the result matches exactly what you'd get at runtime. Encode and Decode write to separate result panels, so you can run the same input through both and compare them side by side. Everything happens client-side; nothing is sent anywhere."
             howToSteps={[
                 { name: 'Enter your text', text: 'Paste text or a URL into the input box, or click one of the example chips to try a sample.' },
                 { name: 'Click "Encode →"', text: 'Percent-encodes the input using encodeURIComponent and shows the result in the Encoded panel.' },
                 { name: 'Click "← Decode"', text: 'Runs the same input through decodeURIComponent instead, shown in the Decoded panel.' },
-                { name: 'Copy the result', text: 'Use the Copy button next to whichever output — Encoded or Decoded — you need.' },
+                { name: 'Copy the result', text: 'Use the Copy button next to whichever output, Encoded or Decoded | you need.' },
             ]}
             faq={[
-                { question: "What happens if I decode text that isn't validly encoded?", answer: 'decodeURIComponent throws on malformed sequences (e.g. a stray % not followed by two hex digits), and the tool shows "Decoding failed — input may already be decoded" instead of crashing.' },
-                { question: 'Does this encode a full URL or just one value?', answer: "It uses encodeURIComponent, which is meant for individual query values or path segments — it will also escape characters like /, :, and ? that are normally left alone in a full URL. Don't run an entire https://... URL through Encode unless you actually want those characters escaped too." },
+                { question: "What happens if I decode text that isn't validly encoded?", answer: 'decodeURIComponent throws on malformed sequences (e.g. a stray % not followed by two hex digits), and the tool shows "Decoding failed | input may already be decoded" instead of crashing.' },
+                { question: 'Does this encode a full URL or just one value?', answer: "It uses encodeURIComponent, which is meant for individual query values or path segments, it will also escape characters like /, :, and ? that are normally left alone in a full URL. Don't run an entire https://... URL through Encode unless you actually want those characters escaped too." },
                 { question: 'Is my input sent anywhere?', answer: 'No, both Encode and Decode run entirely in your browser using native JavaScript functions.' },
-                { question: 'Can I see both the encoded and decoded version at once?', answer: 'Yes — clicking both Encode and Decode on the same input fills in both result panels, so you can compare them side by side.' },
+                { question: 'Can I see both the encoded and decoded version at once?', answer: 'Yes | clicking both Encode and Decode on the same input fills in both result panels, so you can compare them side by side.' },
             ]}
         >
             <Card>

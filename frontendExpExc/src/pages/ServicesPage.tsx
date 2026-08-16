@@ -226,7 +226,7 @@ const ServicesPage: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 10 }}>
       <Seo
-        title="Free Online Developer Tools – YouTube Downloader, AI Detector, PDF Converter & More"
+        title="Free Online Developer Tools | YouTube Downloader, AI Detector, PDF Converter & More"
         description="Explore 20+ free online developer tools: YouTube downloader, AI image detector, PDF to Word converter, image compressor, OCR, text-to-speech, QR generator, and more. No sign-up required."
         keywords={[
           'free online tools 2025',
@@ -265,7 +265,7 @@ const ServicesPage: React.FC = () => {
           },
           {
             question: 'Can I convert PDF to Word without an account?',
-            answer: 'Absolutely. Our PDF to Word converter supports DOCX, DOC, ODT, RTF, and TXT output. Upload your PDF and download the result — no email or login needed.',
+            answer: 'Absolutely. Our PDF to Word converter supports DOCX, DOC, ODT, RTF, and TXT output. Upload your PDF and download the result, with no email or login needed.',
           },
           {
             question: 'Is there a file size limit for image compression?',
@@ -498,7 +498,7 @@ const ServicesPage: React.FC = () => {
                     }}>
                       <BorderBeam />
                       <CardContent sx={{ p: 3.5, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        {/* Live Preview — same animated-SVG-in-a-frame treatment as the homepage highlights */}
+                        {/* Live Preview, same animated-SVG-in-a-frame treatment as the homepage highlights */}
                         <Box
                           sx={{
                             height: 108,
@@ -565,7 +565,7 @@ const ServicesPage: React.FC = () => {
                         </Box>
 
                         {/* Service Content */}
-                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
+                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, mb: 1.5, color: '#ffffff' }}>
                           {service.title}
                         </Typography>
                         <Typography

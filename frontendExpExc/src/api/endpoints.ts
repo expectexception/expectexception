@@ -79,6 +79,7 @@ export const endpoints = {
 
         // Document tools
         pdfToDoc: '/api/services/pdf-to-doc/',
+        pdfToDocStatus: (taskId: string) => `/api/services/pdf-to-doc/status/${taskId}/`,
         docToPdf: '/api/services/doc-to-pdf/',
         pdfMerge: '/api/services/pdf-merge/',
         pdfSplit: '/api/services/pdf-split/',
@@ -120,12 +121,15 @@ export const endpoints = {
         uptimeMonitors: '/api/services/uptime-robot/monitors/',
         uptimeMonitorDetail: (id: number | string) => `/api/services/uptime-robot/monitors/${id}/`,
         speedTest: '/services/speed-test',
-        audioSeparator: '/api/audio-separator/process',
+        audioSeparator: '/api/services/audio-separator/process',
+        audioSeparatorStatus: (taskId: string) => `/api/services/audio-separator/status/${taskId}/`,
 
         // Downloadable resources
         downloads: '/api/services/downloads/',
         downloadDetail: (id: number) => `/api/services/downloads/${id}/`,
-        downloadFile: (id: number) => `/api/services/downloads/${id}/download/`,
+        // DownloadableResourceViewSet uses lookup_field = 'slug', so this must
+        // be the resource's slug, not its numeric id.
+        downloadFile: (slug: string) => `/api/services/downloads/${slug}/download/`,
         downloadStats: '/api/services/downloads/stats/',
 
         // Download history & analytics

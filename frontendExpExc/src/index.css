@@ -4,18 +4,22 @@
   padding: 0;
 }
 
-html {
+html, body {
   scroll-behavior: smooth;
+  margin: 0;
+  padding: 0;
+  max-width: 100vw !important;
+  width: 100%;
+  overflow-x: hidden !important;
+  box-sizing: border-box;
 }
 
 body {
-  margin: 0;
   font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
 }
 
 /* Mobile-safe defaults */
@@ -224,5 +228,12 @@ input:-webkit-autofill:active {
   -webkit-text-fill-color: #ffffff !important;
   caret-color: #ffffff;
   transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Disable touch tap ripple circles on mobile/coarse pointer devices */
+@media (pointer: coarse), (max-width: 768px) {
+  .MuiTouchRipple-root {
+    display: none !important;
+  }
 }
 

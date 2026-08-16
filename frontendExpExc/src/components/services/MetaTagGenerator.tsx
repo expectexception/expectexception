@@ -26,7 +26,7 @@ const hostFromUrl = (url: string): string => {
 };
 
 const MetaTagGenerator: React.FC = () => {
-    const [title, setTitle] = useState('ExpectException — Free Online Developer Tools');
+    const [title, setTitle] = useState('ExpectException | Free Online Developer Tools');
     const [description, setDescription] = useState('Free browser-based developer tools: JSON formatting, QR codes, PDF conversion, and more. No sign-up required.');
     const [url, setUrl] = useState('https://example.com/page');
     const [imageUrl, setImageUrl] = useState('https://example.com/og-image.png');
@@ -75,11 +75,11 @@ const MetaTagGenerator: React.FC = () => {
             toolId={58}
             icon={Web}
             title="Meta Tag Generator"
-            subtitle="Generate SEO, Open Graph, and Twitter Card meta tags — with live search & social previews"
+            subtitle="Generate SEO, Open Graph, and Twitter Card meta tags | with live search & social previews"
             maxWidth="lg"
-            seoTitle="Meta Tag Generator — SEO, Open Graph & Twitter Card Tags"
+            seoTitle="Meta Tag Generator | SEO, Open Graph & Twitter Card Tags"
             keywords={['meta tag generator', 'open graph generator', 'twitter card generator', 'seo meta tags', 'og tags generator', 'social share preview', 'meta description generator', 'html head tags generator']}
-            about="Fills in the exact set of <meta> tags a modern site needs for on-page SEO and rich social sharing — description, optional keywords, canonical link, a full Open Graph set (type, url, title, description, image, site name), and Twitter Card tags (card type, title, description, image, and an optional @handle) — then renders a ready-to-paste HTML block below. A live Google search-result preview and a social share-card preview update as you type, so you can see roughly how the tags will actually look before they go live, including whether your title and description run past the lengths search engines and social platforms typically display in full."
+            about="Fills in the exact set of <meta> tags a modern site needs for on-page SEO and rich social sharing, description, optional keywords, canonical link, a full Open Graph set (type, url, title, description, image, site name), and Twitter Card tags (card type, title, description, image, and an optional @handle) | then renders a ready-to-paste HTML block below. A live Google search-result preview and a social share-card preview update as you type, so you can see roughly how the tags will actually look before they go live, including whether your title and description run past the lengths search engines and social platforms typically display in full."
             howToSteps={[
                 { name: 'Fill in your page details', text: 'Enter the Title, Description, canonical URL, and (optionally) a comma-separated Keywords list for the page you\'re tagging.' },
                 { name: 'Add social sharing info', text: 'Provide an Image URL and Site Name so the Open Graph and Twitter Card previews have something to display when the link is shared.' },
@@ -91,7 +91,7 @@ const MetaTagGenerator: React.FC = () => {
                 { question: 'Where do these tags go in my HTML?', answer: 'Paste the entire generated block inside the <head>...</head> section of your page, ideally near your other <meta> and <link> tags.' },
                 { question: 'Why is there a recommended character count under Title and Description?', answer: 'Google typically truncates page titles around 50-60 characters and descriptions around 150-160 characters in search results, so staying under those limits reduces the chance of an awkward mid-word cutoff in the search snippet.' },
                 { question: 'What\'s the difference between Open Graph and Twitter Card tags?', answer: 'Open Graph (og:*) tags are read by Facebook, LinkedIn, Slack, and most other platforms when generating a link preview; Twitter Card (twitter:*) tags are Twitter/X\'s own format for the same purpose, which is why both sets are usually included together.' },
-                { question: 'Do I need the keywords meta tag?', answer: 'Google and most modern search engines ignore the keywords meta tag for ranking, so it\'s optional — this tool only includes it in the output if you actually type something into the Keywords field.' },
+                { question: 'Do I need the keywords meta tag?', answer: 'Google and most modern search engines ignore the keywords meta tag for ranking, so it\'s optional | this tool only includes it in the output if you actually type something into the Keywords field.' },
             ]}
         >
             <Grid container spacing={2.5} sx={{ flex: 1, minHeight: 0 }}>

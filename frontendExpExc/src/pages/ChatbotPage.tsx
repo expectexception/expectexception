@@ -1167,7 +1167,7 @@ The developer specializes in building high-performance, automated, and visually 
         }}>
             <CleanStarBackground withNebula={true} />
             <Seo
-                title="Daemon – Free AI Agentic Chatbot with Tool-Calling"
+                title="Daemon | Free AI Agentic Chatbot with Tool-Calling"
                 description="Chat with Daemon, an agentic AI assistant built by ExpectException. Ask it to write code, search the web, analyze files, and call real backend tools. Completely free."
                 keywords={[
                     'free ai chatbot',

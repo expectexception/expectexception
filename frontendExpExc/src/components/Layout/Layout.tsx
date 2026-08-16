@@ -43,6 +43,9 @@ import {
     DarkMode,
     LightMode,
     SettingsBrightness,
+    Visibility,
+    Keyboard,
+    Extension,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -52,6 +55,8 @@ import ScrollToTop from '../layout/ScrollToTop';
 import SearchDialog from '../layout/SearchDialog';
 import CommandPalette from '../layout/CommandPalette';
 import ChatbotWidget from '../layout/ChatbotWidget';
+import KeyboardShortcutsModal from '../layout/KeyboardShortcutsModal';
+import ToolPipelineModal from '../tools/ToolPipelineModal';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, logout, user } = useAuth();
@@ -108,15 +113,30 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         if (url) window.location.href = url;
     };
 
-    // Search / Command Palette
+    // Search / Command Palette / Shortcuts / Pipeline Modals
     const [searchOpen, setSearchOpen] = useState(false);
     const [cmdOpen, setCmdOpen] = useState(false);
+    const [shortcutsOpen, setShortcutsOpen] = useState(false);
+    const [pipelineOpen, setPipelineOpen] = useState(false);
     const handleSearchOpen = () => setCmdOpen(true);
     const handleSearchClose = () => setSearchOpen(false);
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setCmdOpen(o => !o); }
+            const target = e.target as HTMLElement;
+            const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+            if (isInput) return;
+
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                setCmdOpen(o => !o);
+            } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
+                e.preventDefault();
+                setPipelineOpen(o => !o);
+            } else if (e.key === '?') {
+                e.preventDefault();
+                setShortcutsOpen(o => !o);
+            }
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
@@ -125,6 +145,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const navItems = [
         { label: 'Home', path: '/', icon: <Home /> },
         { label: 'Services', path: '/services', icon: <Build /> },
+        { label: 'AI Vision Studio', path: '/services/ai-vision-studio', icon: <Visibility /> },
         { label: 'Sandbox', path: '/sandbox', icon: <SportsEsports /> },
         { label: 'Community', path: '/community', icon: <Forum /> },
         { label: 'Blogs', path: '/blogs', icon: <Article /> },
@@ -476,15 +497,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
                             {/* Right Side Actions */}
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5, md: 2 }, ml: 'auto' }}>
+                                <Tooltip title="Tool Pipeline Studio (Shift+P)">
+                                    <IconButton onClick={() => setPipelineOpen(true)} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
+                                        <Extension sx={{ fontSize: 20 }} />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Keyboard Shortcuts (?)">
+                                    <IconButton onClick={() => setShortcutsOpen(true)} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
+                                        <Keyboard sx={{ fontSize: 20 }} />
+                                    </IconButton>
+                                </Tooltip>
                                 <Tooltip title="Search  ⌘K">
                                     <IconButton onClick={handleSearchOpen} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
                                         <Search sx={{ fontSize: 22 }} />
-                                    </IconButton>
-                                </Tooltip>
-
-                                <Tooltip title={modeLabel}>
-                                    <IconButton onClick={() => setColorMode(nextMode)} size="small" sx={{ p: 1, color: '#94a3b8', '&:hover': { color: 'primary.main' } }}>
-                                        {cycleModeIcon}
                                     </IconButton>
                                 </Tooltip>
 
@@ -750,6 +775,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                     Explore
                                 </Typography>
                                 <Stack spacing={1.5}>
+                                    <Link to="/services/ai-vision-studio" style={{ color: '#00eeff', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 'bold', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#00eeff'}>
+                                        Realtime AI Vision Studio 👁️
+                                    </Link>
                                     <Link to="/services" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                         All Developer Tools
                                     </Link>
@@ -837,13 +865,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </Box>
             )}
 
-            {/* Scroll to Top Button */}
-            <ScrollToTop />
+
 
             {/* Search Dialog */}
             <SearchDialog open={searchOpen} onClose={handleSearchClose} />
             {/* Command Palette */}
             <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
+            {/* Keyboard Shortcuts Modal */}
+            <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+            {/* Tool Pipeline Builder Modal */}
+            <ToolPipelineModal open={pipelineOpen} onClose={() => setPipelineOpen(false)} />
 
             {/* Global Chatbot Widget */}
             <ChatbotWidget isOpen={chatbotOpen} setIsOpen={setChatbotOpen} />

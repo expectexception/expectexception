@@ -46,7 +46,7 @@ CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
         'CORS_ALLOWED_ORIGINS',
-        'https://expectexception.com,https://www.expectexception.com',
+        'https://expectexception.com,https://www.expectexception.com,https://ytd.expectexception.com,https://api.expectexception.com,https://expectexception.onrender.com',
     ).split(',')
     if origin.strip()
 ]

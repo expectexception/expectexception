@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Container, Card, CardContent, Box, Typography, Button, useTheme, alpha } from '@mui/material';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
+import { Card, CardContent, Box, Typography, Button, useTheme, alpha } from '@mui/material';
 import { GridOn } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 type Cell = 'X' | 'O' | null;
 type BoardState = Cell[]; // length 9, row-major
@@ -194,23 +194,24 @@ const TicTacToe: React.FC = () => {
 
     const cellSize = 96;
     const boardSize = cellSize * 3 + 8 * 4;
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo title="Play Tic-Tac-Toe Online - Unbeatable AI" gameId={3} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={GridOn}
                 title="Tic-Tac-Toe"
                 subtitle="Take on an unbeatable AI opponent powered by the minimax algorithm. You play X, the AI plays O - the best you can do is force a draw."
-            />
-
-            <Card sx={{
+                onRestart={resetGame}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: boardSize, mb: 1 }}>
@@ -303,7 +304,8 @@ const TicTacToe: React.FC = () => {
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

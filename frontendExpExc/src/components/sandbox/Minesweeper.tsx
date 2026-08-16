@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import { Flag, GridView, Refresh } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const SIZE = 9;
 const MINES = 10;
@@ -158,21 +158,22 @@ const Minesweeper: React.FC = () => {
             return working;
         });
     }, [status]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo
                 gameId={13}
-                title="Minesweeper — Free Online Classic Game"
+                title="Minesweeper | Free Online Classic Game"
                 keywords={['minesweeper game', 'play minesweeper online', 'minesweeper free', 'classic minesweeper', 'online puzzle game', 'minesweeper browser']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={GridView}
                 title="Minesweeper"
                 subtitle="Clear the board without hitting a mine. Tap to reveal, long-press or use the flag button to mark mines."
-            />
-
-            <Card sx={{
+                onRestart={reset}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -184,7 +185,7 @@ const Minesweeper: React.FC = () => {
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
                         <Typography variant="body1"><Flag sx={{ fontSize: 16, verticalAlign: 'text-bottom', mr: 0.5 }} />{MINES - flags}</Typography>
                         <Typography variant="body1" color="text.secondary">
-                            ⏱ {seconds}s · Best: {best ?? '—'}
+                            ⏱ {seconds}s · Best: {best ?? 'N/A'}
                         </Typography>
                         <Button size="small" startIcon={<Refresh />} onClick={reset}>New</Button>
                     </Stack>
@@ -244,7 +245,8 @@ const Minesweeper: React.FC = () => {
                     </Typography>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

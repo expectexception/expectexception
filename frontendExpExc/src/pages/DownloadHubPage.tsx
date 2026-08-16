@@ -177,9 +177,9 @@ const DownloadHubPage: React.FC = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
   };
 
-  const handleDownload = async (id: number, name: string) => {
+  const handleDownload = async (slug: string, name: string) => {
     try {
-      const response = await apiClient.get(endpoints.services.downloadFile(id), {
+      const response = await apiClient.get(endpoints.services.downloadFile(slug), {
         responseType: 'blob',
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -224,7 +224,7 @@ const DownloadHubPage: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
       <Seo
-        title="Download Hub – Free Developer Resources, Templates & Tools"
+        title="Download Hub | Free Developer Resources, Templates & Tools"
         description="Browse and download free developer resources, code templates, project starters, and tools. Organized by category. No login required for most files."
         keywords={[
           'free developer resources download',
@@ -804,7 +804,7 @@ const DownloadHubPage: React.FC = () => {
         open={detailsOpen}
         onClose={handleCloseDetails}
         resource={selectedResource}
-        onDownload={(slug, name) => handleDownload(selectedResource?.id, name)}
+        onDownload={(slug, name) => handleDownload(slug, name)}
       />
     </Container>
   );

@@ -60,12 +60,18 @@ const LoginPage: React.FC = () => {
         setError(null);
 
         try {
-            const response = await apiClient.post(endpoints.auth.login, formData);
+            const cleanEmail = formData.email.trim().toLowerCase();
+            const response = await apiClient.post(endpoints.auth.login, {
+                email: cleanEmail,
+                username: cleanEmail,
+                password: formData.password,
+            });
             const { access, refresh } = response.data;
 
-            login(access, refresh);
+            // Must await: navigating before the profile fetch resolves lands
+            // the user on a page whose guard still sees user=null.
+            await login(access, refresh);
 
-            // Redirect to dashboard or home
             navigate('/');
         } catch (err: any) {
             console.error('Login error:', err);

@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme, alpha } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme, alpha } from '@mui/material';
 import { Grid3x3, Timer, RestartAlt, Backspace, EmojiEvents } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 type Grid = number[][];
 type Difficulty = 'easy' | 'medium' | 'hard';
@@ -334,21 +334,22 @@ const Sudoku: React.FC = () => {
     }, [values]);
 
     const bestForDifficulty = stats[difficulty]?.best ?? null;
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo
                 gameId={26}
-                title="Sudoku — Free Online 9x9 Puzzle"
+                title="Sudoku | Free Online 9x9 Puzzle"
                 keywords={['sudoku', 'play sudoku online', 'free sudoku puzzle', 'sudoku easy medium hard', 'number puzzle game']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Grid3x3}
                 title="Sudoku"
                 subtitle="Fill the grid so every row, column, and 3x3 box holds the numbers 1 to 9 exactly once. Pick a difficulty and race the clock."
-            />
-
-            <Card
+                onRestart={backToMenu}
+            >
+            <Card ref={cardRef}
                 sx={{
                     background: 'rgba(13, 14, 18, 0.4)',
                     backdropFilter: 'blur(20px)',
@@ -393,7 +394,7 @@ const Sudoku: React.FC = () => {
                                 </Typography>
                                 <Typography variant="body1" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                     <Timer sx={{ fontSize: 18 }} />
-                                    {formatTime(seconds)} · Best: {bestForDifficulty !== null ? formatTime(bestForDifficulty) : '—'}
+                                    {formatTime(seconds)} · Best: {bestForDifficulty !== null ? formatTime(bestForDifficulty) : 'N/A'}
                                 </Typography>
                                 <Button size="small" startIcon={<RestartAlt />} onClick={backToMenu}>
                                     New
@@ -557,7 +558,8 @@ const Sudoku: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

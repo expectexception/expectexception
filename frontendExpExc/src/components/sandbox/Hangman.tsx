@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Typography, useTheme } from '@mui/material';
+import React, { useRef, useState } from 'react';
+import { Card, CardContent, Box, Button, Typography, useTheme } from '@mui/material';
 import { Spellcheck, RestartAlt } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const WORDS = [
     'PYTHON', 'DJANGO', 'REACT', 'BROWSER', 'FUNCTION', 'VARIABLE', 'KEYBOARD',
@@ -50,23 +50,24 @@ const Hangman: React.FC = () => {
             {stage > 5 && <line x1="100" y1="105" x2="118" y2="140" stroke={theme.palette.error.main} strokeWidth="3" />}
         </svg>
     );
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo title="Hangman - Classic Word Guessing Game" gameId={22} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Spellcheck}
                 title="Hangman"
                 subtitle="Guess the hidden word one letter at a time. Six wrong guesses and the drawing is complete."
-            />
-
-            <Card sx={{
+                onRestart={handleRestart}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1, textAlign: 'center' }}>
                     <Box sx={{ color: 'text.secondary', mb: 2 }}>
@@ -83,7 +84,7 @@ const Hangman: React.FC = () => {
 
                     {isOver && (
                         <Typography variant="h5" fontWeight={800} sx={{ mb: 3, color: isWon ? 'primary.main' : 'error.main' }}>
-                            {isWon ? 'You Won!' : `Game Over — it was ${word}`}
+                            {isWon ? 'You Won!' : `Game Over! It was ${word}`}
                         </Typography>
                     )}
 
@@ -116,7 +117,8 @@ const Hangman: React.FC = () => {
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

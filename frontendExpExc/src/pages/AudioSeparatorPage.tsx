@@ -79,7 +79,7 @@ const AudioSeparatorPage: React.FC = () => {
 
     const pollStatus = async () => {
       try {
-        const response = await apiClient.get(`${endpoints.services.audioSeparator}/status/${taskId}/`);
+        const response = await apiClient.get(endpoints.services.audioSeparatorStatus(taskId));
         setTaskStatus(response.data);
 
         if (

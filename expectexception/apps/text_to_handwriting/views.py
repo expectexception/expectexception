@@ -109,7 +109,7 @@ class GenerateHandwritingView(APIView):
             logger.info(f"Handwriting generation complete in {processing_time:.2f}s")
             
             # Log activity
-            from apps.services.utils import log_activity
+            from apps.services.views import log_activity
             log_activity(
                 request.user,
                 "text_to_handwriting",

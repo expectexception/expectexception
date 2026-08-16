@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import apiClient from '../api/config';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import apiClient, { AUTH_EXPIRED_EVENT } from '../api/config';
 import { endpoints } from '../api/endpoints';
 
 import { User } from '../types';
@@ -7,9 +7,10 @@ import { User } from '../types';
 interface AuthContextType {
     isAuthenticated: boolean;
     isInitializing: boolean;
+    isAdmin: boolean;
     user: User | null;
     token: string | null;
-    login: (access: string, refresh: string) => void;
+    login: (access: string, refresh: string) => Promise<void>;
     loginWithGoogle: (credential: string) => Promise<void>;
     logout: () => void;
     checkAuth: () => Promise<void>;
@@ -30,40 +31,65 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
 
-    useEffect(() => {
-        checkAuth();
+    const clearSession = useCallback(() => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        setIsAuthenticated(false);
+        setToken(null);
+        setUser(null);
     }, []);
 
-    const checkAuth = async () => {
+    const checkAuth = useCallback(async () => {
         const storedToken = localStorage.getItem('accessToken');
-        if (storedToken) {
-            setIsAuthenticated(true);
-            setToken(storedToken);
-            try {
-                const response = await apiClient.get(endpoints.auth.profile);
-                setUser(response.data);
-            } catch (e) {
-                console.error("Failed to fetch user profile", e);
-                // If token invalid, maybe logout?
-                // setIsAuthenticated(false);
-            }
-        } else {
-            setIsAuthenticated(false);
-            setToken(null);
-            setUser(null);
+        if (!storedToken) {
+            clearSession();
+            setIsInitializing(false);
+            return;
         }
-        setIsInitializing(false);
-    };
+
+        setToken(storedToken);
+        try {
+            const response = await apiClient.get(endpoints.auth.profile);
+            setUser(response.data);
+            // Only now is the session confirmed. Setting this from the mere
+            // presence of a token meant an expired or cross-instance-invalid
+            // token produced isAuthenticated=true with user=null — a state
+            // every guard reads as "still loading", so protected pages hung on
+            // a spinner forever instead of showing the sign-in gate.
+            setIsAuthenticated(true);
+        } catch (e) {
+            console.error('Failed to fetch user profile; clearing session', e);
+            clearSession();
+        } finally {
+            setIsInitializing(false);
+        }
+    }, [clearSession]);
+
+    useEffect(() => {
+        checkAuth();
+    }, [checkAuth]);
+
+    // The axios interceptor discards tokens when a refresh fails; without this
+    // listener React state kept rendering a signed-in UI against a dead session.
+    useEffect(() => {
+        const handleExpired = () => clearSession();
+        window.addEventListener(AUTH_EXPIRED_EVENT, handleExpired);
+        return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handleExpired);
+    }, [clearSession]);
 
     const login = async (access: string, refresh: string) => {
         localStorage.setItem('accessToken', access);
         localStorage.setItem('refreshToken', refresh);
-        setIsAuthenticated(true);
         setToken(access);
         try {
             const response = await apiClient.get(endpoints.auth.profile);
             setUser(response.data);
-        } catch (e) { console.error(e) }
+            setIsAuthenticated(true);
+        } catch (e) {
+            console.error('Login succeeded but profile fetch failed', e);
+            clearSession();
+            throw e;
+        }
     };
 
     const loginWithGoogle = async (credential: string) => {
@@ -86,16 +112,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
     };
 
-    const logout = () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        setIsAuthenticated(false);
-        setToken(null);
-        setUser(null);
-    };
+    const logout = useCallback(() => {
+        const refresh = localStorage.getItem('refreshToken');
+        // Revoke server-side so the refresh token can't outlive the logout.
+        // Fire-and-forget: local state is cleared either way.
+        if (refresh) {
+            apiClient.post(endpoints.auth.logout, { refresh }).catch(() => undefined);
+        }
+        clearSession();
+    }, [clearSession]);
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, isInitializing, user, token, login, loginWithGoogle, logout, checkAuth }}>
+        <AuthContext.Provider
+            value={{
+                isAuthenticated,
+                isInitializing,
+                isAdmin: Boolean(user?.is_staff),
+                user,
+                token,
+                login,
+                loginWithGoogle,
+                logout,
+                checkAuth,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

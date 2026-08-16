@@ -369,3 +369,38 @@ class SeoKeywordOverride(models.Model):
 
     def __str__(self):
         return self.route
+
+
+class UserToolRestriction(models.Model):
+    """Admin-imposed ban on one user's access to one Service/tool.
+
+    Enforced centrally by apps.services.middleware.ToolAccessMiddleware
+    (matches request path against Service.path the same way the tool's
+    requires_login flag is checked), not by each view individually.
+    """
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        related_name='tool_restrictions',
+    )
+    service = models.ForeignKey(
+        Service,
+        on_delete=models.CASCADE,
+        related_name='user_restrictions',
+    )
+    reason = models.CharField(max_length=255, blank=True)
+    restricted_by = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'service')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user_id} restricted from {self.service.title}"

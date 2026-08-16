@@ -210,7 +210,7 @@ const ImageCompressorPage: React.FC = () => {
                     {file && estimatedSize !== null && (
                         <Box sx={{ mt: 2, textAlign: 'center' }}>
                             <Typography variant="body2" color="text.secondary">
-                                Estimated Output: <strong style={{ color: theme.palette.primary.main }}>{formatBytes(estimatedSize)}</strong> — original {formatBytes(file.size)}
+                                Estimated Output: <strong style={{ color: theme.palette.primary.main }}>{formatBytes(estimatedSize)}</strong> (original {formatBytes(file.size)}
                             </Typography>
                         </Box>
                     )}

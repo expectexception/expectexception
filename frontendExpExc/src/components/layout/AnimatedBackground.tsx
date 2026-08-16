@@ -29,8 +29,26 @@ const AnimatedBackground: React.FC = () => {
   
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isMobileOrTouch, setIsMobileOrTouch] = useState(false);
 
   useEffect(() => {
+    const checkDevice = () => {
+      const isTouch = 
+        'ontouchstart' in window || 
+        navigator.maxTouchPoints > 0 || 
+        window.matchMedia('(pointer: coarse)').matches ||
+        window.innerWidth <= 768;
+      setIsMobileOrTouch(isTouch);
+    };
+
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileOrTouch) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       // Update grid glow position
       setMousePos({ x: e.clientX, y: e.clientY });
@@ -79,7 +97,7 @@ const AnimatedBackground: React.FC = () => {
       document.removeEventListener('mouseenter', handleMouseEnter);
       window.removeEventListener('mouseover', handleMouseOver);
     };
-  }, [cursorX, cursorY, isVisible]);
+  }, [cursorX, cursorY, isVisible, isMobileOrTouch]);
 
   return (
     <>
@@ -94,8 +112,11 @@ const AnimatedBackground: React.FC = () => {
           zIndex: -2,
           overflow: 'hidden',
           bgcolor: '#050505',
-          background: `
+          background: !isMobileOrTouch ? `
             radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(${colorRgb}, 0.06), transparent 70%),
+            linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px)
+          ` : `
             linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px)
           `,
@@ -119,8 +140,8 @@ const AnimatedBackground: React.FC = () => {
         }}
       />
 
-      {/* --- Custom Cursor --- */}
-      {isVisible && (
+      {/* --- Custom Cursor (Desktop Only) --- */}
+      {isVisible && !isMobileOrTouch && (
         <>
           {/* Main Dot */}
           <motion.div

@@ -42,7 +42,7 @@ def extract_metadata(image_path):
             info["Mode"] = img.mode
             info["Dimensions"] = f"{img.width}x{img.height}"
             
-            exif_data = img._getexif()
+            exif_data = img._getexif() if hasattr(img, '_getexif') else None
             if exif_data:
                 for tag, value in exif_data.items():
                     tag_name = PIL.ExifTags.TAGS.get(tag, tag)

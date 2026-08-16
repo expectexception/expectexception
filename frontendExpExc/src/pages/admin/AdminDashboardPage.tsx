@@ -70,8 +70,24 @@ import {
     Email,
     Forum,
     Reply,
+    Block,
+    QueryStats,
+    Visibility,
+    Insights,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+    BarChart,
+    Bar,
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip as RechartsTooltip,
+    ResponsiveContainer,
+    LabelList,
+} from 'recharts';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 
@@ -109,7 +125,8 @@ interface BackupSnapshot {
 interface AdminUser {
     id: number;
     email: string;
-    username: string;
+    first_name: string;
+    last_name: string;
     is_staff: boolean;
     is_active: boolean;
     date_joined: string;
@@ -177,6 +194,40 @@ interface AdminThread {
     reply_count: number;
     vote_count: number;
     created_at: string;
+}
+
+interface ToolRestriction {
+    id: number;
+    user_id: number;
+    user_email: string;
+    service_id: number;
+    service_title: string;
+    reason: string;
+    restricted_by_email: string;
+    created_at: string;
+}
+
+interface ToolUsageEntry {
+    tool_name: string;
+    total_calls: number;
+    success_calls: number;
+    failed_calls: number;
+    last_used: string | null;
+}
+
+interface UserToolUsage {
+    user_id: number;
+    user_email: string;
+    tool_usage: ToolUsageEntry[];
+    restrictions: { service_id: number; service_title: string }[];
+}
+
+interface UsageAnalytics {
+    window_days: number;
+    total_calls: number;
+    unique_tools_used: number;
+    top_tools: { tool_name: string; total_calls: number }[];
+    daily_trend: { date: string; total_calls: number }[];
 }
 
 // ============ Tab Panel Component ============
@@ -287,6 +338,8 @@ const AdminDashboardPage: React.FC = () => {
     const [toolAccessLoading, setToolAccessLoading] = useState<Record<number, boolean>>({});
     const [inquiries, setInquiries] = useState<AdminInquiry[]>([]);
     const [threads, setThreads] = useState<AdminThread[]>([]);
+    const [restrictions, setRestrictions] = useState<ToolRestriction[]>([]);
+    const [usageAnalytics, setUsageAnalytics] = useState<UsageAnalytics | null>(null);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -297,6 +350,12 @@ const AdminDashboardPage: React.FC = () => {
     const [blogDialog, setBlogDialog] = useState<{ open: boolean; data: Partial<AdminBlog> }>({ open: false, data: {} });
     const [inquiryDialog, setInquiryDialog] = useState<{ open: boolean; data: AdminInquiry | null }>({ open: false, data: null });
     const [replyMessage, setReplyMessage] = useState('');
+    const [restrictionDialog, setRestrictionDialog] = useState<{ open: boolean; user_id: number | ''; service_id: number | ''; reason: string; error: string | null; submitting: boolean }>({
+        open: false, user_id: '', service_id: '', reason: '', error: null, submitting: false,
+    });
+    const [userUsageDialog, setUserUsageDialog] = useState<{ open: boolean; loading: boolean; data: UserToolUsage | null }>({
+        open: false, loading: false, data: null,
+    });
 
     const [autoRefreshLogs, setAutoRefreshLogs] = useState(true);
     const [selectedModel, setSelectedModel] = useState('');
@@ -428,6 +487,36 @@ const AdminDashboardPage: React.FC = () => {
         }
     }, []);
 
+    const fetchRestrictions = useCallback(async () => {
+        try {
+            const response = await apiClient.get('/api/services/admin/tool-restrictions/');
+            setRestrictions(response.data.restrictions || []);
+        } catch (e) {
+            console.error('Failed to fetch tool restrictions:', e);
+        }
+    }, []);
+
+    const fetchUsageAnalytics = useCallback(async () => {
+        try {
+            const response = await apiClient.get('/api/services/admin/usage-analytics/');
+            setUsageAnalytics(response.data);
+        } catch (e) {
+            console.error('Failed to fetch usage analytics:', e);
+        }
+    }, []);
+
+    const fetchUserToolUsage = useCallback(async (userId: number) => {
+        setUserUsageDialog({ open: true, loading: true, data: null });
+        try {
+            const response = await apiClient.get(`/api/services/admin/users/${userId}/tool-usage/`);
+            setUserUsageDialog({ open: true, loading: false, data: response.data });
+        } catch (e) {
+            console.error('Failed to fetch user tool usage:', e);
+            setUserUsageDialog({ open: true, loading: false, data: null });
+            setError('Failed to load tool usage for this user');
+        }
+    }, []);
+
     // Initial load
     useEffect(() => {
         const loadData = async () => {
@@ -444,11 +533,13 @@ const AdminDashboardPage: React.FC = () => {
                 fetchToolServices(),
                 fetchInquiries(),
                 fetchThreads(),
+                fetchRestrictions(),
+                fetchUsageAnalytics(),
             ]);
             setLoading(false);
         };
         loadData();
-    }, [fetchMetrics, fetchMongoStatus, fetchBackups, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus, fetchToolServices, fetchInquiries, fetchThreads]);
+    }, [fetchMetrics, fetchMongoStatus, fetchBackups, fetchUsers, fetchBlogs, fetchDownloads, fetchOllamaModels, fetchOllamaStatus, fetchToolServices, fetchInquiries, fetchThreads, fetchRestrictions, fetchUsageAnalytics]);
 
     // Real-time metrics polling
     useEffect(() => {
@@ -498,6 +589,9 @@ const AdminDashboardPage: React.FC = () => {
             } else if (type === 'thread') {
                 await apiClient.delete(`/api/community/threads/${id}/`);
                 setThreads(threads.filter(t => t.id !== id));
+            } else if (type === 'restriction') {
+                await apiClient.delete(`/api/services/admin/tool-restrictions/${id}/`);
+                setRestrictions(restrictions.filter(r => r.id !== id));
             }
         } catch (e) {
             setError('Failed to delete item');
@@ -622,10 +716,42 @@ const AdminDashboardPage: React.FC = () => {
         }
     };
 
+    const handleCreateRestriction = async () => {
+        if (!restrictionDialog.user_id || !restrictionDialog.service_id) {
+            setRestrictionDialog(prev => ({ ...prev, error: 'Pick a user and a tool.' }));
+            return;
+        }
+        setRestrictionDialog(prev => ({ ...prev, submitting: true, error: null }));
+        try {
+            const res = await apiClient.post('/api/services/admin/tool-restrictions/', {
+                user_id: restrictionDialog.user_id,
+                service_id: restrictionDialog.service_id,
+                reason: restrictionDialog.reason || undefined,
+            });
+            setRestrictions(prev => [res.data, ...prev]);
+            setRestrictionDialog({ open: false, user_id: '', service_id: '', reason: '', error: null, submitting: false });
+        } catch (e: any) {
+            setRestrictionDialog(prev => ({
+                ...prev,
+                submitting: false,
+                error: e.response?.data?.error || 'Failed to create restriction',
+            }));
+        }
+    };
+
+    // Cross-reference a restriction shown inline in the per-user usage dialog
+    // (which only carries service_id/service_title) against the full
+    // restrictions list (which carries the id the DELETE endpoint needs).
+    const findRestrictionId = (userId: number, serviceId: number): number | null => {
+        const match = restrictions.find(r => r.user_id === userId && r.service_id === serviceId);
+        return match ? match.id : null;
+    };
+
     // ============ Filter Functions ============
     const filteredUsers = users.filter(u =>
         u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.username.toLowerCase().includes(searchQuery.toLowerCase())
+        (u.first_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (u.last_name || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const filteredBlogs = blogs.filter(b =>
@@ -667,6 +793,8 @@ const AdminDashboardPage: React.FC = () => {
         { label: 'Logs', icon: <Terminal /> },
         { label: 'Ollama', icon: <Psychology /> },
         { label: 'Tool Access', icon: <Lock /> },
+        { label: 'User Restrictions', icon: <Block /> },
+        { label: 'Analytics', icon: <QueryStats /> },
         { label: 'Inquiries', icon: <Email /> },
         { label: 'Threads', icon: <Forum /> },
         { label: 'Mongo', icon: <Storage /> },
@@ -946,7 +1074,9 @@ const AdminDashboardPage: React.FC = () => {
                                                             </Avatar>
                                                             <Box>
                                                                 <Typography sx={{ color: 'white', fontWeight: 500 }}>{user.email}</Typography>
-                                                                <Typography variant="caption" sx={{ color: 'grey.500' }}>@{user.username}</Typography>
+                                                                {(user.first_name || user.last_name) && (
+                                                                    <Typography variant="caption" sx={{ color: 'grey.500' }}>{`${user.first_name || ''} ${user.last_name || ''}`.trim()}</Typography>
+                                                                )}
                                                             </Box>
                                                         </Box>
                                                     </TableCell>
@@ -970,6 +1100,15 @@ const AdminDashboardPage: React.FC = () => {
                                                         />
                                                     </TableCell>
                                                     <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Tooltip title="View tool usage">
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => fetchUserToolUsage(user.id)}
+                                                                sx={{ color: 'grey.500', '&:hover': { color: '#8b5cf6' }, mr: 1 }}
+                                                            >
+                                                                <Visibility fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
                                                         <Tooltip title="Edit user">
                                                             <IconButton
                                                                 size="small"
@@ -1280,7 +1419,7 @@ const AdminDashboardPage: React.FC = () => {
                                                                         <Tooltip title="Set as default">
                                                                             <IconButton
                                                                                 size="small"
-                                                                                onClick={() => handleOllamaAction('set_default', model.name)}
+                                                                                onClick={() => handleOllamaAction('load', model.name)}
                                                                                 sx={{ color: 'grey.500', '&:hover': { color: '#10b981' } }}
                                                                             >
                                                                                 <CheckCircle fontSize="small" />
@@ -1430,8 +1569,224 @@ const AdminDashboardPage: React.FC = () => {
                                 </Box>
                             </TabPanel>
 
-                            {/* ============ INQUIRIES TAB ============ */}
+                            {/* ============ USER RESTRICTIONS TAB ============ */}
                             <TabPanel value={activeTab} index={7}>
+                                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                                    <Box>
+                                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 700, mb: 1 }}>
+                                            User Tool Restrictions
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ color: 'grey.400' }}>
+                                            Ban a specific user from a specific tool. Restricted users keep access to everything else.
+                                        </Typography>
+                                    </Box>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<Block />}
+                                        onClick={() => setRestrictionDialog({ open: true, user_id: '', service_id: '', reason: '', error: null, submitting: false })}
+                                        sx={{ bgcolor: '#6366f1', '&:hover': { bgcolor: '#4f46e5' }, textTransform: 'none', fontWeight: 600 }}
+                                    >
+                                        Add Restriction
+                                    </Button>
+                                </Box>
+
+                                <TableContainer component={Paper} sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3 }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>User</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Tool</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Reason</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Restricted By</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Date</TableCell>
+                                                <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Actions</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {restrictions.map((r) => (
+                                                <TableRow key={r.id} hover sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
+                                                    <TableCell sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.06)' }}>{r.user_email}</TableCell>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Chip
+                                                            icon={<Block sx={{ fontSize: 16 }} />}
+                                                            label={r.service_title}
+                                                            size="small"
+                                                            sx={{ bgcolor: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5' }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell sx={{ color: 'grey.400', borderColor: 'rgba(255,255,255,0.06)', maxWidth: 240 }}>
+                                                        <Typography noWrap variant="body2" sx={{ color: 'grey.400' }}>{r.reason || '—'}</Typography>
+                                                    </TableCell>
+                                                    <TableCell sx={{ color: 'grey.500', borderColor: 'rgba(255,255,255,0.06)' }}>{r.restricted_by_email}</TableCell>
+                                                    <TableCell sx={{ color: 'grey.400', borderColor: 'rgba(255,255,255,0.06)' }}>{formatDate(r.created_at)}</TableCell>
+                                                    <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                        <Tooltip title="Lift restriction">
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => setDeleteDialog({ open: true, type: 'restriction', id: r.id, name: `${r.user_email} → ${r.service_title}` })}
+                                                                sx={{ color: 'grey.500', '&:hover': { color: '#10b981' } }}
+                                                            >
+                                                                <LockOpen fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                                {restrictions.length === 0 && (
+                                    <Typography variant="body2" sx={{ color: 'grey.600', textAlign: 'center', py: 4 }}>
+                                        No active restrictions. Every user has access to every tool they're otherwise entitled to.
+                                    </Typography>
+                                )}
+                                <Typography variant="caption" sx={{ color: 'grey.600', mt: 2, display: 'block' }}>
+                                    {restrictions.length} active restriction{restrictions.length === 1 ? '' : 's'}
+                                </Typography>
+                            </TabPanel>
+
+                            {/* ============ USAGE ANALYTICS TAB ============ */}
+                            <TabPanel value={activeTab} index={8}>
+                                {!usageAnalytics ? (
+                                    <Typography sx={{ color: 'grey.500' }}>Loading usage analytics…</Typography>
+                                ) : (
+                                    <>
+                                        <Typography variant="body2" sx={{ color: 'grey.400', mb: 3 }}>
+                                            Site-wide tool usage over the last {usageAnalytics.window_days} days.
+                                        </Typography>
+
+                                        <Grid container spacing={3} sx={{ mb: 3 }}>
+                                            <Grid item xs={12} sm={6} md={3}>
+                                                <MetricCard
+                                                    title="Total Calls"
+                                                    value={usageAnalytics.total_calls.toLocaleString()}
+                                                    subtitle={`Last ${usageAnalytics.window_days} days`}
+                                                    icon={<QueryStats />}
+                                                    color="#6366f1"
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12} sm={6} md={3}>
+                                                <MetricCard
+                                                    title="Unique Tools Used"
+                                                    value={usageAnalytics.unique_tools_used}
+                                                    subtitle={`Last ${usageAnalytics.window_days} days`}
+                                                    icon={<Insights />}
+                                                    color="#8b5cf6"
+                                                />
+                                            </Grid>
+                                        </Grid>
+
+                                        <Grid container spacing={3}>
+                                            <Grid item xs={12} md={6}>
+                                                <Paper sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, p: 3 }}>
+                                                    <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700, mb: 2 }}>
+                                                        Top Tools by Usage
+                                                    </Typography>
+                                                    {usageAnalytics.top_tools.length === 0 ? (
+                                                        <Typography variant="body2" sx={{ color: 'grey.600', py: 4, textAlign: 'center' }}>
+                                                            No tool usage recorded yet.
+                                                        </Typography>
+                                                    ) : (
+                                                        <ResponsiveContainer width="100%" height={Math.max(280, usageAnalytics.top_tools.length * 38)}>
+                                                            <BarChart
+                                                                data={usageAnalytics.top_tools}
+                                                                layout="vertical"
+                                                                margin={{ top: 4, right: 36, left: 8, bottom: 4 }}
+                                                            >
+                                                                <CartesianGrid horizontal={false} stroke="rgba(255,255,255,0.08)" />
+                                                                <XAxis
+                                                                    type="number"
+                                                                    allowDecimals={false}
+                                                                    tick={{ fill: '#9ca3af', fontSize: 12 }}
+                                                                    axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                                                                    tickLine={false}
+                                                                />
+                                                                <YAxis
+                                                                    type="category"
+                                                                    dataKey="tool_name"
+                                                                    width={140}
+                                                                    tick={{ fill: '#d1d5db', fontSize: 12 }}
+                                                                    axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                                                                    tickLine={false}
+                                                                />
+                                                                <RechartsTooltip
+                                                                    cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                                                                    contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: 'white' }}
+                                                                    labelStyle={{ color: 'white', fontWeight: 600 }}
+                                                                    formatter={(value: number) => [value.toLocaleString(), 'Calls']}
+                                                                />
+                                                                <Bar dataKey="total_calls" fill="#6366f1" radius={[0, 4, 4, 0]} maxBarSize={22}>
+                                                                    <LabelList
+                                                                        dataKey="total_calls"
+                                                                        position="right"
+                                                                        style={{ fill: '#d1d5db', fontSize: 12 }}
+                                                                        formatter={(value: number) => value.toLocaleString()}
+                                                                    />
+                                                                </Bar>
+                                                            </BarChart>
+                                                        </ResponsiveContainer>
+                                                    )}
+                                                </Paper>
+                                            </Grid>
+
+                                            <Grid item xs={12} md={6}>
+                                                <Paper sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, p: 3 }}>
+                                                    <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700, mb: 2 }}>
+                                                        Daily Usage Trend
+                                                    </Typography>
+                                                    {usageAnalytics.daily_trend.length === 0 ? (
+                                                        <Typography variant="body2" sx={{ color: 'grey.600', py: 4, textAlign: 'center' }}>
+                                                            No usage recorded yet.
+                                                        </Typography>
+                                                    ) : (
+                                                        <ResponsiveContainer width="100%" height={320}>
+                                                            <AreaChart
+                                                                data={usageAnalytics.daily_trend}
+                                                                margin={{ top: 8, right: 16, left: -8, bottom: 4 }}
+                                                            >
+                                                                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.08)" />
+                                                                <XAxis
+                                                                    dataKey="date"
+                                                                    tick={{ fill: '#9ca3af', fontSize: 11 }}
+                                                                    axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                                                                    tickLine={false}
+                                                                    tickFormatter={(d: string) => d.slice(5)}
+                                                                    minTickGap={24}
+                                                                />
+                                                                <YAxis
+                                                                    allowDecimals={false}
+                                                                    tick={{ fill: '#9ca3af', fontSize: 12 }}
+                                                                    axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                                                                    tickLine={false}
+                                                                    width={40}
+                                                                />
+                                                                <RechartsTooltip
+                                                                    cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }}
+                                                                    contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: 'white' }}
+                                                                    labelStyle={{ color: 'white', fontWeight: 600 }}
+                                                                    formatter={(value: number) => [value.toLocaleString(), 'Calls']}
+                                                                />
+                                                                <Area
+                                                                    type="monotone"
+                                                                    dataKey="total_calls"
+                                                                    stroke="#6366f1"
+                                                                    strokeWidth={2}
+                                                                    fill="#6366f1"
+                                                                    fillOpacity={0.12}
+                                                                    activeDot={{ r: 4, fill: '#6366f1', stroke: '#0a0a0f', strokeWidth: 2 }}
+                                                                />
+                                                            </AreaChart>
+                                                        </ResponsiveContainer>
+                                                    )}
+                                                </Paper>
+                                            </Grid>
+                                        </Grid>
+                                    </>
+                                )}
+                            </TabPanel>
+
+                            {/* ============ INQUIRIES TAB ============ */}
+                            <TabPanel value={activeTab} index={9}>
                                 <Box sx={{ mb: 3 }}>
                                     <TextField
                                         placeholder="Search inquiries..."
@@ -1523,7 +1878,7 @@ const AdminDashboardPage: React.FC = () => {
                             </TabPanel>
 
                             {/* ============ THREADS TAB (community moderation) ============ */}
-                            <TabPanel value={activeTab} index={8}>
+                            <TabPanel value={activeTab} index={10}>
                                 <Box sx={{ mb: 3 }}>
                                     <TextField
                                         placeholder="Search threads..."
@@ -1609,8 +1964,8 @@ const AdminDashboardPage: React.FC = () => {
                                 </Typography>
                             </TabPanel>
 
-                            <TabPanel value={activeTab} index={9}>
-                                <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>MongoDB Atlas — Cross-Instance Mirror</Typography>
+                            <TabPanel value={activeTab} index={11}>
+                                <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>MongoDB Atlas | Cross-Instance Mirror</Typography>
                                 <Typography variant="body2" sx={{ color: 'grey.500', mb: 2 }}>
                                     Read-only view of the failover mirror (not the primary datastore). Atlas encrypts everything here at rest and in transit by default.
                                 </Typography>
@@ -1626,7 +1981,7 @@ const AdminDashboardPage: React.FC = () => {
                                                     <CardContent>
                                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                                                             <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700 }}>{name}</Typography>
-                                                            <Chip label={`${data.count ?? '—'} docs`} size="small" color={data.count ? 'success' : 'default'} />
+                                                            <Chip label={`${data.count ?? 'N/A'} docs`} size="small" color={data.count ? 'success' : 'default'} />
                                                         </Box>
                                                         {data.error && <Alert severity="error" sx={{ mb: 1 }}>{data.error}</Alert>}
                                                         {data.recent.length === 0 ? (
@@ -1652,7 +2007,7 @@ const AdminDashboardPage: React.FC = () => {
                                 )}
                             </TabPanel>
 
-                            <TabPanel value={activeTab} index={10}>
+                            <TabPanel value={activeTab} index={12}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, flexWrap: 'wrap', gap: 2 }}>
                                     <Box>
                                         <Typography variant="h6" sx={{ color: 'white' }}>Local Backups</Typography>
@@ -1743,10 +2098,18 @@ const AdminDashboardPage: React.FC = () => {
                         />
                         <TextField
                             margin="dense"
-                            label="Username"
+                            label="First Name"
                             fullWidth
-                            value={userDialog.data.username || ''}
-                            onChange={(e) => setUserDialog({ ...userDialog, data: { ...userDialog.data, username: e.target.value } })}
+                            value={userDialog.data.first_name || ''}
+                            onChange={(e) => setUserDialog({ ...userDialog, data: { ...userDialog.data, first_name: e.target.value } })}
+                            sx={{ mt: 2, input: { color: 'white' }, label: { color: 'grey.500' } }}
+                        />
+                        <TextField
+                            margin="dense"
+                            label="Last Name"
+                            fullWidth
+                            value={userDialog.data.last_name || ''}
+                            onChange={(e) => setUserDialog({ ...userDialog, data: { ...userDialog.data, last_name: e.target.value } })}
                             sx={{ mt: 2, input: { color: 'white' }, label: { color: 'grey.500' } }}
                         />
                         {(userDialog.type === 'create' || userDialog.type === 'edit') && (
@@ -1849,7 +2212,7 @@ const AdminDashboardPage: React.FC = () => {
                     </DialogActions>
                 </Dialog>
 
-                {/* Inquiry Detail / Reply Dialog — replying is always an explicit
+                {/* Inquiry Detail / Reply Dialog, replying is always an explicit
                     action taken here; nothing is ever emailed to the requester
                     automatically on submission. */}
                 <Dialog
@@ -1884,7 +2247,7 @@ const AdminDashboardPage: React.FC = () => {
                                     minRows={4}
                                     value={replyMessage}
                                     onChange={(e) => setReplyMessage(e.target.value)}
-                                    placeholder="Write your reply — this will be emailed directly to the requester."
+                                    placeholder="Write your reply. This will be emailed directly to the requester."
                                     sx={{ mt: 1, textarea: { color: 'white' }, label: { color: 'grey.500' } }}
                                 />
                             </>
@@ -1907,6 +2270,171 @@ const AdminDashboardPage: React.FC = () => {
                         >
                             Send Reply
                         </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Restriction Dialog — ban a specific user from a specific tool
+                    (User Restrictions tab, and reachable from the per-user usage
+                    drill-in below) */}
+                <Dialog
+                    open={restrictionDialog.open}
+                    onClose={() => setRestrictionDialog({ open: false, user_id: '', service_id: '', reason: '', error: null, submitting: false })}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{ sx: { bgcolor: '#1e293b', color: 'white' } }}
+                >
+                    <DialogTitle>Restrict User from a Tool</DialogTitle>
+                    <DialogContent>
+                        {restrictionDialog.error && (
+                            <Alert severity="error" sx={{ mt: 1, mb: 1, bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5' }}>
+                                {restrictionDialog.error}
+                            </Alert>
+                        )}
+                        <FormControl fullWidth margin="dense" sx={{ mt: 2 }}>
+                            <InputLabel sx={{ color: 'grey.500' }}>User</InputLabel>
+                            <Select
+                                value={restrictionDialog.user_id}
+                                label="User"
+                                onChange={(e) => setRestrictionDialog({ ...restrictionDialog, user_id: Number(e.target.value), error: null })}
+                                sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' } }}
+                            >
+                                {users.map((u) => (
+                                    <MenuItem key={u.id} value={u.id}>{u.email}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <FormControl fullWidth margin="dense" sx={{ mt: 2 }}>
+                            <InputLabel sx={{ color: 'grey.500' }}>Tool</InputLabel>
+                            <Select
+                                value={restrictionDialog.service_id}
+                                label="Tool"
+                                onChange={(e) => setRestrictionDialog({ ...restrictionDialog, service_id: Number(e.target.value), error: null })}
+                                sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' } }}
+                            >
+                                {toolServices.map((s) => (
+                                    <MenuItem key={s.id} value={s.id}>{s.title}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <TextField
+                            margin="dense"
+                            label="Reason (optional)"
+                            fullWidth
+                            multiline
+                            minRows={2}
+                            value={restrictionDialog.reason}
+                            onChange={(e) => setRestrictionDialog({ ...restrictionDialog, reason: e.target.value })}
+                            sx={{ mt: 2, textarea: { color: 'white' }, label: { color: 'grey.500' } }}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setRestrictionDialog({ open: false, user_id: '', service_id: '', reason: '', error: null, submitting: false })} sx={{ color: 'grey.500' }}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleCreateRestriction}
+                            variant="contained"
+                            disabled={restrictionDialog.submitting}
+                            sx={{ bgcolor: '#6366f1', '&:hover': { bgcolor: '#4f46e5' } }}
+                        >
+                            {restrictionDialog.submitting ? 'Restricting…' : 'Restrict'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Per-user tool usage drill-in, opened from the "View tool usage"
+                    action in the Users tab. */}
+                <Dialog
+                    open={userUsageDialog.open}
+                    onClose={() => setUserUsageDialog({ open: false, loading: false, data: null })}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{ sx: { bgcolor: '#1e293b', color: 'white' } }}
+                >
+                    <DialogTitle>
+                        Tool Usage{userUsageDialog.data ? ` — ${userUsageDialog.data.user_email}` : ''}
+                    </DialogTitle>
+                    <DialogContent>
+                        {userUsageDialog.loading ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                <CircularProgress sx={{ color: '#6366f1' }} />
+                            </Box>
+                        ) : !userUsageDialog.data ? (
+                            <Typography sx={{ color: 'grey.500' }}>Failed to load usage.</Typography>
+                        ) : (
+                            <>
+                                {userUsageDialog.data.restrictions.length > 0 && (
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="caption" sx={{ color: 'grey.500', display: 'block', mb: 1 }}>
+                                            Currently restricted from
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                            {userUsageDialog.data.restrictions.map((r) => {
+                                                const usageData = userUsageDialog.data!;
+                                                const restrictionId = findRestrictionId(usageData.user_id, r.service_id);
+                                                return (
+                                                    <Chip
+                                                        key={r.service_id}
+                                                        icon={<Block sx={{ fontSize: 16 }} />}
+                                                        label={r.service_title}
+                                                        size="small"
+                                                        onDelete={restrictionId ? () => setDeleteDialog({ open: true, type: 'restriction', id: restrictionId, name: `${usageData.user_email} → ${r.service_title}` }) : undefined}
+                                                        sx={{ bgcolor: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5' }}
+                                                    />
+                                                );
+                                            })}
+                                        </Box>
+                                    </Box>
+                                )}
+
+                                <Button
+                                    size="small"
+                                    startIcon={<Block />}
+                                    onClick={() => setRestrictionDialog({ open: true, user_id: userUsageDialog.data!.user_id, service_id: '', reason: '', error: null, submitting: false })}
+                                    sx={{ color: '#fca5a5', textTransform: 'none', mb: 2 }}
+                                >
+                                    Restrict from a tool
+                                </Button>
+
+                                {userUsageDialog.data.tool_usage.length === 0 ? (
+                                    <Typography variant="body2" sx={{ color: 'grey.600', textAlign: 'center', py: 3 }}>
+                                        This user hasn't used any tools yet.
+                                    </Typography>
+                                ) : (
+                                    <TableContainer sx={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 2 }}>
+                                        <Table size="small">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Tool</TableCell>
+                                                    <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }} align="right">Calls</TableCell>
+                                                    <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }} align="right">OK / Fail</TableCell>
+                                                    <TableCell sx={{ color: 'grey.400', fontWeight: 600, borderColor: 'rgba(255,255,255,0.06)' }}>Last Used</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {userUsageDialog.data.tool_usage.map((t) => (
+                                                    <TableRow key={t.tool_name}>
+                                                        <TableCell sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.06)' }}>{t.tool_name}</TableCell>
+                                                        <TableCell sx={{ color: 'grey.300', borderColor: 'rgba(255,255,255,0.06)' }} align="right">{t.total_calls.toLocaleString()}</TableCell>
+                                                        <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }} align="right">
+                                                            <Typography component="span" variant="body2" sx={{ color: '#86efac' }}>{t.success_calls}</Typography>
+                                                            {' / '}
+                                                            <Typography component="span" variant="body2" sx={{ color: '#fca5a5' }}>{t.failed_calls}</Typography>
+                                                        </TableCell>
+                                                        <TableCell sx={{ color: 'grey.500', borderColor: 'rgba(255,255,255,0.06)' }}>
+                                                            {t.last_used ? formatDate(t.last_used) : '—'}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                )}
+                            </>
+                        )}
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setUserUsageDialog({ open: false, loading: false, data: null })} sx={{ color: 'grey.500' }}>Close</Button>
                     </DialogActions>
                 </Dialog>
             </Container>

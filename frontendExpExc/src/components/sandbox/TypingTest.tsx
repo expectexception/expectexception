@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import { Keyboard, Refresh } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const BEST_KEY = 'sandbox_typing_best_wpm';
 
@@ -86,21 +86,22 @@ const TypingTest: React.FC = () => {
         const minutes = (Date.now() - startTime) / 60000;
         return Math.round((typed.trim().split(/\s+/).length) / Math.max(minutes, 1 / 600));
     }, [startTime, typed]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo
                 gameId={16}
-                title="Typing Speed Test — Free WPM Test Online"
+                title="Typing Speed Test | Free WPM Test Online"
                 keywords={['typing speed test', 'wpm test', 'typing test online free', 'words per minute test', 'keyboard speed test', 'typing practice']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Keyboard}
                 title="Typing Speed Test"
                 subtitle="Type the sentence as fast and accurately as you can. Your net WPM and accuracy are scored at the end."
-            />
-
-            <Card sx={{
+                onRestart={reset}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -177,7 +178,8 @@ const TypingTest: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

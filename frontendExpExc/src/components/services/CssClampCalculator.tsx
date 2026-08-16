@@ -6,7 +6,7 @@ import {
 import { Straighten, ContentCopy } from '@mui/icons-material';
 import ServicePageShell from './ServicePageShell';
 
-const ROOT_FONT_SIZE = 16; // px — the standard browser default for `1rem`
+const ROOT_FONT_SIZE = 16; // px, the standard browser default for `1rem`
 
 /** Rounds to 4 decimal places and drops trailing zeros (via plain Number
  * formatting), matching the precision used by well-known fluid-typography
@@ -106,9 +106,9 @@ const CssClampCalculator: React.FC = () => {
         <ServicePageShell
             icon={Straighten}
             title="CSS Clamp() Calculator"
-            subtitle="Generate a fluid, responsive clamp() value that scales smoothly between a min and max viewport width — no media queries"
+            subtitle="Generate a fluid, responsive clamp() value that scales smoothly between a min and max viewport width | no media queries"
             maxWidth="md"
-            seoTitle="CSS clamp() Calculator — Fluid Responsive Font Size Generator"
+            seoTitle="CSS clamp() Calculator | Fluid Responsive Font Size Generator"
             keywords={['css clamp calculator', 'fluid typography generator', 'css clamp generator', 'responsive font size css', 'fluid font size calculator', 'css clamp min max preferred', 'vw font size formula', 'responsive typography without media queries', 'css locking calculator']}
             about="Generates a CSS clamp() declaration that scales a size fluidly between a minimum value at a minimum viewport width and a maximum value at a maximum viewport width, using the same linear-interpolation formula behind well-known fluid-typography calculators: a slope and rem offset are derived from the four inputs and combined into a calc() expression mixing a fixed rem amount with a vw, or viewport-width, term. Below the min viewport width the size stays locked at the minimum; above the max viewport width it stays locked at the maximum; in between, it scales continuously with no breakpoints or media queries at all. It defaults to font-size but the property name is editable, since the exact same clamp() value works for any scalable length such as padding, gap, or line-height. All the math runs locally in the browser as plain JavaScript, and the mock viewport slider recomputes the previewed size at any chosen width without needing to actually resize the browser window."
             howToSteps={[
@@ -163,7 +163,7 @@ const CssClampCalculator: React.FC = () => {
                         label="CSS property"
                         value={property}
                         onChange={e => setProperty(e.target.value)}
-                        helperText="Applied to the generated declaration below — change it if you are not styling font-size"
+                        helperText="Applied to the generated declaration below | change it if you are not styling font-size"
                         sx={{ maxWidth: 260 }}
                     />
 

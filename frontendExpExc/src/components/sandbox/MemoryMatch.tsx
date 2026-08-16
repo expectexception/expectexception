@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import { Extension, Refresh } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const BEST_KEY = 'sandbox_memory_match_best_moves';
 const SYMBOLS = ['🚀', '⚡', '🎯', '🧩', '🎨', '🔮', '🎲', '💎'];
@@ -94,21 +94,22 @@ const MemoryMatch: React.FC = () => {
             }
         }
     }, [tiles, moves, best, won]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo
                 gameId={10}
-                title="Memory Match — Free Online Card Matching Game"
+                title="Memory Match | Free Online Card Matching Game"
                 keywords={['memory match game', 'card matching game', 'concentration game online', 'memory game free', 'brain training game', 'pairs matching game']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Extension}
                 title="Memory Match"
                 subtitle="Flip cards two at a time and match every pair in as few moves as possible."
-            />
-
-            <Card sx={{
+                onRestart={reset}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -120,7 +121,7 @@ const MemoryMatch: React.FC = () => {
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
                         <Typography variant="body1"><strong>Moves:</strong> {moves}</Typography>
                         <Typography variant="body1" color="text.secondary">
-                            Best: {best ?? '—'}
+                            Best: {best ?? 'N/A'}
                         </Typography>
                         <Button size="small" startIcon={<Refresh />} onClick={reset}>New game</Button>
                     </Stack>
@@ -169,7 +170,8 @@ const MemoryMatch: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

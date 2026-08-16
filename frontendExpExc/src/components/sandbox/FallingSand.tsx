@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
 import { Grain, Delete } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 type Material = 'sand' | 'water' | 'wall' | 'empty';
 
@@ -239,23 +239,24 @@ const FallingSand: React.FC = () => {
         { key: 'water', label: 'Water' },
         { key: 'wall', label: 'Wall' },
     ];
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <>
             <Seo title="Falling Sand Sandbox - Cellular Automaton Toy" gameId={5} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Grain}
                 title="Falling Sand"
                 subtitle="A tiny falling-sand simulator. Pick a material and draw on the grid - sand piles up, water spreads, walls stay put."
-            />
-
-            <Card sx={{
+                maxWidth="md"
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box
@@ -306,7 +307,8 @@ const FallingSand: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

@@ -37,6 +37,7 @@ import {
   Message,
   Terminal,
   Dns,
+  Visibility,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -568,7 +569,7 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
               }}
             >
               <Box sx={{ position: 'relative', width: '84px', height: '84px' }}>
-                {/* Progress ring — reflects real simulation progress, not just decoration */}
+                {/* Progress ring, reflects real simulation progress, not just decoration */}
                 <svg width="84" height="84" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
                   <circle cx="42" cy="42" r={RING_R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
                   {(isActive || isCompleted) && (
@@ -614,7 +615,7 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
                   </Box>
                 </motion.div>
 
-                {/* Status badge — completed check / active pulse */}
+                {/* Status badge, completed check / active pulse */}
                 {isCompleted && (
                   <Box sx={{
                     position: 'absolute', top: -2, right: -2,
@@ -661,7 +662,7 @@ const AgenticWorkflowVisualizer: React.FC<AgenticWorkflowVisualizerProps> = ({ a
                   fontSize: '0.75rem'
                 }}
               >
-                {isActive ? `${node.desc} — ${Math.round(progress)}%` : isCompleted ? 'Done' : node.desc}
+                {isActive ? `${node.desc}, ${Math.round(progress)}%` : isCompleted ? 'Done' : node.desc}
               </Typography>
             </Box>
           );
@@ -886,7 +887,7 @@ const HomePage: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', pb: 8, bgcolor: '#050505', color: '#ffffff' }}>
       <Seo
-        title="ExpectException – Free Developer Tools, AI Engineering & Portfolio"
+        title="ExpectException | Free Developer Tools, AI Engineering & Portfolio"
         description="ExpectException: free online tools (YouTube downloader, AI detector, PDF converter, OCR), developer blog, and a full-stack engineering & AI studio specializing in React, Django, AI & DevOps."
         keywords={[
           'expectexception',
@@ -909,7 +910,7 @@ const HomePage: React.FC = () => {
         faq={[
           {
             question: 'What is ExpectException?',
-            answer: 'ExpectException is a free online toolkit with 50+ developer utilities — YouTube downloader, AI image detector, PDF converter, image compressor, OCR, text-to-speech — plus a technical blog and a sandbox of browser games.',
+            answer: 'ExpectException is a free online toolkit with 50+ developer utilities, YouTube downloader, AI image detector, PDF converter, image compressor, OCR, text-to-speech | plus a technical blog and a sandbox of browser games.',
           },
           {
             question: 'Are all tools on ExpectException free?',
@@ -917,7 +918,7 @@ const HomePage: React.FC = () => {
           },
           {
             question: 'Can I hire the team behind ExpectException?',
-            answer: "Yes — we take on freelance and contract work in React, Django, Python, and AI/ML integrations. Visit the Hire page for details and to get in touch.",
+            answer: "Yes, we take on freelance and contract work in React, Django, Python, and AI/ML integrations. Visit the Hire page for details and to get in touch.",
           },
         ]}
       />
@@ -1063,16 +1064,23 @@ const HomePage: React.FC = () => {
                     lineHeight: 1.05,
                     mb: 3,
                     letterSpacing: '-0.03em',
+                    color: '#ffffff'
                   }}
                 >
                   Architecting the <br />
-                  <span style={{
-                    background: `linear-gradient(135deg, #ffffff 30%, ${primaryColor} 100%)`,
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}>
+                  <Box
+                    component="span"
+                    sx={{
+                      display: 'inline-block',
+                      background: `linear-gradient(135deg, #ffffff 30%, ${primaryColor} 100%)`,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      color: 'transparent',
+                    }}
+                  >
                     Modern Web
-                  </span>
+                  </Box>
                 </Typography>
 
                 <Typography
@@ -1089,7 +1097,30 @@ const HomePage: React.FC = () => {
                   We're ExpectException. Specializing in modern web engineering, custom AI integrations, and high-performance interactive interfaces, we turn complex concepts into responsive, elegant digital experiences.
                 </Typography>
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap" useFlexGap>
+                  <Button
+                    component={Link}
+                    to="/services/ai-vision-studio"
+                    variant="contained"
+                    size="large"
+                    startIcon={<Visibility sx={{ color: '#000000' }} />}
+                    sx={{
+                      borderRadius: '30px',
+                      px: 3.5,
+                      py: 1.75,
+                      fontWeight: 800,
+                      background: 'linear-gradient(135deg, #00ff66 0%, #00b347 100%)',
+                      color: '#000000',
+                      boxShadow: '0 8px 25px rgba(0, 255, 102, 0.35)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #00e65c 0%, #00993d 100%)',
+                        boxShadow: '0 12px 30px rgba(0, 255, 102, 0.55)',
+                        transform: 'translateY(-2px)'
+                      }
+                    }}
+                  >
+                    AI VISION STUDIO
+                  </Button>
                   <Button
                     component={Link}
                     to="/services"
@@ -1308,10 +1339,10 @@ const HomePage: React.FC = () => {
                 An Engineering Studio Built to Ship, Not Just Prototype
               </Typography>
               <Typography variant="body1" sx={{ color: '#94a3b8', fontSize: '1.1rem', lineHeight: 1.8, mb: 4 }}>
-                ExpectException is a full-stack engineering and applied-AI studio. We design and operate production systems — not demos — and this platform is the proof: every tool in our library is something we built, deployed, and maintain ourselves, running on real infrastructure with real users.
+                ExpectException is a full-stack engineering and applied-AI studio. We design and operate production systems, not demos, and this platform is the proof: every tool in our library is something we built, deployed, and maintain ourselves, running on real infrastructure with real users.
               </Typography>
               <Typography variant="body1" sx={{ color: '#94a3b8', fontSize: '1.1rem', lineHeight: 1.8, mb: 6 }}>
-                Beyond the free tools, we take on client work — React/TypeScript frontends paired with secure Django or Node.js backends, custom AI automation, and agentic workflows that plug real tools into conversational systems. If you're hiring or scoping a project, everything you can try on this site is our portfolio, live in production.
+                Beyond the free tools, we take on client work: React/TypeScript frontends paired with secure Django or Node.js backends, custom AI automation, and agentic workflows that plug real tools into conversational systems. If you're hiring or scoping a project, everything you can try on this site is our portfolio, live in production.
               </Typography>
 
               <Grid container spacing={4}>
@@ -1493,7 +1524,7 @@ const HomePage: React.FC = () => {
             <Grid item xs={12} md={5}>
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 4, background: 'rgba(13, 14, 18, 0.5)' }}>
                 <CardContent>
-                  <Typography variant="h4" fontWeight="800" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Typography variant="h4" fontWeight="800" color="#ffffff" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <ColorLens sx={{ color: primaryColor }} /> Accent Customizer
                   </Typography>
                   <Typography variant="body2" color="#94a3b8" sx={{ mb: 4, lineHeight: 1.6 }}>
@@ -2135,7 +2166,7 @@ const HomePage: React.FC = () => {
             </Grid>
           </Grid>
 
-          {/* How the pipeline works — plain-English explanation of the flow */}
+          {/* How the pipeline works, plain-English explanation of the flow */}
           <Box sx={{ mt: { xs: 8, md: 12 } }}>
             <Box sx={{ textAlign: 'center', mb: 6 }}>
               <Typography variant="h6" color="primary.main" fontWeight="700" sx={{ mb: 1, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -2148,11 +2179,11 @@ const HomePage: React.FC = () => {
 
             <Grid container spacing={3}>
               {[
-                { n: '01', title: 'You describe the goal', body: 'Give the system a plain-language objective — "build a landing page with a contact form", "add OCR to this pipeline". No tickets, no specs.' },
+                { n: '01', title: 'You describe the goal', body: 'Give the system a plain-language objective such as "build a landing page with a contact form" or "add OCR to this pipeline". No complex specs required.' },
                 { n: '02', title: 'The Planner decomposes it', body: 'The planning agent breaks the goal into an ordered, dependency-aware task graph and picks the right tools and frameworks for each step.' },
                 { n: '03', title: 'The Coder builds each task', body: 'The coding agent implements every task against a strict design system and type-safe conventions, writing production-grade React, Django, or Node.js.' },
-                { n: '04', title: 'The Tester validates & loops back', body: 'Automated tests, security checks, and responsive validation run on every change. Failures are fed back to the coder to self-correct — not shipped.' },
-                { n: '05', title: 'The Deployer ships it', body: 'Once green, the deploy agent containers the app, wires up SSL/DNS, and rolls it out — then reports back so you can trigger the next objective.' },
+                { n: '04', title: 'The Tester validates & loops back', body: 'Automated tests, security checks, and responsive validation run on every change. Failures are automatically fed back to the coder to self-correct.' },
+                { n: '05', title: 'The Deployer ships it', body: 'Once green, the deploy agent packages the app, configures SSL/DNS, and rolls it out smoothly so you can move to the next objective.' },
               ].map((step, i) => (
                 <Grid item xs={12} md key={step.n}>
                   <Box sx={{
@@ -2189,66 +2220,15 @@ const HomePage: React.FC = () => {
               bgcolor: alpha(primaryColor, 0.04), border: `1px solid ${alpha(primaryColor, 0.15)}`,
             }}>
               <Typography variant="body1" color="#cbd5e1" sx={{ maxWidth: 820, mx: 'auto', lineHeight: 1.7 }}>
-                <strong style={{ color: '#ffffff' }}>It's a loop, not a line.</strong> When the testing agent finds a bug or a
-                failing check, work flows back to the coding agent to fix it before anything reaches deployment — so the output
-                is verified, not just generated. That same orchestration is what powers the AI tooling across this platform.
+                <strong style={{ color: '#ffffff' }}>It's a continuous loop.</strong> When the testing agent finds a bug or a
+                failing check, work flows directly back to the coding agent to fix it before anything reaches deployment, ensuring the output is fully verified.
               </Typography>
             </Box>
           </Box>
         </Container>
       </Box>
 
-      {/* --- AWARDS & MILESTONES --- */}
-      <Container maxWidth="xl" sx={{ py: { xs: 8, md: 16 } }}>
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h6" color="primary.main" fontWeight="700" sx={{ mb: 1, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            Milestones
-          </Typography>
-          <Typography variant="h2" sx={{ fontWeight: 800, mb: 2, letterSpacing: '-0.02em' }}>
-            Awards & Recognition
-          </Typography>
-        </Box>
 
-        <TableContainer component={Paper} sx={{
-          bgcolor: 'transparent',
-          backgroundImage: 'none',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
-          borderRadius: '16px',
-          boxShadow: 'none',
-          overflow: 'hidden'
-        }}>
-          <Table>
-            <TableHead sx={{ bgcolor: 'rgba(13, 14, 18, 0.4)' }}>
-              <TableRow>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }} width="15%">Year</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }} width="45%">Award / Certification</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }} width="25%">Provider</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }} width="15%">Category</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {[
-                { year: '2026', title: 'Excellence in Web Engineering', provider: 'ExpectException', category: 'Engineering Showcase' },
-                { year: '2025', title: 'Advanced AI & Chatbot Integrator', provider: 'ExpExc platform', category: 'AI Automation' },
-                { year: '2025', title: 'Full Stack Development Certification', provider: 'Developer Alliance', category: 'Mastery' },
-                { year: '2024', title: 'Technical Leadership Award', provider: 'Open Source Guild', category: 'Contribution' },
-              ].map((row, idx) => (
-                <TableRow key={idx} sx={{
-                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.015)' },
-                  transition: 'background-color 0.2s'
-                }}>
-                  <TableCell sx={{ color: primaryColor, fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }}>{row.year}</TableCell>
-                  <TableCell sx={{ color: '#ffffff', fontWeight: 600, borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }}>{row.title}</TableCell>
-                  <TableCell sx={{ color: '#94a3b8', borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }}>{row.provider}</TableCell>
-                  <TableCell sx={{ borderColor: 'rgba(255, 255, 255, 0.05)', py: 2.5 }}>
-                    <Chip label={row.category} size="small" sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', color: '#ffffff', fontSize: '0.75rem' }} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Container>
 
       {/* --- COLLABORATION PROCESS --- */}
       <Box sx={{ py: { xs: 8, md: 14 }, bgcolor: '#08090d', borderTop: '1px solid rgba(255, 255, 255, 0.03)', borderBottom: '1px solid rgba(255, 255, 255, 0.03)' }}>

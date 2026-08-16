@@ -873,7 +873,7 @@ const AIDetectorPage: React.FC = () => {
             maxWidth="lg"
         >
             <Seo
-                title="AI Image Detector – Check If an Image Is AI Generated"
+                title="AI Image Detector | Check If an Image Is AI Generated"
                 description="Upload any image and instantly detect if it was AI-generated using multi-model ensemble forensic analysis. Detects Midjourney, DALL-E, Stable Diffusion, and more. Free, no sign-up."
                 keywords={[
                     'ai image detector free',

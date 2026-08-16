@@ -609,5 +609,92 @@
       "solve a maze online",
       "maze puzzle browser game"
     ]
+  },
+  {
+    "id": 30,
+    "title": "Solitaire",
+    "description": "Classic Klondike solitaire. Tap a card to pick it up, tap a foundation or column to place it - no dragging required.",
+    "icon": "Style",
+    "path": "/sandbox/solitaire",
+    "category": "puzzle",
+    "tags": [
+      "cards",
+      "puzzle",
+      "classic",
+      "solitaire"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "solitaire online free",
+      "klondike solitaire browser",
+      "play solitaire no download",
+      "card game online free"
+    ]
+  },
+  {
+    "id": 31,
+    "title": "Trivia Quiz",
+    "description": "Tap the correct answer before time runs out. 10 questions a round, mixed categories, new order every time.",
+    "icon": "Quiz",
+    "path": "/sandbox/trivia-quiz",
+    "category": "puzzle",
+    "tags": [
+      "trivia",
+      "quiz",
+      "knowledge"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "trivia quiz online free",
+      "multiple choice quiz game",
+      "general knowledge quiz browser",
+      "play trivia online"
+    ]
+  },
+  {
+    "id": 32,
+    "title": "Checkers",
+    "description": "Classic American checkers against a minimax-powered AI. Captures are mandatory, chain jumps are forced, and reaching the back row crowns a king.",
+    "icon": "Grid4x4",
+    "path": "/sandbox/checkers",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "ai",
+      "strategy",
+      "board"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "checkers game online",
+      "play checkers vs ai",
+      "checkers vs computer free",
+      "american checkers online"
+    ]
+  },
+  {
+    "id": 33,
+    "title": "Endless Runner",
+    "description": "Press space, click, or tap to jump over obstacles racing toward you. One hit ends the run - how far can you go before the speed catches you?",
+    "icon": "DirectionsRun",
+    "path": "/sandbox/endless-runner",
+    "category": "reaction",
+    "tags": [
+      "reaction",
+      "arcade",
+      "endless",
+      "score"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "endless runner game online",
+      "dino game online free",
+      "jumping arcade game browser",
+      "chrome dino run online"
+    ]
   }
 ]

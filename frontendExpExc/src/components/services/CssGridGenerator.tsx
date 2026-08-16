@@ -68,9 +68,9 @@ const CssGridGenerator: React.FC = () => {
             title="CSS Grid Generator"
             subtitle="Build a CSS Grid layout visually and copy the generated grid-template CSS"
             maxWidth="md"
-            seoTitle="CSS Grid Generator — Visual grid-template-columns & Rows Builder"
+            seoTitle="CSS Grid Generator | Visual grid-template-columns & Rows Builder"
             keywords={['css grid generator', 'grid template columns generator', 'css grid layout builder', 'grid template rows', 'fr unit calculator', 'css grid tool', 'visual grid builder', 'grid gap generator']}
-            about="Builds a CSS Grid container by letting you set the number of columns and rows, assign each one an independent fr (fractional) size, and control the gap between cells — the same grid-template-columns, grid-template-rows, and gap properties you'd hand-write in a stylesheet. The bordered preview updates live so you can see exactly how the fr ratios divide the available space before copying the generated CSS into your own project. Everything runs client-side using plain CSS Grid math — no build step, framework, or server round-trip required."
+            about="Builds a CSS Grid container by letting you set the number of columns and rows, assign each one an independent fr (fractional) size, and control the gap between cells, the same grid-template-columns, grid-template-rows, and gap properties you'd hand-write in a stylesheet. The bordered preview updates live so you can see exactly how the fr ratios divide the available space before copying the generated CSS into your own project. Everything runs client-side using plain CSS Grid math, no build step, framework, or server round-trip required."
             howToSteps={[
                 { name: 'Set columns and rows', text: 'Drag the Columns (2-8) and Rows (2-6) sliders to choose the grid\'s basic dimensions.' },
                 { name: 'Adjust the gap', text: 'Drag the Gap slider (0-40px) to control the spacing between grid cells.' },
@@ -78,9 +78,9 @@ const CssGridGenerator: React.FC = () => {
                 { name: 'Copy the generated CSS', text: 'Click Copy CSS to copy the grid-template-columns, grid-template-rows, and gap declarations to your clipboard.' },
             ]}
             faq={[
-                { question: 'What does the fr unit mean?', answer: 'fr stands for "fractional unit" — it divides the available space in the grid container proportionally. A column set to 2fr gets twice as much width as a column set to 1fr, regardless of the container\'s pixel size.' },
-                { question: 'Can I create named grid-template-areas with this tool?', answer: 'Not directly — this tool focuses on generating grid-template-columns, grid-template-rows, and gap from row/column counts and fr sizes, which covers most real-world grid layouts without needing to hand-name each area.' },
-                { question: 'Does the numbered preview match my real content?', answer: 'The numbered cells represent grid cells, not your actual content — swap in your own elements after copying the CSS and the same column/row proportions will apply to them.' },
+                { question: 'What does the fr unit mean?', answer: 'fr stands for "fractional unit", it divides the available space in the grid container proportionally. A column set to 2fr gets twice as much width as a column set to 1fr, regardless of the container\'s pixel size.' },
+                { question: 'Can I create named grid-template-areas with this tool?', answer: 'Not directly | this tool focuses on generating grid-template-columns, grid-template-rows, and gap from row/column counts and fr sizes, which covers most real-world grid layouts without needing to hand-name each area.' },
+                { question: 'Does the numbered preview match my real content?', answer: 'The numbered cells represent grid cells, not your actual content | swap in your own elements after copying the CSS and the same column/row proportions will apply to them.' },
                 { question: 'Is there a limit to how many columns or rows I can use?', answer: 'This tool caps at 8 columns and 6 rows to keep the per-cell fr sliders usable, but you can hand-edit the copied CSS afterward to add more if you need a larger grid.' },
             ]}
         >

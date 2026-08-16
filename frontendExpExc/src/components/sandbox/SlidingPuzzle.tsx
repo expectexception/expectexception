@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Typography, Button, Stack, Chip } from '@mui/material';
+import { Card, CardContent, Box, Typography, Button, Stack, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Extension, Refresh } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const SIZE = 4; // 4x4 grid
 const TILE_COUNT = SIZE * SIZE; // 16 cells, values 1..15 + blank (0)
@@ -147,30 +147,31 @@ const SlidingPuzzle: React.FC = () => {
     }, [blankIndex, board, moves, startTime, best]);
 
     const movableSet = useMemo(() => new Set(getAdjacentIndices(blankIndex)), [blankIndex]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo title="Sliding Puzzle - Free Online 15-Puzzle Brain Game" gameId={7} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Extension}
                 title="Sliding Puzzle"
                 subtitle="Slide the numbered tiles into order, 1 through 15, by moving pieces into the empty space. A classic brain teaser, right in your browser."
-            />
-
-            <Card sx={{
+                onRestart={newGame}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }} flexWrap="wrap" gap={1}>
                         <Chip size="small" label={`Moves: ${moves}`} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
                         <Chip size="small" label={`Time: ${formatTime(elapsedMs)}`} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
                         <Typography variant="body2" color="text.secondary">
-                            Best: {best ? `${best.moves} moves / ${formatTime(best.timeMs)}` : '—'}
+                            Best: {best ? `${best.moves} moves / ${formatTime(best.timeMs)}` : 'N/A'}
                         </Typography>
                     </Stack>
 
@@ -230,7 +231,8 @@ const SlidingPuzzle: React.FC = () => {
                     </Button>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

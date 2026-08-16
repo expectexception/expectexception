@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import { Pets } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 const HOLES = 9;
 const GAME_MS = 30000;
@@ -86,21 +86,22 @@ const WhackAMole: React.FC = () => {
         setScore(s => s + 1);
         setActive(null);
     }, [active]);
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="sm" sx={{ py: 8 }}>
+        <>
             <Seo
                 gameId={15}
-                title="Whack-a-Mole — Free Online Reaction Game"
+                title="Whack-a-Mole | Free Online Reaction Game"
                 keywords={['whack a mole game', 'whack a mole online', 'reaction game free', 'click speed game', 'arcade tap game', 'whack a mole browser']}
             />
-            <ServicePageHero
+            <GamePlayShell
                 icon={Pets}
                 title="Whack-a-Mole"
-                subtitle="Tap the moles as fast as they pop up. You have 30 seconds — how many can you hit?"
-            />
-
-            <Card sx={{
+                subtitle="Tap the moles as fast as they pop up. You have 30 seconds | how many can you hit?"
+                onRestart={start}
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -170,7 +171,8 @@ const WhackAMole: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 

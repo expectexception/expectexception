@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Container, Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Box, Button, Chip, Typography, useTheme } from '@mui/material';
 import { AutoAwesome, Delete } from '@mui/icons-material';
 import Seo from '../seo/Seo';
-import ServicePageHero from '../services/ServicePageHero';
+import GamePlayShell from './shared/GamePlayShell';
 
 interface Particle {
     x: number;
@@ -232,23 +232,24 @@ const ParticlePlayground: React.FC = () => {
         { key: 'secondary', label: 'Secondary' },
         { key: 'white', label: 'White' },
     ];
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <>
             <Seo title="Particle Playground - Interactive Canvas Toy" gameId={4} />
-            <ServicePageHero
+            <GamePlayShell
                 icon={AutoAwesome}
                 title="Particle Playground"
                 subtitle="A drifting field of particles that react to your cursor or finger. Click or tap to trigger a burst of sparks."
-            />
-
-            <Card sx={{
+                maxWidth="md"
+            >
+            <Card ref={cardRef} sx={{
                 background: 'rgba(13, 14, 18, 0.4)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
-                p: 3
+                p: { xs: 1.5, sm: 3 }
             }}>
                 <CardContent sx={{ p: 1 }}>
                     <Box
@@ -288,6 +289,14 @@ const ParticlePlayground: React.FC = () => {
                                 color={palette === p.key ? 'primary' : 'default'}
                                 variant={palette === p.key ? 'filled' : 'outlined'}
                                 onClick={() => setPalette(p.key)}
+                                sx={{
+                                    color: palette === p.key ? '#000000' : '#ffffff',
+                                    fontWeight: 700,
+                                    borderColor: palette === p.key ? 'transparent' : 'rgba(255, 255, 255, 0.25)',
+                                    '&:hover': {
+                                        borderColor: theme.palette.primary.main,
+                                    }
+                                }}
                             />
                         ))}
                     </Box>
@@ -299,7 +308,8 @@ const ParticlePlayground: React.FC = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+            </GamePlayShell>
+        </>
     );
 };
 
