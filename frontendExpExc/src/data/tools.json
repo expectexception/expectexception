@@ -890,8 +890,8 @@
   },
   {
     "id": 38,
-    "title": "JSON \u2194 CSV Converter",
-    "description": "Convert JSON arrays to CSV and CSV back to JSON \u2014 entirely in your browser.",
+    "title": "JSON ↔ CSV Converter",
+    "description": "Convert JSON arrays to CSV and CSV back to JSON — entirely in your browser.",
     "path": "/services/json-csv",
     "icon": "TableChart",
     "color": "secondary",
@@ -938,7 +938,7 @@
   {
     "id": 40,
     "title": "JWT Decoder",
-    "description": "Decode JSON Web Tokens to inspect header and payload claims \u2014 100% client-side.",
+    "description": "Decode JSON Web Tokens to inspect header and payload claims — 100% client-side.",
     "path": "/services/jwt-decoder",
     "icon": "VpnKey",
     "color": "error",
@@ -1025,7 +1025,7 @@
   {
     "id": 44,
     "title": "HTTP Status Code Reference",
-    "description": "Complete searchable reference for all HTTP status codes (1xx\u20135xx) with descriptions and real-world use cases.",
+    "description": "Complete searchable reference for all HTTP status codes (1xx–5xx) with descriptions and real-world use cases.",
     "path": "/services/http-status-codes",
     "icon": "Info",
     "color": "info",
@@ -1069,7 +1069,7 @@
   {
     "id": 46,
     "title": "Favicon Generator",
-    "description": "Upload any image and generate favicons in all standard sizes: 16\u00d716 to 512\u00d7512. Download as PNG files.",
+    "description": "Upload any image and generate favicons in all standard sizes: 16×16 to 512×512. Download as PNG files.",
     "path": "/services/favicon-generator",
     "icon": "Image",
     "color": "warning",
@@ -1113,7 +1113,7 @@
   {
     "id": 48,
     "title": "Keypair Generator",
-    "description": "Generate RSA or Elliptic Curve keypairs entirely in your browser \u2014 private keys never leave your device.",
+    "description": "Generate RSA or Elliptic Curve keypairs entirely in your browser — private keys never leave your device.",
     "path": "/services/keypair-generator",
     "icon": "Fingerprint",
     "color": "secondary",
@@ -1244,7 +1244,7 @@
   {
     "id": 54,
     "title": "Text Encryptor",
-    "description": "AES-256-GCM encryption using your browser's native Web Crypto API \u2014 passphrase and plaintext never leave your device.",
+    "description": "AES-256-GCM encryption using your browser's native Web Crypto API — passphrase and plaintext never leave your device.",
     "path": "/services/text-encryptor",
     "icon": "EnhancedEncryption",
     "color": "info",
@@ -1266,7 +1266,7 @@
   {
     "id": 55,
     "title": "Markdown Table Generator",
-    "description": "Edit a grid and get valid GitHub-flavored markdown table syntax instantly \u2014 no manual pipes or dashes.",
+    "description": "Edit a grid and get valid GitHub-flavored markdown table syntax instantly — no manual pipes or dashes.",
     "path": "/services/markdown-table-generator",
     "icon": "TableChart",
     "color": "success",
@@ -1439,5 +1439,137 @@
       "what color is this hex code"
     ],
     "is_active": true
+  },
+  {
+    "id": 62,
+    "title": "EXIF Metadata Viewer & Stripper",
+    "description": "See the hidden metadata in a photo — camera, lens, serial number, timestamps and GPS location — then download a copy with all of it removed. Runs entirely in your browser.",
+    "icon": "PermMedia",
+    "path": "/services/exif-viewer",
+    "category": "security",
+    "popularity": 88,
+    "tags": [
+      "exif",
+      "privacy",
+      "metadata",
+      "photo",
+      "gps"
+    ],
+    "color": "error",
+    "is_active": true,
+    "keywords": [
+      "exif viewer",
+      "remove exif data",
+      "strip photo metadata",
+      "check photo gps location",
+      "exif remover online",
+      "photo metadata viewer",
+      "delete exif from jpeg"
+    ]
+  },
+  {
+    "id": 63,
+    "title": "SQL Formatter",
+    "description": "Turn a cramped one-line query into clean, indented, readable SQL. Handles joins, subqueries, CASE expressions, string literals and comments.",
+    "icon": "Storage",
+    "path": "/services/sql-formatter",
+    "category": "developer",
+    "popularity": 90,
+    "tags": [
+      "sql",
+      "formatter",
+      "database",
+      "beautifier"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "sql formatter",
+      "sql beautifier",
+      "format sql online",
+      "sql pretty print",
+      "sql query formatter",
+      "beautify sql",
+      "clean up sql query"
+    ]
+  },
+  {
+    "id": 64,
+    "title": "Colour Blindness Simulator",
+    "description": "See a design, chart or screenshot the way people with protanopia, deuteranopia, tritanopia or achromatopsia do. Processed on-device.",
+    "icon": "Visibility",
+    "path": "/services/color-blindness-simulator",
+    "category": "design",
+    "popularity": 84,
+    "tags": [
+      "accessibility",
+      "color",
+      "design",
+      "a11y",
+      "simulator"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "color blindness simulator",
+      "deuteranopia simulator",
+      "protanopia test image",
+      "colour blind accessibility check",
+      "tritanopia simulator",
+      "accessible design checker"
+    ]
+  },
+  {
+    "id": 65,
+    "title": "Readability & Text Analyzer",
+    "description": "Word and sentence counts, reading and speaking time, Flesch Reading Ease, Flesch-Kincaid grade level, and your most-repeated words.",
+    "icon": "Article",
+    "path": "/services/readability-analyzer",
+    "category": "utility",
+    "popularity": 86,
+    "tags": [
+      "writing",
+      "readability",
+      "word count",
+      "text",
+      "seo"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "readability checker",
+      "flesch reading ease calculator",
+      "word counter",
+      "reading time calculator",
+      "flesch kincaid grade level",
+      "text analyzer online"
+    ]
+  },
+  {
+    "id": 66,
+    "title": "Loan & EMI Calculator",
+    "description": "Monthly payment, total interest, and a year-by-year amortisation schedule for any loan or mortgage.",
+    "icon": "Calculate",
+    "path": "/services/loan-calculator",
+    "category": "utility",
+    "popularity": 82,
+    "tags": [
+      "finance",
+      "loan",
+      "emi",
+      "mortgage",
+      "calculator"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "emi calculator",
+      "loan calculator",
+      "mortgage payment calculator",
+      "amortisation schedule",
+      "monthly payment calculator",
+      "home loan emi",
+      "car loan calculator"
+    ]
   }
 ]
