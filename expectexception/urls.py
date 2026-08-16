@@ -3,7 +3,7 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from django.contrib.sitemaps.views import sitemap
-from .sitemaps import StaticSitemap, BlogSitemap, ToolsSitemap, CommunityThreadSitemap
+from .sitemaps import StaticSitemap, BlogSitemap, ToolsSitemap, CommunityThreadSitemap, SandboxSitemap
 from django.http import HttpResponse
 
 sitemaps = {
@@ -11,6 +11,7 @@ sitemaps = {
     'blog': BlogSitemap,
     'tools': ToolsSitemap,
     'community': CommunityThreadSitemap,
+    'sandbox': SandboxSitemap,
 }
 
 def robots_txt(request):
@@ -39,10 +40,22 @@ urlpatterns = [
 ]
 
 from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import re_path
+from django.views.static import serve as serve_static
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# This server runs with DEBUG=False and no nginx in front of it (Cloudflare
+# Tunnel routes straight to gunicorn), so something still needs to serve
+# generated files (background-removed images, resized/converted images,
+# merged PDFs, etc.) or every service that returns a MEDIA_URL file_url
+# 404s in production. Django's static() shortcut won't do it — it silently
+# no-ops (returns []) whenever DEBUG=False, regardless of any surrounding
+# guard — so this calls the underlying view directly instead. Not a concern
+# for a single-instance deployment like this one; a horizontally-scaled
+# deployment would want S3/Cloudinary instead (Render already excludes
+# these apps).
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve_static, {'document_root': settings.MEDIA_ROOT}),
+]
 
 # Conditionally register routes for heavy/optional apps that may be
 # excluded from INSTALLED_APPS on Render (e.g. videos, chatbot, ai_detector).

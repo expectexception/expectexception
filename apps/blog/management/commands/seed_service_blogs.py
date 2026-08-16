@@ -70,14 +70,59 @@ class Command(BaseCommand):
     help = 'Seeds one SEO-optimised how-to blog post per flagship service.'
 
     def handle(self, *args, **options):
+        # Update default site domain to expectexception.com for correct sitemap.xml URLs
+        from django.contrib.sites.models import Site
+        from django.conf import settings
+        try:
+            site = Site.objects.get(id=settings.SITE_ID)
+            if site.domain == 'example.com':
+                site.domain = 'expectexception.com'
+                site.name = 'expectexception.com'
+                site.save()
+                self.stdout.write(self.style.SUCCESS(f'Updated site domain to {site.domain}'))
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f'Could not update site domain: {e}'))
+
         # Author: prefer an existing superuser, else the demo user.
-        author = User.objects.filter(is_superuser=True).order_by('id').first()
-        if author is None:
-            author, _ = User.objects.get_or_create(
-                email='demo@example.com',
-                defaults={'is_active': True},
-            )
-            self.stdout.write('No superuser found — using demo@example.com as author.')
+        # Temporarily disconnect post_save signals for User to prevent OperationalError if profiles_profile table is not ready or during clean seeding
+        from django.db.models.signals import post_save
+        import importlib
+        
+        signals_to_reconnect = []
+        
+        # Disconnect apps.users.signals.create_profile if loaded
+        try:
+            users_signals = importlib.import_module('apps.users.signals')
+            if hasattr(users_signals, 'create_profile'):
+                post_save.disconnect(users_signals.create_profile, sender=User)
+                signals_to_reconnect.append((users_signals.create_profile, User))
+        except (ImportError, AttributeError):
+            pass
+
+        # Disconnect apps.profiles.signals.create_user_profile and save_user_profile if loaded
+        try:
+            profiles_signals = importlib.import_module('apps.profiles.signals')
+            if hasattr(profiles_signals, 'create_user_profile'):
+                post_save.disconnect(profiles_signals.create_user_profile, sender=User)
+                signals_to_reconnect.append((profiles_signals.create_user_profile, User))
+            if hasattr(profiles_signals, 'save_user_profile'):
+                post_save.disconnect(profiles_signals.save_user_profile, sender=User)
+                signals_to_reconnect.append((profiles_signals.save_user_profile, User))
+        except (ImportError, AttributeError):
+            pass
+
+        try:
+            author = User.objects.filter(is_superuser=True).order_by('id').first()
+            if author is None:
+                author, _ = User.objects.get_or_create(
+                    email='demo@example.com',
+                    defaults={'is_active': True},
+                )
+                self.stdout.write('No superuser found — using demo@example.com as author.')
+        finally:
+            # Reconnect disconnected signals
+            for receiver, sender in signals_to_reconnect:
+                post_save.connect(receiver, sender=sender)
 
         created_count = 0
         updated_count = 0

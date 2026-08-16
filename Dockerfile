@@ -20,11 +20,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install python dependencies
-COPY requirements.txt ./
+# Install python dependencies. requirements.txt is the "light" set shared
+# with Render; requirements-gpu.txt adds the heavy AI/ML deps (torch,
+# transformers, rembg, demucs, onnxruntime-gpu) that only this local server
+# needs to actually run AI Detector / Background Remover / Audio Separator
+# instead of silently degrading to "no models installed".
+COPY requirements.txt requirements-gpu.txt ./
 RUN pip install --upgrade pip && \
     pip install uv && \
-    uv pip install --system --no-cache-dir -r requirements.txt
+    uv pip install --system --no-cache-dir -r requirements.txt -r requirements-gpu.txt
 
 # Copy project files
 COPY . /app/

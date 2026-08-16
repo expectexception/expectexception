@@ -3,12 +3,15 @@ from django.urls import reverse
 from apps.blog.models import Post
 from apps.community.models import Thread
 
-class StaticSitemap(Sitemap):
+class BaseSitemap(Sitemap):
+    protocol = 'https'
+
+class StaticSitemap(BaseSitemap):
     priority = 0.5
     changefreq = 'daily'
 
     def items(self):
-        return ['home', 'services', 'downloads', 'blogs', 'contact', 'privacy-policy', 'terms-of-service', 'community']
+        return ['home', 'services', 'sandbox', 'downloads', 'blogs', 'contact', 'privacy-policy', 'terms-of-service', 'community']
 
     def location(self, item):
         # Frontend routes - returned as absolute paths
@@ -16,6 +19,8 @@ class StaticSitemap(Sitemap):
             return '/'
         elif item == 'services':
             return '/services'
+        elif item == 'sandbox':
+            return '/sandbox'
         elif item == 'downloads':
             return '/downloads'
         elif item == 'blogs':
@@ -30,7 +35,7 @@ class StaticSitemap(Sitemap):
             return '/community'
         return f'/{item}'
 
-class BlogSitemap(Sitemap):
+class BlogSitemap(BaseSitemap):
     priority = 0.6
     changefreq = 'weekly'
 
@@ -43,7 +48,7 @@ class BlogSitemap(Sitemap):
     def location(self, obj):
         return f"/blogs/{obj.id}"
 
-class CommunityThreadSitemap(Sitemap):
+class CommunityThreadSitemap(BaseSitemap):
     priority = 0.7
     changefreq = 'daily'
 
@@ -57,7 +62,26 @@ class CommunityThreadSitemap(Sitemap):
         return f"/community/thread/{obj.id}/{obj.slug}"
 
 
-class ToolsSitemap(Sitemap):
+class SandboxSitemap(BaseSitemap):
+    priority = 0.7
+    changefreq = 'weekly'
+
+    def items(self):
+        return [
+            'snake', '2048', 'tic-tac-toe', 'particles', 'falling-sand',
+            'word-guess', 'sliding-puzzle', 'reaction-test', 'aim-trainer',
+            'memory-match', 'simon-says', 'breakout', 'minesweeper', 'connect-four',
+            'whack-a-mole', 'typing-test', 'kaleidoscope', 'game-of-life',
+            'boids', 'spirograph', 'pong', 'hangman', 'rock-paper-scissors',
+            'flappy-blocks', 'tetris', 'sudoku', 'bubble-shooter',
+            'tower-of-hanoi', 'maze-runner',
+        ]
+
+    def location(self, item):
+        return f"/sandbox/{item}"
+
+
+class ToolsSitemap(BaseSitemap):
     priority = 0.8
     changefreq = 'weekly'
 
@@ -80,6 +104,12 @@ class ToolsSitemap(Sitemap):
             # New frontend tools
             'number-base-converter', 'json-csv', 'url-encode-decode', 'jwt-decoder',
             'cron-explainer', 'color-palette',
+            # Additional tools
+            'text-to-handwriting', 'website-diagnostics', 'audio-separator', 'uptime-robot',
+            'css-box-shadow', 'http-status-codes', 'json-to-typescript', 'favicon-generator',
+            'unit-converter', 'color-contrast-checker', 'random-data-generator', 'text-encryptor',
+            'markdown-table-generator', 'barcode-generator', 'css-grid-generator', 'meta-tag-generator',
+            'json-diff-checker', 'age-calculator', 'color-name-finder',
         ]
 
     def location(self, item):
