@@ -9,15 +9,13 @@ dedicated, search-indexable landing article that links back to the live tool.
 Idempotent: re-running updates existing posts (matched by slug) rather than
 creating duplicates. Add new services by appending to SERVICES below.
 """
+
 from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.utils.text import slugify
-from datetime import datetime, timezone as dt_timezone
 
-from apps.users.models import User
 from apps.blog.models import Post, Tag
+from apps.users.models import User
 
-SITE = 'https://expectexception.com'
+SITE = "https://expectexception.com"
 
 # ---------------------------------------------------------------------------
 # Per-service content specs. Keep prose concrete and benefit-led — these double
@@ -33,29 +31,27 @@ def render_html(spec: dict) -> str:
 
     parts.append(f"<p>{spec['intro']}</p>")
 
-    parts.append(
-        f'<p><a href="{tool_url}"><strong>{spec["tool_cta"]} →</strong></a></p>'
-    )
+    parts.append(f'<p><a href="{tool_url}"><strong>{spec["tool_cta"]} →</strong></a></p>')
 
     parts.append(f"<h2>What it does</h2><p>{spec['what']}</p>")
 
-    parts.append(f"<h2>How to use it — step by step</h2><ol>")
-    for name, text in spec['steps']:
+    parts.append("<h2>How to use it — step by step</h2><ol>")
+    for name, text in spec["steps"]:
         parts.append(f"<li><strong>{name}.</strong> {text}</li>")
     parts.append("</ol>")
 
     parts.append("<h2>Key features</h2><ul>")
-    for feat in spec['features']:
+    for feat in spec["features"]:
         parts.append(f"<li>{feat}</li>")
     parts.append("</ul>")
 
     parts.append("<h2>Common use cases</h2><ul>")
-    for uc in spec['use_cases']:
+    for uc in spec["use_cases"]:
         parts.append(f"<li>{uc}</li>")
     parts.append("</ul>")
 
     parts.append("<h2>Frequently asked questions</h2>")
-    for q, a in spec['faq']:
+    for q, a in spec["faq"]:
         parts.append(f"<h3>{q}</h3><p>{a}</p>")
 
     parts.append(
@@ -67,33 +63,35 @@ def render_html(spec: dict) -> str:
 
 
 class Command(BaseCommand):
-    help = 'Seeds one SEO-optimised how-to blog post per flagship service.'
+    help = "Seeds one SEO-optimised how-to blog post per flagship service."
 
     def handle(self, *args, **options):
         # Update default site domain to expectexception.com for correct sitemap.xml URLs
-        from django.contrib.sites.models import Site
         from django.conf import settings
+        from django.contrib.sites.models import Site
+
         try:
             site = Site.objects.get(id=settings.SITE_ID)
-            if site.domain == 'example.com':
-                site.domain = 'expectexception.com'
-                site.name = 'expectexception.com'
+            if site.domain == "example.com":
+                site.domain = "expectexception.com"
+                site.name = "expectexception.com"
                 site.save()
-                self.stdout.write(self.style.SUCCESS(f'Updated site domain to {site.domain}'))
+                self.stdout.write(self.style.SUCCESS(f"Updated site domain to {site.domain}"))
         except Exception as e:
-            self.stdout.write(self.style.WARNING(f'Could not update site domain: {e}'))
+            self.stdout.write(self.style.WARNING(f"Could not update site domain: {e}"))
 
         # Author: prefer an existing superuser, else the demo user.
         # Temporarily disconnect post_save signals for User to prevent OperationalError if profiles_profile table is not ready or during clean seeding
-        from django.db.models.signals import post_save
         import importlib
-        
+
+        from django.db.models.signals import post_save
+
         signals_to_reconnect = []
-        
+
         # Disconnect apps.users.signals.create_profile if loaded
         try:
-            users_signals = importlib.import_module('apps.users.signals')
-            if hasattr(users_signals, 'create_profile'):
+            users_signals = importlib.import_module("apps.users.signals")
+            if hasattr(users_signals, "create_profile"):
                 post_save.disconnect(users_signals.create_profile, sender=User)
                 signals_to_reconnect.append((users_signals.create_profile, User))
         except (ImportError, AttributeError):
@@ -101,24 +99,24 @@ class Command(BaseCommand):
 
         # Disconnect apps.profiles.signals.create_user_profile and save_user_profile if loaded
         try:
-            profiles_signals = importlib.import_module('apps.profiles.signals')
-            if hasattr(profiles_signals, 'create_user_profile'):
+            profiles_signals = importlib.import_module("apps.profiles.signals")
+            if hasattr(profiles_signals, "create_user_profile"):
                 post_save.disconnect(profiles_signals.create_user_profile, sender=User)
                 signals_to_reconnect.append((profiles_signals.create_user_profile, User))
-            if hasattr(profiles_signals, 'save_user_profile'):
+            if hasattr(profiles_signals, "save_user_profile"):
                 post_save.disconnect(profiles_signals.save_user_profile, sender=User)
                 signals_to_reconnect.append((profiles_signals.save_user_profile, User))
         except (ImportError, AttributeError):
             pass
 
         try:
-            author = User.objects.filter(is_superuser=True).order_by('id').first()
+            author = User.objects.filter(is_superuser=True).order_by("id").first()
             if author is None:
                 author, _ = User.objects.get_or_create(
-                    email='demo@example.com',
-                    defaults={'is_active': True},
+                    email="demo@example.com",
+                    defaults={"is_active": True},
                 )
-                self.stdout.write('No superuser found — using demo@example.com as author.')
+                self.stdout.write("No superuser found — using demo@example.com as author.")
         finally:
             # Reconnect disconnected signals
             for receiver, sender in signals_to_reconnect:
@@ -129,10 +127,10 @@ class Command(BaseCommand):
 
         for spec in SERVICES:
             content = render_html(spec)
-            slug = spec['slug']
+            slug = spec["slug"]
 
             tag_objs = []
-            for tag_name in spec.get('tags', []):
+            for tag_name in spec.get("tags", []):
                 tag, _ = Tag.objects.get_or_create(name=tag_name)
                 tag_objs.append(tag)
 
@@ -140,19 +138,19 @@ class Command(BaseCommand):
             if post is None:
                 post = Post(slug=slug)
                 created_count += 1
-                verb = 'Created'
+                verb = "Created"
             else:
                 updated_count += 1
-                verb = 'Updated'
+                verb = "Updated"
 
-            post.title = spec['title']
+            post.title = spec["title"]
             post.content = content
             post.author = author
             post.status = Post.STATUS_PUBLISHED
-            post.seo_title = spec['seo_title'][:70]
-            post.seo_description = spec['seo_description'][:160]
-            post.keywords = ', '.join(spec['keywords'])[:255]
-            post.featured = spec.get('featured', False)
+            post.seo_title = spec["seo_title"][:70]
+            post.seo_description = spec["seo_description"][:160]
+            post.keywords = ", ".join(spec["keywords"])[:255]
+            post.featured = spec.get("featured", False)
             post.save()  # triggers reading_time / excerpt / TOC generation
 
             if tag_objs:
@@ -160,12 +158,14 @@ class Command(BaseCommand):
 
             # Backdate publish/created so posts don't all stack on today.
             Post.objects.filter(pk=post.pk).update(
-                created_at=spec['date'],
-                published_at=spec['date'],
+                created_at=spec["date"],
+                published_at=spec["date"],
             )
 
             self.stdout.write(f"{verb}: {spec['title']}")
 
-        self.stdout.write(self.style.SUCCESS(
-            f'Seeded service blogs — {created_count} created, {updated_count} updated.'
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Seeded service blogs — {created_count} created, {updated_count} updated."
+            )
+        )

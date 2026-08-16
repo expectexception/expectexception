@@ -1,16 +1,16 @@
-
 import os
-import django
-from django.urls import resolve, Resolver404
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'expectexception.settings')
+import django
+from django.urls import Resolver404, resolve
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "expectexception.settings")
 django.setup()
 
 paths_to_check = [
-    '/api/services/tools/',
-    '/api/services/log-analysis/',
-    '/api/services/analytics-dashboard/',
-    '/admin/',
+    "/api/services/tools/",
+    "/api/services/log-analysis/",
+    "/api/services/analytics-dashboard/",
+    "/admin/",
 ]
 
 for path in paths_to_check:

@@ -1,18 +1,18 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 class VideoDownload(models.Model):
-    STATUS_PENDING = 'pending'
-    STATUS_RUNNING = 'running'
-    STATUS_DONE = 'done'
-    STATUS_FAILED = 'failed'
+    STATUS_PENDING = "pending"
+    STATUS_RUNNING = "running"
+    STATUS_DONE = "done"
+    STATUS_FAILED = "failed"
 
     STATUS_CHOICES = (
-        (STATUS_PENDING, 'Pending'),
-        (STATUS_RUNNING, 'Running'),
-        (STATUS_DONE, 'Done'),
-        (STATUS_FAILED, 'Failed'),
+        (STATUS_PENDING, "Pending"),
+        (STATUS_RUNNING, "Running"),
+        (STATUS_DONE, "Done"),
+        (STATUS_FAILED, "Failed"),
     )
 
     url = models.URLField()

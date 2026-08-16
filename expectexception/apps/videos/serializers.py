@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import VideoDownload
 
 
@@ -16,5 +17,25 @@ class FormatSerializer(serializers.Serializer):
 class VideoDownloadSerializer(serializers.ModelSerializer):
     class Meta:
         model = VideoDownload
-        fields = ('id', 'url', 'format_id', 'filename', 'file_path', 'file_size', 'status', 'error', 'extra', 'created_at')
-        read_only_fields = ('id', 'filename', 'file_path', 'file_size', 'status', 'error', 'extra', 'created_at')
+        fields = (
+            "id",
+            "url",
+            "format_id",
+            "filename",
+            "file_path",
+            "file_size",
+            "status",
+            "error",
+            "extra",
+            "created_at",
+        )
+        read_only_fields = (
+            "id",
+            "filename",
+            "file_path",
+            "file_size",
+            "status",
+            "error",
+            "extra",
+            "created_at",
+        )

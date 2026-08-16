@@ -1,9 +1,10 @@
 import os
-import django
 import sys
 
-sys.path.append('/home/rjt/expexcV2/expectexception')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'expectexception.settings')
+import django
+
+sys.path.append("/home/rjt/expexcV2/expectexception")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "expectexception.settings")
 django.setup()
 
 from apps.services.models import Service

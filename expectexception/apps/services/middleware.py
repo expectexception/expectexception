@@ -1,61 +1,61 @@
 import logging
 import time
 import uuid
-import json
-from django.core.cache import cache
-from django.http import JsonResponse
-from django.db import connection, reset_queries
-from django.utils.deprecation import MiddlewareMixin
+
 from django.conf import settings
+from django.core.cache import cache
+from django.db import connection, reset_queries
+from django.http import JsonResponse
+from django.utils.deprecation import MiddlewareMixin
 
 from apps.services.models import Service, UserToolRestriction
 from apps.users.authentication import JITMongoJWTAuthentication
 
-logger = logging.getLogger('apps.services.requests')
+logger = logging.getLogger("apps.services.requests")
 
 # Paths that should be rate-limited (POST only) and their limits (requests, seconds)
 RATE_LIMIT_RULES = {
-    '/api/services/background-remover/': (5, 60),
-    '/api/services/image-upscaler/': (5, 60),
-    '/api/services/image-to-text/': (10, 60),
-    '/api/services/pdf-to-doc/': (10, 60),
-    '/api/services/doc-to-pdf/': (10, 60),
-    '/api/services/pdf-merger/': (10, 60),
-    '/api/services/pdf-splitter/': (10, 60),
-    '/api/services/image-to-pdf/': (10, 60),
-    '/api/services/yt-downloader/': (5, 60),
-    '/api/services/url-downloader/': (10, 60),
-    '/api/services/audio-separator/': (3, 60),
-    '/api/ai-detector/': (10, 60),
+    "/api/services/background-remover/": (5, 60),
+    "/api/services/image-upscaler/": (5, 60),
+    "/api/services/image-to-text/": (10, 60),
+    "/api/services/pdf-to-doc/": (10, 60),
+    "/api/services/doc-to-pdf/": (10, 60),
+    "/api/services/pdf-merger/": (10, 60),
+    "/api/services/pdf-splitter/": (10, 60),
+    "/api/services/image-to-pdf/": (10, 60),
+    "/api/services/yt-downloader/": (5, 60),
+    "/api/services/url-downloader/": (10, 60),
+    "/api/services/audio-separator/": (3, 60),
+    "/api/ai-detector/": (10, 60),
     # Async chatbot views (`chat`, `widget_chat`) are plain Django views, not
     # DRF @api_view, so they can't carry DRF throttle_classes — this
     # middleware is their only rate-limit coverage. `chat/sync/` also has a
     # DRF throttle for defense in depth (see chatbot/views.py).
-    '/api/chatbot/chat/': (20, 60),
-    '/api/chatbot/widget/chat/': (20, 60),
+    "/api/chatbot/chat/": (20, 60),
+    "/api/chatbot/widget/chat/": (20, 60),
 }
 
 
 def _get_client_ip(request):
-    xff = request.META.get('HTTP_X_FORWARDED_FOR')
-    return xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR', '0.0.0.0')
+    xff = request.META.get("HTTP_X_FORWARDED_FOR")
+    return xff.split(",")[0].strip() if xff else request.META.get("REMOTE_ADDR", "0.0.0.0")
 
 
 def _is_pro_user(request):
     """Check if the authenticated user has a pro tier subscription."""
-    user = getattr(request, 'user', None)
+    user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
         return False
     # Cache the tier lookup per user for 60s to avoid per-request DB hits
-    cache_key = f'user_tier:{user.pk}'
+    cache_key = f"user_tier:{user.pk}"
     tier = cache.get(cache_key)
     if tier is None:
         try:
-            tier = user.subscription.tier if hasattr(user, 'subscription') else 'free'
+            tier = user.subscription.tier if hasattr(user, "subscription") else "free"
         except Exception:
-            tier = 'free'
+            tier = "free"
         cache.set(cache_key, tier, timeout=60)
-    return tier == 'pro'
+    return tier == "pro"
 
 
 class RateLimitMiddleware(MiddlewareMixin):
@@ -65,7 +65,7 @@ class RateLimitMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
-        if request.method != 'POST':
+        if request.method != "POST":
             return None
         path = request.path
         rule = None
@@ -82,12 +82,16 @@ class RateLimitMiddleware(MiddlewareMixin):
             max_requests *= 10
 
         ip = _get_client_ip(request)
-        cache_key = f'rl:{path}:{ip}'
+        cache_key = f"rl:{path}:{ip}"
         count = cache.get(cache_key, 0)
         if count >= max_requests:
-            remaining_hint = f'Upgrade to Pro for higher limits.' if not _is_pro_user(request) else ''
+            remaining_hint = (
+                "Upgrade to Pro for higher limits." if not _is_pro_user(request) else ""
+            )
             return JsonResponse(
-                {'error': f'Rate limit exceeded. Max {max_requests} requests per {window}s. {remaining_hint}'.strip()},
+                {
+                    "error": f"Rate limit exceeded. Max {max_requests} requests per {window}s. {remaining_hint}".strip()
+                },
                 status=429,
             )
         # Atomically initialize the counter to 1 if it does not exist; increment if it does.
@@ -104,40 +108,40 @@ class ProLevelLoggingMiddleware(MiddlewareMixin):
     3. Structured Logging
     4. Slow Request Detection
     """
-    
+
     def process_request(self, request):
         # 1. Trace ID
         request.id = str(uuid.uuid4())
-        
+
         # 2. Start Time
         request.start_time = time.time()
-        
+
         # 3. Reset queries for accurate count (debug mode only)
         if settings.DEBUG:
             reset_queries()
-            
+
         return None
-    
+
     def process_response(self, request, response):
         # Skip logging for static assets and health checks to avoid noise
-        if request.path.startswith(('/static/', '/media/', '/favicon.ico', '/health/')):
+        if request.path.startswith(("/static/", "/media/", "/favicon.ico", "/health/")):
             return response
 
         # Duration
-        duration = time.time() - getattr(request, 'start_time', time.time())
-        
+        duration = time.time() - getattr(request, "start_time", time.time())
+
         # DB Queries (only available in DEBUG mode usually, but useful to track)
         query_count = len(connection.queries) if settings.DEBUG else 0
-        
+
         # Context Info
-        user = getattr(request, 'user', None)
-        user_identity = user.email if (user and user.is_authenticated) else 'Anonymous'
+        user = getattr(request, "user", None)
+        user_identity = user.email if (user and user.is_authenticated) else "Anonymous"
         ip = self.get_client_ip(request)
         method = request.method
         path = request.path
         status_code = response.status_code
-        request_id = getattr(request, 'id', 'unknown')
-        
+        request_id = getattr(request, "id", "unknown")
+
         # Log Message Construction
         log_data = {
             "req_id": request_id,
@@ -147,15 +151,15 @@ class ProLevelLoggingMiddleware(MiddlewareMixin):
             "duration": round(duration, 3),
             "db_queries": query_count,
             "user": user_identity,
-            "ip": ip
+            "ip": ip,
         }
-        
+
         # Formatted Log String
         log_msg = (
             f"[{status_code}] {method} {path} | {duration:.3f}s | "
             f"DB: {query_count} | User: {user_identity} | ID: {request_id}"
         )
-        
+
         # Log Level Determination
         if status_code >= 500:
             logger.error(f"SERVER ERROR: {log_msg}", extra=log_data)
@@ -163,29 +167,29 @@ class ProLevelLoggingMiddleware(MiddlewareMixin):
             logger.warning(f"CLIENT ERROR: {log_msg}", extra=log_data)
         else:
             logger.info(log_msg, extra=log_data)
-            
+
         # Slow Request Warning (> 1.5s)
         if duration > 1.5:
             logger.warning(
                 f"🐢 SLOW REQUEST ({duration:.3f}s > 1.5s): {method} {path} | DB: {query_count}",
-                extra={"slow_request": True, **log_data}
+                extra={"slow_request": True, **log_data},
             )
-            
+
         # High DB Query Warning (> 50 queries)
         if query_count > 50:
             logger.warning(
                 f"🔥 HIGH DB LOAD ({query_count} queries): {method} {path}",
-                extra={"high_db": True, **log_data}
+                extra={"high_db": True, **log_data},
             )
-            
+
         return response
 
     def get_client_ip(self, request):
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
+            ip = x_forwarded_for.split(",")[0]
         else:
-            ip = request.META.get('REMOTE_ADDR')
+            ip = request.META.get("REMOTE_ADDR")
         return ip
 
 
@@ -198,15 +202,15 @@ def _resolve_service_for_path(request_path):
     segment against Service.path (tool slugs vary slightly between the two,
     e.g. /api/services/pdf-to-doc/ vs /services/pdf-to-doc-converter).
     """
-    path = request_path.rstrip('/')
-    if path.startswith('/api'):
+    path = request_path.rstrip("/")
+    if path.startswith("/api"):
         path = path[4:]
 
     service = Service.objects.filter(path=path, is_active=True).first()
     if service is not None:
         return service
 
-    segments = [s for s in path.split('/') if s]
+    segments = [s for s in path.split("/") if s]
     if segments:
         service = Service.objects.filter(path__icontains=segments[-1], is_active=True).first()
     return service
@@ -226,10 +230,12 @@ class ToolAccessMiddleware(MiddlewareMixin):
     instead of relying on request.user (which is session-auth-only here).
     """
 
-    ADMIN_PREFIX = '/api/services/admin/'
+    ADMIN_PREFIX = "/api/services/admin/"
 
     def process_request(self, request):
-        if not request.path.startswith('/api/services/') or request.path.startswith(self.ADMIN_PREFIX):
+        if not request.path.startswith("/api/services/") or request.path.startswith(
+            self.ADMIN_PREFIX
+        ):
             return None
 
         service = _resolve_service_for_path(request.path)
@@ -244,19 +250,19 @@ class ToolAccessMiddleware(MiddlewareMixin):
         except Exception:
             user = None
 
-        if user is not None and getattr(user, 'is_staff', False):
+        if user is not None and getattr(user, "is_staff", False):
             return None
 
         if service.requires_login and not (user is not None and user.is_authenticated):
             return JsonResponse(
-                {'detail': 'This tool requires you to be logged in. Please sign in to continue.'},
+                {"detail": "This tool requires you to be logged in. Please sign in to continue."},
                 status=401,
             )
 
         if user is not None and user.is_authenticated:
             if UserToolRestriction.objects.filter(user=user, service=service).exists():
                 return JsonResponse(
-                    {'detail': 'Access to this tool has been restricted for your account.'},
+                    {"detail": "Access to this tool has been restricted for your account."},
                     status=403,
                 )
 

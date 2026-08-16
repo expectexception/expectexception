@@ -1,12 +1,14 @@
 import os
 import sys
+
 import django
-from django.urls import reverse, NoReverseMatch
+from django.urls import NoReverseMatch, reverse
 
 # Setup Django environment
-sys.path.append('/home/rjt/expexcV2/expectexception')
+sys.path.append("/home/rjt/expexcV2/expectexception")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "expectexception.settings")
 django.setup()
+
 
 def check_url(name):
     try:
@@ -20,9 +22,10 @@ def check_url(name):
         print(f"❌ FAIL: {name} -> Error: {e}")
         return False
 
+
 def verify_all_sidebar_links():
     print("--- Verifying Admin Sidebar Links ---")
-    
+
     # List of all links defined in settings.UNFOLD['SIDEBAR']
     links_to_check = [
         "admin:index",
@@ -35,17 +38,18 @@ def verify_all_sidebar_links():
         "admin:services_toolusage_changelist",
         # "admin:services_server_status_api", # Not in sidebar but check consistency
     ]
-    
+
     failures = 0
     for name in links_to_check:
         if not check_url(name):
             failures += 1
-            
+
     print("\n--- Summary ---")
     if failures == 0:
         print("🎉 ALL CHECKS PASSED. Admin sidebar should render.")
     else:
         print(f"⚠️ FOUND {failures} BROKEN LINKS. These will cause 500 Errors.")
+
 
 if __name__ == "__main__":
     verify_all_sidebar_links()

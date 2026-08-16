@@ -1,6 +1,7 @@
-from django.db.models.signals import post_save, post_delete, pre_save
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
-from .models import Vote, Reply
+
+from .models import Reply, Vote
 
 
 def _update_author_reputation(user):
@@ -11,11 +12,12 @@ def _update_author_reputation(user):
         pass
 
 
-def _create_notification(recipient, sender, n_type, title, body, url=''):
+def _create_notification(recipient, sender, n_type, title, body, url=""):
     if recipient == sender:
         return
     try:
         from apps.notifications.models import InAppNotification
+
         InAppNotification.objects.create(
             recipient=recipient,
             sender=sender,
@@ -32,7 +34,9 @@ def _create_notification(recipient, sender, n_type, title, body, url=''):
 def reply_pre_save(sender, instance, **kwargs):
     if instance.pk:
         try:
-            instance._old_is_accepted = Reply.objects.only('is_accepted_answer').get(pk=instance.pk).is_accepted_answer
+            instance._old_is_accepted = (
+                Reply.objects.only("is_accepted_answer").get(pk=instance.pk).is_accepted_answer
+            )
         except Reply.DoesNotExist:
             instance._old_is_accepted = False
     else:
@@ -48,8 +52,8 @@ def reply_posted(sender, instance, created, **kwargs):
         _create_notification(
             recipient=thread.author,
             sender=instance.author,
-            n_type='reply',
-            title=f'{instance.author.first_name or instance.author.email} replied to your thread',
+            n_type="reply",
+            title=f"{instance.author.first_name or instance.author.email} replied to your thread",
             body=instance.body[:120],
             url=thread_url,
         )
@@ -58,22 +62,22 @@ def reply_posted(sender, instance, created, **kwargs):
             _create_notification(
                 recipient=instance.parent.author,
                 sender=instance.author,
-                n_type='reply',
-                title=f'{instance.author.first_name or instance.author.email} replied to your comment',
+                n_type="reply",
+                title=f"{instance.author.first_name or instance.author.email} replied to your comment",
                 body=instance.body[:120],
                 url=thread_url,
             )
 
     # Accepted answer — only fire on transition False→True
-    old_val = getattr(instance, '_old_is_accepted', False)
+    old_val = getattr(instance, "_old_is_accepted", False)
     if not created and instance.is_accepted_answer and not old_val:
         _update_author_reputation(instance.author)
         _create_notification(
             recipient=instance.author,
             sender=instance.thread.author,
-            n_type='accepted',
-            title='Your answer was accepted!',
-            body=f'In thread: {instance.thread.title}',
+            n_type="accepted",
+            title="Your answer was accepted!",
+            body=f"In thread: {instance.thread.title}",
             url=f"/community/thread/{instance.thread.pk}/{instance.thread.slug}",
         )
 
@@ -86,8 +90,8 @@ def vote_created(sender, instance, created, **kwargs):
             _create_notification(
                 recipient=instance.thread.author,
                 sender=instance.user,
-                n_type='vote',
-                title='Someone upvoted your thread',
+                n_type="vote",
+                title="Someone upvoted your thread",
                 body=instance.thread.title[:120],
                 url=f"/community/thread/{instance.thread.pk}/{instance.thread.slug}",
             )
