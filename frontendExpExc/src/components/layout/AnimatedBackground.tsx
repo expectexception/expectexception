@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, useTheme, alpha } from '@mui/material';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 

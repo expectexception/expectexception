@@ -25,16 +25,12 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Divider,
 } from '@mui/material';
 import {
   CloudUpload,
   FileDownload,
   CheckCircle,
-  Error as ErrorIcon,
-  GetApp,
   Description,
-  Settings,
   Info,
   Close,
   AutoFixHigh,
@@ -57,7 +53,7 @@ interface ConversionStatus {
 const PdfToDocPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [taskId, setTaskId] = useState<string | null>(null);
+  const [, setTaskId] = useState<string | null>(null);
   const [conversionStatus, setConversionStatus] = useState<ConversionStatus | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

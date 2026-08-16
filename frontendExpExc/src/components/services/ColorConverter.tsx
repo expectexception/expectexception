@@ -12,7 +12,7 @@ import { isReactSnap } from '../../utils/isReactSnap';
 const ColorConverter: React.FC = () => {
     const [color, setColor] = useState('#3b82f6');
     const [result, setResult] = useState<{ hex: string; rgb: string; hsl: string; r: number; g: number; b: number } | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
 
     const handleConvert = async () => {
         setLoading(true);

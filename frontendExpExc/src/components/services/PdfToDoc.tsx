@@ -95,7 +95,7 @@ const PdfToDoc: React.FC = () => {
         }
     };
 
-    const validateAndSetFile = (file: File) => {
+    const validateAndSetFile = useCallback((file: File) => {
         setError(null);
         setResult(null);
 
@@ -110,7 +110,7 @@ const PdfToDoc: React.FC = () => {
         }
 
         setSelectedFile(file);
-    };
+    }, [MAX_FILE_SIZE]);
 
     const handleDrag = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -130,7 +130,7 @@ const PdfToDoc: React.FC = () => {
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             validateAndSetFile(e.dataTransfer.files[0]);
         }
-    }, []);
+    }, [validateAndSetFile]);
 
     const pollStatus = async (taskId: string) => {
         let attempts = 0;

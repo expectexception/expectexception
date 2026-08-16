@@ -65,7 +65,7 @@ export const setUserId = (userId: string | number | null) => {
 
 // Handle Web Vitals
 export const sendToAnalytics = (metric: Metric) => {
-    const { id, name, delta, value } = metric;
+    const { id, name, delta } = metric;
     if (isProduction && window.gtag) {
         window.gtag('event', name, {
             event_category: 'Web Vitals',

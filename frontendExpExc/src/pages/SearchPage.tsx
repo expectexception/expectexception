@@ -37,13 +37,6 @@ const SearchPage: React.FC = () => {
     const [blogResults, setBlogResults] = useState<AnyResult[]>([]);
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const q = params.get('q') || '';
-        setQuery(q);
-        if (q) doSearch(q);
-    }, [location.search]);
-
     const doSearch = useCallback(async (q: string) => {
         if (!q.trim()) return;
         setLoading(true);
@@ -72,6 +65,15 @@ const SearchPage: React.FC = () => {
         } catch {}
         setLoading(false);
     }, []);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const q = params.get('q') || '';
+        setQuery(q);
+        if (q) doSearch(q);
+        // doSearch is useCallback([]) - a stable reference for the component's
+        // lifetime - so adding it here can't cause extra re-runs.
+    }, [location.search, doSearch]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();

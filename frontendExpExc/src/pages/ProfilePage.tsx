@@ -117,7 +117,10 @@ const ProfilePage: React.FC = () => {
             }
         };
         fetchProfile();
-    }, [email, token]);
+        // user loads asynchronously from AuthContext; without this dependency,
+        // an effect run that fires before `user` is populated would compute
+        // isFollowing from a null user and never redo it once user arrives.
+    }, [email, token, user]);
 
     const handleSave = async () => {
         if (!profile || !email) return;
@@ -476,7 +479,6 @@ export default ProfilePage;
 const SessionsPanel: React.FC<{ primaryColor: string }> = ({ primaryColor }) => {
     const [sessions, setSessions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const theme = useTheme();
 
     const fetchSessions = useCallback(async () => {
         try {
@@ -555,7 +557,6 @@ const APIKeysPanel: React.FC<{ primaryColor: string; token: string }> = ({ prima
     const [newKeyName, setNewKeyName] = useState('');
     const [createdKey, setCreatedKey] = useState<string | null>(null);
     const [creating, setCreating] = useState(false);
-    const theme = useTheme();
 
     const fetch = useCallback(async () => {
         try {

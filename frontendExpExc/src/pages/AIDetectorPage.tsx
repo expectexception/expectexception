@@ -107,7 +107,7 @@ const AIDetectorPage: React.FC = () => {
     const [viewMode, setViewMode] = useState<'upload' | 'history'>('upload');
 
     // Async processing state
-    const [taskId, setTaskId] = useState<string | null>(null);
+    const [, setTaskId] = useState<string | null>(null);
     const [taskStatus, setTaskStatus] = useState<TaskStatus | null>(null);
     const [pollingProgress, setPollingProgress] = useState(0);
     const [showEnsembleDetails, setShowEnsembleDetails] = useState(false);

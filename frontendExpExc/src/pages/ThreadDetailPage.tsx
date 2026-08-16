@@ -5,9 +5,18 @@ import {
     IconButton, Paper, Grid,
 } from '@mui/material';
 import {
-    ThumbUp, ThumbDown, CheckCircle, Send, ArrowBack, PushPin,
-    Lock, ChatBubble, Visibility, AccessTime, Person,
-    BookmarkBorder, Bookmark,
+  ThumbUp,
+  ThumbDown,
+  CheckCircle,
+  Send,
+  ArrowBack,
+  PushPin,
+  Lock,
+  ChatBubble,
+  Visibility,
+  AccessTime,
+  BookmarkBorder,
+  Bookmark,
 } from '@mui/icons-material';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';

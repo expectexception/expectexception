@@ -77,7 +77,7 @@ const SnakeGame: React.FC = () => {
 
     const [snake, setSnake] = useState<Point[]>(getInitialSnake);
     const [food, setFood] = useState<Point>(() => randomEmptyCell(getInitialSnake()));
-    const [direction, setDirection] = useState<Direction>('RIGHT');
+    const [, setDirection] = useState<Direction>('RIGHT');
     const [score, setScore] = useState(0);
     const [bestScore, setBestScore] = useState<number>(readBestScore);
     const [isGameOver, setIsGameOver] = useState(false);

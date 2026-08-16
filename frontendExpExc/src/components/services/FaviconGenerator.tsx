@@ -18,7 +18,7 @@ function drawToCanvas(img: HTMLImageElement, size: number): HTMLCanvasElement {
 
 const FaviconGenerator: React.FC = () => {
     const [preview, setPreview] = useState<string | null>(null);
-    const [imgEl, setImgEl] = useState<HTMLImageElement | null>(null);
+    const [, setImgEl] = useState<HTMLImageElement | null>(null);
     const [canvases, setCanvases] = useState<{ size: number; url: string }[]>([]);
     const [error, setError] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);

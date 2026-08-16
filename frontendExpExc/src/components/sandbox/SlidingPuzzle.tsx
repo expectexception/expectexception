@@ -46,6 +46,11 @@ const generateShuffledBoard = (): number[] => {
     let lastBlankIndex = -1;
 
     for (let i = 0; i < SHUFFLE_MOVES; i++) {
+        // .filter() invokes its callback synchronously and immediately, so it
+        // always reads this iteration's lastBlankIndex - it never outlives
+        // the iteration the way an async/deferred closure over a loop
+        // variable would, which is what this rule actually guards against.
+        // eslint-disable-next-line no-loop-func
         const neighbors = getAdjacentIndices(blankIndex).filter((n) => n !== lastBlankIndex);
         const next = neighbors[Math.floor(Math.random() * neighbors.length)];
         board[blankIndex] = board[next];
@@ -144,7 +149,7 @@ const SlidingPuzzle: React.FC = () => {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
             }
         }
-    }, [blankIndex, board, moves, startTime, best]);
+    }, [solved, blankIndex, board, moves, startTime, best]);
 
     const movableSet = useMemo(() => new Set(getAdjacentIndices(blankIndex)), [blankIndex]);
     const cardRef = useRef<HTMLDivElement | null>(null);

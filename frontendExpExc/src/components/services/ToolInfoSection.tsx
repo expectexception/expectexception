@@ -1,5 +1,15 @@
 import React from 'react';
-import { Box, Container, Typography, Card, CardContent, Accordion, AccordionSummary, AccordionDetails, Stack, useTheme, alpha } from '@mui/material';
+import {
+  Box,
+  Container,
+  Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Stack,
+  useTheme,
+  alpha,
+} from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import type { ContainerProps } from '@mui/material';
 import type { HowToStep, FaqItem } from '../seo/Seo';

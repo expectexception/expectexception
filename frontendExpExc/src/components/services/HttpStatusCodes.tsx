@@ -1,7 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-    Box, Typography, TextField, Chip, Stack, Grid, Paper, InputAdornment,
-} from '@mui/material';
+import { Typography, TextField, Chip, Stack, Grid, Paper, InputAdornment } from '@mui/material';
 import { Search, Info as InfoIcon } from '@mui/icons-material';
 import ServicePageShell from './ServicePageShell';
 

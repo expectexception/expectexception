@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
 import RichTextEditor from '../../components/blog/RichTextEditor';
-import { CloudUpload, ExpandMore, ExpandLess, Image as ImageIcon } from '@mui/icons-material';
+import { CloudUpload, ExpandMore, ExpandLess } from '@mui/icons-material';
 
 const CreateBlogPage: React.FC = () => {
     const navigate = useNavigate();
@@ -53,6 +53,10 @@ const CreateBlogPage: React.FC = () => {
                 .replace(/(^-|-$)+/g, '');
             setFormData(prev => ({ ...prev, slug: autoSlug }));
         }
+        // formData.slug is read only as a guard ("auto-fill once, then respect
+        // manual edits") - it must not be a trigger, or every keystroke in the
+        // slug field would re-run this effect.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formData.title]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

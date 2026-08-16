@@ -73,6 +73,10 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
         return () => {
             // Cleanup: don't remove script since other components might use it
         };
+        // Mount-only: initializeGoogle is a plain (unmemoized) function, so
+        // including it here would re-run this effect - and re-append the GSI
+        // script tag - on every render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const initializeGoogle = () => {

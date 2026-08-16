@@ -23,13 +23,11 @@ import {
   TablePagination,
   Menu,
   MenuItem,
-  ListItemIcon,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
 import {
   Search,
-  Download as DownloadIcon,
   Folder,
   InsertDriveFile,
   Image,
@@ -56,7 +54,6 @@ const DownloadHubPage: React.FC = () => {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);

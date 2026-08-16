@@ -26,26 +26,22 @@ import {
     useMediaQuery
 } from '@mui/material';
 import {
-    Videocam,
-    VideocamOff,
-    Cameraswitch,
-    PhotoCamera,
-    Download,
-    VolumeUp,
-    VolumeOff,
-    Visibility,
-    Face,
-    Category,
-    Speed,
-    PlayArrow,
-    Analytics,
-    Memory,
-    Psychology,
-    AccessibilityNew,
-    Fingerprint,
-    Timeline,
-    PersonAdd,
-    BackHand
+  Videocam,
+  VideocamOff,
+  Cameraswitch,
+  PhotoCamera,
+  Download,
+  Visibility,
+  Face,
+  Category,
+  Speed,
+  PlayArrow,
+  Analytics,
+  Memory,
+  AccessibilityNew,
+  Fingerprint,
+  PersonAdd,
+  BackHand,
 } from '@mui/icons-material';
 import ServicePageHero from './ServicePageHero';
 import Seo from '../seo/Seo';
@@ -174,8 +170,8 @@ const AiVisionStudio: React.FC = () => {
     const [showObjectDetection, setShowObjectDetection] = useState(true);
     const [showPoseTracking, setShowPoseTracking] = useState(true);
     const [showHandTracking, setShowHandTracking] = useState(true);
-    const [showMotionTrails, setShowMotionTrails] = useState(true);
-    const [enableVoiceAudio, setEnableVoiceAudio] = useState(false);
+    const [showMotionTrails] = useState(true);
+    const [enableVoiceAudio] = useState(false);
 
     // Live Metrics
     const [fps, setFps] = useState(0);
@@ -484,7 +480,10 @@ const AiVisionStudio: React.FC = () => {
     };
 
     // --- Face Recognition Matching Helper ---
-    const matchFaceIdentity = (descriptor: Float32Array): string => {
+    // useCallback so the inference-loop effect below can depend on it without
+    // recreating the setInterval every render (it only reads enrolledFaces,
+    // already one of that effect's dependencies).
+    const matchFaceIdentity = useCallback((descriptor: Float32Array): string => {
         if (enrolledFaces.length === 0) return 'UNENROLLED SUBJECT';
 
         let bestDistance = Infinity;
@@ -499,7 +498,7 @@ const AiVisionStudio: React.FC = () => {
         });
 
         return bestName;
-    };
+    }, [enrolledFaces]);
 
     // --- Estimate 3D Head Orientation ---
     const computeHeadPoseText = (landmarks: Array<{ x: number; y: number }>): string => {
@@ -686,7 +685,7 @@ const AiVisionStudio: React.FC = () => {
             isCancelled = true;
             clearInterval(interval);
         };
-    }, [isCameraActive, isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking, showHandTracking, enableVoiceAudio, speakAiAnnouncement, enrolledFaces, isMobile]);
+    }, [isCameraActive, isDemoMode, showFaceDetection, showObjectDetection, showPoseTracking, showHandTracking, enableVoiceAudio, speakAiAnnouncement, matchFaceIdentity, enrolledFaces, isMobile]);
 
     // --- 60 FPS Render Loop with Hand Wireframes, Body Pose & EMA Smoothing ---
     const processFrame = useCallback(() => {
