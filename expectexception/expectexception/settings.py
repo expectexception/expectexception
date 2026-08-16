@@ -1,4 +1,5 @@
 import os
+import sys
 import sentry_sdk
 from pathlib import Path
 from datetime import timedelta
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'django_filters',
     'drf_spectacular',
@@ -154,12 +156,45 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'EXCEPTION_HANDLER': 'apps.services.exceptions.custom_exception_handler',
+    # ScopedRateThrottle only engages on views that declare a throttle_scope,
+    # so this adds no limits anywhere except the auth endpoints below, which
+    # previously accepted unlimited password guesses.
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.ScopedRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'auth_login': os.getenv('THROTTLE_AUTH_LOGIN', '10/min'),
+        'auth_register': os.getenv('THROTTLE_AUTH_REGISTER', '5/hour'),
+        'auth_password_reset': os.getenv('THROTTLE_AUTH_PASSWORD_RESET', '5/hour'),
+    },
+    # Both deployments sit behind a proxy (Render's router, Cloudflare Tunnel
+    # for the local server), so REMOTE_ADDR is the proxy, not the caller. Left
+    # unset, DRF keys the throttle on the raw X-Forwarded-For string, which a
+    # client can spoof to get a fresh bucket per request. Counting proxies makes
+    # it use the address the trusted proxy appended.
+    'NUM_PROXIES': int(os.getenv('DRF_NUM_PROXIES', '1')),
 }
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    # The Render <-> local-server failover design assumes a token issued by one
+    # instance validates on the other. SIGNING_KEY defaults to each instance's
+    # own SECRET_KEY, which are different values, so cross-instance tokens were
+    # rejected at signature verification — before any of the JIT-Mongo
+    # rehydration in apps/users/authentication.py could run. Both instances
+    # must be given the same JWT_SIGNING_KEY for failover to work at all.
+    'SIGNING_KEY': os.getenv('JWT_SIGNING_KEY', SECRET_KEY),
+    # Rotation + blacklisting is what makes logout and session revocation real;
+    # without it a leaked refresh token stayed valid for its full 7 days.
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
 }
+
+# Absolute base URL of the React frontend, used to build links inside emails
+# (password reset, email verification).
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://expectexception.com').rstrip('/')
 
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOW_CREDENTIALS = True
@@ -197,8 +232,12 @@ else:
     MEDIA_ROOT = BASE_DIR / 'media'
 
 # Logging Configuration
-LOG_DIR = BASE_DIR / 'logs'
-LOG_DIR.mkdir(exist_ok=True)
+# Overridable because the Docker container writes these files as root, which
+# leaves them unreadable to the host user — every `manage.py` command then dies
+# at django.setup() with "Unable to configure handler 'file_all'" before it can
+# run anything.
+LOG_DIR = Path(os.getenv('DJANGO_LOG_DIR', BASE_DIR / 'logs'))
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 LOGGING = {
     'version': 1,
@@ -388,6 +427,12 @@ CACHES = {
         },
     }
 }
+
+# Django does not swap the cache backend for tests, so the suite shares the
+# running Redis with the real site: repeated logins/registrations in tests burn
+# the live throttle buckets (and evict real cached data). Isolate it.
+if 'test' in sys.argv:
+    CACHES = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}}
 
 # =============================================================================
 # File Upload Settings
@@ -643,7 +688,7 @@ SECURE_CONTENT_SECURITY_POLICY = {
     'style-src': ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"),
     'img-src': ("'self'", "data:", "https:"),
     'font-src': ("'self'", "https://fonts.gstatic.com"),
-    'connect-src': ("'self'", "https://api.github.com"),
+    'connect-src': ("'self'", "https://api.expectexception.com", "https://expectexception.com", "https://www.expectexception.com", "https://ytd.expectexception.com", "https://expectexception.onrender.com", "https://api.github.com", "wss:"),
     'frame-ancestors': ("'none'",),
     'base-uri': ("'self'",),
     'form-action': ("'self'",),
@@ -653,7 +698,7 @@ SECURE_CONTENT_SECURITY_POLICY = {
 if not DEBUG:
     CORS_ALLOWED_ORIGINS = os.getenv(
         'CORS_ALLOWED_ORIGINS',
-        'https://ytd.expectexception.com,https://www.expectexception.com,https://expectexception.com'
+        'https://ytd.expectexception.com,https://www.expectexception.com,https://expectexception.com,https://api.expectexception.com,https://expectexception.onrender.com'
     ).split(',')
 
 # Session security

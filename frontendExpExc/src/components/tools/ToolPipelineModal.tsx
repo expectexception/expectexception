@@ -23,6 +23,17 @@ const AVAILABLE_PIPELINE_TOOLS = toolsConfig.filter(t =>
     ['media', 'converter', 'developer'].includes(t.category)
 );
 
+// tools.json keys tools by numeric id while the presets below identify them by
+// slug, so normalize to a string id. Entries were previously pushed into
+// PipelineStep[] as raw tools.json objects, which have no `toolId` field at
+// all — every step built from the catalogue carried toolId: undefined.
+const toPipelineStep = (tool: typeof toolsConfig[number]): PipelineStep => ({
+    toolId: String(tool.id),
+    title: tool.title,
+    path: tool.path,
+    category: tool.category,
+});
+
 const PRESET_PIPELINES = [
     {
         name: 'Image Optimization & Analysis',
@@ -47,8 +58,12 @@ const ToolPipelineModal: React.FC<Props> = ({ open, onClose }) => {
     const navigate = useNavigate();
 
     const [selectedSteps, setSelectedSteps] = useState<PipelineStep[]>([
-        AVAILABLE_PIPELINE_TOOLS[0] || { toolId: 'background-remover', title: 'Background Remover', path: '/services/background-remover', category: 'media' },
-        AVAILABLE_PIPELINE_TOOLS[1] || { toolId: 'image-upscaler', title: 'Image Upscaler', path: '/services/image-upscaler', category: 'media' },
+        AVAILABLE_PIPELINE_TOOLS[0]
+            ? toPipelineStep(AVAILABLE_PIPELINE_TOOLS[0])
+            : { toolId: 'background-remover', title: 'Background Remover', path: '/services/background-remover', category: 'media' },
+        AVAILABLE_PIPELINE_TOOLS[1]
+            ? toPipelineStep(AVAILABLE_PIPELINE_TOOLS[1])
+            : { toolId: 'image-upscaler', title: 'Image Upscaler', path: '/services/image-upscaler', category: 'media' },
     ]);
 
     const [isRunning, setIsRunning] = useState(false);
@@ -59,9 +74,9 @@ const ToolPipelineModal: React.FC<Props> = ({ open, onClose }) => {
     };
 
     const handleAddStep = (toolId: string) => {
-        const found = AVAILABLE_PIPELINE_TOOLS.find(t => t.id === toolId);
+        const found = AVAILABLE_PIPELINE_TOOLS.find(t => String(t.id) === String(toolId));
         if (found) {
-            setSelectedSteps(prev => [...prev, { toolId: found.id, title: found.title, path: found.path, category: found.category }]);
+            setSelectedSteps(prev => [...prev, toPipelineStep(found)]);
         }
     };
 

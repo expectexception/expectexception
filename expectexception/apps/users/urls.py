@@ -10,6 +10,7 @@ from .views import (
     VerifyEmailView,
     MeView,
     GoogleAuthView,
+    LogoutView,
     APIKeyListCreateView,
     APIKeyDeleteView,
     EmailClaimTokenObtainPairView,
@@ -19,6 +20,7 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='auth_register'),
     path('login/', EmailClaimTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('logout/', LogoutView.as_view(), name='auth_logout'),
 
     path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
     path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),

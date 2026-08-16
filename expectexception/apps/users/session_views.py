@@ -1,45 +1,48 @@
-"""
-Session management: list active token sessions and revoke them.
-Uses DRF's AuthToken (from Knox or rest_framework.authtoken).
-If using Knox multi-token auth, this works natively.
-For simple DRF Token (single token), it shows the one session.
+"""Session management for JWT auth: list issued refresh tokens and revoke them.
+
+This module previously tried `from knox.models import AuthToken` and fell back
+to `request.auth.delete()` on ImportError. Knox is not installed, and under JWT
+`request.auth` is a validated token object with no `.delete()` — so every view
+here silently returned an empty list or swallowed the AttributeError. Nothing
+could actually be listed or revoked.
+
+SimpleJWT's token_blacklist app already tracks every issued refresh token
+(OutstandingToken) and which ones are revoked (BlacklistedToken), so sessions
+are derived from that.
 """
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+
+
+def _current_jti(request):
+    """The jti of the access token on this request, so the caller's own session
+    can be flagged in the list."""
+    return getattr(request.auth, 'payload', {}).get('jti') if request.auth else None
 
 
 class SessionListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        """Return current active sessions / tokens for the user."""
-        sessions = []
+        from django.utils import timezone
 
-        # Try Knox multi-token
-        try:
-            from knox.models import AuthToken
-            for token in AuthToken.objects.filter(user=request.user).order_by('-created'):
-                sessions.append({
-                    'id': str(token.pk),
-                    'created': token.created,
-                    'expiry': token.expiry,
-                    'current': False,  # hard to detect current in Knox without per-request comparison
-                })
-        except ImportError:
-            # Fallback: DRF single token
-            try:
-                token = request.auth
-                if token:
-                    sessions.append({
-                        'id': 'current',
-                        'created': getattr(token, 'created', None),
-                        'expiry': None,
-                        'current': True,
-                    })
-            except Exception:
-                pass
-
+        revoked_ids = set(
+            BlacklistedToken.objects.filter(token__user=request.user).values_list('token_id', flat=True)
+        )
+        now = timezone.now()
+        sessions = [
+            {
+                'id': str(token.id),
+                'created': token.created_at,
+                'expiry': token.expires_at,
+                'current': False,
+            }
+            for token in OutstandingToken.objects.filter(user=request.user, expires_at__gt=now)
+            .exclude(id__in=revoked_ids)
+            .order_by('-created_at')
+        ]
         return Response({'sessions': sessions, 'count': len(sessions)})
 
 
@@ -47,31 +50,18 @@ class SessionRevokeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, session_id):
-        """Revoke a specific session/token."""
-        try:
-            from knox.models import AuthToken
-            AuthToken.objects.filter(user=request.user, pk=session_id).delete()
-            return Response({'revoked': True})
-        except ImportError:
-            # DRF single token: logout current session
-            try:
-                request.auth.delete()
-                return Response({'revoked': True})
-            except Exception:
-                return Response({'error': 'Could not revoke session.'}, status=400)
+        token = OutstandingToken.objects.filter(user=request.user, pk=session_id).first()
+        if token is None:
+            return Response({'error': 'Session not found.'}, status=404)
+        BlacklistedToken.objects.get_or_create(token=token)
+        return Response({'revoked': True})
 
 
 class SessionRevokeAllView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request):
-        """Revoke all sessions for the user (logout everywhere)."""
-        try:
-            from knox.models import AuthToken
-            AuthToken.objects.filter(user=request.user).delete()
-        except ImportError:
-            try:
-                request.auth.delete()
-            except Exception:
-                pass
-        return Response({'revoked_all': True})
+        tokens = OutstandingToken.objects.filter(user=request.user)
+        for token in tokens:
+            BlacklistedToken.objects.get_or_create(token=token)
+        return Response({'revoked_all': True, 'count': tokens.count()})

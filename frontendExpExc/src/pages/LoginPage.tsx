@@ -68,9 +68,10 @@ const LoginPage: React.FC = () => {
             });
             const { access, refresh } = response.data;
 
-            login(access, refresh);
+            // Must await: navigating before the profile fetch resolves lands
+            // the user on a page whose guard still sees user=null.
+            await login(access, refresh);
 
-            // Redirect to dashboard or home
             navigate('/');
         } catch (err: any) {
             console.error('Login error:', err);
