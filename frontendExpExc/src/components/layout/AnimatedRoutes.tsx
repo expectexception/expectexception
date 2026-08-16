@@ -100,6 +100,11 @@ const TextDiffChecker = lazy(() => import('../services/TextDiffChecker'));
 const CaseConverter = lazy(() => import('../services/CaseConverter'));
 const HtmlEntityCodec = lazy(() => import('../services/HtmlEntityCodec'));
 const NumberBaseConverter = lazy(() => import('../services/NumberBaseConverter'));
+const ExifViewer = lazy(() => import('../services/ExifViewer'));
+const SqlFormatter = lazy(() => import('../services/SqlFormatter'));
+const ColorBlindnessSimulator = lazy(() => import('../services/ColorBlindnessSimulator'));
+const ReadabilityAnalyzer = lazy(() => import('../services/ReadabilityAnalyzer'));
+const LoanCalculator = lazy(() => import('../services/LoanCalculator'));
 const JsonToCsv = lazy(() => import('../services/JsonToCsv'));
 const UrlEncoderDecoder = lazy(() => import('../services/UrlEncoderDecoder'));
 const JwtDecoder = lazy(() => import('../services/JwtDecoder'));
@@ -267,6 +272,14 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/case-converter" element={<PageTransition><CaseConverter /></PageTransition>} />
                     <Route path="/services/html-entity-codec" element={<PageTransition><HtmlEntityCodec /></PageTransition>} />
                     <Route path="/services/number-base-converter" element={<PageTransition><NumberBaseConverter /></PageTransition>} />
+
+                    {/* Client-only tools: all processing happens in the browser,
+                        so these need no auth guard and no backend round-trip. */}
+                    <Route path="/services/exif-viewer" element={<PageTransition><ExifViewer /></PageTransition>} />
+                    <Route path="/services/sql-formatter" element={<PageTransition><SqlFormatter /></PageTransition>} />
+                    <Route path="/services/color-blindness-simulator" element={<PageTransition><ColorBlindnessSimulator /></PageTransition>} />
+                    <Route path="/services/readability-analyzer" element={<PageTransition><ReadabilityAnalyzer /></PageTransition>} />
+                    <Route path="/services/loan-calculator" element={<PageTransition><LoanCalculator /></PageTransition>} />
                     <Route path="/services/json-csv" element={<PageTransition><JsonToCsv /></PageTransition>} />
                     <Route path="/services/url-encode-decode" element={<PageTransition><UrlEncoderDecoder /></PageTransition>} />
                     <Route path="/services/jwt-decoder" element={<PageTransition><JwtDecoder /></PageTransition>} />
