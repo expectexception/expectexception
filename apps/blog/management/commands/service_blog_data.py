@@ -3657,4 +3657,318 @@ SERVICES = [
             ),
         ],
     },
+    {
+        "slug": "how-to-view-and-remove-exif-metadata",
+        "title": "How to See (and Remove) the Hidden GPS Data in Your Photos",
+        "seo_title": "EXIF Viewer & Remover — See and Strip Photo Metadata Online",
+        "seo_description": "View the EXIF metadata hidden in a JPEG — camera, lens, timestamps and GPS location — then download a copy with everything removed.",
+        "keywords": [
+            "exif viewer",
+            "remove exif data",
+            "strip photo metadata",
+            "check photo gps location",
+            "exif remover online",
+            "photo metadata viewer",
+            "delete exif from jpeg",
+        ],
+        "tool_path": "/services/exif-viewer",
+        "tool_cta": "Open the EXIF Viewer",
+        "tags": ["security", "privacy", "images", "tools"],
+        "date": datetime(2026, 8, 10, 9, 0, tzinfo=UTC),
+        "intro": "A photo straight off a phone or camera usually carries far more than pixels: the exact GPS coordinates of where it was taken, the date and time down to the second, and often the camera model and a hardware serial number — all invisible in a normal photo viewer. Before you post or forward that photo, it's worth knowing exactly what's riding along with it.",
+        "what": "The EXIF Viewer decodes the metadata block embedded in a JPEG file and shows you everything in it, grouped by camera, capture settings, image details and — most importantly — location. If it finds GPS coordinates, it flags them clearly with a link to view the exact spot on a map. From there you can download a cleaned copy of the same photo with every metadata segment stripped out, ready to share without giving away more than you meant to.",
+        "steps": [
+            (
+                "Choose a JPEG",
+                "Select a photo from your device, or drag and drop it onto the tool.",
+            ),
+            (
+                "Read the metadata",
+                "Camera, lens, timestamps and any GPS location are decoded and listed by category.",
+            ),
+            (
+                "Check for GPS data",
+                "If coordinates are found, they're highlighted in red with a direct map link so you can see exactly what you'd be sharing.",
+            ),
+            (
+                "Download a clean copy",
+                'Click "Download stripped copy" to save the same image with every EXIF, XMP and comment segment removed.',
+            ),
+        ],
+        "features": [
+            "Decodes camera make/model, lens, exposure settings and capture timestamps",
+            "Flags embedded GPS coordinates with a one-click map link",
+            "Strips metadata without re-encoding — the image is copied byte-for-byte, so there's no quality loss",
+            "Runs entirely in your browser — the photo is never uploaded anywhere",
+        ],
+        "use_cases": [
+            "Check a photo for GPS data before posting it publicly or sending it to someone you don't fully trust",
+            "Strip identifying metadata from screenshots or photos before submitting them somewhere",
+            "Audit what a camera or phone is actually embedding in its files",
+        ],
+        "faq": [
+            (
+                "Is my photo uploaded to a server?",
+                "No. The file is read locally with the browser's File API and parsed in JavaScript on your machine, so it never leaves your device — that's true even with no internet connection.",
+            ),
+            (
+                "Does stripping the metadata reduce image quality?",
+                "No. The cleaned copy is built by copying the JPEG's compressed image data across untouched and only removing the metadata segments, so the pixels are identical to the original — unlike re-saving through most editors, which recompresses and loses quality.",
+            ),
+            (
+                "Why does my photo show no EXIF data at all?",
+                "Most social platforms and messaging apps strip it automatically on upload, so a photo saved from Instagram, WhatsApp or similar will usually already be clean.",
+            ),
+        ],
+    },
+    {
+        "slug": "how-to-format-sql-queries-online",
+        "title": "How to Turn a Messy SQL Query Into Something You Can Actually Read",
+        "seo_title": "SQL Formatter & Beautifier — Format SQL Queries Online Free",
+        "seo_description": "Paste a cramped SQL query and get clean, indented SQL back — joins, subqueries, CASE expressions and comments all handled correctly.",
+        "keywords": [
+            "sql formatter",
+            "sql beautifier",
+            "format sql online",
+            "sql pretty print",
+            "sql query formatter",
+            "beautify sql",
+            "sql indent tool",
+        ],
+        "tool_path": "/services/sql-formatter",
+        "tool_cta": "Open the SQL Formatter",
+        "tags": ["developer", "tools", "database"],
+        "date": datetime(2026, 8, 11, 9, 0, tzinfo=UTC),
+        "intro": "A query pulled from a log file, an ORM's debug output, or pasted from a colleague's message is almost always one long, cramped line. That's fine for a database engine and useless for a human trying to review it. This formatter turns it back into something you can actually follow.",
+        "what": 'The SQL Formatter tokenizes your query before laying it out, rather than doing find-and-replace on the raw text — the difference matters because a naive replace will happily "format" the word SELECT sitting inside a string literal or a comment. Once tokenized, it breaks the query at its real clause boundaries, puts each selected column and each join on its own line, and indents subqueries by nesting depth.',
+        "steps": [
+            (
+                "Paste your SQL",
+                "Drop in a query of any length — minified, single-line, or already partly formatted all work.",
+            ),
+            (
+                "Pick your style",
+                "Choose uppercase or lowercase keywords and an indent width of 2 or 4 spaces.",
+            ),
+            (
+                "Read the result",
+                "The formatted query updates live in the panel next to your input as you type.",
+            ),
+            ("Copy it out", "Click the copy button to put the formatted query on your clipboard."),
+        ],
+        "features": [
+            "Tokenizes the query first, so keywords inside string literals or comments are never mistakenly reformatted",
+            "Breaks SELECT columns, JOIN clauses and WHERE conditions onto their own lines",
+            "Indents subqueries and parenthesized expressions by nesting depth",
+            "Toggle between uppercase and lowercase keywords, and 2- or 4-space indentation",
+        ],
+        "use_cases": [
+            "Clean up a query copied from a slow-query log before sharing it in a bug report",
+            "Make sense of a long, auto-generated query from an ORM's debug output",
+            "Standardize formatting before a code review",
+        ],
+        "faq": [
+            (
+                "Is my query sent to a server?",
+                "No. The formatter runs entirely in JavaScript in your browser, so a query — which often reveals your schema and business logic — never leaves your machine.",
+            ),
+            (
+                "Which SQL dialect does it support?",
+                "It's dialect-agnostic: it recognises the keywords common to PostgreSQL, MySQL, SQL Server, SQLite and Oracle, and treats anything else as an identifier, passing it through unchanged.",
+            ),
+            (
+                "Will formatting change what my query does?",
+                "No. Only whitespace and, if you enable it, keyword casing are changed. String literals, quoted identifiers and comments are preserved exactly as written.",
+            ),
+        ],
+    },
+    {
+        "slug": "how-to-check-a-design-for-color-blindness",
+        "title": "How to Check If Your Design Actually Works for Colour-Blind Users",
+        "seo_title": "Colour Blindness Simulator — Test Images for Accessibility",
+        "seo_description": "Upload a chart, screenshot or design and see it simulated for protanopia, deuteranopia, tritanopia and full colour blindness.",
+        "keywords": [
+            "color blindness simulator",
+            "deuteranopia simulator",
+            "protanopia test image",
+            "colour blind accessibility check",
+            "tritanopia simulator",
+            "accessible design checker",
+        ],
+        "tool_path": "/services/color-blindness-simulator",
+        "tool_cta": "Open the Colour Blindness Simulator",
+        "tags": ["design", "accessibility", "tools"],
+        "date": datetime(2026, 8, 12, 9, 0, tzinfo=UTC),
+        "intro": "Around one in twelve men and one in two hundred women have some form of colour vision deficiency. A chart that separates its two most important lines by red versus green alone is invisible to a meaningful share of any audience — and the only way to catch that before shipping is to actually look at the design the way they would.",
+        "what": "This tool re-renders an uploaded image through four simulations: protanopia and deuteranopia (the two forms of red-green colour blindness), tritanopia (blue-yellow), and full achromatopsia (no colour perception at all, a useful worst-case check). The transform is done correctly in linear light — converting out of gamma-encoded sRGB, applying the cone-response matrix for each deficiency, then converting back — which is the step most simulators skip, and skipping it is why their results usually look too dark.",
+        "steps": [
+            (
+                "Upload an image",
+                "Choose a chart, UI screenshot or design. It's processed locally and never uploaded.",
+            ),
+            (
+                "Compare the four simulations",
+                "The original sits alongside protanopia, deuteranopia, tritanopia and achromatopsia renderings.",
+            ),
+            (
+                "Look for lost distinctions",
+                "If two elements that carry different meaning become the same colour in any simulation, that's a real problem worth fixing.",
+            ),
+            (
+                "Download what you need",
+                "Save any of the simulated renderings directly from the page.",
+            ),
+        ],
+        "features": [
+            "Simulates all four major colour vision deficiency types in one pass",
+            "Correct linear-light transform, so results match real-world perception rather than looking uniformly dark",
+            "Runs on a canvas in your browser — unreleased designs are never uploaded",
+            "Download any simulated version for a design review or accessibility report",
+        ],
+        "use_cases": [
+            "Check a data visualization or chart before it ships",
+            "Review a UI's status colours (success/warning/error) for accessibility",
+            "Include simulated screenshots in an accessibility audit",
+        ],
+        "faq": [
+            (
+                "Is my image uploaded anywhere?",
+                "No. The image is decoded and transformed on a canvas element inside your browser, so it never leaves your machine.",
+            ),
+            (
+                "Which deficiency should I design for first?",
+                "Deuteranopia is the most common, so it's a reasonable starting point — but the reliable rule is to never rely on colour alone to carry meaning. The achromatopsia view is a fast way to test that: anything still distinguishable there works for everyone.",
+            ),
+            (
+                "How accurate is the simulation?",
+                "It uses the standard cone-response matrices for full dichromacy, which is a solid design check, but it models the complete absence of one cone type. Most people with a deficiency have an anomalous cone rather than a missing one, so their actual experience typically sits somewhere between the original and the simulated version.",
+            ),
+        ],
+    },
+    {
+        "slug": "how-to-check-readability-and-word-count",
+        "title": "How to Tell If Your Writing Is Actually Easy to Read",
+        "seo_title": "Readability Checker & Word Counter — Flesch Score Online",
+        "seo_description": "Get word and sentence counts, reading time, Flesch Reading Ease, Flesch-Kincaid grade level, and your most-repeated words — instantly.",
+        "keywords": [
+            "readability checker",
+            "flesch reading ease calculator",
+            "word counter",
+            "reading time calculator",
+            "flesch kincaid grade level",
+            "text analyzer online",
+        ],
+        "tool_path": "/services/readability-analyzer",
+        "tool_cta": "Open the Readability Analyzer",
+        "tags": ["writing", "seo", "tools", "utility"],
+        "date": datetime(2026, 8, 13, 9, 0, tzinfo=UTC),
+        "intro": "Two pieces of writing with the same word count can be wildly different to actually read. Long sentences stacked with long words feel like work, even when the ideas underneath are simple — and the fix is almost always the same: shorten the sentences.",
+        "what": "This analyzer reports the plain counts — characters, words, sentences, paragraphs — alongside the two Flesch measures, which score difficulty from average sentence length and average syllables per word. You also get estimated silent-reading and read-aloud times, useful for sizing an article or a talk, and a list of the words you lean on most, so repetition is easy to spot.",
+        "steps": [
+            (
+                "Paste your text",
+                "Drop in an article, email, essay or script — statistics update live as you type.",
+            ),
+            (
+                "Check the reading ease score",
+                'Aim for 60 or above for a general audience; the band label ("plain English", "difficult", etc.) tells you where you land.',
+            ),
+            (
+                "Look at the grade level",
+                "The Flesch-Kincaid grade level translates the same numbers into a US school-grade equivalent.",
+            ),
+            (
+                "Act on it",
+                "If the score is low, your longest sentences are usually the fastest fix — break them up first.",
+            ),
+        ],
+        "features": [
+            "Word, sentence, paragraph and character counts, updated as you type",
+            "Flesch Reading Ease score and Flesch-Kincaid grade level",
+            "Estimated silent-reading and spoken-aloud time",
+            "Most-repeated words, with common filler words excluded",
+        ],
+        "use_cases": [
+            "Check a blog post or landing page copy is readable for a general audience before publishing",
+            "Estimate how long a script will take to read aloud",
+            "Spot overused words in a long draft",
+        ],
+        "faq": [
+            (
+                "What's a good Flesch Reading Ease score?",
+                "60 to 70 is a good target for a general audience — roughly an 8th to 9th grade reading level. Technical writing for specialists often sits between 30 and 50, which is fine when the readers are experts.",
+            ),
+            (
+                "How is reading time calculated?",
+                "Silent reading uses 238 words per minute, the measured average for adults reading English non-fiction. Speaking time uses 150 words per minute, a typical presentation pace.",
+            ),
+            (
+                "Is my text sent anywhere?",
+                "No. All analysis runs in JavaScript in your browser, so drafts and unpublished writing stay on your machine.",
+            ),
+        ],
+    },
+    {
+        "slug": "how-to-calculate-a-loan-emi",
+        "title": "How to Work Out What a Loan Actually Costs You",
+        "seo_title": "Loan & EMI Calculator — Monthly Payment & Amortisation",
+        "seo_description": "Work out the monthly payment on a loan or mortgage, how much of it is interest, and the full year-by-year payoff schedule.",
+        "keywords": [
+            "emi calculator",
+            "loan calculator",
+            "mortgage payment calculator",
+            "amortisation schedule",
+            "monthly payment calculator",
+            "total interest calculator",
+        ],
+        "tool_path": "/services/loan-calculator",
+        "tool_cta": "Open the Loan Calculator",
+        "tags": ["finance", "tools", "utility"],
+        "date": datetime(2026, 8, 14, 9, 0, tzinfo=UTC),
+        "intro": "An amortising loan is repaid in equal instalments, but the split inside each one shifts dramatically over time: early payments are mostly interest, and the balance only really starts falling later. That's why the total interest on a long loan can rival the amount you actually borrowed — and why the monthly figure alone doesn't tell the full story.",
+        "what": "Enter the loan amount, annual interest rate and term to see the fixed monthly instalment, the total you'll repay, and what share of that is interest. Below that sits a full year-by-year breakdown showing exactly how the balance falls — useful for seeing just how slowly it moves in the first few years of a long mortgage.",
+        "steps": [
+            (
+                "Enter the loan amount",
+                "Set the principal — the amount actually borrowed, after any deposit.",
+            ),
+            (
+                "Set the rate and term",
+                "Enter the annual interest rate and the number of years to repay; both have sliders for quick adjustment.",
+            ),
+            (
+                "Read the monthly payment",
+                "The fixed instalment appears immediately, along with the total interest as a share of everything you'll repay.",
+            ),
+            (
+                "Check the yearly schedule",
+                "Scroll the year-by-year table to see how much of each year's payments go to interest versus principal.",
+            ),
+        ],
+        "features": [
+            "Standard amortising-loan formula, calculated instantly as you adjust the inputs",
+            "Total interest shown as a share of the full repayment, not just the headline monthly figure",
+            "Full year-by-year principal/interest/balance schedule",
+            "Support for USD, EUR, GBP and INR",
+        ],
+        "use_cases": [
+            "Compare the real cost of a 15-year versus a 30-year mortgage at the same rate",
+            "See how much interest a car loan or personal loan will actually cost over its term",
+            "Check what a rate change would do to a planned loan before applying",
+        ],
+        "faq": [
+            (
+                "What is EMI?",
+                "Equated Monthly Instalment — the fixed amount paid each month on an amortising loan. The total stays constant while its internal split changes: less of each payment goes to interest and more to principal as the balance falls.",
+            ),
+            (
+                "Why is so much of my early payment interest?",
+                "Interest is charged on the outstanding balance, which is largest at the very start. On a 20- or 30-year loan the first few years can be well over half interest, which is also why extra payments made early save disproportionately more than the same amount paid late.",
+            ),
+            (
+                "Does this include fees, taxes or insurance?",
+                "No — it calculates principal and interest only. Arrangement fees, property tax, insurance and any required escrow will add to what you actually pay each month.",
+            ),
+        ],
+    },
 ]
