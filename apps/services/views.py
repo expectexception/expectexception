@@ -1266,54 +1266,47 @@ class DocToPdfView(APIView):
         if ext not in self.ALLOWED_EXTENSIONS:
             return Response({'error': f'Unsupported format. Allowed: {", ".join(self.ALLOWED_EXTENSIONS)}'}, status=status.HTTP_400_BAD_REQUEST)
         
-        import subprocess
-        import tempfile
-        import shutil
-        
+        from .pdf_utils import convert_document_to_pdf, PDFConversionError
+
         temp_dir = None
         try:
             temp_dir = tempfile.mkdtemp(prefix='doc_to_pdf_')
             input_path = os.path.join(temp_dir, f"input{ext}")
-            
+
             with open(input_path, 'wb') as f:
                 for chunk in doc_file.chunks():
                     f.write(chunk)
-            
-            cmd = ['/usr/bin/soffice', '--headless', '--convert-to', 'pdf', '--outdir', temp_dir, input_path]
-            # Force a completely clean environment with explicit PATH and unique HOME
-            custom_env = {
-                'PATH': '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
-                'HOME': temp_dir,
-            }
-            if 'LANG' in os.environ: custom_env['LANG'] = os.environ['LANG']
 
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, env=custom_env)
-            
-            if result.returncode != 0:
-                return Response({'error': 'Conversion failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-            output_path = os.path.join(temp_dir, os.path.splitext(os.path.basename(input_path))[0] + '.pdf')
-            
-            if not os.path.exists(output_path):
-                return Response({'error': 'Output file not found'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
             converted_dir = os.path.join(settings.MEDIA_ROOT, 'converted')
-            os.makedirs(converted_dir, exist_ok=True)
-            
-            final_filename = f"{os.path.splitext(doc_file.name)[0]}_{uuid.uuid4().hex[:8]}.pdf"
+            # The uploaded name reaches the filesystem, so keep it to a known
+            # safe character set rather than trusting it.
+            stem = re.sub(r'[^A-Za-z0-9._-]', '_', os.path.splitext(doc_file.name)[0])[:80] or 'document'
+            final_filename = f"{stem}_{uuid.uuid4().hex[:8]}.pdf"
             final_path = os.path.join(converted_dir, final_filename)
-            shutil.copy2(output_path, final_path)
-            
+
+            convert_document_to_pdf(input_path, final_path)
+
             log_activity(request.user, "doc_to_pdf", f"Converted {doc_file.name}", request)
-            
+
             return Response({
                 'success': True,
                 'file_url': f"{settings.MEDIA_URL}converted/{final_filename}",
                 'filename': final_filename,
             })
+        except PDFConversionError as e:
+            logger.warning("Doc to PDF conversion failed for %s: %s", doc_file.name, e)
+            return Response(
+                {'error': 'Could not convert this document. It may be corrupt or password-protected.'},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
         except Exception as e:
+            # Was `str(e)`, which returned internal paths and library internals
+            # to the caller.
             logger.exception(f"Doc to PDF error: {e}")
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {'error': 'Conversion failed due to an internal error.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         finally:
             if temp_dir and os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir, ignore_errors=True)
