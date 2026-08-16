@@ -434,74 +434,95 @@ class UrlDownloaderView(APIView):
         
         if not url:
             return Response({'error': 'URL is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         start_time = time.time()
-        
+
         try:
             if action == 'check':
                 # Just check the URL and return info
                 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-                resp = requests.head(url, allow_redirects=True, timeout=30, headers=headers)
+                resp, final_url = safe_public_request('HEAD', url, timeout=30, headers=headers)
                 resp.raise_for_status()
-                
+
                 log_activity(request.user, "url_check", f"URL: {url}", request)
-                
+
                 return Response({
                     'status': resp.status_code,
                     'content_type': resp.headers.get('Content-Type'),
                     'content_length': resp.headers.get('Content-Length'),
-                    'filename': self._extract_filename(url, resp.headers),
+                    'filename': self._extract_filename(final_url, resp.headers),
                 })
-            
+
             elif action == 'download':
                 # Stream the file directly to user
                 return self._stream_url(url, request, start_time)
-                
+
+            return Response({'error': 'Unknown action'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except ValueError as e:
+            # Blocked target — see safe_public_request.
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
         except requests.RequestException as e:
             error_msg = str(e)
             logger.error(f"URL download error: {error_msg}")
-            
-            return Response({'error': f'Failed to access URL: {error_msg}'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+            return Response({'error': 'Failed to access URL.'}, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             error_msg = str(e)
             logger.exception(f"Unexpected error in URL downloader: {error_msg}")
-            
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+            return Response({'error': 'Download failed.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def _extract_filename(self, url, headers):
         """Extract filename from URL or Content-Disposition header"""
         # Try Content-Disposition first
         content_disp = headers.get('Content-Disposition', '')
         if 'filename=' in content_disp:
             filename = content_disp.split('filename=')[1].strip('"')
-            return filename
-        
-        # Otherwise extract from URL
-        from urllib.parse import urlparse, unquote
-        path = urlparse(url).path
-        filename = unquote(path.split('/')[-1]) or 'download'
-        return filename
-    
+        else:
+            # Otherwise extract from URL
+            from urllib.parse import urlparse, unquote
+            path = urlparse(url).path
+            filename = unquote(path.split('/')[-1]) or 'download'
+
+        # This lands in a Content-Disposition header we emit, and it comes from
+        # the remote server, so strip anything that could break out of the
+        # quoted filename or inject a header.
+        filename = re.sub(r'[^A-Za-z0-9._ -]', '_', filename).strip() or 'download'
+        return filename[:200]
+
     def _stream_url(self, url, request, start_time):
         """Stream URL content directly to user"""
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-        response = requests.get(url, stream=True, timeout=30, headers=headers)
+        response, url = safe_public_request('GET', url, stream=True, timeout=30, headers=headers)
         response.raise_for_status()
-        
+
         filename = self._extract_filename(url, response.headers)
         content_type = response.headers.get('Content-Type', 'application/octet-stream')
         content_length = response.headers.get('Content-Length')
         
         def file_iterator():
             """Generator to stream file content"""
+            # Bounded: this endpoint is unauthenticated, and without a cap it
+            # will proxy a file of any size straight through the server.
+            max_bytes = getattr(settings, 'URL_DOWNLOADER_MAX_BYTES', 512 * 1024 * 1024)
+            sent = 0
             try:
                 for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        yield chunk
+                    if not chunk:
+                        continue
+                    sent += len(chunk)
+                    if sent > max_bytes:
+                        logger.warning("URL download exceeded %d bytes, truncating: %s", max_bytes, url)
+                        break
+                    yield chunk
             except Exception as e:
                 logger.error(f"Streaming error: {e}")
                 raise
+            finally:
+                response.close()
         
         # Track download
         file_size = int(content_length) if content_length else None
@@ -2326,6 +2347,31 @@ def _validate_public_hostname(raw_host: str, port: int) -> str:
     return host_ascii
 
 
+def safe_public_request(method: str, raw_url: str, *, max_redirects: int = 5, **kwargs):
+    """Issue an HTTP request to a user-supplied URL with SSRF protection.
+
+    requests' own `allow_redirects=True` is unsafe for user-supplied targets:
+    only the first URL would be validated, and a public host can redirect to
+    169.254.169.254 or 127.0.0.1 to get around the check. So redirects are
+    disabled at the transport level and followed here, revalidating every hop.
+
+    Returns (response, final_url). Raises ValueError for a blocked target.
+    """
+    kwargs.pop('allow_redirects', None)
+    current = _validate_public_http_url(raw_url)
+
+    for _ in range(max_redirects + 1):
+        response = requests.request(method, current, allow_redirects=False, **kwargs)
+        location = response.headers.get('Location')
+        if response.status_code in (301, 302, 303, 307, 308) and location:
+            response.close()
+            current = _validate_public_http_url(urljoin(current, location))
+            continue
+        return response, current
+
+    raise ValueError('Too many redirects')
+
+
 def _flatten_cert_name(name_seq) -> str:
     # ssl.getpeercert() returns tuples like ((('commonName', 'example.com'),), (('organizationName', 'X'),))
     try:
@@ -3885,10 +3931,18 @@ class WebsiteDiagnosticsView(APIView):
         domain = parsed.netloc
         if not domain:
             return Response({'error': 'Invalid URL'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        # Every other network tool in this module validates its target before
+        # touching it; this one fanned out HTTP requests and raw socket
+        # connections to whatever it was handed.
+        try:
+            url = _validate_public_http_url(url)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
         # Remove port for DNS/TLS if present, but keep for port check if explicit
         hostname = domain.split(':')[0]
-        
+
         results = {
             'url': url,
             'domain': domain,
