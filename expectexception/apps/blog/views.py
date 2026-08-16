@@ -41,7 +41,7 @@ class PostViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
     search_fields = ("title", "content")
-    ordering_fields = ("published_at", "created_at")
+    ordering_fields = ("published_at", "created_at", "likes_count")
 
     def get_queryset(self):
         user = self.request.user

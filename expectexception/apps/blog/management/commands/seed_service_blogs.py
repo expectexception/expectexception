@@ -110,7 +110,16 @@ class Command(BaseCommand):
             pass
 
         try:
-            author = User.objects.filter(is_superuser=True).order_by("id").first()
+            # Prefer an @expectexception.com superuser specifically — a plain
+            # "earliest superuser by id" pick previously risked landing on
+            # whichever personal account happened to be created first, which
+            # would then show up as the DB owner of every seeded post.
+            author = (
+                User.objects.filter(is_superuser=True, email__iendswith="@expectexception.com")
+                .order_by("id")
+                .first()
+                or User.objects.filter(is_superuser=True).order_by("id").first()
+            )
             if author is None:
                 author, _ = User.objects.get_or_create(
                     email="demo@example.com",

@@ -37,7 +37,7 @@ import apiClient from '../api/config';
 import { endpoints } from '../api/endpoints';
 import { User } from '../types';
 import { isReactSnap } from '../utils/isReactSnap';
-import { excerptFromHtml, stripHtmlToText } from '../utils/text';
+import { excerptFromHtml } from '../utils/text';
 import { useTheme, alpha } from '@mui/material/styles';
 
 interface Tag {
@@ -90,12 +90,25 @@ const BorderBeam: React.FC<{ activeColor?: string }> = ({ activeColor }) => {
   );
 };
 
+// Must match REST_FRAMEWORK.PAGE_SIZE in settings.py.
+const PAGE_SIZE = 10;
+
+// Every post here is site-authored tool/guide content, not an individually
+// bylined article, so the byline is a fixed label rather than whichever
+// account happens to technically own the row - that previously rendered as
+// post.author.email directly (a demo placeholder, or an admin's own
+// personal address), and even the account's real name isn't the right
+// public byline for this kind of content.
+const BLOG_BYLINE = 'Admin';
+
 const BlogPage: React.FC = () => {
     const { user } = useAuth();
     const [posts, setPosts] = useState<Post[]>([]);
+    const [totalCount, setTotalCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [page, setPage] = useState(1);
     const [filter, setFilter] = useState('latest');
     const [snackbar, setSnackbar] = useState({ open: false, message: '' });
@@ -103,20 +116,49 @@ const BlogPage: React.FC = () => {
     const theme = useTheme();
     const primaryColor = theme.palette.primary.main;
 
+    // Wait 400ms after typing stops before treating it as a real search term,
+    // so a fetch isn't fired on every keystroke.
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(search), 400);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    // Changing the search term or filter invalidates whatever page the user
+    // was on, so drop back to page 1. If the user wasn't already on page 1,
+    // this update alone re-triggers the fetch effect below (page is one of
+    // its dependencies); the `page === 1` guard just avoids a no-op setState.
+    useEffect(() => {
+        setPage(prev => (prev === 1 ? prev : 1));
+    }, [debouncedSearch, filter]);
+
     useEffect(() => {
         if (isReactSnap()) {
             setLoading(false);
             return;
         }
-        fetchPosts();
-    }, [page]);
+        fetchPosts(page, debouncedSearch, filter);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, debouncedSearch, filter]);
 
-    const fetchPosts = async () => {
+    const fetchPosts = async (pageNum: number, searchTerm: string, filterValue: string) => {
         try {
             setLoading(true);
-            const response = await apiClient.get(endpoints.blog.posts);
+            // The listing used to fetch with no page/search/ordering params at
+            // all, so it always silently returned the API's first page (10
+            // posts, newest first) no matter which page or search term was
+            // selected — the Pagination control changed `page` state but
+            // nothing was ever sent to the server, and posts far down the
+            // list (by date) could never actually be reached.
+            const response = await apiClient.get(endpoints.blog.posts, {
+                params: {
+                    page: pageNum,
+                    search: searchTerm || undefined,
+                    ordering: filterValue === 'popular' ? '-likes_count' : '-published_at',
+                },
+            });
             const data = Array.isArray(response.data) ? response.data : response.data.results || [];
             setPosts(data);
+            setTotalCount(Array.isArray(response.data) ? data.length : (response.data.count ?? data.length));
         } catch (err) {
             if (!isReactSnap()) {
                 console.error('Error fetching posts:', err);
@@ -198,21 +240,6 @@ const BlogPage: React.FC = () => {
     const handleCloseSnackbar = () => {
         setSnackbar({ ...snackbar, open: false });
     };
-
-    const filteredPosts = posts
-        .filter(post => {
-            const q = search.toLowerCase();
-            return (
-                post.title.toLowerCase().includes(q) ||
-                stripHtmlToText(post.content).toLowerCase().includes(q)
-            );
-        })
-        .sort((a, b) => {
-            if (filter === 'popular') {
-                return b.likes_count - a.likes_count;
-            }
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
 
     return (
         <Container maxWidth="xl" sx={{ py: { xs: 4, sm: 6, md: 8 } }}>
@@ -347,7 +374,7 @@ const BlogPage: React.FC = () => {
                 </Box>
             ) : error ? (
                 <Alert severity="error" sx={{ borderRadius: '12px' }}>{error}</Alert>
-            ) : filteredPosts.length === 0 ? (
+            ) : posts.length === 0 ? (
                 <Box sx={{ textAlign: 'center', py: 15, border: '1px dashed rgba(255,255,255,0.08)', borderRadius: '20px' }}>
                     <Typography variant="h6" color="text.secondary">
                         No articles found matching your search.
@@ -355,7 +382,7 @@ const BlogPage: React.FC = () => {
                 </Box>
             ) : (
                 <Grid container spacing={{ xs: 3, sm: 3, md: 4 }}>
-                    {filteredPosts.map((post, index) => (
+                    {posts.map((post, index) => (
                         <Grid item xs={12} sm={6} md={4} key={post.id}>
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
@@ -437,7 +464,7 @@ const BlogPage: React.FC = () => {
                                                     height: 36 
                                                 }}
                                             >
-                                                {post.author.email.charAt(0).toUpperCase()}
+                                                A
                                             </Avatar>
                                             <Box sx={{ minWidth: 0, flex: 1 }}>
                                                 <Typography
@@ -450,7 +477,7 @@ const BlogPage: React.FC = () => {
                                                         whiteSpace: 'nowrap'
                                                     }}
                                                 >
-                                                    {post.author.email}
+                                                    {BLOG_BYLINE}
                                                 </Typography>
                                                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                                                     {formatDate(post.created_at)}
@@ -525,10 +552,10 @@ const BlogPage: React.FC = () => {
             />
 
             {/* Pagination */}
-            {!loading && filteredPosts.length > 0 && (
+            {!loading && posts.length > 0 && totalCount > PAGE_SIZE && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 6, sm: 8, md: 10 } }}>
                     <Pagination
-                        count={Math.ceil(posts.length / 9)}
+                        count={Math.ceil(totalCount / PAGE_SIZE)}
                         page={page}
                         onChange={(_, value) => setPage(value)}
                         color="primary"
