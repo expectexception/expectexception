@@ -1,3 +1,10 @@
+# torch/torchvision below are pinned to a CUDA 12.1 build (see the comment
+# by that pin for why) - PyPI's default index doesn't carry CUDA-tagged
+# torch wheels at all, only download.pytorch.org does, so this file needs
+# that index reachable for `pip install -r requirements-gpu.txt` (as the
+# Dockerfile already does) to resolve it without a separate flag.
+--extra-index-url https://download.pytorch.org/whl/cu121
+
 Django>=4.1
 whitenoise>=6.0.0
 djangorestframework>=3.14
@@ -31,9 +38,25 @@ deep-translator
 asgiref
 
 # AI Image Detector dependencies
+#
+# torch/torchvision are pinned to a specific CUDA build rather than left as
+# ">=", because this box's actual driver caps out at CUDA 12.2 (nvidia-smi:
+# "CUDA Version: 12.2"), and an unpinned `torch>=2.0.0` install resolves to
+# whatever is newest on PyPI - which, as of this pin, was 2.12.1+cu130,
+# built against CUDA 13.0. torch silently falls back to CPU rather than
+# erroring when the driver can't support the build it got (this is what
+# left AI Detector / Image Upscaler running on CPU with no visible error -
+# torch.cuda.is_available() just returned False), so a version drift here
+# doesn't fail loudly, it just quietly stops using the GPU again.
+# cu121 (CUDA 12.1) is the newest PyTorch-published build tag still under
+# this driver's 12.2 ceiling (the --extra-index-url at the top of this file
+# is what makes that resolvable). torchvision is pinned to the release it
+# pairs with for this torch version; see
+# https://github.com/pytorch/vision#installation for the compatibility
+# table if bumping either.
 transformers>=4.35.0
-torch>=2.0.0
-torchvision>=0.15.0
+torch==2.5.1+cu121
+torchvision==0.20.1+cu121
 accelerate>=0.24.0
 numpy>=1.24.0
 pandas>=2.0.0

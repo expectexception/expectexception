@@ -151,7 +151,20 @@ class ModelManager:
 
             try:
                 start_time = time.time()
-                pipe = pipeline("image-classification", model=model_name, device=self._device)
+                # transformers now refuses to load a non-safetensors checkpoint
+                # on torch < 2.6 at all (CVE-2025-32434: torch.load on a
+                # pickled .bin file is unsafe) — it doesn't fall back, it
+                # raises, so both of this ensemble's default models failed to
+                # load outright once torch was pinned below 2.6 for this
+                # box's CUDA version. Both publish a safetensors checkpoint
+                # (verified directly), so requesting it explicitly sidesteps
+                # the restriction entirely rather than working around it.
+                pipe = pipeline(
+                    "image-classification",
+                    model=model_name,
+                    device=self._device,
+                    model_kwargs={"use_safetensors": True},
+                )
                 self._models[model_name] = pipe
                 self._model_status[model_name] = "ready"
                 load_time = time.time() - start_time
