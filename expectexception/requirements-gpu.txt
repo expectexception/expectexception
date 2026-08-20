@@ -80,11 +80,21 @@ django-unfold>=0.23.0
 # Audio source separation (vocals / instrumental split) — invoked as a CLI
 # subprocess by apps/services/tasks.py, not imported directly.
 demucs>=4.0.0
-# torchaudio (a demucs dependency, unpinned here) now requires torchcodec to
-# actually write output files — without it, `ta.save()` raises
-# ModuleNotFoundError at the very last step of separation, after demucs has
-# already spent minutes doing the actual CPU inference. Confirmed live: a
-# real audio file processed successfully end-to-end only after adding this.
+# torchaudio was left unpinned here as "just a demucs dependency" - fine
+# when torch itself was unpinned too, but once torch was pinned to an exact
+# build (2.5.1+cu121, see the AI Image Detector section above) the resolver
+# had no torchaudio version left that satisfied both that exact torch pin
+# and demucs's own constraint, so it silently dropped torchaudio from the
+# install entirely rather than erroring - confirmed live: demucs still
+# imported fine (it doesn't touch torchaudio until actually writing output),
+# so this had no visible symptom until a real separation reached that step.
+# Pinned to the release PyTorch pairs with this torch version.
+torchaudio==2.5.1+cu121
+# torchaudio now requires torchcodec to actually write output files —
+# without it, `ta.save()` raises ModuleNotFoundError at the very last step
+# of separation, after demucs has already spent minutes doing the actual
+# CPU inference. Confirmed live: a real audio file processed successfully
+# end-to-end only after adding this.
 torchcodec
 
 # Google OAuth

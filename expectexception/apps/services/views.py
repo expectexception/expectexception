@@ -1285,6 +1285,17 @@ class PdfToDocView(APIView):
         if not pdf_file:
             return Response({"error": "PDF file is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Validate file is actually a PDF. Previously accepted anything —
+        # a .txt upload got a 202 and a task_id like a real conversion, and
+        # only failed later inside the Celery worker when pdf2docx/LibreOffice
+        # tried to open it, with no way for the caller to connect that
+        # failure back to "wrong file type".
+        file_ext = os.path.splitext(pdf_file.name)[1].lower()
+        if file_ext != ".pdf" and pdf_file.content_type != "application/pdf":
+            return Response(
+                {"error": "Only PDF files are supported."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
         # Validate file size
         if pdf_file.size > self.MAX_FILE_SIZE:
             return Response(
