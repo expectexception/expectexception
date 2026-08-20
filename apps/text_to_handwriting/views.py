@@ -4,6 +4,7 @@ from io import BytesIO
 
 from django.http import HttpResponse
 from rest_framework import permissions, status
+from rest_framework.exceptions import ParseError
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -124,6 +125,16 @@ class GenerateHandwritingView(APIView):
             return Response(
                 {"error": "Handwriting generation unavailable - font files missing"},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except ParseError as e:
+            # request.data is accessed (and so lazily parsed) inside the try
+            # block above, so malformed JSON raises here — the broad except
+            # Exception below used to catch it too and report it as a 500,
+            # which is wrong on two counts: it's the caller's bad input, not
+            # a server failure, and a 500 here trips error monitoring for
+            # something that isn't a bug.
+            return Response(
+                {"error": f"Malformed request body: {e}"}, status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
             logger.exception(f"Handwriting generation error: {e}")

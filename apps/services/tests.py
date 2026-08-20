@@ -7,6 +7,7 @@ import uuid
 from io import BytesIO
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 from rest_framework import status
@@ -20,7 +21,17 @@ class AudioSeparatorTestCase(APITestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.endpoint = "/api/services/audio-separator/"
+        # RateLimitMiddleware tracks POSTs to this path per-IP in the cache;
+        # this test class makes several in a row (all from the test client's
+        # one "IP"), which was tripping the real, working limiter and
+        # failing whichever test ran 5th+ with 429 instead of the status the
+        # test actually wanted to check.
+        cache.clear()
+        # Matches the real registered route (apps/services/urls.py) — this
+        # was "/api/services/audio-separator/" (trailing slash, no
+        # "/process"), which matches nothing, so every test here 404'd
+        # before ever reaching AudioSeparatorView at all.
+        self.endpoint = "/api/services/audio-separator/process"
 
     def create_audio_file(self, filename="test.wav", size_mb=1):
         """Create a dummy audio file"""
@@ -63,7 +74,10 @@ class AudioSeparatorTestCase(APITestCase):
     def test_status_endpoint(self):
         """Test checking status of a task"""
         task_id = str(uuid.uuid4())
-        response = self.client.get(f"{self.endpoint}status/{task_id}/")
+        # A sibling path to self.endpoint, not nested under it — the real
+        # route is /api/services/audio-separator/status/<task_id>/, not
+        # /api/services/audio-separator/process/status/<task_id>/.
+        response = self.client.get(f"/api/services/audio-separator/status/{task_id}/")
         # Should return either 200 with status or 404
         self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_404_NOT_FOUND])
 
@@ -193,7 +207,10 @@ class BackgroundRemoverTestCase(APITestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.endpoint = "/api/services/background-remover/"
+        # Matches the real registered route (apps/services/urls.py) — this
+        # was "background-remover/" (trailing "r"), which matches nothing;
+        # the actual path is "background-remove/".
+        self.endpoint = "/api/services/background-remove/"
 
     def create_image_file(self, filename="test.jpg", size=(200, 200)):
         """Create a dummy image file"""
@@ -249,7 +266,10 @@ class TextToHandwritingTestCase(APITestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.endpoint = "/api/text-to-handwriting/"
+        # Matches the real registered route (apps/text_to_handwriting/urls.py:
+        # path("generate/", ...)) — this was missing "generate/", which
+        # matches nothing, so every test here 404'd before reaching the view.
+        self.endpoint = "/api/text-to-handwriting/generate/"
 
     def test_generate_basic(self):
         """Test basic handwriting generation"""
@@ -309,13 +329,13 @@ class ServiceErrorHandlingTestCase(APITestCase):
         # them through a view, so this asserted nothing; now actually sends
         # each one and checks it succeeds.
         for i in range(3):
-            response = self.client.post("/api/text-to-handwriting/", {"text": f"Test {i}"})
+            response = self.client.post("/api/text-to-handwriting/generate/", {"text": f"Test {i}"})
             self.assertNotEqual(response.status_code, 500)
 
     def test_malformed_requests(self):
         """Test handling malformed JSON/form data"""
         response = self.client.post(
-            "/api/text-to-handwriting/", "malformed data", content_type="application/json"
+            "/api/text-to-handwriting/generate/", "malformed data", content_type="application/json"
         )
         # Should return 400 Bad Request
         self.assertIn(
@@ -325,7 +345,7 @@ class ServiceErrorHandlingTestCase(APITestCase):
 
     def test_missing_required_parameters(self):
         """Test requests with missing required parameters"""
-        response = self.client.post("/api/text-to-handwriting/", {}, format="json")
+        response = self.client.post("/api/text-to-handwriting/generate/", {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
