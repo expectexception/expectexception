@@ -78,9 +78,31 @@ class VideosTests(TestCase):
         # Setup moto S3
         conn = boto3.client("s3", region_name="us-east-1")
         conn.create_bucket(Bucket="test-bucket")
-        mock_inst = mock_ydl.return_value.__enter__.return_value
         mock_info = {"title": "Downloaded", "ext": "mp4"}
-        mock_inst.extract_info.return_value = mock_info
+
+        # Unlike test_download_flow (which fakes the outcome by writing the
+        # file *after* calling the task and setting status manually),
+        # this test calls download_video_task directly and checks its real
+        # result — so extract_info() actually needs to leave a file behind
+        # for the task's own os.path.exists() check to find, at the exact
+        # path the task computed for that call (temp_dir is a fresh
+        # tempfile.mkdtemp() per call, so it can't be known up front; it's
+        # recovered here from the outtmpl the task passed to YoutubeDL()).
+        def fake_ydl(ydl_opts):
+            outtmpl = ydl_opts["outtmpl"]
+            temp_dir = os.path.dirname(outtmpl)
+            filename = os.path.basename(outtmpl).replace("%(ext)s", mock_info["ext"])
+            with open(os.path.join(temp_dir, filename), "wb") as fh:
+                fh.write(b"data")
+            instance = mock.MagicMock()
+            instance.__enter__.return_value.extract_info.return_value = mock_info
+            # The task also calls ydl.sanitize_info(info) and stores the
+            # result — an unconfigured MagicMock method returns a fresh
+            # MagicMock object, which then fails to save as model data.
+            instance.__enter__.return_value.sanitize_info.side_effect = lambda info: info
+            return instance
+
+        mock_ydl.side_effect = fake_ydl
         url = "https://www.youtube.com/watch?v=abc"
         with mock.patch("apps.videos.tasks.download_video_async") as mock_async:
             mock_async.delay = mock.MagicMock()
