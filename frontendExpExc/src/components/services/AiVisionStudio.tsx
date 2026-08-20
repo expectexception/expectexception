@@ -42,6 +42,9 @@ import {
   Fingerprint,
   PersonAdd,
   BackHand,
+  Timeline,
+  RecordVoiceOver,
+  VoiceOverOff,
 } from '@mui/icons-material';
 import ServicePageHero from './ServicePageHero';
 import Seo from '../seo/Seo';
@@ -170,8 +173,8 @@ const AiVisionStudio: React.FC = () => {
     const [showObjectDetection, setShowObjectDetection] = useState(true);
     const [showPoseTracking, setShowPoseTracking] = useState(true);
     const [showHandTracking, setShowHandTracking] = useState(true);
-    const [showMotionTrails] = useState(true);
-    const [enableVoiceAudio] = useState(false);
+    const [showMotionTrails, setShowMotionTrails] = useState(true);
+    const [enableVoiceAudio, setEnableVoiceAudio] = useState(false);
 
     // Live Metrics
     const [fps, setFps] = useState(0);
@@ -1565,8 +1568,19 @@ const AiVisionStudio: React.FC = () => {
                     </Paper>
                 )}
 
-                {/* Hidden Native Video Element */}
-                <video ref={videoRef} playsInline muted style={{ display: 'none' }} />
+                {/* Native video element the canvas reads frames from. Kept
+                    off-screen rather than display:none — mobile Safari (and
+                    some Android WebViews) can suspend decoding a video
+                    element entirely once it's display:none, which would
+                    freeze the canvas on the first frame instead of showing
+                    live video. Positioned/sized to be invisible without
+                    ever being removed from layout/rendering. */}
+                <video
+                    ref={videoRef}
+                    playsInline
+                    muted
+                    style={{ position: 'fixed', top: 0, left: 0, width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+                />
 
                 {/* Main Vision Studio Grid */}
                 <Grid container spacing={3} alignItems="flex-start">
@@ -1629,9 +1643,20 @@ const AiVisionStudio: React.FC = () => {
                                         size="small"
                                         sx={{ bgcolor: 'rgba(0, 255, 102, 0.1)', color: '#00ff66', fontWeight: 700, border: '1px solid rgba(0, 255, 102, 0.2)' }}
                                     />
-                                    <IconButton size="small" onClick={switchCamera} title="Switch Front/Back Camera" sx={{ color: '#ffffff', bgcolor: 'rgba(255, 255, 255, 0.05)' }}>
-                                        <Cameraswitch fontSize="small" />
-                                    </IconButton>
+                                    {/* Front/back camera switching is a mobile-only concept —
+                                        desktop webcams essentially never have a second camera
+                                        to switch to, so this used to be a dead button there. */}
+                                    {isMobile && (
+                                        <IconButton
+                                            size="small"
+                                            onClick={switchCamera}
+                                            disabled={!isCameraActive || isDemoMode}
+                                            title="Switch Front/Back Camera"
+                                            sx={{ color: '#ffffff', bgcolor: 'rgba(255, 255, 255, 0.05)' }}
+                                        >
+                                            <Cameraswitch fontSize="small" />
+                                        </IconButton>
+                                    )}
                                 </Stack>
                             </Box>
 
@@ -1749,117 +1774,160 @@ const AiVisionStudio: React.FC = () => {
                                 )}
                             </Box>
 
-                            {/* Canvas Toolbar & Feature Toggles */}
+                            {/* Canvas Toolbar & Feature Toggles.
+                                Toggles and actions are two separate rows
+                                (not one wrap-everything flex box) so mobile
+                                doesn't end up with an unpredictable number of
+                                ragged rows depending on chip label lengths.
+                                On mobile the toggle row scrolls horizontally
+                                instead of wrapping — six chips wrapped at
+                                375px width used to take 3+ rows on their own. */}
                             <Box
                                 sx={{
-                                    p: 2,
+                                    p: { xs: 1.5, sm: 2 },
                                     bgcolor: 'rgba(13, 17, 24, 0.95)',
                                     borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                                     display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    flexWrap: 'wrap',
-                                    gap: 1.5
+                                    flexDirection: 'column',
+                                    gap: 1.25
                                 }}
                             >
-                                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
-                                    <Chip
-                                        icon={<BackHand sx={{ fontSize: '16px !important' }} />}
-                                        label="Hand Fingers (21KP)"
-                                        clickable
-                                        color={showHandTracking ? 'success' : 'default'}
-                                        variant={showHandTracking ? 'filled' : 'outlined'}
-                                        onClick={() => setShowHandTracking(!showHandTracking)}
-                                        sx={{ fontWeight: 700, fontSize: '0.75rem' }}
-                                    />
-                                    <Chip
-                                        icon={<AccessibilityNew sx={{ fontSize: '16px !important' }} />}
-                                        label="Body Pose"
-                                        clickable
-                                        color={showPoseTracking ? 'success' : 'default'}
-                                        variant={showPoseTracking ? 'filled' : 'outlined'}
-                                        onClick={() => setShowPoseTracking(!showPoseTracking)}
-                                        sx={{ fontWeight: 700, fontSize: '0.75rem' }}
-                                    />
-                                    <Chip
-                                        icon={<Face sx={{ fontSize: '16px !important' }} />}
-                                        label="Face & Mood"
-                                        clickable
-                                        color={showFaceDetection ? 'success' : 'default'}
-                                        variant={showFaceDetection ? 'filled' : 'outlined'}
-                                        onClick={() => setShowFaceDetection(!showFaceDetection)}
-                                        sx={{ fontWeight: 700, fontSize: '0.75rem' }}
-                                    />
-                                    <Chip
-                                        icon={<Category sx={{ fontSize: '16px !important' }} />}
-                                        label="Objects"
-                                        clickable
-                                        color={showObjectDetection ? 'success' : 'default'}
-                                        variant={showObjectDetection ? 'filled' : 'outlined'}
-                                        onClick={() => setShowObjectDetection(!showObjectDetection)}
-                                        sx={{ fontWeight: 700, fontSize: '0.75rem' }}
-                                    />
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    sx={{
+                                        overflowX: { xs: 'auto', sm: 'visible' },
+                                        flexWrap: { xs: 'nowrap', sm: 'wrap' },
+                                        pb: { xs: 0.5, sm: 0 },
+                                        // Thin, unobtrusive scrollbar instead of the
+                                        // browser default, since this scrolls on touch
+                                        // anyway and a fat scrollbar just eats space.
+                                        '&::-webkit-scrollbar': { height: 4 },
+                                        '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0, 255, 102, 0.3)', borderRadius: 2 },
+                                    }}
+                                >
+                                    {[
+                                        { icon: BackHand, label: 'Hand Fingers (21KP)', on: showHandTracking, toggle: () => setShowHandTracking(v => !v) },
+                                        { icon: AccessibilityNew, label: 'Body Pose', on: showPoseTracking, toggle: () => setShowPoseTracking(v => !v) },
+                                        { icon: Face, label: 'Face & Mood', on: showFaceDetection, toggle: () => setShowFaceDetection(v => !v) },
+                                        { icon: Category, label: 'Objects', on: showObjectDetection, toggle: () => setShowObjectDetection(v => !v) },
+                                        { icon: Timeline, label: 'Motion Trails', on: showMotionTrails, toggle: () => setShowMotionTrails(v => !v) },
+                                        { icon: enableVoiceAudio ? RecordVoiceOver : VoiceOverOff, label: 'Voice Callouts', on: enableVoiceAudio, toggle: () => setEnableVoiceAudio(v => !v) },
+                                    ].map(({ icon: Icon, label, on, toggle }) => (
+                                        <Chip
+                                            key={label}
+                                            icon={<Icon sx={{ fontSize: '16px !important' }} />}
+                                            label={label}
+                                            clickable
+                                            color={on ? 'success' : 'default'}
+                                            variant={on ? 'filled' : 'outlined'}
+                                            onClick={toggle}
+                                            sx={{ fontWeight: 700, fontSize: '0.75rem', flexShrink: 0 }}
+                                        />
+                                    ))}
                                 </Stack>
 
-                                <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
-                                    <Tooltip title="Enroll Face Identity into Local Browser Database">
-                                        <Button
-                                            variant="outlined"
-                                            size="small"
-                                            startIcon={<PersonAdd />}
-                                            onClick={() => setIsEnrollDialogOpen(true)}
-                                            disabled={!isCameraActive}
-                                            sx={{
-                                                borderRadius: '20px',
-                                                borderColor: 'rgba(0, 255, 102, 0.4)',
-                                                color: '#00ff66',
-                                                fontWeight: 700,
-                                                fontSize: '0.75rem',
-                                                '&:hover': { borderColor: '#00ff66', bgcolor: 'rgba(0, 255, 102, 0.08)' }
-                                            }}
-                                        >
-                                            Enroll Face
-                                        </Button>
-                                    </Tooltip>
+                                <Stack direction="row" spacing={1} alignItems="center" justifyContent={{ xs: 'space-between', sm: 'flex-end' }}>
+                                    {isMobile ? (
+                                        // Icon-only + tooltip on mobile: three labeled buttons plus
+                                        // a stop button no longer fit one row without wrapping once
+                                        // the toggle chips above already claim their own row.
+                                        <Stack direction="row" spacing={1}>
+                                            <Tooltip title="Enroll Face Identity">
+                                                <span>
+                                                    <IconButton
+                                                        onClick={() => setIsEnrollDialogOpen(true)}
+                                                        disabled={!isCameraActive}
+                                                        sx={{ color: '#00ff66', bgcolor: 'rgba(0, 255, 102, 0.08)', border: '1px solid rgba(0, 255, 102, 0.3)' }}
+                                                    >
+                                                        <PersonAdd fontSize="small" />
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                            <Tooltip title="Take Snapshot">
+                                                <span>
+                                                    <IconButton
+                                                        onClick={takeSnapshot}
+                                                        disabled={!isCameraActive}
+                                                        sx={{ color: '#00ff66', bgcolor: 'rgba(0, 255, 102, 0.08)', border: '1px solid rgba(0, 255, 102, 0.3)' }}
+                                                    >
+                                                        <PhotoCamera fontSize="small" />
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                            <Tooltip title="Export Analytics JSON">
+                                                <IconButton
+                                                    onClick={exportAnalyticsJson}
+                                                    sx={{ color: '#000000', bgcolor: '#00ff66', '&:hover': { bgcolor: '#00e65c' } }}
+                                                >
+                                                    <Download fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Stack>
+                                    ) : (
+                                        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
+                                            <Tooltip title="Enroll Face Identity into Local Browser Database">
+                                                <span>
+                                                    <Button
+                                                        variant="outlined"
+                                                        size="small"
+                                                        startIcon={<PersonAdd />}
+                                                        onClick={() => setIsEnrollDialogOpen(true)}
+                                                        disabled={!isCameraActive}
+                                                        sx={{
+                                                            borderRadius: '20px',
+                                                            borderColor: 'rgba(0, 255, 102, 0.4)',
+                                                            color: '#00ff66',
+                                                            fontWeight: 700,
+                                                            fontSize: '0.75rem',
+                                                            '&:hover': { borderColor: '#00ff66', bgcolor: 'rgba(0, 255, 102, 0.08)' }
+                                                        }}
+                                                    >
+                                                        Enroll Face
+                                                    </Button>
+                                                </span>
+                                            </Tooltip>
 
-                                    <Button
-                                        variant="outlined"
-                                        size="small"
-                                        startIcon={<PhotoCamera />}
-                                        onClick={takeSnapshot}
-                                        disabled={!isCameraActive}
-                                        sx={{
-                                            borderRadius: '20px',
-                                            borderColor: 'rgba(0, 255, 102, 0.4)',
-                                            color: '#00ff66',
-                                            fontWeight: 700,
-                                            fontSize: '0.75rem',
-                                            '&:hover': { borderColor: '#00ff66', bgcolor: 'rgba(0, 255, 102, 0.08)' }
-                                        }}
-                                    >
-                                        Snapshot
-                                    </Button>
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                startIcon={<PhotoCamera />}
+                                                onClick={takeSnapshot}
+                                                disabled={!isCameraActive}
+                                                sx={{
+                                                    borderRadius: '20px',
+                                                    borderColor: 'rgba(0, 255, 102, 0.4)',
+                                                    color: '#00ff66',
+                                                    fontWeight: 700,
+                                                    fontSize: '0.75rem',
+                                                    '&:hover': { borderColor: '#00ff66', bgcolor: 'rgba(0, 255, 102, 0.08)' }
+                                                }}
+                                            >
+                                                Snapshot
+                                            </Button>
 
-                                    <Button
-                                        variant="contained"
-                                        size="small"
-                                        startIcon={<Download sx={{ color: '#000000' }} />}
-                                        onClick={exportAnalyticsJson}
-                                        sx={{
-                                            borderRadius: '20px',
-                                            background: 'linear-gradient(135deg, #00ff66 0%, #00b347 100%)',
-                                            color: '#000000',
-                                            fontWeight: 800,
-                                            fontSize: '0.75rem',
-                                            boxShadow: '0 4px 15px rgba(0, 255, 102, 0.3)',
-                                            '&:hover': {
-                                                background: 'linear-gradient(135deg, #00e65c 0%, #00993d 100%)',
-                                                boxShadow: '0 6px 20px rgba(0, 255, 102, 0.5)'
-                                            }
-                                        }}
-                                    >
-                                        Export JSON
-                                    </Button>
+                                            <Button
+                                                variant="contained"
+                                                size="small"
+                                                startIcon={<Download sx={{ color: '#000000' }} />}
+                                                onClick={exportAnalyticsJson}
+                                                sx={{
+                                                    borderRadius: '20px',
+                                                    background: 'linear-gradient(135deg, #00ff66 0%, #00b347 100%)',
+                                                    color: '#000000',
+                                                    fontWeight: 800,
+                                                    fontSize: '0.75rem',
+                                                    boxShadow: '0 4px 15px rgba(0, 255, 102, 0.3)',
+                                                    '&:hover': {
+                                                        background: 'linear-gradient(135deg, #00e65c 0%, #00993d 100%)',
+                                                        boxShadow: '0 6px 20px rgba(0, 255, 102, 0.5)'
+                                                    }
+                                                }}
+                                            >
+                                                Export JSON
+                                            </Button>
+                                        </Stack>
+                                    )}
                                     {isCameraActive && (
                                         <IconButton onClick={stopCamera} color="error" title="Stop Camera" sx={{ bgcolor: 'rgba(255, 0, 85, 0.15)' }}>
                                             <VideocamOff fontSize="small" />
