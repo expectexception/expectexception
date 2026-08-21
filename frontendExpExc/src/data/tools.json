@@ -1571,5 +1571,34 @@
       "home loan emi",
       "car loan calculator"
     ]
+  },
+  {
+    "id": 67,
+    "title": "CPU, GPU & RAM Benchmark",
+    "description": "Real-time system benchmark that measures single-core and multi-core CPU throughput, GPU shader performance, and RAM bandwidth entirely in your browser, plus a live continuous stress test.",
+    "icon": "Memory",
+    "path": "/services/cpu-load-test",
+    "category": "developer",
+    "popularity": 80,
+    "tags": [
+      "benchmark",
+      "performance",
+      "cpu",
+      "gpu",
+      "stress test",
+      "system"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "cpu benchmark online",
+      "gpu benchmark browser",
+      "ram speed test",
+      "cpu stress test online",
+      "browser benchmark tool",
+      "system performance test",
+      "multi-core benchmark",
+      "webgl gpu test"
+    ]
   }
 ]
