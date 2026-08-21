@@ -120,6 +120,7 @@ const MetaTagGenerator = lazy(() => import('../services/MetaTagGenerator'));
 const JsonDiffChecker = lazy(() => import('../services/JsonDiffChecker'));
 const AgeDateCalculator = lazy(() => import('../services/AgeDateCalculator'));
 const ColorNameFinder = lazy(() => import('../services/ColorNameFinder'));
+const CpuLoadTest = lazy(() => import('../services/CpuLoadTest'));
 
 // Sandbox games - lazy loaded (all frontend-only, no backend, no auth gate)
 const SnakeGame = lazy(() => import('../sandbox/SnakeGame'));
@@ -289,6 +290,7 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/http-status-codes" element={<PageTransition><HttpStatusCodes /></PageTransition>} />
                     <Route path="/services/json-to-typescript" element={<PageTransition><JsonToTypescript /></PageTransition>} />
                     <Route path="/services/favicon-generator" element={<PageTransition><FaviconGenerator /></PageTransition>} />
+                    <Route path="/services/cpu-load-test" element={<PageTransition><CpuLoadTest /></PageTransition>} />
 
                     {/* Sandbox - public, frontend-only mini games */}
                     <Route path="/sandbox" element={<PageTransition><SandboxPage /></PageTransition>} />
