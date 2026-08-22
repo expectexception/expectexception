@@ -134,7 +134,7 @@ function runWorkerTask(worker: Worker, message: any, onProgress?: (data: any) =>
     });
 }
 
-function ScoreTile({ label, value, disabled }: { label: string; value: number; disabled?: boolean }) {
+function ScoreTile({ label, value, disabled, suffix }: { label: string; value: number; disabled?: boolean; suffix?: string }) {
     return (
         <Paper sx={{
             p: 2, textAlign: 'center', borderRadius: 2,
@@ -145,7 +145,7 @@ function ScoreTile({ label, value, disabled }: { label: string; value: number; d
                 {label}
             </Typography>
             <Typography variant="h5" fontWeight={800}>
-                {disabled ? 'N/A' : fmt(value)}
+                {disabled ? 'N/A' : `${fmt(value)}${suffix || ''}`}
             </Typography>
         </Paper>
     );
@@ -189,6 +189,7 @@ const CpuLoadTest: React.FC = () => {
     const [phase, setPhase] = useState<Phase>('idle');
     const [running, setRunning] = useState(false);
     const [liveValue, setLiveValue] = useState(0);
+    const [phaseProgress, setPhaseProgress] = useState(0);
     const [coreLoads, setCoreLoads] = useState<number[]>([]);
     const [results, setResults] = useState<BenchmarkResults | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -196,7 +197,24 @@ const CpuLoadTest: React.FC = () => {
 
     const gpuCanvasRef = useRef<HTMLCanvasElement>(null);
 
-    const runGpuTest = useCallback((durationMs: number): Promise<{ fps: number; opsPerSec: number; renderer: string; supported: boolean }> => {
+    // Workers spawned by the current/last runFullBenchmark() call. Tracked
+    // separately from the stress-test workers below so an unmount mid-run
+    // (or an error partway through) can't leave a benchmark worker pegging
+    // a core forever - runFullBenchmark already terminates each worker as
+    // soon as it's done with it on the happy path, but Promise.all rejecting
+    // mid-phase would otherwise skip those terminate() calls entirely.
+    const benchmarkWorkersRef = useRef<Worker[]>([]);
+    const benchmarkCancelledRef = useRef(false);
+
+    useEffect(() => {
+        return () => {
+            benchmarkCancelledRef.current = true;
+            benchmarkWorkersRef.current.forEach((w) => w.terminate());
+            benchmarkWorkersRef.current = [];
+        };
+    }, []);
+
+    const runGpuTest = useCallback((durationMs: number, shouldCancel: () => boolean): Promise<{ fps: number; opsPerSec: number; renderer: string; supported: boolean }> => {
         const canvas = gpuCanvasRef.current;
         if (!canvas) return Promise.resolve({ fps: 0, opsPerSec: 0, renderer: 'Canvas unavailable', supported: false });
 
@@ -275,11 +293,17 @@ const CpuLoadTest: React.FC = () => {
                 let frames = 0;
                 let rafId = 0;
                 function frame(now: number) {
+                    if (shouldCancel()) {
+                        cancelAnimationFrame(rafId);
+                        resolve({ fps: 0, opsPerSec: 0, renderer, supported: true });
+                        return;
+                    }
                     const elapsed = now - start;
                     gl!.uniform1f(uTime, elapsed / 1000);
                     gl!.drawArrays(gl!.TRIANGLE_STRIP, 0, 4);
                     frames++;
                     setLiveValue(frames / (elapsed / 1000 || 1));
+                    setPhaseProgress(Math.min(100, (elapsed / durationMs) * 100));
                     if (elapsed < durationMs) {
                         rafId = requestAnimationFrame(frame);
                     } else {
@@ -301,20 +325,47 @@ const CpuLoadTest: React.FC = () => {
         setError(null);
         setResults(null);
         setCoreLoads([]);
+        benchmarkCancelledRef.current = false;
+
+        // Every worker this run spawns is tracked here so the `finally`
+        // block below can unconditionally terminate whatever's left,
+        // whether the run finished cleanly, threw mid-phase (Promise.all
+        // rejecting skips the normal terminate() calls further down), or
+        // the component unmounted while a phase was still in flight.
+        const spawned: Worker[] = [];
+        const spawn = () => {
+            const w = makeWorker();
+            spawned.push(w);
+            benchmarkWorkersRef.current.push(w);
+            return w;
+        };
+        const cancelled = () => benchmarkCancelledRef.current;
+
         try {
             setPhase('single-int');
             setLiveValue(0);
-            const w1 = makeWorker();
-            const singleInt = await runWorkerTask(w1, { type: 'run', workload: 'int', durationMs: 3500 }, (p) => setLiveValue(p.opsPerSec));
+            setPhaseProgress(0);
+            const w1 = spawn();
+            const singleInt = await runWorkerTask(w1, { type: 'run', workload: 'int', durationMs: 3500 }, (p) => {
+                setLiveValue(p.opsPerSec);
+                setPhaseProgress(Math.min(100, (p.elapsedMs / 3500) * 100));
+            });
+            if (cancelled()) return;
 
             setPhase('single-float');
             setLiveValue(0);
-            const singleFloat = await runWorkerTask(w1, { type: 'run', workload: 'float', durationMs: 3500 }, (p) => setLiveValue(p.opsPerSec));
+            setPhaseProgress(0);
+            const singleFloat = await runWorkerTask(w1, { type: 'run', workload: 'float', durationMs: 3500 }, (p) => {
+                setLiveValue(p.opsPerSec);
+                setPhaseProgress(Math.min(100, (p.elapsedMs / 3500) * 100));
+            });
             w1.terminate();
+            if (cancelled()) return;
 
             setPhase('multi-int');
             setLiveValue(0);
-            const workers = Array.from({ length: cores }, makeWorker);
+            setPhaseProgress(0);
+            const workers = Array.from({ length: cores }, spawn);
             const loads = new Array(cores).fill(0);
             setCoreLoads(loads.slice());
             const multiIntResults = await Promise.all(workers.map((w, i) =>
@@ -322,12 +373,15 @@ const CpuLoadTest: React.FC = () => {
                     loads[i] = p.opsPerSec;
                     setCoreLoads(loads.slice());
                     setLiveValue(loads.reduce((a, b) => a + b, 0));
+                    setPhaseProgress(Math.min(100, (p.elapsedMs / 3500) * 100));
                 })
             ));
             const multiCoreIntOps = multiIntResults.reduce((sum, r) => sum + r.opsPerSec, 0);
+            if (cancelled()) return;
 
             setPhase('multi-float');
             setLiveValue(0);
+            setPhaseProgress(0);
             loads.fill(0);
             setCoreLoads(loads.slice());
             const multiFloatResults = await Promise.all(workers.map((w, i) =>
@@ -335,21 +389,27 @@ const CpuLoadTest: React.FC = () => {
                     loads[i] = p.opsPerSec;
                     setCoreLoads(loads.slice());
                     setLiveValue(loads.reduce((a, b) => a + b, 0));
+                    setPhaseProgress(Math.min(100, (p.elapsedMs / 3500) * 100));
                 })
             ));
             const multiCoreFloatFlops = multiFloatResults.reduce((sum, r) => sum + r.opsPerSec, 0);
             workers.forEach((w) => w.terminate());
             setCoreLoads([]);
+            if (cancelled()) return;
 
             setPhase('gpu');
             setLiveValue(0);
-            const gpu = await runGpuTest(4000);
+            setPhaseProgress(0);
+            const gpu = await runGpuTest(4000, cancelled);
+            if (cancelled()) return;
 
             setPhase('memory');
             setLiveValue(0);
-            const w2 = makeWorker();
+            setPhaseProgress(0);
+            const w2 = spawn();
             const mem = await runWorkerTask(w2, { type: 'memory', sizeMB: 64 });
             w2.terminate();
+            if (cancelled()) return;
 
             const singleCoreIntOps = singleInt.opsPerSec;
             const singleCoreFloatFlops = singleFloat.opsPerSec;
@@ -375,10 +435,19 @@ const CpuLoadTest: React.FC = () => {
                 return next;
             });
         } catch (e: any) {
-            setError(e?.message || 'Benchmark failed unexpectedly.');
-            setPhase('idle');
+            if (!cancelled()) {
+                setError(e?.message || 'Benchmark failed unexpectedly.');
+                setPhase('idle');
+            }
         } finally {
             setRunning(false);
+            // Safety net: terminate() is a no-op on an already-terminated
+            // worker, so it's safe to sweep every worker this run spawned
+            // here regardless of whether the happy path already terminated
+            // them individually - this is what actually closes the leak
+            // when Promise.all rejects mid multi-core phase.
+            spawned.forEach((w) => w.terminate());
+            benchmarkWorkersRef.current = benchmarkWorkersRef.current.filter((w) => !spawned.includes(w));
         }
     }, [cores, runGpuTest]);
 
@@ -578,7 +647,11 @@ const CpuLoadTest: React.FC = () => {
                                     phase === 'gpu' ? `${fmt(liveValue, 1)} fps` :
                                     `${fmtOps(liveValue)} ${phase.includes('float') ? 'FLOPS' : 'ops/sec'}`}
                             </Typography>
-                            <LinearProgress variant={phase === 'memory' ? 'indeterminate' : 'indeterminate'} sx={{ borderRadius: 1, height: 6 }} />
+                            <LinearProgress
+                                variant={phase === 'memory' ? 'indeterminate' : 'determinate'}
+                                value={phase === 'memory' ? undefined : phaseProgress}
+                                sx={{ borderRadius: 1, height: 6 }}
+                            />
                             {(phase === 'multi-int' || phase === 'multi-float') && coreLoads.length > 0 && (
                                 <Box sx={{ mt: 2.5 }}>
                                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>Per-core load</Typography>
@@ -725,7 +798,7 @@ const CpuLoadTest: React.FC = () => {
                     )}
 
                     <Grid container spacing={2} sx={{ mb: 2 }}>
-                        <Grid item xs={4}><ScoreTile label="Elapsed" value={stressElapsed} /></Grid>
+                        <Grid item xs={4}><ScoreTile label="Elapsed" value={stressElapsed} suffix="s" /></Grid>
                         <Grid item xs={4}><ScoreTile label="Current /s" value={stressCoreLoads.reduce((a, b) => a + b, 0)} /></Grid>
                         <Grid item xs={4}><ScoreTile label="Peak /s" value={stressPeak} /></Grid>
                     </Grid>
