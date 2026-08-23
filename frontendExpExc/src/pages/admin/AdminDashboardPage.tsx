@@ -486,7 +486,13 @@ const AdminDashboardPage: React.FC = () => {
 
     const fetchInquiries = useCallback(async () => {
         try {
-            const response = await apiClient.get('/api/services/admin/inquiries/');
+            // The endpoint used to return every inquiry with no limit at all;
+            // it's now paginated server-side like Users/Blogs/Downloads, so
+            // this has to actually request a page size instead of relying on
+            // an implicit "give me everything" that no longer exists.
+            const response = await apiClient.get('/api/services/admin/inquiries/', {
+                params: { page_size: LIST_PAGE_SIZE },
+            });
             setInquiries(response.data.inquiries || []);
         } catch (e) {
             console.error('Failed to fetch inquiries:', e);
@@ -495,8 +501,28 @@ const AdminDashboardPage: React.FC = () => {
 
     const fetchThreads = useCallback(async () => {
         try {
-            const response = await apiClient.get('/api/community/threads/');
-            setThreads(response.data?.results ?? response.data ?? []);
+            // /api/community/threads/ uses DRF's site-wide default pagination
+            // (PAGE_SIZE=10, no client-configurable page_size query param) -
+            // that's the right default for the public forum UI, but it meant
+            // this admin tab silently only ever saw the 10 newest threads no
+            // matter how many existed. Walk pages explicitly by `page` number
+            // (rather than following the `next` link DRF returns, which is an
+            // absolute URL built from the request host - risky to trust as-is
+            // behind whatever proxy sits in front of the API in production)
+            // until `count` is satisfied or a safety cap is hit, matching the
+            // LIST_PAGE_SIZE convention used for Blogs/Downloads.
+            const MAX_PAGES = Math.ceil(LIST_PAGE_SIZE / 10);
+            let all: AdminThread[] = [];
+            let total = Infinity;
+            for (let page = 1; page <= MAX_PAGES && all.length < total; page++) {
+                const response: { data: { results?: AdminThread[]; count?: number } } = await apiClient.get(
+                    '/api/community/threads/',
+                    { params: { page } }
+                );
+                all = all.concat(response.data?.results ?? []);
+                total = response.data?.count ?? all.length;
+            }
+            setThreads(all);
         } catch (e) {
             console.error('Failed to fetch threads:', e);
         }
@@ -788,6 +814,11 @@ const AdminDashboardPage: React.FC = () => {
 
     const filteredBlogs = blogs.filter(b =>
         b.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredDownloads = downloads.filter(d =>
+        d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        d.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const filteredInquiries = inquiries.filter(i =>
@@ -1274,9 +1305,27 @@ const AdminDashboardPage: React.FC = () => {
                             {/* ============ DOWNLOADS TAB ============ */}
                             <TabPanel value={activeTab} index={3}>
                                 <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-                                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-                                        Downloadable Resources ({downloads.length})
-                                    </Typography>
+                                    <TextField
+                                        placeholder="Search downloads..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        size="small"
+                                        sx={{
+                                            width: { xs: '100%', sm: 300 },
+                                            '& .MuiOutlinedInput-root': {
+                                                bgcolor: 'rgba(255,255,255,0.02)',
+                                                color: 'white',
+                                                '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+                                            },
+                                        }}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <Search sx={{ color: 'grey.500' }} />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                    />
                                     <Button
                                         variant="contained"
                                         href="/admin/upload-resource"
@@ -1285,6 +1334,9 @@ const AdminDashboardPage: React.FC = () => {
                                         + Upload Resource
                                     </Button>
                                 </Box>
+                                <Typography variant="body2" sx={{ color: 'grey.500', mb: 2 }}>
+                                    Showing {filteredDownloads.length} of {downloads.length} resources
+                                </Typography>
 
                                 <TableContainer component={Paper} sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3 }}>
                                     <Table>
@@ -1298,7 +1350,7 @@ const AdminDashboardPage: React.FC = () => {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {downloads.map((dl) => (
+                                            {filteredDownloads.map((dl) => (
                                                 <TableRow key={dl.id} hover sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
                                                     <TableCell sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.06)' }}>{dl.name}</TableCell>
                                                     <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>

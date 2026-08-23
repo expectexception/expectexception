@@ -41,6 +41,7 @@ import {
   Quiz,
   Grid4x4,
   DirectionsRun,
+  RocketLaunch,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -73,6 +74,7 @@ const ICONS: Record<string, React.ReactElement> = {
   Quiz: <Quiz fontSize="large" />,
   Grid4x4: <Grid4x4 fontSize="large" />,
   DirectionsRun: <DirectionsRun fontSize="large" />,
+  RocketLaunch: <RocketLaunch fontSize="large" />,
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
