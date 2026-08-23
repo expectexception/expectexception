@@ -696,5 +696,50 @@
       "jumping arcade game browser",
       "chrome dino run online"
     ]
+  },
+  {
+    "id": 34,
+    "title": "Blackjack",
+    "description": "Beat the dealer without going over 21. Hit, stand, or double down - dealer stands on all 17s. Manage your chip bankroll across rounds.",
+    "icon": "Casino",
+    "path": "/sandbox/blackjack",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "cards",
+      "casino",
+      "strategy"
+    ],
+    "color": "error",
+    "is_active": true,
+    "keywords": [
+      "blackjack online",
+      "blackjack game free",
+      "play 21 online",
+      "casino card game",
+      "free blackjack no download"
+    ]
+  },
+  {
+    "id": 35,
+    "title": "Asteroids",
+    "description": "Rotate, thrust, and blast drifting asteroids before they get you. Screen-wrapping physics, splitting asteroids, and a wave counter that never stops climbing.",
+    "icon": "RocketLaunch",
+    "path": "/sandbox/asteroids",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "arcade",
+      "shooter",
+      "physics"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "asteroids game online",
+      "play asteroids free",
+      "space shooter browser game",
+      "classic arcade shooter online"
+    ]
   }
 ]
