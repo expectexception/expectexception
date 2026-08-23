@@ -559,6 +559,7 @@ class AdminInquiryListView(APIView):
         if status_filter:
             qs = qs.filter(status=status_filter)
 
+        page, meta = _paginate(request, qs)
         data = [
             {
                 "id": inq.id,
@@ -574,9 +575,9 @@ class AdminInquiryListView(APIView):
                 "source_page": inq.source_page,
                 "created_at": inq.created_at.isoformat(),
             }
-            for inq in qs
+            for inq in page
         ]
-        return Response({"inquiries": data, "count": len(data)})
+        return Response({"inquiries": data, **meta})
 
 
 class AdminInquiryDetailView(APIView):
