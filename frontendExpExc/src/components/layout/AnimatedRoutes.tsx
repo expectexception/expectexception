@@ -121,6 +121,10 @@ const JsonDiffChecker = lazy(() => import('../services/JsonDiffChecker'));
 const AgeDateCalculator = lazy(() => import('../services/AgeDateCalculator'));
 const ColorNameFinder = lazy(() => import('../services/ColorNameFinder'));
 const CpuLoadTest = lazy(() => import('../services/CpuLoadTest'));
+const ImageColorExtractor = lazy(() => import('../services/ImageColorExtractor'));
+const PercentageCalculator = lazy(() => import('../services/PercentageCalculator'));
+const QrCodeReader = lazy(() => import('../services/QrCodeReader'));
+const PasswordStrengthChecker = lazy(() => import('../services/PasswordStrengthChecker'));
 
 // Sandbox games - lazy loaded (all frontend-only, no backend, no auth gate)
 const SnakeGame = lazy(() => import('../sandbox/SnakeGame'));
@@ -156,6 +160,8 @@ const Solitaire = lazy(() => import('../sandbox/Solitaire'));
 const TriviaQuiz = lazy(() => import('../sandbox/TriviaQuiz'));
 const Checkers = lazy(() => import('../sandbox/Checkers'));
 const EndlessRunner = lazy(() => import('../sandbox/EndlessRunner'));
+const Blackjack = lazy(() => import('../sandbox/Blackjack'));
+const Asteroids = lazy(() => import('../sandbox/Asteroids'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -291,6 +297,10 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/json-to-typescript" element={<PageTransition><JsonToTypescript /></PageTransition>} />
                     <Route path="/services/favicon-generator" element={<PageTransition><FaviconGenerator /></PageTransition>} />
                     <Route path="/services/cpu-load-test" element={<PageTransition><CpuLoadTest /></PageTransition>} />
+                    <Route path="/services/image-color-extractor" element={<PageTransition><ImageColorExtractor /></PageTransition>} />
+                    <Route path="/services/percentage-calculator" element={<PageTransition><PercentageCalculator /></PageTransition>} />
+                    <Route path="/services/qr-code-reader" element={<PageTransition><QrCodeReader /></PageTransition>} />
+                    <Route path="/services/password-strength-checker" element={<PageTransition><PasswordStrengthChecker /></PageTransition>} />
 
                     {/* Sandbox - public, frontend-only mini games */}
                     <Route path="/sandbox" element={<PageTransition><SandboxPage /></PageTransition>} />
@@ -327,6 +337,8 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/sandbox/trivia-quiz" element={<PageTransition><TriviaQuiz /></PageTransition>} />
                     <Route path="/sandbox/checkers" element={<PageTransition><Checkers /></PageTransition>} />
                     <Route path="/sandbox/endless-runner" element={<PageTransition><EndlessRunner /></PageTransition>} />
+                    <Route path="/sandbox/blackjack" element={<PageTransition><Blackjack /></PageTransition>} />
+                    <Route path="/sandbox/asteroids" element={<PageTransition><Asteroids /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />

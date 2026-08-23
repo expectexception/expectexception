@@ -1600,5 +1600,102 @@
       "multi-core benchmark",
       "webgl gpu test"
     ]
+  },
+  {
+    "id": 68,
+    "title": "Image Color Palette Extractor",
+    "description": "Upload a photo and extract its dominant colours as hex/RGB swatches using real median-cut color quantization. Runs entirely in your browser.",
+    "icon": "Colorize",
+    "path": "/services/image-color-extractor",
+    "category": "design",
+    "popularity": 78,
+    "tags": [
+      "color",
+      "palette",
+      "image",
+      "design"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "image color palette extractor",
+      "dominant color extractor",
+      "color picker from image",
+      "photo color palette generator",
+      "extract colors from photo",
+      "image to hex color"
+    ]
+  },
+  {
+    "id": 69,
+    "title": "Percentage Calculator",
+    "description": "Work out X% of Y, what percentage one number is of another, percentage change between two values, or a value after a percentage increase or decrease.",
+    "icon": "Percent",
+    "path": "/services/percentage-calculator",
+    "category": "utility",
+    "popularity": 76,
+    "tags": [
+      "percentage",
+      "calculator",
+      "math",
+      "utility"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "percentage calculator",
+      "percent of calculator",
+      "percentage change calculator",
+      "percentage increase calculator",
+      "percentage decrease calculator"
+    ]
+  },
+  {
+    "id": 70,
+    "title": "QR Code Reader",
+    "description": "Decode a QR code from a photo or screenshot entirely in your browser using jsQR - no upload, works offline.",
+    "icon": "QrCodeScanner",
+    "path": "/services/qr-code-reader",
+    "category": "utility",
+    "popularity": 79,
+    "tags": [
+      "qr code",
+      "scanner",
+      "decoder",
+      "utility"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "qr code reader",
+      "qr code scanner online",
+      "decode qr code from image",
+      "read qr code from photo",
+      "qr code decoder"
+    ]
+  },
+  {
+    "id": 71,
+    "title": "Password Strength Checker",
+    "description": "Entropy estimate, illustrative crack-time scenarios, and specific fixes for a password you type in - nothing ever leaves your browser.",
+    "icon": "Password",
+    "path": "/services/password-strength-checker",
+    "category": "security",
+    "popularity": 81,
+    "tags": [
+      "password",
+      "security",
+      "entropy",
+      "strength"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "password strength checker",
+      "password entropy calculator",
+      "how strong is my password",
+      "password strength test online",
+      "crack time estimator"
+    ]
   }
 ]
