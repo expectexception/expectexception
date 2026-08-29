@@ -33,6 +33,13 @@ RATE_LIMIT_RULES = {
     # DRF throttle for defense in depth (see chatbot/views.py).
     "/api/chatbot/chat/": (20, 60),
     "/api/chatbot/widget/chat/": (20, 60),
+    # Covers both /api/contact/ (general form) and /api/contact/hire/ via
+    # prefix match. These are @api_view function-based views with
+    # @permission_classes([AllowAny]) and no throttle_scope of their own, so
+    # without this they had zero rate-limit coverage - wide open to a bot
+    # flooding the inquiry table (and, since every submission triggers an
+    # email send, to burning through mail-provider quota).
+    "/api/contact/": (5, 600),
 }
 
 

@@ -573,6 +573,7 @@ class AdminInquiryListView(APIView):
                 "status": inq.status,
                 "admin_notes": inq.admin_notes,
                 "source_page": inq.source_page,
+                "notification_sent": inq.notification_sent,
                 "created_at": inq.created_at.isoformat(),
             }
             for inq in page
@@ -623,6 +624,17 @@ class AdminInquiryReplyView(APIView):
         message = request.data.get("message", "").strip()
         if not message:
             return Response({"error": "message is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not inquiry.email:
+            # Phone-only inquiries (e.g. from the chatbot's call-back flow)
+            # have nowhere for send_mail to deliver to - failing here with a
+            # clear reason beats a generic 502 from send_mail rejecting an
+            # empty recipient list.
+            return Response(
+                {
+                    "error": "This inquiry has no email address on file - follow up by phone instead."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         subject = (
             request.data.get("subject")
             or f"Re: {inquiry.subject or inquiry.get_inquiry_type_display()}"

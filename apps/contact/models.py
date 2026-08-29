@@ -52,6 +52,17 @@ class ContactInquiry(models.Model):
     # Admin notes
     admin_notes = models.TextField(blank=True, help_text="Internal notes about this inquiry")
 
+    # The submission itself always succeeds if this row exists - this only
+    # tracks whether the "someone should look at this" email notification
+    # went out. It can be False (SMTP misconfigured, mail server down) while
+    # the inquiry is still safely saved, which previously had no visible
+    # signal anywhere: the form told the visitor "we'll get back to you" and
+    # the admin had no way to know a notification never arrived.
+    notification_sent = models.BooleanField(
+        default=False,
+        help_text="Whether the admin notification email for this inquiry was sent successfully",
+    )
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
