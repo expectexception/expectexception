@@ -377,7 +377,7 @@ def remove_background_task(self, input_path: str, quality_preset: str, output_fo
             os.remove(input_path)
         except Exception:
             pass
-        raise self.retry(exc=exc, max_retries=0)
+        raise self.retry(exc=exc, max_retries=0) from exc
 
 
 @shared_task(
@@ -438,7 +438,7 @@ def upscale_image_task(
             os.remove(input_path)
         except Exception:
             pass
-        raise self.retry(exc=exc, max_retries=0)
+        raise self.retry(exc=exc, max_retries=0) from exc
 
 
 # ---------------------------------------------------------------------------
