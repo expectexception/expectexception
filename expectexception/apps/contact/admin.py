@@ -19,12 +19,14 @@ class ContactInquiryAdmin(ModelAdmin):
         "inquiry_type_badge",
         "subject_preview",
         "status_badge",
+        "notification_sent",
         "created_at",
     ]
 
     list_filter = [
         "inquiry_type",
         "status",
+        "notification_sent",
         "created_at",
         "source_page",
     ]
