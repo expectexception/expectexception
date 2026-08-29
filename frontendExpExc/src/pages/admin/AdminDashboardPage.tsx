@@ -71,6 +71,7 @@ import {
   Insights,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import {
     BarChart,
     Bar,
@@ -317,13 +318,28 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, icon, c
     </motion.div>
 );
 
+// Order must match the `tabs` array below (index -> URL key). Lets a link
+// like /admin?tab=blogs land directly on that tab instead of always
+// resetting to Server Health - used by CreateBlogPage/UploadResourcePage so
+// finishing a create flow returns to the dashboard tab it was launched from
+// instead of dropping the admin onto the public-facing page.
+const TAB_KEYS = [
+    'health', 'users', 'blogs', 'downloads', 'logs', 'ollama',
+    'tool-access', 'restrictions', 'analytics', 'inquiries', 'threads', 'mongo', 'backups',
+];
+
 // ============ Main Component ============
 const AdminDashboardPage: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // State
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTab, setActiveTab] = useState(() => {
+        const key = searchParams.get('tab');
+        const idx = key ? TAB_KEYS.indexOf(key) : -1;
+        return idx >= 0 ? idx : 0;
+    });
     const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
     const [mongoStatus, setMongoStatus] = useState<MongoStatus | null>(null);
     const [backups, setBackups] = useState<BackupSnapshot[]>([]);
@@ -344,6 +360,14 @@ const AdminDashboardPage: React.FC = () => {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // These three sections previously showed an unconditional "Loading…" (or,
+    // for Server Health, nothing at all) whenever their data was null - which
+    // is also what a permanently failed fetch looks like, since the catch
+    // blocks only logged to console. A scoped flag per section lets a real
+    // failure say so instead of looking like a request that never finishes.
+    const [metricsError, setMetricsError] = useState(false);
+    const [mongoStatusError, setMongoStatusError] = useState(false);
+    const [usageAnalyticsError, setUsageAnalyticsError] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; type: string; id: number; name: string }>({ open: false, type: '', id: 0, name: '' });
     const [userDialog, setUserDialog] = useState<{ open: boolean; type: 'create' | 'edit'; data: Partial<AdminUser> }>({ open: false, type: 'create', data: {} });
@@ -370,8 +394,10 @@ const AdminDashboardPage: React.FC = () => {
         try {
             const response = await apiClient.get('/api/services/server-status-api/');
             setMetrics(response.data);
+            setMetricsError(false);
         } catch (e) {
             console.error('Failed to fetch metrics:', e);
+            setMetricsError(true);
         }
     }, []);
 
@@ -379,8 +405,10 @@ const AdminDashboardPage: React.FC = () => {
         try {
             const response = await apiClient.get('/api/services/admin/mongo-status/');
             setMongoStatus(response.data);
+            setMongoStatusError(false);
         } catch (e) {
             console.error('Failed to fetch Mongo status:', e);
+            setMongoStatusError(true);
         }
     }, []);
 
@@ -541,8 +569,10 @@ const AdminDashboardPage: React.FC = () => {
         try {
             const response = await apiClient.get('/api/services/admin/usage-analytics/');
             setUsageAnalytics(response.data);
+            setUsageAnalyticsError(false);
         } catch (e) {
             console.error('Failed to fetch usage analytics:', e);
+            setUsageAnalyticsError(true);
         }
     }, []);
 
@@ -909,7 +939,14 @@ const AdminDashboardPage: React.FC = () => {
                 >
                     <Tabs
                         value={activeTab}
-                        onChange={(_, v) => setActiveTab(v)}
+                        onChange={(_, v) => {
+                            setActiveTab(v);
+                            setSearchParams((prev) => {
+                                const next = new URLSearchParams(prev);
+                                next.set('tab', TAB_KEYS[v]);
+                                return next;
+                            }, { replace: true });
+                        }}
                         variant={isMobile ? 'scrollable' : 'fullWidth'}
                         scrollButtons="auto"
                         sx={{
@@ -949,6 +986,14 @@ const AdminDashboardPage: React.FC = () => {
                         >
                             {/* ============ SERVER HEALTH TAB ============ */}
                             <TabPanel value={activeTab} index={0}>
+                                {metricsError && !metrics && (
+                                    <Alert severity="error" sx={{ mb: 2 }}>
+                                        Could not load server metrics. The metrics endpoint may be down - check server logs.
+                                    </Alert>
+                                )}
+                                {!metrics && !metricsError && (
+                                    <Typography sx={{ color: 'grey.500' }}>Loading server metrics…</Typography>
+                                )}
                                 {metrics && (
                                     <Grid container spacing={3}>
                                         <Grid item xs={12} sm={6} lg={3}>
@@ -1758,7 +1803,9 @@ const AdminDashboardPage: React.FC = () => {
 
                             {/* ============ USAGE ANALYTICS TAB ============ */}
                             <TabPanel value={activeTab} index={8}>
-                                {!usageAnalytics ? (
+                                {!usageAnalytics && usageAnalyticsError ? (
+                                    <Alert severity="error">Could not load usage analytics. Check server logs.</Alert>
+                                ) : !usageAnalytics ? (
                                     <Typography sx={{ color: 'grey.500' }}>Loading usage analytics…</Typography>
                                 ) : (
                                     <>
@@ -2080,7 +2127,11 @@ const AdminDashboardPage: React.FC = () => {
                                 <Typography variant="body2" sx={{ color: 'grey.500', mb: 2 }}>
                                     Read-only view of the failover mirror (not the primary datastore). Atlas encrypts everything here at rest and in transit by default.
                                 </Typography>
-                                {!mongoStatus ? (
+                                {!mongoStatus && mongoStatusError ? (
+                                    <Alert severity="error">
+                                        Could not reach the Mongo status endpoint. This is different from the "not reachable" warning below - that means the endpoint responded but Atlas itself is unreachable; this means the request to our own backend failed.
+                                    </Alert>
+                                ) : !mongoStatus ? (
                                     <Typography sx={{ color: 'grey.500' }}>Loading…</Typography>
                                 ) : !mongoStatus.connected ? (
                                     <Alert severity="warning">{mongoStatus.message || 'MongoDB Atlas is not reachable.'}</Alert>
