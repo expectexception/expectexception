@@ -30,6 +30,8 @@ const BlogDetailPage = lazy(() => import('../../pages/BlogDetailPage'));
 const DownloadHubPage = lazy(() => import('../../pages/DownloadHubPage'));
 const DownloadDetailsPage = lazy(() => import('../../pages/DownloadDetailsPage'));
 const LoginPage = lazy(() => import('../../pages/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('../../pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('../../pages/ResetPasswordPage'));
 const ProfilePage = lazy(() => import('../../pages/ProfilePage'));
 const RegisterPage = lazy(() => import('../../pages/RegisterPage'));
 const TextToSpeechPage = lazy(() => import('../../pages/TextToSpeechPage'));
@@ -363,6 +365,8 @@ const AnimatedRoutes: React.FC = () => {
 
                     {/* Authentication */}
                     <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+                    <Route path="/forgot-password" element={<PageTransition><ForgotPasswordPage /></PageTransition>} />
+                    <Route path="/reset-password" element={<PageTransition><ResetPasswordPage /></PageTransition>} />
                     <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
 
                     {/* Download Hub */}

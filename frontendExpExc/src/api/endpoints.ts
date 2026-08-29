@@ -12,6 +12,8 @@ export const endpoints = {
         refreshToken: '/api/auth/refresh/',
         profile: '/api/auth/profile/',
         google: '/api/auth/google/',
+        passwordReset: '/api/auth/password-reset/',
+        passwordResetConfirm: '/api/auth/password-reset/confirm/',
     },
 
     // Blog Posts
