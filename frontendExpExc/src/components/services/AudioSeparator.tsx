@@ -21,6 +21,7 @@ import { useDropzone } from 'react-dropzone';
 import Seo from '../seo/Seo';
 import ServicePageShell from './ServicePageShell';
 import apiClient, { API_BASE_URL } from '../../api/config';
+import { endpoints } from '../../api/endpoints';
 import { useScrollToResult } from '../../hooks/useScrollToResult';
 
 const AudioSeparator: React.FC = () => {
@@ -81,11 +82,7 @@ const AudioSeparator: React.FC = () => {
             const formData = new FormData();
             formData.append('audio', file);
 
-            // Note: endpoints.services.audioSeparator is missing the '/services/'
-            // prefix (points at a route that doesn't exist on the backend - see
-            // apps/services/urls.py which mounts this view under '/api/services/').
-            // Use the correct, fully-qualified path directly here instead.
-            const response = await apiClient.post('/api/services/audio-separator/process', formData, {
+            const response = await apiClient.post(endpoints.services.audioSeparator, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 timeout: 300000 // 5 minutes timeout
             });
