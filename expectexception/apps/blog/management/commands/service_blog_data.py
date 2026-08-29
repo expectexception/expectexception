@@ -3971,4 +3971,374 @@ SERVICES = [
             ),
         ],
     },
+    {
+        "slug": "how-to-extract-a-color-palette-from-a-photo",
+        "title": "How to Extract a Color Palette from Any Photo (Free Online)",
+        "seo_title": "Image Color Palette Extractor — Get Dominant Colours from a Photo",
+        "seo_description": "Upload a photo and pull out its dominant colours as hex/RGB swatches using real median-cut colour quantisation. Free, instant, runs entirely in your browser.",
+        "keywords": [
+            "image color palette extractor",
+            "dominant color extractor",
+            "color picker from image",
+            "photo color palette generator",
+            "extract colors from photo",
+            "image to hex color",
+        ],
+        "tool_path": "/services/image-color-extractor",
+        "tool_cta": "Open the Image Color Palette Extractor",
+        "tags": ["design", "color", "tools"],
+        "date": datetime(2026, 8, 22, 9, 0, tzinfo=UTC),
+        "intro": "Matching a design to a photo — a brand palette to a product shot, a website theme to a hero image — usually starts with eyeballing hex codes off a screenshot, which is slow and inconsistent. This tool reads the actual pixels of an uploaded photo and returns its dominant colours as ready-to-use hex and RGB swatches.",
+        "what": "The extractor draws your photo onto a canvas and runs real median-cut colour quantisation on the sampled pixels: every pixel starts in one bucket, and each round the largest bucket is split in two along whichever colour channel — red, green or blue — spans the widest range within it, so a bucket covering more of the image keeps dividing rather than a single early split dominating every round. Once there are as many buckets as swatches requested (5 to 8), each bucket's pixels are averaged into one representative colour. The image is downscaled to 200px on its longest side before sampling — a speed optimisation only, since a multi-megapixel photo has far more pixels than are needed to find its dominant colours.",
+        "steps": [
+            (
+                "Upload a photo",
+                "Drop an image onto the upload area, or click it to browse. It's read locally and never leaves your browser.",
+            ),
+            (
+                "Choose how many colours",
+                "Pick 5 to 8 swatches. More swatches split the image's colour range more finely; fewer gives a broader summary.",
+            ),
+            (
+                "Read the palette",
+                "Each swatch shows its hex code, RGB value, and the share of sampled pixels it represents, sorted by dominance by default.",
+            ),
+            (
+                "Copy what you need",
+                "Click the copy icon on any swatch to grab its hex or RGB value straight into your clipboard.",
+            ),
+        ],
+        "features": [
+            "Real median-cut colour quantisation — not a random or pre-set palette",
+            "5 to 8 swatches, each showing hex, RGB, and its share of the image",
+            "Sort by dominance or by lightness",
+            "Runs entirely client-side — the photo is never uploaded anywhere",
+        ],
+        "use_cases": [
+            "Pull a brand or theme palette out of a product photo or logo",
+            "Match a website's accent colours to a hero image",
+            "Quickly check what colours actually dominate a design mockup or screenshot",
+        ],
+        "faq": [
+            (
+                "Is my photo uploaded anywhere?",
+                "No. The image is decoded and sampled on a canvas element entirely inside your browser — it never leaves your machine.",
+            ),
+            (
+                "What does the percentage on each swatch mean?",
+                "The share of sampled pixels that fell into that colour's bucket during quantisation — a rough measure of how much of the image that colour covers, not a measure of visual prominence.",
+            ),
+            (
+                "Why is the image downscaled before extracting colours?",
+                "Median-cut only needs a representative sample of pixels, not every one. Capping the longest side at 200px keeps the calculation fast without changing which colours come out as dominant, since the discarded pixels are almost all near-duplicates of ones that remain.",
+            ),
+        ],
+    },
+    {
+        "slug": "how-to-calculate-percentages-online",
+        "title": "How to Calculate Percentages Online (Percent Of, Change & More)",
+        "seo_title": "Percentage Calculator | Percent Of, Change & Increase/Decrease",
+        "seo_description": "Work out X% of Y, what percentage one number is of another, the percentage change between two values, or a value after a percentage increase or decrease. Free, live results.",
+        "keywords": [
+            "percentage calculator",
+            "percent of calculator",
+            "percentage change calculator",
+            "percentage increase calculator",
+            "percentage decrease calculator",
+            "what percent calculator",
+        ],
+        "tool_path": "/services/percentage-calculator",
+        "tool_cta": "Open the Percentage Calculator",
+        "tags": ["utility", "math", "tools"],
+        "date": datetime(2026, 8, 22, 9, 15, tzinfo=UTC),
+        "intro": "Percentage questions come in more shapes than a single formula covers — a tip, a test score, a price after a discount, a year-over-year change — and mixing them up gives the wrong answer even when the arithmetic is done correctly. This calculator keeps the four common cases separate so you always plug numbers into the right formula.",
+        "what": "Pick the mode that matches your question and the result updates as you type — there's no submit button. 'X% of Y' answers questions like a tip or a tax amount. 'X is what % of Y' answers questions like a test score or completion rate. 'Percentage change' compares two values over time and signs the result so an increase and a decrease are never ambiguous. 'Increase/decrease by %' goes the other way: given a starting value and a percentage, it finds the resulting value, which is what a discount or markup needs.",
+        "steps": [
+            (
+                "Pick a mode",
+                "Choose the calculation that matches your question — a percentage of a number, one number as a percentage of another, percentage change, or a value after a percentage change.",
+            ),
+            (
+                "Enter the two numbers",
+                "Type into both fields for that mode. The result updates immediately.",
+            ),
+            (
+                "Read the result",
+                "Percentage change and the increase/decrease mode both show whether the movement is up or down, colour-coded so it's unambiguous at a glance.",
+            ),
+        ],
+        "features": [
+            "Four modes covering the percentage questions that come up most often",
+            "Live results with no submit button",
+            "Colour-coded increase/decrease so direction is never ambiguous",
+            "Never shows NaN or Infinity — blank or divide-by-zero inputs show a clear placeholder instead",
+        ],
+        "use_cases": [
+            "Work out a price after a discount or markup",
+            'Check a test score, completion rate, or any "part of a whole" question',
+            "See the real percentage change in a bill, metric, or price over time",
+        ],
+        "faq": [
+            (
+                'When would I use "percentage change" instead of "X is what % of Y"?',
+                'Use percentage change when comparing two values of the same kind over time — e.g. "my rent went from $1,200 to $1,350, what\'s the increase?". Use "X is what % of Y" when one number is a portion of another at a single point in time — e.g. "38 correct answers out of 50, what percentage is that?".',
+            ),
+            (
+                "How do I calculate a price after a discount?",
+                'Use "Increase/decrease by %": set the base value to the original price and the percentage to the negative of the discount (e.g. -20 for 20% off). The result is the final price, plus the raw amount taken off.',
+            ),
+            (
+                "Why does the tool show a dash instead of a number sometimes?",
+                "That means the calculation is undefined for the current inputs — most commonly dividing by zero. Rather than show NaN or Infinity, the tool shows a placeholder until the inputs make sense.",
+            ),
+        ],
+    },
+    {
+        "slug": "how-to-read-a-qr-code-from-a-photo",
+        "title": "How to Read a QR Code from a Photo or Screenshot (Free Online)",
+        "seo_title": "QR Code Reader — Decode a QR Code from an Image, Free",
+        "seo_description": "Decode a QR code from a photo or screenshot entirely in your browser, free and with no upload — works offline once the page has loaded.",
+        "keywords": [
+            "qr code reader",
+            "qr code scanner online",
+            "decode qr code from image",
+            "read qr code from photo",
+            "qr code decoder",
+            "scan qr code online free",
+        ],
+        "tool_path": "/services/qr-code-reader",
+        "tool_cta": "Open the QR Code Reader",
+        "tags": ["utility", "tools"],
+        "date": datetime(2026, 8, 22, 9, 30, tzinfo=UTC),
+        "intro": "A QR code you can't scan with a phone camera — printed too small in a screenshot, saved as an image on the wrong device, embedded in a PDF — still needs decoding somehow. This tool reads a QR code straight out of an uploaded image, no phone or app required.",
+        "what": 'The reader draws your uploaded image onto a canvas and decodes it with jsQR, a pure-JavaScript QR decoding library that runs entirely inside your browser. If a code is found, its outline is drawn directly onto the image so you can see exactly what was detected, and the decoded text appears below in a copyable box. If the decoded text looks like a web link, an "Open Link" button appears as a real link you can follow.',
+        "steps": [
+            (
+                "Upload an image",
+                "Drop in a photo or screenshot containing a QR code, or click to browse for one. It's processed locally and never uploaded.",
+            ),
+            (
+                "Let it decode automatically",
+                "The image is scanned the moment it loads — no button to press. If a code is found, its outline is drawn on the image and the decoded text appears below.",
+            ),
+            (
+                "Copy or open the result",
+                "Copy the decoded text to your clipboard, or if it looks like a web link, open it directly with the Open Link button.",
+            ),
+        ],
+        "features": [
+            "Decodes standard QR codes from any uploaded image",
+            "Draws the detected code's outline back onto the image so you can confirm what was found",
+            "Copy-to-clipboard for the decoded text, plus a real link button when it's a URL",
+            "100% client-side — works even with no network connection once the page has loaded",
+        ],
+        "use_cases": [
+            "Decode a QR code from a screenshot, PDF export, or saved photo",
+            "Check what a QR code actually points to before scanning it with your phone",
+            "Recover a link, Wi-Fi password, or other payload from a QR code image you already have",
+        ],
+        "faq": [
+            (
+                "Is my image or the decoded text uploaded anywhere?",
+                "No. Decoding happens with the jsQR library running entirely in your browser — the image is read locally and the result never leaves your device.",
+            ),
+            (
+                "Why wasn't a QR code found in my photo?",
+                "Detection depends on image quality: blur, glare, a steep viewing angle, low resolution, or a code that fills only a small part of the frame can all cause a miss even though the code is visible to your eye.",
+            ),
+            (
+                "Does this also read barcodes?",
+                "No, only standard QR codes. Other 2D formats like Data Matrix, Aztec and PDF417, and 1D barcodes such as UPC or EAN, use different encodings that jsQR doesn't read.",
+            ),
+            (
+                "Is it safe to open a link this decodes?",
+                "This tool only extracts and displays whatever text was encoded into the QR code — it doesn't check whether a decoded link is safe. Treat it like any unfamiliar URL: check the domain before opening a link decoded from a QR code you don't trust the source of.",
+            ),
+        ],
+    },
+    {
+        "slug": "how-to-check-if-your-password-is-strong",
+        "title": "How to Check If Your Password Is Actually Strong (Free Online)",
+        "seo_title": "Password Strength Checker — Entropy & Crack-Time Estimate",
+        "seo_description": "Check a password's real strength: entropy estimate, common-password detection, illustrative crack-time scenarios, and specific fixes. Nothing you type ever leaves your browser.",
+        "keywords": [
+            "password strength checker",
+            "password entropy calculator",
+            "how strong is my password",
+            "password strength test online",
+            "crack time estimator",
+            "check password security",
+        ],
+        "tool_path": "/services/password-strength-checker",
+        "tool_cta": "Open the Password Strength Checker",
+        "tags": ["security", "tools"],
+        "date": datetime(2026, 8, 22, 9, 45, tzinfo=UTC),
+        "intro": "A password meter that only counts length and character variety will happily rate \"Passw0rd!\" as strong, even though it's one of the first guesses any real attacker tries. This checker goes further: it estimates entropy, but also checks directly against common passwords and predictable patterns, because that's what actually determines whether a password gets guessed fast.",
+        "what": 'Type a password and it\'s analysed entirely by JavaScript running in your browser — nothing is transmitted, logged, or stored anywhere. The entropy estimate looks at which character classes appear and estimates bits of randomness from length and character-set size, a reasonable model for a randomly generated password. But real attackers try known and leaked passwords first, so the checker also compares the password against roughly 150 of the most frequently seen passwords and patterns, plus programmatic checks for repeated or sequential characters, and forces the verdict to "Very Weak" on a match regardless of what the entropy math alone would say. Three illustrative crack-time scenarios — from a rate-limited login form up to offline cracking on fast hardware — show roughly how long a brute-force guess would take.',
+        "steps": [
+            (
+                "Type a password",
+                "Enter a password into the field. It's analysed entirely by JavaScript running in your browser and is never sent anywhere.",
+            ),
+            (
+                "Read the strength meter and entropy",
+                "The bar and label (Very Weak through Very Strong) are driven by the entropy estimate, but forced down to Very Weak if the password matches a common password or a trivial pattern, regardless of length.",
+            ),
+            (
+                "Check the crack-time estimates and suggestions",
+                "Compare the illustrative crack times across the attack scenarios, then work through the specific suggestions listed below to strengthen the password.",
+            ),
+        ],
+        "features": [
+            "Entropy estimate based on actual character classes used, not just length",
+            "~150-entry common-password and pattern check that overrides the entropy score",
+            "Three labelled, illustrative crack-time scenarios",
+            "Specific, non-generic suggestions that update live as you type",
+        ],
+        "use_cases": [
+            "Check a new password before using it somewhere that matters",
+            "See concretely why a password you thought was fine is actually weak",
+            "Understand roughly how much longer a password would take to crack with an extra character or symbol",
+        ],
+        "faq": [
+            (
+                "Is my password sent anywhere or logged?",
+                "No. Every calculation runs in JavaScript inside your browser tab. Nothing you type is transmitted, stored or logged — closing or refreshing the page discards it completely.",
+            ),
+            (
+                "How are the crack-time estimates calculated?",
+                "As 2^entropy / 2 guesses — the average case for an exhaustive search — divided by an assumed guess rate for each scenario, from about 10 guesses/second for a rate-limited login form up to 10 billion guesses/second for offline cracking on modern hardware. They're illustrative, order-of-magnitude figures, not a guarantee.",
+            ),
+            (
+                "If I get a high score, is my password actually safe?",
+                "A high score means the password isn't an obvious guess and has a large theoretical keyspace — it doesn't mean it's safe if reused. If that exact password has already leaked from a breach of another site, a credential-stuffing attack succeeds regardless of what this tool says.",
+            ),
+        ],
+    },
+    {
+        "slug": "how-to-play-blackjack-online-free",
+        "title": "How to Play Blackjack Online (Free, No Sign-Up)",
+        "seo_title": "Play Blackjack Online Free — No Sign-Up, No Real Money",
+        "seo_description": "Play free online Blackjack against a dealer AI. Hit, stand, or double down, manage a chip bankroll, and try to beat the dealer to 21. No sign-up, no real money.",
+        "keywords": [
+            "blackjack online",
+            "blackjack game free",
+            "play 21 online",
+            "casino card game",
+            "blackjack vs dealer",
+            "free blackjack no download",
+        ],
+        "tool_path": "/sandbox/blackjack",
+        "tool_cta": "Play Blackjack now",
+        "tags": ["games", "cards", "sandbox"],
+        "date": datetime(2026, 8, 23, 9, 0, tzinfo=UTC),
+        "intro": "Blackjack is one of the few casino games where the basic strategy is simple enough to actually learn, and this version lets you practise it with no account, no download, and no real money on the table — just a persistent chip bankroll to track how you're doing.",
+        "what": "It's single-deck Blackjack against a dealer that stands on all 17s, with correct soft/hard ace counting throughout. Each round deals two cards to you and two to the dealer (one hidden), and you choose to Hit, Stand, or Double Down before the dealer reveals their hand and draws automatically. A natural Blackjack pays 3:2, a push returns your bet, and your chip bankroll is saved in your browser between visits so a session picks up where you left off.",
+        "steps": [
+            (
+                "Place your bet",
+                "Choose a chip amount from the presets or fine-tune it, then hit Deal.",
+            ),
+            (
+                "Play your hand",
+                "Hit to take another card, Stand to hold, or Double Down on your first two cards to double the bet for exactly one more card.",
+            ),
+            (
+                "Watch the dealer play",
+                "Once you stand or bust, the dealer reveals their hidden card and draws automatically until reaching 17 or higher.",
+            ),
+            (
+                "Collect or lose your bet",
+                "The round resolves automatically — blackjack, win, loss, bust, or push — and your bankroll updates immediately.",
+            ),
+        ],
+        "features": [
+            "Correct blackjack rules: soft/hard ace counting, dealer stands on all 17s, blackjack pays 3:2",
+            "Hit, Stand, and Double Down (capped at your current bankroll)",
+            "Chip bankroll persisted in your browser across visits, with a reset option if you run out",
+            "No account, no download, no real money",
+        ],
+        "use_cases": [
+            "Practise basic blackjack strategy without risking real money",
+            "Kill a few minutes with a genuinely playable, correctly-implemented card game",
+            "Learn how soft and hard hands work by watching the live hand total update",
+        ],
+        "faq": [
+            (
+                "Is this real-money gambling?",
+                "No. It's played entirely with a virtual chip bankroll for entertainment — no money changes hands and no account is required.",
+            ),
+            (
+                "What happens if I run out of chips?",
+                'A "Reset Bankroll" option appears, which restores your chip count to the starting amount so you can keep playing.',
+            ),
+            (
+                "Does the dealer play by real casino rules?",
+                "Yes — the dealer stands on any total of 17 or higher (including a soft 17) and draws automatically below that, matching standard casino Blackjack rules.",
+            ),
+        ],
+    },
+    {
+        "slug": "how-to-play-asteroids-online-free",
+        "title": "How to Play Asteroids Online (Free Arcade Classic)",
+        "seo_title": "Play Asteroids Online Free — Classic Arcade Shooter",
+        "seo_description": "Rotate, thrust, and blast drifting asteroids before they get you. A free browser remake of the classic arcade shooter, with screen-wrapping physics and splitting asteroids.",
+        "keywords": [
+            "asteroids game online",
+            "play asteroids free",
+            "space shooter browser game",
+            "classic arcade shooter online",
+            "asteroids remake",
+        ],
+        "tool_path": "/sandbox/asteroids",
+        "tool_cta": "Play Asteroids now",
+        "tags": ["games", "arcade", "sandbox"],
+        "date": datetime(2026, 8, 23, 9, 15, tzinfo=UTC),
+        "intro": "Asteroids is one of the oldest arcade formulas that still holds up: a ship with real momentum, a screen with no edges, and a field of rocks that only get more numerous the longer you survive. This is a free browser remake with the physics played straight — no lives regenerating for free, no auto-aim.",
+        "what": "You control a triangular ship with genuine thrust physics — acceleration builds up in the direction you're facing, friction gradually bleeds it off, and everything on screen, ship included, wraps seamlessly from one edge of the canvas to the other. Shoot the drifting, irregularly-shaped asteroids and they split into smaller, faster pieces instead of just vanishing, worth more points the smaller they get. Clear a wave and the next one starts with one more asteroid than the last. Three lives, a brief invulnerability window after each respawn, and a best score saved in your browser round out the loop.",
+        "steps": [
+            (
+                "Start the game",
+                "Click Start Game to spawn into the first wave.",
+            ),
+            (
+                "Rotate and thrust",
+                "Use the arrow keys or WASD to rotate and thrust — momentum carries over, so let off the thrust early to avoid overshooting.",
+            ),
+            (
+                "Fire at asteroids",
+                "Press space (or the on-screen fire button) to shoot. Large asteroids split into smaller ones when hit — smaller pieces are worth more points.",
+            ),
+            (
+                "Survive the waves",
+                "Clear every asteroid on screen to advance — each wave adds one more asteroid than the last, so the pace only picks up.",
+            ),
+        ],
+        "features": [
+            "Real thrust-and-friction ship physics, not simple point-and-move movement",
+            "Full screen wrap for the ship, asteroids, and bullets",
+            "Asteroids split into smaller pieces on impact instead of just disappearing",
+            "Keyboard controls on desktop, on-screen touch controls on mobile",
+            "Best score saved in your browser across visits",
+        ],
+        "use_cases": [
+            "A quick, genuinely playable arcade break with no download or account",
+            "Practise momentum-based ship control before trying a heavier space-combat game",
+            "Play a faithful browser version of the classic on a phone via the on-screen controls",
+        ],
+        "faq": [
+            (
+                "Does this work on mobile?",
+                "Yes — on touch devices, on-screen rotate, thrust, and fire buttons replace the keyboard controls, driving the same physics.",
+            ),
+            (
+                "Why does my ship keep drifting after I let go of thrust?",
+                "That's intentional — the ship has real momentum and only slows gradually from friction, the same as the original arcade game. Tapping thrust in short bursts gives you much finer control than holding it down.",
+            ),
+            (
+                "What's the fastest way to rack up points?",
+                "Smaller asteroid fragments are worth more points than the large ones they split from, so finishing off the small pieces you create is worth more than only picking off large asteroids from a distance.",
+            ),
+        ],
+    },
 ]

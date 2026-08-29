@@ -70,7 +70,9 @@ const UploadResourcePage: React.FC = () => {
                     'Content-Type': 'multipart/form-data',
                 }
             });
-            navigate('/downloads');
+            // Back to the admin dashboard's Downloads tab, not the public
+            // downloads page - this page is only ever reached from there.
+            navigate('/admin?tab=downloads');
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.detail || 'Failed to upload resource');

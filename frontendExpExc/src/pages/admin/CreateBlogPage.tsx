@@ -97,7 +97,11 @@ const CreateBlogPage: React.FC = () => {
             await apiClient.post(endpoints.blog.posts, data, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            navigate('/blogs');
+            // Back to the admin dashboard's Blogs tab, not the public blog
+            // list - this page is only ever reached from there, and landing
+            // an admin on the public site instead loses whatever dashboard
+            // state (search, scroll position) they had going.
+            navigate('/admin?tab=blogs');
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.detail || JSON.stringify(err.response?.data) || 'Failed to create blog post');
