@@ -28,6 +28,3 @@ ignore = [
 # "unused" to a linter that doesn't know about Django's runtime wiring.
 "*/settings*.py" = ["F403", "F405"]
 "manage.py" = ["E402"]
-# Manual deploy-debug script: imports rembg purely to check it succeeds,
-# never uses the names it binds.
-"test_import.py" = ["F401"]

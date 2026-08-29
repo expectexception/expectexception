@@ -3,6 +3,7 @@ import {
     Card, CardContent, Typography, TextField, Box, Grid,
 } from '@mui/material';
 import { Article } from '@mui/icons-material';
+import DOMPurify from 'dompurify';
 import Seo from '../seo/Seo';
 import ServicePageShell from './ServicePageShell';
 import apiClient from '../../api/config';
@@ -154,7 +155,13 @@ const MarkdownPreview: React.FC = () => {
                                         '& th': { bgcolor: 'rgba(255,255,255,0.06)' },
                                     },
                                 }}
-                                dangerouslySetInnerHTML={{ __html: html }}
+                                // The backend's markdown renderer passes raw HTML through
+                                // (that's how ```html fences / inline <tags> render at all),
+                                // so anything typed into this box - including <img
+                                // onerror=...> - reaches the DOM verbatim unless sanitized
+                                // here first. Same DOMPurify pattern BlogDetailPage uses for
+                                // the same reason.
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
                             />
                         </CardContent>
                     </Card>

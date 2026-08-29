@@ -83,7 +83,15 @@ def get_geo_info(ips, cache):
             response = requests.post("http://ip-api.com/batch", json=batch, timeout=5)
             if response.status_code == 200:
                 results = response.json()
-                for ip, res in zip(batch, results):
+                # strict=True: if ip-api ever returns a shorter/longer array
+                # than the batch sent (a malformed response, not something
+                # seen in practice), silently zipping would pair the wrong
+                # IP with the wrong geo result for everything past the
+                # mismatch. The outer try/except below already treats a
+                # raised ValueError here the same as any other lookup
+                # failure - this batch's cache entries just don't get
+                # updated, rather than being updated wrong.
+                for ip, res in zip(batch, results, strict=True):
                     if res.get("status") == "success":
                         cache[ip] = {
                             "country": res.get("country", "Unknown"),
