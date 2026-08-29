@@ -65,8 +65,11 @@ View in admin: {settings.CSRF_TRUSTED_ORIGINS[0] if settings.CSRF_TRUSTED_ORIGIN
         )
         logger.info(f"Email notification sent for inquiry #{inquiry.id}")
         return True
-    except Exception as e:
-        logger.error(f"Failed to send email for inquiry #{inquiry.id}: {e}")
+    except Exception:
+        # Full traceback, not just str(e) - this is the only record of why a
+        # notification silently failed to arrive, since the caller reports
+        # success to the visitor either way.
+        logger.exception(f"Failed to send email for inquiry #{inquiry.id}")
         return False
 
 
@@ -88,8 +91,15 @@ def submit_contact(request):
             source_page="contact",
         )
 
-        # Send email notification
-        send_notification_email(inquiry)
+        # The inquiry row above is the durable record (also mirrored to
+        # MongoDB via signal) - it exists regardless of what happens next.
+        # The email is best-effort notification on top of that, so its
+        # result is persisted rather than discarded: a visitor who submitted
+        # successfully should never depend on an email actually landing for
+        # the inquiry to be seen, but an admin should be able to tell when
+        # notifications aren't going out at all.
+        inquiry.notification_sent = send_notification_email(inquiry)
+        inquiry.save(update_fields=["notification_sent"])
 
         return Response(
             {
@@ -135,8 +145,8 @@ def submit_hire_inquiry(request):
             source_page="hire",
         )
 
-        # Send email notification
-        send_notification_email(inquiry)
+        inquiry.notification_sent = send_notification_email(inquiry)
+        inquiry.save(update_fields=["notification_sent"])
 
         return Response(
             {
