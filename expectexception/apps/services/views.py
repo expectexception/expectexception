@@ -2451,8 +2451,8 @@ class ColorConverterView(APIView):
             hex_val = f"#{r:02x}{g:02x}{b:02x}"
             rgb_val = f"rgb({r}, {g}, {b})"
 
-            h, l, s = colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
-            hsl_val = f"hsl({int(h*360)}, {int(s*100)}%, {int(l*100)}%)"
+            h, lightness, s = colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
+            hsl_val = f"hsl({int(h*360)}, {int(s*100)}%, {int(lightness*100)}%)"
 
             return Response(
                 {
@@ -2491,8 +2491,8 @@ def _validate_public_http_url(raw_url: str) -> str:
     # SSRF protection: resolve and block private/local IP ranges.
     try:
         addrinfo = socket.getaddrinfo(host, port)
-    except Exception:
-        raise ValueError("Unable to resolve hostname")
+    except Exception as e:
+        raise ValueError("Unable to resolve hostname") from e
 
     seen = set()
     for _family, _, _, _, sockaddr in addrinfo:
@@ -2533,8 +2533,8 @@ def _validate_public_hostname(raw_host: str, port: int) -> str:
 
     try:
         addrinfo = socket.getaddrinfo(host_ascii, port, type=socket.SOCK_STREAM)
-    except Exception:
-        raise ValueError("Unable to resolve hostname")
+    except Exception as e:
+        raise ValueError("Unable to resolve hostname") from e
 
     seen = set()
     for _family, _, _, _, sockaddr in addrinfo:

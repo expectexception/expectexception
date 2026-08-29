@@ -108,7 +108,7 @@ class ImageUploadSerializer(serializers.Serializer):
         except serializers.ValidationError:
             raise
         except Exception as e:
-            raise serializers.ValidationError(f"Invalid or corrupted image file: {str(e)}")
+            raise serializers.ValidationError(f"Invalid or corrupted image file: {str(e)}") from e
 
         return value
 

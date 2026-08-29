@@ -204,8 +204,10 @@ def convert_pdf_with_soffice(
         logger.info(f"soffice conversion done: {output_path}")
         return output_path
 
-    except subprocess.TimeoutExpired:
-        raise PDFConversionError(f"Conversion timed out after {timeout}s. Try a smaller file.")
+    except subprocess.TimeoutExpired as e:
+        raise PDFConversionError(
+            f"Conversion timed out after {timeout}s. Try a smaller file."
+        ) from e
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)
 
@@ -302,8 +304,10 @@ def convert_document_to_pdf(
         logger.info("doc→pdf conversion done: %s", output_path)
         return output_path
 
-    except subprocess.TimeoutExpired:
-        raise PDFConversionError(f"Conversion timed out after {timeout}s. Try a smaller file.")
+    except subprocess.TimeoutExpired as e:
+        raise PDFConversionError(
+            f"Conversion timed out after {timeout}s. Try a smaller file."
+        ) from e
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)
 
@@ -334,8 +338,8 @@ def convert_pdf_with_pdf2docx(
 
     try:
         from pdf2docx import Converter
-    except ImportError:
-        raise PDFConversionError("pdf2docx not installed. Run: pip install pdf2docx")
+    except ImportError as e:
+        raise PDFConversionError("pdf2docx not installed. Run: pip install pdf2docx") from e
 
     logger.info(f"pdf2docx: {input_pdf} → {output_docx}")
     cv = None
@@ -349,7 +353,7 @@ def convert_pdf_with_pdf2docx(
                 cv.close()
             except Exception:
                 pass
-        raise PDFConversionError(f"pdf2docx error: {exc}")
+        raise PDFConversionError(f"pdf2docx error: {exc}") from exc
 
     if not os.path.exists(output_docx):
         raise PDFConversionError("pdf2docx did not produce an output file")
@@ -501,7 +505,7 @@ def perform_ocr_on_pdf(
         import pytesseract
         from PIL import Image
     except ImportError as e:
-        raise PDFConversionError(f"OCR dependencies missing: {e}")
+        raise PDFConversionError(f"OCR dependencies missing: {e}") from e
 
     logger.info("OCR: %s (lang=%s, dpi=%d)", input_pdf, language, dpi)
 
@@ -535,7 +539,7 @@ def perform_ocr_on_pdf(
     except PDFConversionError:
         raise
     except Exception as exc:
-        raise PDFConversionError(f"OCR pipeline error: {exc}")
+        raise PDFConversionError(f"OCR pipeline error: {exc}") from exc
     finally:
         result.close()
         source.close()
