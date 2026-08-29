@@ -240,8 +240,8 @@ class LikeViewSet(
     def perform_create(self, serializer):
         try:
             serializer.save(user=self.request.user)
-        except IntegrityError:
-            raise ValidationError({"detail": "Already exists"})
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Already exists"}) from e
 
 
 class BookmarkViewSet(
@@ -257,8 +257,8 @@ class BookmarkViewSet(
     def perform_create(self, serializer):
         try:
             serializer.save(user=self.request.user)
-        except IntegrityError:
-            raise ValidationError({"detail": "Already exists"})
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Already exists"}) from e
 
 
 class PostSeriesViewSet(viewsets.ModelViewSet):

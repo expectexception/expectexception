@@ -13,7 +13,16 @@ class BlogTests(APITestCase):
         # We'll use force_authenticate in individual tests
 
     def test_create_and_publish_post(self):
-        self.client.force_authenticate(user=self.user)
+        # Creating/publishing posts is gated on is_staff (IsAdminOrReadOnly,
+        # see apps/blog/permissions.py) - self.user is a plain account, so
+        # authenticating as it here always got a 403 regardless of anything
+        # this test actually meant to check. Needs its own staff user rather
+        # than making self.user staff, since the other tests in this class
+        # (test_like_and_bookmark, etc.) rely on it being an ordinary account.
+        staff_user = User.objects.create_user(
+            email="staff-author@example.com", password="Test1234", is_staff=True
+        )
+        self.client.force_authenticate(user=staff_user)
         url = reverse("post-list")
         data = {"title": "My Post", "content": "Content here"}
         r = self.client.post(url, data, format="json")
