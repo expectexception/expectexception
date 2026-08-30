@@ -1,223 +1,197 @@
 import React, { useMemo, useState } from 'react';
-import {
-    Card, CardContent, Typography, TextField, Alert, Grid, Paper, Button,
-    Snackbar, useTheme, alpha,
-} from '@mui/material';
-import { Router, ContentCopy } from '@mui/icons-material';
+import { Card, CardContent, Box, Typography, TextField, Slider, Chip, useTheme } from '@mui/material';
+import { Hub } from '@mui/icons-material';
 import ServicePageShell from './ServicePageShell';
 
-// ---------------------------------------------------------------------------
-// IPv4 / CIDR bit arithmetic, implemented directly (no library).
-//
-// An IPv4 address is conventionally written as four dotted-decimal octets
-// but is really just a 32-bit unsigned integer. Everything below works by
-// converting those four octets to a single number, doing plain
-// mask/AND/OR/NOT arithmetic on it, then splitting the result back into
-// four octets for display — exactly what a router does in hardware.
-//
-// Octets are combined with `* 256 +` rather than `<< 8` so intermediate
-// values stay as ordinary (safe, double-precision) JS numbers instead of
-// tripping the sign-bit wraparound that `<<` has once bit 31 is set (e.g.
-// any address starting with an octet >= 128). The bitwise operators
-// (`&`, `|`, `~`, `<<`) are only ever applied to full 32-bit values, with a
-// final `>>> 0` to read the result back out as an unsigned number.
-// ---------------------------------------------------------------------------
-
-const ipToInt = (octets: number[]): number =>
-    octets.reduce((acc, o) => acc * 256 + o, 0) >>> 0;
-
-const intToIp = (int: number): string =>
-    [24, 16, 8, 0].map(shift => (int >>> shift) & 255).join('.');
-
-/** 32-bit mask with `prefix` leading 1 bits. Prefix 0 is special-cased
- * because `<< 32` is a no-op in JS (shift amounts wrap mod 32), which would
- * otherwise wrongly produce an all-ones mask instead of an all-zeros one. */
-const maskFromPrefix = (prefix: number): number =>
-    prefix === 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) >>> 0;
-
-interface SubnetError {
-    error: string;
+function isValidOctet(n: number): boolean {
+    return Number.isInteger(n) && n >= 0 && n <= 255;
 }
 
-interface SubnetOk {
-    cidr: string;
-    networkAddress: string;
-    broadcastAddress: string;
-    subnetMask: string;
-    wildcardMask: string;
+function parseIPv4(ip: string): number[] | null {
+    const parts = ip.trim().split('.');
+    if (parts.length !== 4) return null;
+    const nums = parts.map(p => Number(p));
+    for (let i = 0; i < 4; i++) {
+        if (!/^\d{1,3}$/.test(parts[i]) || !isValidOctet(nums[i])) return null;
+    }
+    return nums;
+}
+
+function octetsToUint32(octets: number[]): number {
+    return ((octets[0] << 24) | (octets[1] << 16) | (octets[2] << 8) | octets[3]) >>> 0;
+}
+
+function uint32ToOctets(n: number): number[] {
+    return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];
+}
+
+function uint32ToIp(n: number): string {
+    return uint32ToOctets(n).join('.');
+}
+
+function maskFromPrefix(prefix: number): number {
+    if (prefix === 0) return 0;
+    return (0xffffffff << (32 - prefix)) >>> 0;
+}
+
+interface SubnetResult {
+    network: string;
+    broadcast: string;
     firstHost: string;
     lastHost: string;
-    usableHostCount: number;
+    usableHosts: number;
     totalAddresses: number;
-    note?: string;
+    netmask: string;
+    wildcard: string;
+    binaryMask: string;
+    ipClass: string;
 }
 
-type SubnetResult = SubnetError | SubnetOk;
+function ipClassOf(firstOctet: number): string {
+    if (firstOctet < 128) return 'A';
+    if (firstOctet < 192) return 'B';
+    if (firstOctet < 224) return 'C';
+    if (firstOctet < 240) return 'D (multicast)';
+    return 'E (reserved)';
+}
 
-const calculateSubnet = (raw: string): SubnetResult => {
-    const trimmed = raw.trim();
-    if (!trimmed) return { error: 'Enter an IPv4 address in CIDR notation, e.g. 192.168.1.0/24.' };
+function calcSubnet(ip: string, prefix: number): SubnetResult | null {
+    const octets = parseIPv4(ip);
+    if (!octets || prefix < 0 || prefix > 32) return null;
 
-    const match = /^(\d{1,3}(?:\.\d{1,3}){3})\/(\d{1,3})$/.exec(trimmed);
-    if (!match) return { error: 'Format must be an IPv4 address followed by a prefix, e.g. 192.168.1.0/24.' };
+    const ipInt = octetsToUint32(octets);
+    const mask = maskFromPrefix(prefix);
+    const networkInt = (ipInt & mask) >>> 0;
+    const broadcastInt = (networkInt | (~mask >>> 0)) >>> 0;
+    const totalAddresses = Math.pow(2, 32 - prefix);
+    const usableHosts = prefix >= 31 ? 0 : totalAddresses - 2;
 
-    const octets = match[1].split('.').map(Number);
-    if (octets.some(o => o < 0 || o > 255)) {
-        return { error: 'Each IP octet must be a whole number between 0 and 255.' };
-    }
-
-    const prefix = Number(match[2]);
-    if (prefix < 0 || prefix > 32) {
-        return { error: 'Prefix length must be a whole number between /0 and /32.' };
-    }
-
-    const ipInt = ipToInt(octets);
-    const maskInt = maskFromPrefix(prefix);
-    const wildcardInt = (~maskInt) >>> 0;
-    const networkInt = (ipInt & maskInt) >>> 0;
-    const broadcastInt = (networkInt | wildcardInt) >>> 0;
-    const totalAddresses = 2 ** (32 - prefix);
-
-    let firstHostInt = networkInt;
-    let lastHostInt = broadcastInt;
-    let usableHostCount = Math.max(totalAddresses - 2, 0);
-    let note: string | undefined;
-
-    if (prefix === 32) {
-        usableHostCount = 1;
-        note = 'A /32 is a single-host route | the network address, broadcast address, and only usable address are all the same.';
-    } else if (prefix === 31) {
-        usableHostCount = 2;
-        note = 'A /31 is a point-to-point link (RFC 3021) | both addresses are usable; there is no separate network or broadcast address.';
-    } else {
-        firstHostInt = networkInt + 1;
-        lastHostInt = broadcastInt - 1;
-    }
+    const firstHostInt = prefix >= 31 ? networkInt : (networkInt + 1) >>> 0;
+    const lastHostInt = prefix >= 31 ? broadcastInt : (broadcastInt - 1) >>> 0;
 
     return {
-        cidr: `${octets.join('.')}/${prefix}`,
-        networkAddress: intToIp(networkInt),
-        broadcastAddress: intToIp(broadcastInt),
-        subnetMask: intToIp(maskInt),
-        wildcardMask: intToIp(wildcardInt),
-        firstHost: intToIp(firstHostInt),
-        lastHost: intToIp(lastHostInt),
-        usableHostCount,
+        network: uint32ToIp(networkInt),
+        broadcast: uint32ToIp(broadcastInt),
+        firstHost: uint32ToIp(firstHostInt),
+        lastHost: uint32ToIp(lastHostInt),
+        usableHosts,
         totalAddresses,
-        note,
+        netmask: uint32ToIp(mask),
+        wildcard: uint32ToIp((~mask) >>> 0),
+        binaryMask: uint32ToOctets(mask).map(o => o.toString(2).padStart(8, '0')).join('.'),
+        ipClass: ipClassOf(octets[0]),
     };
-};
-
-const DEFAULT_CIDR = '192.168.1.0/24';
+}
 
 const SubnetCalculator: React.FC = () => {
     const theme = useTheme();
-    const primary = theme.palette.primary.main;
-    const [input, setInput] = useState(DEFAULT_CIDR);
-    const [snackbar, setSnackbar] = useState(false);
+    const [ipInput, setIpInput] = useState('192.168.1.10');
+    const [prefix, setPrefix] = useState(24);
 
-    const result = useMemo(() => calculateSubnet(input), [input]);
-
-    const copySummary = () => {
-        if ('error' in result) return;
-        const summary =
-            `CIDR: ${result.cidr}\n` +
-            `Network Address: ${result.networkAddress}\n` +
-            `Broadcast Address: ${result.broadcastAddress}\n` +
-            `Subnet Mask: ${result.subnetMask}\n` +
-            `Wildcard Mask: ${result.wildcardMask}\n` +
-            `First Usable Host: ${result.firstHost}\n` +
-            `Last Usable Host: ${result.lastHost}\n` +
-            `Usable Hosts: ${result.usableHostCount.toLocaleString()}\n` +
-            `Total Addresses: ${result.totalAddresses.toLocaleString()}`;
-        navigator.clipboard.writeText(summary);
-        setSnackbar(true);
-    };
-
-    const fields = 'error' in result ? [] : [
-        { label: 'Network Address', value: result.networkAddress },
-        { label: 'Broadcast Address', value: result.broadcastAddress },
-        { label: 'Subnet Mask', value: result.subnetMask },
-        { label: 'Wildcard Mask', value: result.wildcardMask },
-        { label: 'First Usable Host', value: result.firstHost },
-        { label: 'Last Usable Host', value: result.lastHost },
-        { label: 'Usable Hosts', value: result.usableHostCount.toLocaleString() },
-        { label: 'Total Addresses', value: result.totalAddresses.toLocaleString() },
-    ];
+    const result = useMemo(() => calcSubnet(ipInput, prefix), [ipInput, prefix]);
+    const isValid = parseIPv4(ipInput) !== null;
 
     return (
         <ServicePageShell
-            icon={Router}
-            title="IP Subnet / CIDR Calculator"
-            subtitle="Work out the network, broadcast, and usable host range for any IPv4 CIDR address | computed locally in your browser"
-            maxWidth="md"
-            seoTitle="Subnet Calculator | Free IPv4 CIDR Network Calculator"
-            keywords={['subnet calculator', 'cidr calculator', 'ip subnet calculator', 'network address calculator', 'broadcast address calculator', 'wildcard mask calculator', 'ipv4 cidr calculator', 'subnet mask calculator']}
-            about="Takes an IPv4 address in CIDR notation, such as 192.168.1.0/24, and works out every value a network engineer needs from it: the network and broadcast addresses, the subnet mask and its wildcard-mask complement, the first and last usable host addresses, and both the usable host count and total address count for that prefix. All of the arithmetic, converting dotted-decimal octets to a 32-bit integer, applying the prefix mask, and splitting the results back into octets | runs as plain bitwise and arithmetic operations directly in the browser; nothing is looked up from an external IP database or sent to a server. Point-to-point /31 and single-host /32 prefixes are called out with their RFC 3021 / host-route conventions rather than the usual network-plus-broadcast-reserved rule."
+            icon={Hub}
+            title="IPv4 Subnet / CIDR Calculator"
+            subtitle="Work out network address, broadcast address, usable host range and subnet mask from any IP and prefix length"
+            maxWidth="sm"
+            toolId={81}
+            seoTitle="Subnet Calculator | IPv4 CIDR Network, Broadcast & Host Range"
+            seoDescription="Free IPv4 subnet calculator. Enter an IP address and CIDR prefix to get the network address, broadcast address, usable host range, subnet mask and total address count instantly, entirely in your browser."
+            keywords={['subnet calculator', 'cidr calculator', 'ip subnet calculator', 'network address calculator', 'broadcast address calculator', 'subnet mask calculator', 'ipv4 calculator']}
+            about="Takes an IPv4 address and a CIDR prefix length and works out everything that follows from them: the network address, the broadcast address, the subnet mask in both dotted-decimal and binary, the wildcard mask, and the first and last usable host addresses. The math is plain bitwise arithmetic on the 32-bit integer form of the address, done with JavaScript's own bitwise operators, so there is nothing to send to a server and nothing to wait on."
             howToSteps={[
-                { name: 'Enter a CIDR address', text: 'Type an IPv4 address with a prefix length, e.g. 192.168.1.0/24, into the input field.' },
-                { name: 'Check for validation errors', text: 'A malformed IP, an octet outside 0-255, or a prefix outside 0-32 shows a specific error message instead of a result.' },
-                { name: 'Read the computed values', text: 'Network Address, Broadcast Address, Subnet Mask, Wildcard Mask, first/last usable host, and both address counts are all shown immediately as you type.' },
-                { name: 'Copy the results', text: 'Click Copy Summary to copy every computed field to your clipboard as plain text.' },
+                { name: 'Enter an IPv4 address', text: 'Type any address in the four-octet dotted-decimal form, like 192.168.1.10.' },
+                { name: 'Set the CIDR prefix length', text: 'Drag the slider or read off a value from 0 to 32. /24 is the most common home and small-office prefix.' },
+                { name: 'Read the results', text: 'The network address, broadcast address, subnet mask, wildcard mask and usable host range update as you type or drag.' },
             ]}
             faq={[
-                { question: 'How is the network address calculated?', answer: 'The IP address is converted to a 32-bit integer and bitwise-ANDed with the subnet mask, which is itself derived from the prefix length as a 32-bit integer | the same calculation networking equipment performs. The result is converted back to dotted-decimal for display.' },
-                { question: 'Why don’t /31 and /32 show "usable = total - 2"?', answer: "A /32 is a single host route, 1 address, no separate network or broadcast, and a /31 is a point-to-point link defined by RFC 3021, where both of its 2 addresses are usable since there's no room to reserve one for a broadcast address. Every other prefix (/0-/30) reserves the first address as the network address and the last as the broadcast address." },
-                { question: 'Does this support IPv6?', answer: "No, this calculator is IPv4-only. IPv6 uses 128-bit addresses and different conventions (no broadcast address, for instance), which aren't covered here." },
-                { question: 'Is my IP address sent anywhere?', answer: 'No. Parsing and all bit arithmetic happen locally in JavaScript in your browser | nothing is transmitted, logged, or looked up externally.' },
+                {
+                    question: 'What does a /24 actually mean?',
+                    answer: 'The number after the slash is the prefix length: how many leading bits of the 32-bit address are fixed as the network portion, with the rest free for host addresses. A /24 fixes the first 24 bits, leaving 8 bits (256 addresses) for hosts, of which 254 are usable once the network and broadcast addresses are set aside. A /16 leaves 16 host bits (65,536 addresses), and so on: every extra bit in the prefix cuts the address space in half.',
+                },
+                {
+                    question: 'Why are only some of the addresses in a subnet usable for hosts?',
+                    answer: 'The very first address in a subnet is reserved as the network address, and the very last is reserved as the broadcast address, so neither can be assigned to an individual device. That is why usable hosts equals total addresses minus 2, for every prefix except /31 and /32, which are special cases used for point-to-point links and single-host routes where that reservation does not apply.',
+                },
+                {
+                    question: 'What is a wildcard mask and how is it different from a subnet mask?',
+                    answer: "A wildcard mask is just the bitwise inverse of the subnet mask, and it shows up mainly in access control lists on routers and firewalls, where some vendors express address ranges that way instead of with a plain mask. Where a subnet mask has a 1 for every network bit, the wildcard mask has a 0 there and a 1 everywhere else, which is why the two always add up to all 1s when combined.",
+                },
+                {
+                    question: 'Is this tool doing anything different from working it out by hand?',
+                    answer: 'No, it is the same arithmetic you would do with pencil and paper or a subnetting cheat sheet: convert the IP address to its 32-bit integer form, AND it with the mask to get the network address, OR the inverted mask onto the network address to get the broadcast address, and read the host range off both ends. This just does it instantly and without a chance of an arithmetic slip.',
+                },
             ]}
         >
-            <Card>
-                <CardContent sx={{ p: 3 }}>
+            <Card sx={{
+                background: 'rgba(13, 14, 18, 0.4)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                borderRadius: '20px',
+                boxShadow: '0 20px 40px -15px rgba(0,0,0,0.5)',
+                p: 3,
+                overflowY: 'auto',
+            }}>
+                <CardContent sx={{ p: 1 }}>
                     <TextField
                         fullWidth
-                        label="CIDR Address"
-                        value={input}
-                        onChange={e => setInput(e.target.value)}
-                        placeholder="192.168.1.0/24"
-                        inputProps={{ style: { fontFamily: 'monospace', fontSize: '1.1rem' } }}
+                        label="IPv4 address"
+                        value={ipInput}
+                        onChange={e => setIpInput(e.target.value)}
+                        error={!isValid}
+                        helperText={isValid ? ' ' : 'Enter a valid IPv4 address, e.g. 192.168.1.10'}
+                        sx={{ mb: 1 }}
+                        inputProps={{ spellCheck: false, style: { fontFamily: 'monospace' } }}
+                    />
+
+                    <Typography gutterBottom sx={{ mt: 2 }}>
+                        Prefix length: /{prefix}
+                    </Typography>
+                    <Slider
+                        value={prefix}
+                        onChange={(_, v) => setPrefix(v as number)}
+                        min={0}
+                        max={32}
+                        step={1}
                         sx={{ mb: 3 }}
                     />
 
-                    {'error' in result ? (
-                        <Alert severity="error">{result.error}</Alert>
-                    ) : (
-                        <>
-                            {result.note && (
-                                <Alert severity="info" sx={{ mb: 2 }}>{result.note}</Alert>
-                            )}
-                            <Grid container spacing={1.5} sx={{ mb: 3 }}>
-                                {fields.map(f => (
-                                    <Grid item xs={12} sm={6} md={3} key={f.label}>
-                                        <Paper
-                                            sx={{
-                                                p: 1.5,
-                                                height: '100%',
-                                                borderRadius: 2,
-                                                bgcolor: alpha(primary, 0.06),
-                                                border: `1px solid ${alpha(primary, 0.2)}`,
-                                            }}
-                                        >
-                                            <Typography variant="caption" fontWeight={700} color={primary} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
-                                                {f.label}
-                                            </Typography>
-                                            <Typography variant="subtitle1" fontWeight={800} fontFamily="monospace" sx={{ wordBreak: 'break-all' }}>
-                                                {f.value}
-                                            </Typography>
-                                        </Paper>
-                                    </Grid>
-                                ))}
-                            </Grid>
+                    {result && (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+                            {[
+                                ['Network address', result.network],
+                                ['Broadcast address', result.broadcast],
+                                ['First usable host', result.firstHost],
+                                ['Last usable host', result.lastHost],
+                                ['Subnet mask', result.netmask],
+                                ['Wildcard mask', result.wildcard],
+                            ].map(([label, value]) => (
+                                <Box key={label} sx={{
+                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                    p: 1.5, borderRadius: '10px', bgcolor: 'rgba(0,0,0,0.3)',
+                                    border: '1px solid rgba(255,255,255,0.06)',
+                                }}>
+                                    <Typography variant="caption" color="text.secondary">{label}</Typography>
+                                    <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, color: theme.palette.primary.main }}>{value}</Typography>
+                                </Box>
+                            ))}
 
-                            <Button variant="outlined" size="small" startIcon={<ContentCopy />} onClick={copySummary}>
-                                Copy Summary
-                            </Button>
-                        </>
+                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+                                <Chip size="small" label={`${result.usableHosts.toLocaleString()} usable hosts`} />
+                                <Chip size="small" label={`${result.totalAddresses.toLocaleString()} total addresses`} />
+                                <Chip size="small" label={`Class ${result.ipClass}`} />
+                            </Box>
+
+                            <Typography variant="caption" color="text.disabled" sx={{ fontFamily: 'monospace', mt: 1, wordBreak: 'break-all' }}>
+                                Mask (binary): {result.binaryMask}
+                            </Typography>
+                        </Box>
                     )}
                 </CardContent>
             </Card>
-
-            <Snackbar open={snackbar} autoHideDuration={2000} onClose={() => setSnackbar(false)} message="Copied to clipboard!" />
         </ServicePageShell>
     );
 };

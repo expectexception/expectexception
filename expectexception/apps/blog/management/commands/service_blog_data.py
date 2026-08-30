@@ -4359,4 +4359,197 @@ SERVICES = [
             ),
         ],
     },
+    {
+        "slug": "ipv4-subnet-cidr-calculator-guide",
+        "title": "IPv4 Subnet Calculator: From a CIDR Prefix to Network and Broadcast Address",
+        "seo_title": "IPv4 Subnet Calculator — CIDR to Network, Broadcast & Host Range",
+        "seo_description": "Enter an IP address and a CIDR prefix and get the network address, broadcast address, subnet mask, and usable host range worked out instantly in your browser.",
+        "keywords": [
+            "subnet calculator",
+            "cidr calculator",
+            "ip subnet calculator",
+            "network address calculator",
+            "subnet mask calculator",
+        ],
+        "tool_path": "/services/subnet-calculator",
+        "tool_cta": "Open the subnet calculator",
+        "tags": ["developer", "networking", "tools"],
+        "date": datetime(2026, 8, 30, 9, 0, tzinfo=UTC),
+        "intro": "Subnetting math is one of those things everyone re-derives from scratch the moment they actually need it, because nobody keeps the formulas in their head between jobs. This calculator does the bit arithmetic for you: type an IPv4 address, pick a CIDR prefix, and it works out the network address, the broadcast address, the subnet mask, and the range of host addresses you actually get to use.",
+        "what": "You give it two things: a dotted-decimal IPv4 address and a prefix length from /0 to /32. It converts the address into its 32-bit integer form, applies the mask that the prefix implies, and reads off everything else from there. The network address comes from ANDing the address with the mask. The broadcast address comes from ORing the network address with the inverted mask. Subtract two from the total address count (one for the network address, one for the broadcast) and what's left is the usable host range, except at /31 and /32, which are handled as the special point-to-point and single-host cases they are. Everything updates live as you move the slider, so you can watch how one extra bit in the prefix cuts the address space in half.",
+        "steps": [
+            (
+                "Type in an IP address",
+                "Any IPv4 address in the usual four-octet form works, like 10.0.0.1 or 192.168.1.10.",
+            ),
+            (
+                "Set the prefix length",
+                "Drag the slider from /0 to /32. /24 is the default and the most common prefix for a small office or home network.",
+            ),
+            (
+                "Read off the results",
+                "Network address, broadcast address, subnet mask, wildcard mask, and the first and last usable host all update as you type or drag.",
+            ),
+        ],
+        "features": [
+            "Works out network address, broadcast address, subnet mask, and wildcard mask from any IP and prefix",
+            "Shows the first and last usable host address, correctly handling the /31 and /32 edge cases",
+            "Displays the subnet mask in binary as well as dotted-decimal, so you can see exactly which bits are fixed",
+            "Reports total address count, usable host count, and the classful A/B/C designation for reference",
+            "All the arithmetic runs in the browser with plain bitwise operators, nothing is sent to a server",
+        ],
+        "use_cases": [
+            "Double-checking a subnet plan before you commit it to a router or firewall config",
+            "Working out how many usable addresses a given prefix actually leaves you",
+            "Studying for a networking certification that expects you to do this by hand under time pressure",
+        ],
+        "faq": [
+            (
+                "Why can't I use the very first or last address in a subnet for a host?",
+                "The first address in any subnet is reserved as the network address, and the last is reserved as the broadcast address, so routers and hosts treat both specially rather than assigning them to a single device. That reservation is why usable host count is always two less than the total address count, for every prefix except /31 and /32.",
+            ),
+            (
+                "What's different about /31 and /32?",
+                "A /31 has only two addresses total, both of them non-reserved, and RFC 3021 defines it specifically for point-to-point links where there's no need for a separate broadcast address. A /32 has exactly one address and is typically used as a route to a single host rather than as a subnet with any hosts in the usual sense.",
+            ),
+            (
+                "Is a wildcard mask the same thing as a subnet mask?",
+                "No, though the two are closely related. A wildcard mask is the bitwise inverse of the subnet mask, and it's mostly used in router and firewall access control lists, where some configuration syntaxes express address ranges that way instead of with a plain mask.",
+            ),
+            (
+                "Does the calculator handle IPv6?",
+                "Not currently, this one is IPv4 only. IPv6 subnetting follows the same underlying logic but works with 128-bit addresses instead of 32-bit ones, and typically uses much larger prefixes like /64 for a single subnet.",
+            ),
+        ],
+    },
+    {
+        "slug": "curl-command-generator-guide",
+        "title": "cURL Command Generator: Build a Properly Quoted curl Request",
+        "seo_title": "cURL Command Generator — Build curl Commands from URL, Headers & Body",
+        "seo_description": "Fill in a URL, HTTP method, headers, and a request body, and get a curl command with correct shell quoting ready to paste into a terminal.",
+        "keywords": [
+            "curl command generator",
+            "curl builder",
+            "generate curl command",
+            "curl request builder",
+            "http to curl converter",
+        ],
+        "tool_path": "/services/curl-command-generator",
+        "tool_cta": "Build a curl command",
+        "tags": ["developer", "api", "tools"],
+        "date": datetime(2026, 8, 30, 9, 20, tzinfo=UTC),
+        "intro": "Writing a curl command by hand is fine right up until a header value has a space in it, or a JSON body has a quote inside a quote, and suddenly you're staring at a shell error that has nothing to do with the API you're actually testing. This tool builds the command for you: fill in the URL, method, headers, and body in plain fields, and it hands back a curl command with the quoting already sorted out.",
+        "what": "Every field you fill in gets translated into the matching curl flag: the method becomes -X (skipped for a plain GET, since that's curl's default), each header becomes a -H flag, and a request body becomes a -d flag. If you've filled in a body but haven't set your own Content-Type header, it adds application/json automatically, since that covers the large majority of API requests without you having to think about it. The part that actually matters is the quoting: every value gets wrapped in single quotes, and if a value happens to contain a single quote itself, it gets escaped the standard POSIX way instead of just being left to break the command. There's a toggle for multi-line output with each flag on its own line, which is easier to read for a request with several headers, and a single-line mode for pasting somewhere that mangles line breaks.",
+        "steps": [
+            (
+                "Enter the URL and pick a method",
+                "Type the request URL and choose from GET, POST, PUT, PATCH, DELETE, HEAD, or OPTIONS.",
+            ),
+            (
+                "Add your headers",
+                "Add a row for each header you need, like Authorization or a custom API key header. Empty rows are ignored automatically.",
+            ),
+            (
+                "Fill in a body if the request needs one",
+                "For anything other than GET or HEAD, paste your request body. A JSON Content-Type header is added for you unless you've already set your own.",
+            ),
+            (
+                "Copy the finished command",
+                "The command updates as you type. Click Copy and paste it straight into your terminal.",
+            ),
+        ],
+        "features": [
+            "Correct POSIX shell quoting for every header value and body, including values that contain a single quote",
+            "Automatically adds a JSON Content-Type header for a filled-in body, unless you've set your own",
+            "Toggle between multi-line (one flag per line) and single-line command formatting",
+            "Optional -L flag to follow redirects and -k flag to skip TLS certificate verification",
+            "Runs entirely client-side, it only builds the text of a command and never makes a real request",
+        ],
+        "use_cases": [
+            "Turning a set of API docs into a working curl command without hand-typing quote escapes",
+            "Sharing a reproducible request with a teammate or in a bug report",
+            "Building a quick smoke-test command for an endpoint you're actively debugging",
+        ],
+        "faq": [
+            (
+                "Why does it add a Content-Type header on its own?",
+                "curl doesn't set one for you just because you passed -d, and without it a server often has no reliable way to know how to parse the body. Since a JSON body is by far the most common case for API testing, that's the default assumed here, but adding your own Content-Type row overrides it.",
+            ),
+            (
+                "Why single quotes and not double quotes?",
+                "In a POSIX shell, single quotes suppress essentially all special-character handling, including $ variable expansion, which double quotes don't. That makes single quotes the safer default for tokens, JSON bodies, and anything else that might contain a character the shell would otherwise interpret.",
+            ),
+            (
+                "What does the -k flag actually do, and should I leave it off?",
+                "It tells curl to skip TLS certificate verification, which is occasionally useful against a local server with a self-signed certificate, but it also means curl won't catch a genuine man-in-the-middle attack. Leave it off unless you specifically know why you need it.",
+            ),
+            (
+                "Does this tool send my request anywhere?",
+                "No. It only assembles the text of a curl command in your browser. Nothing you type here triggers an actual network request or leaves the page.",
+            ),
+        ],
+    },
+    {
+        "slug": "url-slug-generator-guide",
+        "title": "Slug Generator: Turn a Title Into a Clean, URL-Safe Slug",
+        "seo_title": "Slug Generator — Convert Any Title to a URL-Friendly Slug",
+        "seo_description": "Paste a title or sentence and get a clean, URL-safe slug back instantly, with accents stripped, punctuation removed, and a choice of hyphen or underscore separator.",
+        "keywords": [
+            "slug generator",
+            "url slug generator",
+            "text to slug",
+            "slugify text online",
+            "seo url generator",
+        ],
+        "tool_path": "/services/slug-generator",
+        "tool_cta": "Generate a slug",
+        "tags": ["developer", "seo", "tools"],
+        "date": datetime(2026, 8, 30, 9, 40, tzinfo=UTC),
+        "intro": "A slug is the part of a URL that describes the page: lowercase, hyphen-separated, nothing in it that a browser or a search engine would trip over. Writing one by hand is easy for a short plain-English title and gets annoying fast the moment there's an accented letter, an apostrophe, or a colon in the mix. This tool does the conversion for you, live, as you type.",
+        "what": "Paste in a title and it strips out everything a URL shouldn't have to deal with. Accented characters get normalized to their closest plain letter using Unicode NFKD decomposition, which splits a character like é into a plain e plus a separate accent mark, then discards only the accent mark, so the letter itself survives. Punctuation like apostrophes, colons, and parentheses gets removed outright rather than turned into a separator. Whitespace and any hyphens or underscores already in the text get collapsed down to a single instance of whichever separator you've picked. You can choose a hyphen, which is the standard recommendation for SEO-facing URLs, or an underscore for cases like internal filenames where that distinction doesn't matter.",
+        "steps": [
+            (
+                "Paste in your title",
+                "Type or paste the heading, title, or sentence you want turned into a slug.",
+            ),
+            (
+                "Pick a separator",
+                "Hyphen is the default and the safer choice for a public-facing URL. Underscore is there if you specifically need it.",
+            ),
+            (
+                "Copy the result",
+                "The slug updates as you type. Click Copy to grab it for your CMS, router, or file name.",
+            ),
+        ],
+        "features": [
+            "Strips accented characters down to their plain-letter equivalent instead of deleting the letter entirely",
+            "Removes punctuation like apostrophes, quotes, and colons rather than converting it into a separator",
+            "Collapses any run of whitespace, hyphens, or underscores in the source text into one clean separator",
+            "Choice of hyphen or underscore, with an optional toggle to force lowercase",
+            "Updates live as you type, entirely in the browser",
+        ],
+        "use_cases": [
+            "Generating a permalink for a new blog post or documentation page",
+            "Naming files consistently from a list of titles",
+            "Cleaning up a URL that was auto-generated somewhere else and came out messy",
+        ],
+        "faq": [
+            (
+                "Why hyphens instead of underscores?",
+                'Google has said publicly that it treats a hyphen in a URL as a word separator but treats an underscore as joining two words into one token, so "clean-code" reads as two words while "clean_code" can read as one word, "cleancode". That\'s why hyphens are the standard advice for anything meant to be indexed, though underscores are still a reasonable choice for internal identifiers where search visibility isn\'t a factor.',
+            ),
+            (
+                "What happens to a word like café or naïve?",
+                "The accent gets stripped and the base letter stays, so café becomes cafe and naïve becomes naive. That's done with Unicode NFKD normalization, which separates a letter from its accent mark before the accent gets removed, rather than deleting the whole character.",
+            ),
+            (
+                "Why does an apostrophe just disappear instead of becoming a hyphen?",
+                'Turning every removed character into a separator would leave odd double-hyphens and awkward breaks in the middle of contractions, so "Baker\'s Dozen" becomes bakers-dozen rather than baker-s-dozen. Punctuation is dropped outright; only whitespace and existing separators get converted into the chosen separator.',
+            ),
+            (
+                "Is anything I type sent to a server?",
+                "No, the conversion runs in JavaScript in your browser using built-in string normalization. Nothing here leaves the page.",
+            ),
+        ],
+    },
 ]

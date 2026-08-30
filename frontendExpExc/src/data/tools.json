@@ -1915,5 +1915,78 @@
       "random word password generator",
       "secure passphrase generator"
     ]
+  },
+  {
+    "id": 81,
+    "title": "IPv4 Subnet / CIDR Calculator",
+    "description": "Work out the network address, broadcast address, usable host range and subnet mask for any IP address and CIDR prefix.",
+    "icon": "Hub",
+    "path": "/services/subnet-calculator",
+    "category": "developer",
+    "popularity": 78,
+    "tags": [
+      "networking",
+      "subnet",
+      "cidr",
+      "ip",
+      "developer"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "subnet calculator",
+      "cidr calculator",
+      "ip subnet calculator",
+      "network address calculator",
+      "subnet mask calculator"
+    ]
+  },
+  {
+    "id": 82,
+    "title": "cURL Command Generator",
+    "description": "Build a correctly quoted curl command from a URL, HTTP method, headers and request body.",
+    "icon": "Terminal",
+    "path": "/services/curl-command-generator",
+    "category": "developer",
+    "popularity": 79,
+    "tags": [
+      "curl",
+      "api",
+      "developer",
+      "http"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "curl command generator",
+      "curl builder",
+      "generate curl command",
+      "curl request builder",
+      "http to curl converter"
+    ]
+  },
+  {
+    "id": 83,
+    "title": "Slug Generator",
+    "description": "Turn any title or sentence into a clean, URL-safe slug with accents stripped and punctuation removed.",
+    "icon": "Link",
+    "path": "/services/slug-generator",
+    "category": "utility",
+    "popularity": 77,
+    "tags": [
+      "slug",
+      "url",
+      "seo",
+      "text"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "slug generator",
+      "url slug generator",
+      "text to slug",
+      "slugify text online",
+      "seo url generator"
+    ]
   }
 ]
