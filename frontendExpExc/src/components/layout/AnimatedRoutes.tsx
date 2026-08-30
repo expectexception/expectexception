@@ -142,6 +142,14 @@ const SlugGenerator = lazy(() => import('../services/SlugGenerator'));
 const UlidGenerator = lazy(() => import('../services/UlidGenerator'));
 const RobotsTxtGenerator = lazy(() => import('../services/RobotsTxtGenerator'));
 const ListSorterDeduplicator = lazy(() => import('../services/ListSorterDeduplicator'));
+const DisplayRefreshRateTester = lazy(() => import('../services/DisplayRefreshRateTester'));
+const NetworkLatencyTester = lazy(() => import('../services/NetworkLatencyTester'));
+const WasmVsJsBenchmark = lazy(() => import('../services/WasmVsJsBenchmark'));
+const StorageSpeedTest = lazy(() => import('../services/StorageSpeedTest'));
+const AudioLatencyAnalyzer = lazy(() => import('../services/AudioLatencyAnalyzer'));
+const BrowserFeatureDetector = lazy(() => import('../services/BrowserFeatureDetector'));
+const FontDetector = lazy(() => import('../services/FontDetector'));
+const WebrtcIpLeakTest = lazy(() => import('../services/WebrtcIpLeakTest'));
 
 // Sandbox games - lazy loaded (all frontend-only, no backend, no auth gate)
 const SnakeGame = lazy(() => import('../sandbox/SnakeGame'));
@@ -339,6 +347,14 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/ulid-generator" element={<PageTransition><UlidGenerator /></PageTransition>} />
                     <Route path="/services/robots-txt-generator" element={<PageTransition><RobotsTxtGenerator /></PageTransition>} />
                     <Route path="/services/list-sorter-deduplicator" element={<PageTransition><ListSorterDeduplicator /></PageTransition>} />
+                    <Route path="/services/refresh-rate-tester" element={<PageTransition><DisplayRefreshRateTester /></PageTransition>} />
+                    <Route path="/services/network-latency-tester" element={<PageTransition><NetworkLatencyTester /></PageTransition>} />
+                    <Route path="/services/wasm-vs-js-benchmark" element={<PageTransition><WasmVsJsBenchmark /></PageTransition>} />
+                    <Route path="/services/storage-speed-test" element={<PageTransition><StorageSpeedTest /></PageTransition>} />
+                    <Route path="/services/audio-latency-analyzer" element={<PageTransition><AudioLatencyAnalyzer /></PageTransition>} />
+                    <Route path="/services/browser-feature-detector" element={<PageTransition><BrowserFeatureDetector /></PageTransition>} />
+                    <Route path="/services/font-detector" element={<PageTransition><FontDetector /></PageTransition>} />
+                    <Route path="/services/webrtc-ip-leak-test" element={<PageTransition><WebrtcIpLeakTest /></PageTransition>} />
 
                     {/* Sandbox - public, frontend-only mini games */}
                     <Route path="/sandbox" element={<PageTransition><SandboxPage /></PageTransition>} />
