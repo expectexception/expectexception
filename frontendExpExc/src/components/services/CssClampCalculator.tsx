@@ -1,237 +1,279 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-    Box, Card, CardContent, TextField, Typography, Button, Stack, Alert,
-    Slider, Grid, Paper, useTheme, alpha, Snackbar,
+    Box, Card, CardContent, Typography, TextField, Grid, Paper, Stack,
+    Alert, IconButton, ToggleButton, ToggleButtonGroup, Divider, useTheme, alpha,
 } from '@mui/material';
-import { Straighten, ContentCopy } from '@mui/icons-material';
+import { Straighten, ContentCopy, Check } from '@mui/icons-material';
 import ServicePageShell from './ServicePageShell';
 
-const ROOT_FONT_SIZE = 16; // px, the standard browser default for `1rem`
+/* ------------------------------------------------------------------ *
+ * Fluid-typography math.
+ *
+ * clamp(MIN, PREFERRED, MAX) needs a PREFERRED term that equals MIN at
+ * the min viewport width and MAX at the max viewport width, and moves
+ * in a straight line between the two. Writing PREFERRED as a linear
+ * function of the viewport width w:
+ *
+ *   size(w) = slope * w + constant
+ *
+ * Solving size(minVw) = minSize and size(maxVw) = maxSize gives:
+ *
+ *   slope    = (maxSize - minSize) / (maxVw - minVw)
+ *   constant = minSize - slope * minVw
+ *
+ * CSS has no plain "w in pixels" value to plug into a calc(), but 1vw
+ * is defined as 1% of the viewport width, so w = 100 * (that many vw
+ * units). Substituting turns the line above into the calc() actually
+ * used in the declaration:
+ *
+ *   PREFERRED = calc(constant + (slope * 100)vw)
+ *
+ * Checked against a concrete example: 16px at a 320px viewport and
+ * 24px at a 1280px viewport gives slope = 8 / 960 = 0.008333, so the
+ * vw coefficient is 0.8333vw and the constant is 16 - 0.008333 * 320
+ * = 13.333px. At w = 320: 13.333 + 0.8333 * 3.2 = 16.0. At w = 1280:
+ * 13.333 + 0.8333 * 12.8 = 24.0. Both land exactly on target.
+ * ------------------------------------------------------------------ */
 
-/** Rounds to 4 decimal places and drops trailing zeros (via plain Number
- * formatting), matching the precision used by well-known fluid-typography
- * calculators such as Utopia. */
-const round = (n: number): number => Math.round(n * 10000) / 10000;
+type SizeUnit = 'px' | 'rem';
 
-interface ClampResult {
-    minSizeRem: number;
-    maxSizeRem: number;
-    preferred: string;
-    css: string;
+interface ClampMath {
+    slope: number;
+    constant: number;
+    vwCoefficient: number;
+    minCss: string;
+    maxCss: string;
+    preferredExpr: string;
+    declaration: string;
 }
 
-/** Standard fluid-typography linear interpolation — the same math behind
- * Utopia.fyi and the well-known CSS-Tricks "linearly scale" formula. Sizes
- * are converted from px to rem first; a slope (rem of size change per px of
- * viewport width) and a y-intercept are then derived so that evaluating
- * `calc(intercept*1rem + slope*100*1vw)` at the current viewport width
- * reproduces exactly minSize at minVw and exactly maxSize at maxVw, with a
- * straight-line ramp in between. */
-function computeClamp(minSizePx: number, maxSizePx: number, minVw: number, maxVw: number): ClampResult {
-    const minSizeRem = minSizePx / ROOT_FONT_SIZE;
-    const maxSizeRem = maxSizePx / ROOT_FONT_SIZE;
-    const slope = (maxSizeRem - minSizeRem) / (maxVw - minVw);
-    const yInterceptRem = minSizeRem - slope * minVw;
+const round = (n: number, places = 4): number => {
+    const f = Math.pow(10, places);
+    return Math.round(n * f) / f;
+};
+
+function computeClamp(minSize: number, maxSize: number, minVw: number, maxVw: number, unit: SizeUnit): ClampMath {
+    const slope = (maxSize - minSize) / (maxVw - minVw);
+    const constant = minSize - slope * minVw;
     const vwCoefficient = slope * 100;
-    const preferred = `calc(${round(yInterceptRem)}rem + ${round(vwCoefficient)}vw)`;
-    const css = `clamp(${round(minSizeRem)}rem, ${preferred}, ${round(maxSizeRem)}rem)`;
-    return { minSizeRem, maxSizeRem, preferred, css };
+    const minCss = `${round(minSize)}${unit}`;
+    const maxCss = `${round(maxSize)}${unit}`;
+    const preferredExpr = `calc(${round(constant)}${unit} + ${round(vwCoefficient)}vw)`;
+    const declaration = `font-size: clamp(${minCss}, ${preferredExpr}, ${maxCss});`;
+    return { slope, constant: round(constant), vwCoefficient: round(vwCoefficient), minCss, maxCss, preferredExpr, declaration };
 }
 
-/** Directly interpolates the rendered size (in px) at a hypothetical
- * viewport width, for the live preview slider — mathematically the same
- * curve as the generated CSS, computed in plain JS so the preview works
- * regardless of the actual browser window size. */
-function previewSizePx(vw: number, minSizePx: number, maxSizePx: number, minVw: number, maxVw: number): number {
-    if (vw <= minVw) return minSizePx;
-    if (vw >= maxVw) return maxSizePx;
+/** Plain-JS mirror of what the generated clamp() evaluates to at a given
+ * viewport width, used only for the numeric "current value" readout. The
+ * preview text itself uses the real CSS clamp() string as its inline
+ * style, so it tracks actual window resizes on its own without any JS
+ * recomputation. */
+function sizeAtViewport(vw: number, minSize: number, maxSize: number, minVw: number, maxVw: number): number {
+    if (vw <= minVw) return minSize;
+    if (vw >= maxVw) return maxSize;
     const t = (vw - minVw) / (maxVw - minVw);
-    return minSizePx + t * (maxSizePx - minSizePx);
+    return minSize + t * (maxSize - minSize);
 }
 
 const CssClampCalculator: React.FC = () => {
     const theme = useTheme();
     const primary = theme.palette.primary.main;
 
-    const [minSize, setMinSize] = useState('16');
-    const [maxSize, setMaxSize] = useState('32');
-    const [minVw, setMinVw] = useState('375');
-    const [maxVw, setMaxVw] = useState('1440');
-    const [property, setProperty] = useState('font-size');
-    const [previewVw, setPreviewVw] = useState(860);
-    const [snackbar, setSnackbar] = useState<string | null>(null);
+    const [unit, setUnit] = useState<SizeUnit>('px');
+    const [minSize, setMinSize] = useState(16);
+    const [maxSize, setMaxSize] = useState(24);
+    const [minVw, setMinVw] = useState(320);
+    const [maxVw, setMaxVw] = useState(1280);
+    const [copied, setCopied] = useState(false);
+    const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
 
-    const minSizePx = parseFloat(minSize);
-    const maxSizePx = parseFloat(maxSize);
-    const minVwPx = parseFloat(minVw);
-    const maxVwPx = parseFloat(maxVw);
+    useEffect(() => {
+        const onResize = () => setViewportWidth(window.innerWidth);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
-    let error: string | null = null;
-    if ([minSizePx, maxSizePx, minVwPx, maxVwPx].some(n => Number.isNaN(n))) {
-        error = 'Enter a number in every field.';
-    } else if (minSizePx <= 0 || maxSizePx <= 0 || minVwPx <= 0 || maxVwPx <= 0) {
-        error = 'All values must be greater than zero.';
-    } else if (maxVwPx <= minVwPx) {
-        error = 'Max viewport width must be greater than min viewport width.';
-    } else if (maxSizePx < minSizePx) {
-        error = 'Max size should be greater than or equal to min size.';
-    }
-
-    const result = error ? null : computeClamp(minSizePx, maxSizePx, minVwPx, maxVwPx);
-    const declaration = result ? `${property || 'font-size'}: ${result.css};` : '';
-
-    const copy = () => {
-        if (!declaration) return;
-        navigator.clipboard.writeText(declaration);
-        setSnackbar('CSS copied to clipboard!');
+    const handleUnitChange = (_: React.MouseEvent<HTMLElement>, next: SizeUnit | null) => {
+        if (!next || next === unit) return;
+        // Converting the numbers when the unit is switched (assuming the
+        // standard 16px root font size) keeps the fields showing a size
+        // that means the same thing, instead of silently reinterpreting
+        // "24" as 24rem the moment the toggle is clicked.
+        const factor = next === 'rem' ? 1 / 16 : 16;
+        setMinSize(v => round(v * factor, 3));
+        setMaxSize(v => round(v * factor, 3));
+        setUnit(next);
     };
 
-    // Slider range always covers the fluid zone plus a padded flat region on
-    // each side, so both the "locked at minimum" and "locked at maximum"
-    // behavior are visible no matter what viewport widths are entered.
-    let sliderMin = 280;
-    let sliderMax = 2560;
-    let clampedPreviewVw = previewVw;
-    let previewPx = minSizePx || 16;
-    if (result) {
-        const pad = Math.max(50, (maxVwPx - minVwPx) * 0.2);
-        sliderMin = Math.max(0, minVwPx - pad);
-        sliderMax = maxVwPx + pad;
-        clampedPreviewVw = Math.min(Math.max(previewVw, sliderMin), sliderMax);
-        previewPx = previewSizePx(clampedPreviewVw, minSizePx, maxSizePx, minVwPx, maxVwPx);
-    }
-    const viewportPercent = result ? ((clampedPreviewVw - sliderMin) / (sliderMax - sliderMin)) * 100 : 0;
+    const errorMessage = useMemo(() => {
+        if (maxVw <= minVw) return 'Max viewport width must be greater than min viewport width.';
+        if (maxSize < minSize) return 'Max size should be greater than or equal to min size.';
+        return null;
+    }, [minSize, maxSize, minVw, maxVw]);
+
+    const clamp = useMemo(
+        () => (errorMessage ? null : computeClamp(minSize, maxSize, minVw, maxVw, unit)),
+        [errorMessage, minSize, maxSize, minVw, maxVw, unit],
+    );
+
+    const currentSize = clamp ? round(sizeAtViewport(viewportWidth, minSize, maxSize, minVw, maxVw), 2) : null;
+    const previewCss = clamp ? `clamp(${clamp.minCss}, ${clamp.preferredExpr}, ${clamp.maxCss})` : undefined;
+
+    const copy = () => {
+        if (!clamp) return;
+        navigator.clipboard.writeText(clamp.declaration);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     return (
         <ServicePageShell
             icon={Straighten}
-            title="CSS Clamp() Calculator"
-            subtitle="Generate a fluid, responsive clamp() value that scales smoothly between a min and max viewport width | no media queries"
+            title="CSS Clamp / Fluid Typography Calculator"
+            subtitle="Generate a clamp() value that scales font size smoothly between two viewport widths, no breakpoints needed"
             maxWidth="md"
-            seoTitle="CSS clamp() Calculator | Fluid Responsive Font Size Generator"
-            keywords={['css clamp calculator', 'fluid typography generator', 'css clamp generator', 'responsive font size css', 'fluid font size calculator', 'css clamp min max preferred', 'vw font size formula', 'responsive typography without media queries', 'css locking calculator']}
-            about="Generates a CSS clamp() declaration that scales a size fluidly between a minimum value at a minimum viewport width and a maximum value at a maximum viewport width, using the same linear-interpolation formula behind well-known fluid-typography calculators: a slope and rem offset are derived from the four inputs and combined into a calc() expression mixing a fixed rem amount with a vw, or viewport-width, term. Below the min viewport width the size stays locked at the minimum; above the max viewport width it stays locked at the maximum; in between, it scales continuously with no breakpoints or media queries at all. It defaults to font-size but the property name is editable, since the exact same clamp() value works for any scalable length such as padding, gap, or line-height. All the math runs locally in the browser as plain JavaScript, and the mock viewport slider recomputes the previewed size at any chosen width without needing to actually resize the browser window."
+            toolId={79}
+            seoTitle="CSS clamp() Calculator | Fluid Typography Generator"
+            seoDescription="Generate a CSS clamp() declaration for fluid, responsive font sizing. Enter a min and max size and viewport width and get ready-to-use CSS, with the underlying math shown and a live preview."
+            keywords={['css clamp calculator', 'fluid typography generator', 'css clamp generator', 'responsive font size calculator', 'fluid font size css', 'vw font size formula', 'clamp function css', 'responsive typography without media queries']}
+            about="This tool works out the calc() expression that belongs inside a CSS clamp() function, so a font size can scale smoothly between a minimum and a maximum as the viewport width changes. It uses the standard fluid-typography formula: a straight line is fitted between the min size at the min viewport width and the max size at the max viewport width, then rewritten in terms of the vw unit so a browser can evaluate it without any JavaScript. Below the min viewport the size stays fixed at the minimum, above the max viewport it stays fixed at the maximum, and it scales continuously in between. Everything runs in your browser, so nothing you enter here is sent anywhere."
             howToSteps={[
-                { name: 'Set the min and max sizes', text: 'Enter the smallest size the property should ever be and the largest size it should ever reach, in pixels.' },
-                { name: 'Set the min and max viewport widths', text: 'Enter the viewport width at which the size should stop shrinking, and the width at which it should stop growing.' },
-                { name: 'Name the CSS property', text: 'Leave it as font-size, or change it to padding, gap, line-height, or any other scalable property; the generated clamp value works the same way.' },
-                { name: 'Drag the preview slider', text: 'Move the mock viewport slider to see the exact computed size at any width, including the flat regions below the min and above the max viewport.' },
-                { name: 'Copy the CSS', text: 'Click Copy to copy the ready-to-use declaration to the clipboard.' },
+                { name: 'Choose a unit', text: "Pick px or rem for the font sizes. rem is usually the better choice for font-size, since it respects a visitor's browser font-size setting." },
+                { name: 'Set the min and max sizes', text: 'Enter the smallest size the text should ever be and the largest size it should grow to.' },
+                { name: 'Set the viewport range', text: 'Enter the viewport width where the size should stop shrinking and the width where it should stop growing. 320px and 1280px are reasonable defaults, covering small phones through small laptops.' },
+                { name: 'Copy the CSS', text: 'Click Copy to grab the finished clamp() declaration for your stylesheet.' },
             ]}
             faq={[
-                { question: 'Why use clamp() instead of media query breakpoints?', answer: 'A single clamp() declaration replaces several breakpoint-specific rules and scales continuously with the viewport instead of jumping in steps at each breakpoint, which typically looks smoother and takes less CSS code.' },
-                { question: 'What happens outside the min and max viewport range?', answer: 'The size is locked flat: it stays at the minimum for any viewport narrower than the min width, and at the maximum for any viewport wider than the max width. Interpolation only happens strictly between the two.' },
-                { question: 'Is clamp() supported in all browsers?', answer: 'Yes, in any browser released since around 2020, including Chrome, Firefox, Safari, and Edge. It is not supported in Internet Explorer.' },
-                { question: 'Can this be used for something other than font-size?', answer: 'Yes, the generated value is a plain CSS length, so it works for padding, margin, gap, width, line-height, or any other property that accepts a length. Just change the property name field before copying.' },
+                { question: 'What does clamp() actually do?', answer: 'clamp() takes three arguments: a minimum, a preferred value, and a maximum. The browser evaluates the preferred value and uses it as-is, unless it falls below the minimum or above the maximum, in which case it uses whichever limit was crossed instead. Here the preferred value is a calc() expression built from a vw unit, so the effective size grows continuously with the viewport until it hits one of the two limits.' },
+                { question: 'Why is this better than setting font sizes at a few breakpoints?', answer: 'Breakpoints change a size in visible jumps: it holds steady, then suddenly steps to a new value at one specific width. A clamp()-based size changes by a fraction of a pixel with every pixel of viewport change, so there is no jump to notice, and no set of breakpoint values to pick and maintain in the first place.' },
+                { question: 'Do I need to worry about browser support?', answer: 'Not really. clamp() has been supported in every major browser, Chrome, Firefox, Safari and Edge, since 2020. For a site targeting current browsers there is no real compatibility caveat here.' },
+                { question: 'Why does the calc() mix a fixed amount with a vw term instead of just using vw?', answer: 'A pure vw value has no floor or ceiling of its own: on a very narrow or very wide screen it keeps shrinking or growing without limit. Adding a fixed rem or px amount and wrapping the whole thing in clamp() is what gives the result a hard minimum and maximum while it still scales smoothly in between.' },
             ]}
         >
-            <Card sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-                <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={6} sm={3}>
-                            <TextField
-                                fullWidth size="small" label="Min size (px)" type="number"
-                                value={minSize} onChange={e => setMinSize(e.target.value)}
-                                inputProps={{ min: 0, step: 1 }}
-                            />
-                        </Grid>
-                        <Grid item xs={6} sm={3}>
-                            <TextField
-                                fullWidth size="small" label="Max size (px)" type="number"
-                                value={maxSize} onChange={e => setMaxSize(e.target.value)}
-                                inputProps={{ min: 0, step: 1 }}
-                            />
-                        </Grid>
-                        <Grid item xs={6} sm={3}>
-                            <TextField
-                                fullWidth size="small" label="Min viewport (px)" type="number"
-                                value={minVw} onChange={e => setMinVw(e.target.value)}
-                                inputProps={{ min: 0, step: 1 }}
-                            />
-                        </Grid>
-                        <Grid item xs={6} sm={3}>
-                            <TextField
-                                fullWidth size="small" label="Max viewport (px)" type="number"
-                                value={maxVw} onChange={e => setMaxVw(e.target.value)}
-                                inputProps={{ min: 0, step: 1 }}
-                            />
-                        </Grid>
-                    </Grid>
+            <Grid container spacing={3} sx={{ flex: 1, minHeight: 0 }}>
+                <Grid item xs={12} md={5}>
+                    <Card>
+                        <CardContent sx={{ p: 3 }}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                                <Typography variant="subtitle2" fontWeight={800}>Font size</Typography>
+                                <ToggleButtonGroup size="small" exclusive value={unit} onChange={handleUnitChange}>
+                                    <ToggleButton value="px" sx={{ px: 1.5, fontSize: '0.7rem' }}>px</ToggleButton>
+                                    <ToggleButton value="rem" sx={{ px: 1.5, fontSize: '0.7rem' }}>rem</ToggleButton>
+                                </ToggleButtonGroup>
+                            </Stack>
 
-                    <TextField
-                        size="small"
-                        label="CSS property"
-                        value={property}
-                        onChange={e => setProperty(e.target.value)}
-                        helperText="Applied to the generated declaration below | change it if you are not styling font-size"
-                        sx={{ maxWidth: 260 }}
-                    />
-
-                    {error && <Alert severity="warning">{error}</Alert>}
-
-                    {result && (
-                        <>
-                            <Paper sx={{ p: 2, bgcolor: '#0d1117', borderRadius: 2, position: 'relative', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                                    Generated CSS
-                                </Typography>
-                                <Typography sx={{ fontFamily: 'monospace', fontSize: '0.9rem', color: '#3dfc55', wordBreak: 'break-all', pr: 5 }}>
-                                    {declaration}
-                                </Typography>
-                                <Button
+                            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    label={`Min size (${unit})`}
+                                    type="number"
                                     size="small"
-                                    onClick={copy}
-                                    startIcon={<ContentCopy sx={{ fontSize: 14 }} />}
-                                    sx={{ position: 'absolute', top: 8, right: 8 }}
-                                >
-                                    Copy
-                                </Button>
-                            </Paper>
-
-                            <Box>
-                                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" sx={{ mb: 0.5 }}>
-                                    Mock viewport width: {Math.round(clampedPreviewVw)}px &rarr; {previewPx.toFixed(1)}px ({(previewPx / ROOT_FONT_SIZE).toFixed(3)}rem)
-                                </Typography>
-                                <Slider
-                                    value={clampedPreviewVw}
-                                    onChange={(_, v) => setPreviewVw(v as number)}
-                                    min={sliderMin}
-                                    max={sliderMax}
-                                    step={1}
-                                    sx={{ color: primary }}
+                                    value={minSize}
+                                    onChange={e => setMinSize(Math.max(0, Number(e.target.value)))}
+                                    inputProps={{ step: unit === 'rem' ? 0.1 : 1, min: 0 }}
                                 />
-                                <Stack direction="row" justifyContent="space-between" sx={{ mt: -1, mb: 2 }}>
-                                    <Typography variant="caption" color="text.disabled">{Math.round(sliderMin)}px</Typography>
-                                    <Typography variant="caption" color="text.disabled">{Math.round(sliderMax)}px</Typography>
-                                </Stack>
+                                <TextField
+                                    fullWidth
+                                    label={`Max size (${unit})`}
+                                    type="number"
+                                    size="small"
+                                    value={maxSize}
+                                    onChange={e => setMaxSize(Math.max(0, Number(e.target.value)))}
+                                    inputProps={{ step: unit === 'rem' ? 0.1 : 1, min: 0 }}
+                                />
+                            </Stack>
 
-                                <Box sx={{ border: `1px dashed ${alpha(primary, 0.35)}`, borderRadius: 2, p: 2, overflowX: 'auto' }}>
+                            <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 2 }}>Viewport range</Typography>
+                            <Stack direction="row" spacing={2}>
+                                <TextField
+                                    fullWidth
+                                    label="Min viewport (px)"
+                                    type="number"
+                                    size="small"
+                                    value={minVw}
+                                    onChange={e => setMinVw(Math.max(0, Number(e.target.value)))}
+                                    inputProps={{ step: 10, min: 0 }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Max viewport (px)"
+                                    type="number"
+                                    size="small"
+                                    value={maxVw}
+                                    onChange={e => setMaxVw(Math.max(0, Number(e.target.value)))}
+                                    inputProps={{ step: 10, min: 0 }}
+                                />
+                            </Stack>
+
+                            {unit === 'rem' && (
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
+                                    Assumes the standard 16px root font size when converting between units.
+                                </Typography>
+                            )}
+
+                            {errorMessage && <Alert severity="warning" sx={{ mt: 2 }}>{errorMessage}</Alert>}
+                        </CardContent>
+                    </Card>
+                </Grid>
+
+                <Grid item xs={12} md={7}>
+                    <Stack spacing={2}>
+                        <Paper sx={{ p: 3, borderRadius: 2, bgcolor: alpha(primary, 0.06), border: `1px solid ${alpha(primary, 0.2)}`, textAlign: 'center', overflow: 'hidden' }}>
+                            {clamp ? (
+                                <>
                                     <Box
-                                        sx={{
-                                            width: `${Math.max(viewportPercent, 6)}%`,
-                                            minWidth: 140,
-                                            mx: 'auto',
-                                            bgcolor: alpha(primary, 0.08),
-                                            border: `1px solid ${alpha(primary, 0.25)}`,
-                                            borderRadius: 1.5,
-                                            p: 2,
-                                            textAlign: 'center',
-                                        }}
+                                        component="p"
+                                        style={{ fontSize: previewCss, margin: 0, fontWeight: 700, lineHeight: 1.3, wordBreak: 'break-word' }}
                                     >
-                                        <Typography
-                                            sx={{ fontSize: `${previewPx}px`, fontWeight: 700, lineHeight: 1.2, wordBreak: 'break-word' }}
-                                        >
-                                            The quick brown fox
-                                        </Typography>
+                                        The quick brown fox jumps
                                     </Box>
-                                </Box>
-                            </Box>
-                        </>
-                    )}
-                </CardContent>
-            </Card>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
+                                        At your current viewport ({viewportWidth}px) this evaluates to <strong>{currentSize}{unit}</strong>. Resize the browser window to watch it change live.
+                                    </Typography>
+                                </>
+                            ) : (
+                                <Typography variant="body2" color="text.disabled">Fix the values on the left to see a preview.</Typography>
+                            )}
+                        </Paper>
 
-            <Snackbar open={!!snackbar} autoHideDuration={2000} onClose={() => setSnackbar(null)} message={snackbar || ''} />
+                        <Paper sx={{ p: 2, bgcolor: '#0d1117', borderRadius: 2, position: 'relative', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>Generated CSS</Typography>
+                            <Typography sx={{ fontFamily: 'monospace', fontSize: '0.85rem', color: '#3dfc55', wordBreak: 'break-all', pr: 5 }}>
+                                {clamp ? clamp.declaration : '/* fix the values on the left */'}
+                            </Typography>
+                            <IconButton onClick={copy} size="small" disabled={!clamp} sx={{ position: 'absolute', top: 8, right: 8, color: copied ? 'success.main' : 'text.secondary' }}>
+                                {copied ? <Check fontSize="small" /> : <ContentCopy fontSize="small" />}
+                            </IconButton>
+                        </Paper>
+
+                        {clamp && (
+                            <Paper sx={{ p: 2, borderRadius: 2 }}>
+                                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ display: 'block', mb: 1 }}>
+                                    HOW IT IS CALCULATED
+                                </Typography>
+                                <Grid container spacing={1.5}>
+                                    <Grid item xs={4}>
+                                        <Typography variant="caption" color="text.secondary" display="block">Slope</Typography>
+                                        <Typography variant="body2" fontFamily="monospace" fontWeight={700}>{round(clamp.slope, 6)}</Typography>
+                                    </Grid>
+                                    <Grid item xs={4}>
+                                        <Typography variant="caption" color="text.secondary" display="block">vw coefficient</Typography>
+                                        <Typography variant="body2" fontFamily="monospace" fontWeight={700}>{clamp.vwCoefficient}vw</Typography>
+                                    </Grid>
+                                    <Grid item xs={4}>
+                                        <Typography variant="caption" color="text.secondary" display="block">Constant</Typography>
+                                        <Typography variant="body2" fontFamily="monospace" fontWeight={700}>{clamp.constant}{unit}</Typography>
+                                    </Grid>
+                                </Grid>
+                                <Divider sx={{ my: 1.5 }} />
+                                <Typography variant="caption" color="text.secondary">
+                                    constant = min size - (slope x min viewport). vw coefficient = slope x 100. The preferred value lands on exactly {clamp.minCss} at {minVw}px of viewport width and exactly {clamp.maxCss} at {maxVw}px.
+                                </Typography>
+                            </Paper>
+                        )}
+                    </Stack>
+                </Grid>
+            </Grid>
         </ServicePageShell>
     );
 };
