@@ -832,5 +832,50 @@
       "mastermind puzzle browser",
       "logic deduction game online"
     ]
+  },
+  {
+    "id": 40,
+    "title": "Dots and Boxes",
+    "description": "Claim edges to complete boxes against the CPU. Finishing a box scores it and earns another turn. Most boxes when the grid is full wins.",
+    "icon": "BorderAll",
+    "path": "/sandbox/dots-and-boxes",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "strategy",
+      "paper game",
+      "vs cpu"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "dots and boxes game",
+      "dots and boxes online",
+      "play dots and boxes free",
+      "squares game online",
+      "classic paper game online"
+    ]
+  },
+  {
+    "id": 41,
+    "title": "Word Search",
+    "description": "Find every hidden word in a 12x12 letter grid. Words run forward, backward, and diagonally in any direction.",
+    "icon": "Search",
+    "path": "/sandbox/word-search",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "word game",
+      "grid"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "word search game",
+      "word search online",
+      "play word search free",
+      "word find puzzle",
+      "hidden word puzzle online"
+    ]
   }
 ]
