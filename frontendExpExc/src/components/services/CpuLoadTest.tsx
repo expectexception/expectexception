@@ -44,6 +44,24 @@ const BASELINE = {
 
 const SCORE_WEIGHTS = { single: 0.25, multi: 0.35, gpu: 0.25, memory: 0.15 };
 
+/* ------------------------------------------------------------------ *
+ * Live Stress Test throttle detection. Every worker posts a progress
+ * message roughly every 200ms (REPORT_INTERVAL_MS in the worker), so
+ * with N workers the combined message rate is ~N per 200ms - on an
+ * 8+ core machine that's enough samples to satisfy a fixed sample-count
+ * gate in well under a second, long before per-core throughput has
+ * actually stabilized (workers spin up at slightly different times,
+ * and V8 needs a moment to JIT-warm the hot loop). A gate expressed in
+ * elapsed time instead of sample count behaves the same regardless of
+ * core count, and giving the peak the same grace period stops one
+ * noisy early reading from anchoring an unrealistically high bar that
+ * later, perfectly normal throughput can't clear.
+ * ------------------------------------------------------------------ */
+const STRESS_WARMUP_MS = 3000; // ignore samples this early when tracking peak throughput
+const STRESS_MIN_ELAPSED_FOR_CHECK_MS = 6000; // don't evaluate throttle status before this much time has passed
+const STRESS_RECENT_WINDOW_MS = 4000; // "recent average" is a trailing wall-clock window, not a sample count
+const STRESS_THROTTLE_RATIO = 0.85;
+
 type Phase = 'idle' | 'single-int' | 'single-float' | 'multi-int' | 'multi-float' | 'gpu' | 'memory' | 'complete';
 
 const PHASE_ORDER: { key: Phase; label: string }[] = [
@@ -469,7 +487,7 @@ const CpuLoadTest: React.FC = () => {
     const stressChartRef = useRef<{ time: number; total: number }[]>([]);
     const stressPeakRef = useRef(0);
     const stressStartRef = useRef(0);
-    const recentRef = useRef<number[]>([]);
+    const recentRef = useRef<{ atMs: number; total: number }[]>([]);
 
     const startStress = useCallback(() => {
         setStressRunning(true);
@@ -495,21 +513,31 @@ const CpuLoadTest: React.FC = () => {
                 setStressCoreLoads(loads.slice());
 
                 const total = loads.reduce((a, b) => a + b, 0);
-                const t = (Date.now() - stressStartRef.current) / 1000;
+                const elapsedMs = Date.now() - stressStartRef.current;
+                const t = elapsedMs / 1000;
                 setStressElapsed(t);
 
                 stressChartRef.current = [...stressChartRef.current.slice(-150), { time: parseFloat(t.toFixed(1)), total }];
                 setStressChart([...stressChartRef.current]);
 
-                if (total > stressPeakRef.current) {
+                // Skip the warm-up window when tracking peak: an early reading
+                // taken before every worker has ramped up (or before the JIT
+                // has warmed the hot loop) can be noisy in either direction,
+                // and if it happens to be a high outlier it sets a bar normal
+                // sustained throughput may never actually clear.
+                if (elapsedMs > STRESS_WARMUP_MS && total > stressPeakRef.current) {
                     stressPeakRef.current = total;
                     setStressPeak(total);
                 }
 
-                recentRef.current = [...recentRef.current.slice(-24), total];
-                if (recentRef.current.length >= 15 && stressPeakRef.current > 0) {
-                    const avg = recentRef.current.reduce((a, b) => a + b, 0) / recentRef.current.length;
-                    setThrottleWarning(avg < stressPeakRef.current * 0.85);
+                recentRef.current = [...recentRef.current, { atMs: elapsedMs, total }]
+                    .filter((s) => elapsedMs - s.atMs <= STRESS_RECENT_WINDOW_MS);
+
+                if (elapsedMs > STRESS_MIN_ELAPSED_FOR_CHECK_MS && stressPeakRef.current > 0 && recentRef.current.length > 0) {
+                    const avg = recentRef.current.reduce((a, s) => a + s.total, 0) / recentRef.current.length;
+                    setThrottleWarning(avg < stressPeakRef.current * STRESS_THROTTLE_RATIO);
+                } else {
+                    setThrottleWarning(false);
                 }
             };
             w.postMessage({ type: 'stress', workload: stressWorkload });
