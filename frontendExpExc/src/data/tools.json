@@ -2060,5 +2060,197 @@
       "text list deduplicator",
       "dedupe list online"
     ]
+  },
+  {
+    "id": 88,
+    "title": "Display Refresh Rate & Frame Time Tester",
+    "description": "Measure your monitor's real refresh rate and frame-time consistency using live requestAnimationFrame timing.",
+    "icon": "Monitor",
+    "path": "/services/refresh-rate-tester",
+    "category": "developer",
+    "popularity": 73,
+    "tags": [
+      "display",
+      "refresh rate",
+      "benchmark",
+      "monitor"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "refresh rate test",
+      "monitor hz test",
+      "frame time test",
+      "144hz test online",
+      "display refresh rate checker"
+    ]
+  },
+  {
+    "id": 89,
+    "title": "Network Latency & Jitter Tester",
+    "description": "Real round-trip time and jitter to major internet endpoints, measured live via timed HTTP requests.",
+    "icon": "NetworkPing",
+    "path": "/services/network-latency-tester",
+    "category": "developer",
+    "popularity": 76,
+    "tags": [
+      "network",
+      "latency",
+      "ping",
+      "jitter"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "ping test online",
+      "network latency test",
+      "jitter test",
+      "browser ping tool",
+      "rtt test online"
+    ]
+  },
+  {
+    "id": 90,
+    "title": "WebAssembly vs JavaScript Benchmark",
+    "description": "Real calls-per-second throughput comparison between a WebAssembly export and the equivalent JavaScript function.",
+    "icon": "Compare",
+    "path": "/services/wasm-vs-js-benchmark",
+    "category": "developer",
+    "popularity": 70,
+    "tags": [
+      "webassembly",
+      "wasm",
+      "benchmark",
+      "javascript"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "webassembly benchmark",
+      "wasm vs javascript",
+      "wasm performance test",
+      "javascript vs wasm speed",
+      "browser wasm benchmark"
+    ]
+  },
+  {
+    "id": 91,
+    "title": "Storage (IndexedDB) Speed Test",
+    "description": "Real write and read throughput to your browser's IndexedDB storage, measured in MB/s.",
+    "icon": "SdStorage",
+    "path": "/services/storage-speed-test",
+    "category": "developer",
+    "popularity": 71,
+    "tags": [
+      "storage",
+      "indexeddb",
+      "benchmark",
+      "speed test"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "indexeddb speed test",
+      "browser storage benchmark",
+      "disk speed test online",
+      "browser storage speed",
+      "indexeddb benchmark"
+    ]
+  },
+  {
+    "id": 92,
+    "title": "Audio Latency Analyzer",
+    "description": "Real Web Audio API latency figures (baseLatency, outputLatency, sample rate) plus a live scheduling-precision test.",
+    "icon": "GraphicEq",
+    "path": "/services/audio-latency-analyzer",
+    "category": "developer",
+    "popularity": 68,
+    "tags": [
+      "audio",
+      "latency",
+      "web audio api",
+      "benchmark"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "audio latency test",
+      "web audio api latency",
+      "browser audio latency",
+      "audiocontext baselatency",
+      "audio scheduling precision test"
+    ]
+  },
+  {
+    "id": 93,
+    "title": "Browser Feature & API Support Matrix",
+    "description": "Live runtime detection of modern web platform APIs across graphics, storage, media, security, and more, not a User-Agent guess.",
+    "icon": "Checklist",
+    "path": "/services/browser-feature-detector",
+    "category": "developer",
+    "popularity": 74,
+    "tags": [
+      "browser",
+      "feature detection",
+      "web api",
+      "compatibility"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "browser feature detector",
+      "web api support checker",
+      "browser compatibility test",
+      "check browser features online",
+      "webgpu webassembly support checker"
+    ]
+  },
+  {
+    "id": 94,
+    "title": "Installed Font Detector",
+    "description": "Detects which fonts from a candidate list are actually installed on your system, using real canvas text measurement.",
+    "icon": "FontDownload",
+    "path": "/services/font-detector",
+    "category": "design",
+    "popularity": 69,
+    "tags": [
+      "fonts",
+      "detection",
+      "canvas",
+      "typography"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "font detector online",
+      "installed fonts checker",
+      "detect fonts browser",
+      "font availability test",
+      "canvas font detection"
+    ]
+  },
+  {
+    "id": 95,
+    "title": "WebRTC IP Leak Test",
+    "description": "Checks whether WebRTC reveals your real local or public IP address, the same technique VPN leak-test sites use.",
+    "icon": "VpnLock",
+    "path": "/services/webrtc-ip-leak-test",
+    "category": "security",
+    "popularity": 77,
+    "tags": [
+      "webrtc",
+      "ip leak",
+      "privacy",
+      "vpn test"
+    ],
+    "color": "error",
+    "is_active": true,
+    "keywords": [
+      "webrtc ip leak test",
+      "vpn leak test",
+      "webrtc leak test online",
+      "check ip leak webrtc",
+      "stun ip test"
+    ]
   }
 ]
