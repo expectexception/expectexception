@@ -1819,5 +1819,101 @@
       "mockup image generator",
       "placeholder.com alternative"
     ]
+  },
+  {
+    "id": 77,
+    "title": "Word Cloud Generator",
+    "description": "Paste text and get a visual word cloud sized by frequency, with a real spiral-placement layout that avoids overlap. Stopword filtering, PNG download.",
+    "icon": "Cloud",
+    "path": "/services/word-cloud-generator",
+    "category": "design",
+    "popularity": 78,
+    "tags": [
+      "text",
+      "visualization",
+      "design",
+      "word cloud"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "word cloud generator",
+      "free word cloud maker",
+      "text visualization tool",
+      "word frequency cloud",
+      "tag cloud generator"
+    ]
+  },
+  {
+    "id": 78,
+    "title": "Whitespace & Invisible Character Visualizer",
+    "description": "See every space, tab, line break and hidden Unicode character actually inside your text - non-breaking spaces, zero-width characters and more, each labeled.",
+    "icon": "SpaceBar",
+    "path": "/services/whitespace-visualizer",
+    "category": "developer",
+    "popularity": 76,
+    "tags": [
+      "text",
+      "developer",
+      "debugging",
+      "unicode"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "whitespace visualizer",
+      "invisible character finder",
+      "non-breaking space detector",
+      "zero width space finder",
+      "hidden unicode character checker"
+    ]
+  },
+  {
+    "id": 79,
+    "title": "CSS Clamp / Fluid Typography Calculator",
+    "description": "Generate a CSS clamp() value for fluid, responsive font sizing between a minimum and maximum viewport width, with a live preview and copyable CSS.",
+    "icon": "Straighten",
+    "path": "/services/css-clamp-calculator",
+    "category": "developer",
+    "popularity": 81,
+    "tags": [
+      "css",
+      "typography",
+      "developer",
+      "responsive"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "css clamp calculator",
+      "fluid typography generator",
+      "responsive font size calculator",
+      "css clamp generator",
+      "fluid type scale"
+    ]
+  },
+  {
+    "id": 80,
+    "title": "Passphrase Generator",
+    "description": "Generate a memorable, Diceware-style multi-word passphrase using cryptographically secure randomness, with the real calculated entropy shown.",
+    "icon": "Casino",
+    "path": "/services/passphrase-generator",
+    "category": "security",
+    "popularity": 80,
+    "tags": [
+      "password",
+      "security",
+      "passphrase",
+      "generator"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "passphrase generator",
+      "diceware generator",
+      "memorable password generator",
+      "random word password generator",
+      "secure passphrase generator"
+    ]
   }
 ]

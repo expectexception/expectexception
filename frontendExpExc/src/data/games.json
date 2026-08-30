@@ -786,5 +786,51 @@
       "yahtzee scoresheet",
       "free yahtzee no download"
     ]
+  },
+  {
+    "id": 38,
+    "title": "Battleship",
+    "description": "Place your five ships, then fire at the enemy grid to sink their fleet before they sink yours. The AI hunts in a checkerboard pattern and tracks hits to finish off ships it finds.",
+    "icon": "GpsFixed",
+    "path": "/sandbox/battleship",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "ai",
+      "strategy",
+      "naval"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "battleship online",
+      "play battleship free",
+      "battleship vs computer",
+      "naval strategy game online",
+      "battleship browser game"
+    ]
+  },
+  {
+    "id": 39,
+    "title": "Mastermind",
+    "description": "Crack a secret 4-color code in 10 guesses or fewer. Each guess gets real black/white peg feedback: exact matches versus right color, wrong position.",
+    "icon": "Extension",
+    "path": "/sandbox/mastermind",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "logic",
+      "deduction",
+      "classic"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "mastermind online",
+      "play mastermind free",
+      "code breaking game",
+      "mastermind puzzle browser",
+      "logic deduction game online"
+    ]
   }
 ]
