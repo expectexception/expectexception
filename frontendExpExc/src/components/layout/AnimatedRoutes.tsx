@@ -136,6 +136,9 @@ const WordCloudGenerator = lazy(() => import('../services/WordCloudGenerator'));
 const WhitespaceVisualizer = lazy(() => import('../services/WhitespaceVisualizer'));
 const CssClampCalculator = lazy(() => import('../services/CssClampCalculator'));
 const PassphraseGenerator = lazy(() => import('../services/PassphraseGenerator'));
+const SubnetCalculator = lazy(() => import('../services/SubnetCalculator'));
+const CurlCommandGenerator = lazy(() => import('../services/CurlCommandGenerator'));
+const SlugGenerator = lazy(() => import('../services/SlugGenerator'));
 
 // Sandbox games - lazy loaded (all frontend-only, no backend, no auth gate)
 const SnakeGame = lazy(() => import('../sandbox/SnakeGame'));
@@ -325,6 +328,9 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/whitespace-visualizer" element={<PageTransition><WhitespaceVisualizer /></PageTransition>} />
                     <Route path="/services/css-clamp-calculator" element={<PageTransition><CssClampCalculator /></PageTransition>} />
                     <Route path="/services/passphrase-generator" element={<PageTransition><PassphraseGenerator /></PageTransition>} />
+                    <Route path="/services/subnet-calculator" element={<PageTransition><SubnetCalculator /></PageTransition>} />
+                    <Route path="/services/curl-command-generator" element={<PageTransition><CurlCommandGenerator /></PageTransition>} />
+                    <Route path="/services/slug-generator" element={<PageTransition><SlugGenerator /></PageTransition>} />
 
                     {/* Sandbox - public, frontend-only mini games */}
                     <Route path="/sandbox" element={<PageTransition><SandboxPage /></PageTransition>} />
