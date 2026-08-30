@@ -1988,5 +1988,77 @@
       "slugify text online",
       "seo url generator"
     ]
+  },
+  {
+    "id": 84,
+    "title": "ULID Generator",
+    "description": "Generate sortable, timestamp-prefixed unique identifiers as fixed 26-character Crockford Base32 strings.",
+    "icon": "Tag",
+    "path": "/services/ulid-generator",
+    "category": "developer",
+    "popularity": 76,
+    "tags": [
+      "ulid",
+      "uuid",
+      "identifier",
+      "developer"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "ulid generator",
+      "sortable unique id",
+      "ulid vs uuid",
+      "crockford base32 id",
+      "timestamp based id generator"
+    ]
+  },
+  {
+    "id": 85,
+    "title": "Robots.txt Generator",
+    "description": "Build a robots.txt with per-user-agent allow and disallow rules, a crawl delay, and a sitemap reference.",
+    "icon": "Android",
+    "path": "/services/robots-txt-generator",
+    "category": "developer",
+    "popularity": 75,
+    "tags": [
+      "seo",
+      "robots.txt",
+      "crawler",
+      "developer"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "robots.txt generator",
+      "create robots.txt",
+      "robots.txt builder",
+      "seo robots file generator",
+      "disallow generator"
+    ]
+  },
+  {
+    "id": 86,
+    "title": "List Sorter & Deduplicator",
+    "description": "Sort, deduplicate, trim and clean up a list of lines, all live as you type.",
+    "icon": "Sort",
+    "path": "/services/list-sorter-deduplicator",
+    "category": "utility",
+    "popularity": 74,
+    "tags": [
+      "list",
+      "sort",
+      "deduplicate",
+      "text"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "list sorter online",
+      "remove duplicate lines",
+      "sort list alphabetically",
+      "text list deduplicator",
+      "dedupe list online"
+    ]
   }
 ]
