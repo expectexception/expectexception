@@ -127,6 +127,11 @@ const ImageColorExtractor = lazy(() => import('../services/ImageColorExtractor')
 const PercentageCalculator = lazy(() => import('../services/PercentageCalculator'));
 const QrCodeReader = lazy(() => import('../services/QrCodeReader'));
 const PasswordStrengthChecker = lazy(() => import('../services/PasswordStrengthChecker'));
+const JwtGenerator = lazy(() => import('../services/JwtGenerator'));
+const ApiRequestTester = lazy(() => import('../services/ApiRequestTester'));
+const SvgOptimizer = lazy(() => import('../services/SvgOptimizer'));
+const WorldClock = lazy(() => import('../services/WorldClock'));
+const PlaceholderImageGenerator = lazy(() => import('../services/PlaceholderImageGenerator'));
 
 // Sandbox games - lazy loaded (all frontend-only, no backend, no auth gate)
 const SnakeGame = lazy(() => import('../sandbox/SnakeGame'));
@@ -164,6 +169,8 @@ const Checkers = lazy(() => import('../sandbox/Checkers'));
 const EndlessRunner = lazy(() => import('../sandbox/EndlessRunner'));
 const Blackjack = lazy(() => import('../sandbox/Blackjack'));
 const Asteroids = lazy(() => import('../sandbox/Asteroids'));
+const Othello = lazy(() => import('../sandbox/Othello'));
+const Yahtzee = lazy(() => import('../sandbox/Yahtzee'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -303,6 +310,11 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/percentage-calculator" element={<PageTransition><PercentageCalculator /></PageTransition>} />
                     <Route path="/services/qr-code-reader" element={<PageTransition><QrCodeReader /></PageTransition>} />
                     <Route path="/services/password-strength-checker" element={<PageTransition><PasswordStrengthChecker /></PageTransition>} />
+                    <Route path="/services/jwt-generator" element={<PageTransition><JwtGenerator /></PageTransition>} />
+                    <Route path="/services/api-request-tester" element={<PageTransition><ApiRequestTester /></PageTransition>} />
+                    <Route path="/services/svg-optimizer" element={<PageTransition><SvgOptimizer /></PageTransition>} />
+                    <Route path="/services/world-clock" element={<PageTransition><WorldClock /></PageTransition>} />
+                    <Route path="/services/placeholder-image-generator" element={<PageTransition><PlaceholderImageGenerator /></PageTransition>} />
 
                     {/* Sandbox - public, frontend-only mini games */}
                     <Route path="/sandbox" element={<PageTransition><SandboxPage /></PageTransition>} />
@@ -341,6 +353,8 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/sandbox/endless-runner" element={<PageTransition><EndlessRunner /></PageTransition>} />
                     <Route path="/sandbox/blackjack" element={<PageTransition><Blackjack /></PageTransition>} />
                     <Route path="/sandbox/asteroids" element={<PageTransition><Asteroids /></PageTransition>} />
+                    <Route path="/sandbox/othello" element={<PageTransition><Othello /></PageTransition>} />
+                    <Route path="/sandbox/yahtzee" element={<PageTransition><Yahtzee /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />

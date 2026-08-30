@@ -1697,5 +1697,127 @@
       "password strength test online",
       "crack time estimator"
     ]
+  },
+  {
+    "id": 72,
+    "title": "JWT Generator",
+    "description": "Build and sign a JSON Web Token from a header, payload and secret entirely in your browser - HS256 via the Web Crypto API, no library, nothing transmitted.",
+    "icon": "Key",
+    "path": "/services/jwt-generator",
+    "category": "developer",
+    "popularity": 80,
+    "tags": [
+      "jwt",
+      "developer",
+      "security",
+      "encoding"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "jwt generator",
+      "jwt encoder",
+      "create jwt token",
+      "sign jwt online",
+      "hs256 jwt generator",
+      "json web token generator"
+    ]
+  },
+  {
+    "id": 73,
+    "title": "API Request Tester",
+    "description": "Build and send a real HTTP request straight from your browser - method, headers, body - and inspect the live status, headers and response body.",
+    "icon": "Api",
+    "path": "/services/api-request-tester",
+    "category": "developer",
+    "popularity": 83,
+    "tags": [
+      "api",
+      "http",
+      "developer",
+      "rest"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "api request tester",
+      "http client online",
+      "browser rest client",
+      "fetch api tester",
+      "test api endpoint online",
+      "online postman alternative"
+    ]
+  },
+  {
+    "id": 74,
+    "title": "SVG Optimizer",
+    "description": "Paste or upload SVG markup and get a cleaned, minified version - strips comments, editor cruft and rounds coordinate precision, with a live before/after preview.",
+    "icon": "AutoFixHigh",
+    "path": "/services/svg-optimizer",
+    "category": "design",
+    "popularity": 77,
+    "tags": [
+      "svg",
+      "design",
+      "optimizer",
+      "developer"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "svg optimizer online",
+      "minify svg",
+      "svg compressor",
+      "clean svg file",
+      "reduce svg file size"
+    ]
+  },
+  {
+    "id": 75,
+    "title": "World Clock & Timezone Converter",
+    "description": "Track multiple timezones side by side with live, DST-correct times, or pick a reference moment and see what it looks like everywhere at once.",
+    "icon": "Public",
+    "path": "/services/world-clock",
+    "category": "utility",
+    "popularity": 84,
+    "tags": [
+      "timezone",
+      "clock",
+      "utility",
+      "time"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "world clock online",
+      "timezone converter",
+      "what time is it in",
+      "meeting time converter",
+      "multiple timezone clock"
+    ]
+  },
+  {
+    "id": 76,
+    "title": "Placeholder Image Generator",
+    "description": "Generate a placeholder image at any size with custom colors and text, rendered on canvas and downloadable as PNG - no upload, nothing stored.",
+    "icon": "Image",
+    "path": "/services/placeholder-image-generator",
+    "category": "design",
+    "popularity": 79,
+    "tags": [
+      "image",
+      "placeholder",
+      "design",
+      "mockup"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "placeholder image generator",
+      "dummy image generator",
+      "og image generator",
+      "mockup image generator",
+      "placeholder.com alternative"
+    ]
   }
 ]

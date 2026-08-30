@@ -741,5 +741,50 @@
       "space shooter browser game",
       "classic arcade shooter online"
     ]
+  },
+  {
+    "id": 36,
+    "title": "Othello",
+    "description": "Classic disc-flipping strategy against a minimax AI. Outflank a line of opponent discs to flip them - most discs on the board when neither side can move wins.",
+    "icon": "Circle",
+    "path": "/sandbox/othello",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "ai",
+      "strategy",
+      "board"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "othello online",
+      "reversi online",
+      "play othello vs ai",
+      "reversi vs computer free",
+      "othello game browser"
+    ]
+  },
+  {
+    "id": 37,
+    "title": "Yahtzee",
+    "description": "Roll five dice up to three times a turn and fill all 13 scoresheet categories. Live score previews on every unused category - full standard rules, including the upper-section bonus.",
+    "icon": "Casino",
+    "path": "/sandbox/yahtzee",
+    "category": "classic",
+    "tags": [
+      "classic",
+      "dice",
+      "strategy"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "yahtzee online",
+      "play yahtzee free",
+      "dice game online",
+      "yahtzee scoresheet",
+      "free yahtzee no download"
+    ]
   }
 ]
