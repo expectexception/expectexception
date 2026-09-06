@@ -86,6 +86,7 @@ import {
 } from 'recharts';
 import apiClient from '../../api/config';
 import { endpoints } from '../../api/endpoints';
+import { staticServices } from '../../data/StaticData';
 
 import Seo from '../../components/seo/Seo';
 
@@ -162,6 +163,18 @@ interface ToolService {
     category: string;
     requires_login: boolean;
     is_active: boolean;
+    description?: string;
+    icon?: string;
+    popularity?: number;
+    tags?: string[];
+    color?: string;
+    // True when this row already exists in the backend Service table (so
+    // `id` is a real primary key the toggle endpoint can target directly).
+    // False means it's one of the tools.json entries the Service table has
+    // never had a row for - the toggle call falls back to creating one by
+    // path on first use. See the comment on ToolAccessToggleView for why
+    // that table was never a 1:1 mirror of the full tool catalog.
+    _persisted: boolean;
 }
 
 interface AdminInquiry {
@@ -352,7 +365,7 @@ const AdminDashboardPage: React.FC = () => {
     const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
     const [ollamaStatus, setOllamaStatus] = useState<{ running: boolean; active_models: any[] }>({ running: false, active_models: [] });
     const [toolServices, setToolServices] = useState<ToolService[]>([]);
-    const [toolAccessLoading, setToolAccessLoading] = useState<Record<number, boolean>>({});
+    const [toolAccessLoading, setToolAccessLoading] = useState<Record<string, boolean>>({});
     const [inquiries, setInquiries] = useState<AdminInquiry[]>([]);
     const [threads, setThreads] = useState<AdminThread[]>([]);
     const [restrictions, setRestrictions] = useState<ToolRestriction[]>([]);
@@ -505,8 +518,35 @@ const AdminDashboardPage: React.FC = () => {
     const fetchToolServices = useCallback(async () => {
         try {
             const response = await apiClient.get(endpoints.services.tools);
-            const list = response.data?.results ?? response.data ?? [];
-            setToolServices(list);
+            const backendList: ToolService[] = response.data?.results ?? response.data ?? [];
+            const backendByPath = new Map(backendList.map((s) => [s.path, s]));
+
+            // The Service table only ever holds a handful of manually-created
+            // override rows, never one per tool in the static catalog, so on
+            // its own this list would only ever let a few tools be gated
+            // here. Merge in every tool from tools.json (the same catalog
+            // the public Services page reads from) so every tool shows up
+            // and can be managed, not just the ones that already happen to
+            // have a backend row.
+            const merged: ToolService[] = staticServices.map((tool) => {
+                const existing = backendByPath.get(tool.path);
+                if (existing) return { ...existing, _persisted: true };
+                return {
+                    id: tool.id,
+                    title: tool.title,
+                    path: tool.path,
+                    category: tool.category,
+                    description: tool.description,
+                    icon: tool.icon,
+                    popularity: tool.popularity,
+                    tags: tool.tags,
+                    color: tool.color,
+                    requires_login: false,
+                    is_active: true,
+                    _persisted: false,
+                };
+            });
+            setToolServices(merged);
         } catch (e) {
             console.error('Failed to fetch tool services:', e);
         }
@@ -708,20 +748,37 @@ const AdminDashboardPage: React.FC = () => {
         }
     };
 
-    const handleToolAccessToggle = async (serviceId: number, currentValue: boolean) => {
-        setToolAccessLoading(prev => ({ ...prev, [serviceId]: true }));
+    const handleToolAccessToggle = async (tool: ToolService) => {
+        setToolAccessLoading(prev => ({ ...prev, [tool.path]: true }));
         try {
-            await apiClient.post(endpoints.services.toolAccessToggle, {
-                service_id: serviceId,
-                requires_login: !currentValue,
-            });
+            // A tool that already has a Service row is targeted by that row's
+            // real primary key. One that doesn't (most of the catalog) is
+            // targeted by path instead, sending enough metadata for the
+            // backend to create the row on this first toggle - see
+            // ToolAccessToggleView for why both forms are accepted.
+            const payload = tool._persisted
+                ? { service_id: tool.id, requires_login: !tool.requires_login }
+                : {
+                    path: tool.path,
+                    requires_login: !tool.requires_login,
+                    title: tool.title,
+                    description: tool.description,
+                    icon: tool.icon,
+                    category: tool.category,
+                    popularity: tool.popularity,
+                    tags: tool.tags,
+                    color: tool.color,
+                };
+            const response = await apiClient.post(endpoints.services.toolAccessToggle, payload);
             setToolServices(prev =>
-                prev.map(s => s.id === serviceId ? { ...s, requires_login: !currentValue } : s)
+                prev.map(s => s.path === tool.path
+                    ? { ...s, requires_login: !tool.requires_login, id: response.data?.id ?? s.id, _persisted: true }
+                    : s)
             );
         } catch (e) {
             setError('Failed to update tool access');
         } finally {
-            setToolAccessLoading(prev => ({ ...prev, [serviceId]: false }));
+            setToolAccessLoading(prev => ({ ...prev, [tool.path]: false }));
         }
     };
 
@@ -1661,7 +1718,7 @@ const AdminDashboardPage: React.FC = () => {
                                         </TableHead>
                                         <TableBody>
                                             {toolServices.map((tool) => (
-                                                <TableRow key={tool.id} hover sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
+                                                <TableRow key={tool.path} hover sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
                                                     <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                                             {tool.requires_login ? (
@@ -1689,12 +1746,12 @@ const AdminDashboardPage: React.FC = () => {
                                                         {tool.path}
                                                     </TableCell>
                                                     <TableCell align="center" sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                                                        {toolAccessLoading[tool.id] ? (
+                                                        {toolAccessLoading[tool.path] ? (
                                                             <CircularProgress size={20} sx={{ color: '#6366f1' }} />
                                                         ) : (
                                                             <Switch
                                                                 checked={tool.requires_login}
-                                                                onChange={() => handleToolAccessToggle(tool.id, tool.requires_login)}
+                                                                onChange={() => handleToolAccessToggle(tool)}
                                                                 size="small"
                                                                 sx={{
                                                                     '& .MuiSwitch-switchBase.Mui-checked': { color: '#f59e0b' },
@@ -2473,7 +2530,11 @@ const AdminDashboardPage: React.FC = () => {
                                 onChange={(e) => setRestrictionDialog({ ...restrictionDialog, service_id: Number(e.target.value), error: null })}
                                 sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' } }}
                             >
-                                {toolServices.map((s) => (
+                                {/* Per-user restrictions attach to a real Service row's
+                                    foreign key, so a tool that has never been toggled
+                                    here yet (and so has no backend row) has nothing to
+                                    attach to - only list tools that already do. */}
+                                {toolServices.filter((s) => s._persisted).map((s) => (
                                     <MenuItem key={s.id} value={s.id}>{s.title}</MenuItem>
                                 ))}
                             </Select>

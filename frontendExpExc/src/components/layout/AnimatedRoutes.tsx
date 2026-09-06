@@ -257,10 +257,10 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/text-to-speech" element={<PageTransition>{withAuthGuard(<TextToSpeechPage />, '/services/text-to-speech', toolAccess, 'Text to Speech')}</PageTransition>} />
                     <Route path="/services/image-compressor" element={<PageTransition>{withAuthGuard(<ImageCompressorPage />, '/services/image-compressor', toolAccess, 'Image Compressor')}</PageTransition>} />
                     <Route path="/services/ai-detector" element={<PageTransition>{withAuthGuard(<AIDetectorPage />, '/services/ai-detector', toolAccess, 'AI Detector')}</PageTransition>} />
-                    <Route path="/services/ai-vision-studio" element={<PageTransition><AiVisionStudio /></PageTransition>} />
-                    <Route path="/services/ai-vision" element={<PageTransition><AiVisionStudio /></PageTransition>} />
-                    <Route path="/services/vision-studio" element={<PageTransition><AiVisionStudio /></PageTransition>} />
-                    <Route path="/services/100" element={<PageTransition><AiVisionStudio /></PageTransition>} />
+                    <Route path="/services/ai-vision-studio" element={<PageTransition>{withAuthGuard(<AiVisionStudio />, '/services/ai-vision-studio', toolAccess, 'Realtime AI Vision Studio')}</PageTransition>} />
+                    <Route path="/services/ai-vision" element={<PageTransition>{withAuthGuard(<AiVisionStudio />, '/services/ai-vision', toolAccess, 'Realtime AI Vision Studio')}</PageTransition>} />
+                    <Route path="/services/vision-studio" element={<PageTransition>{withAuthGuard(<AiVisionStudio />, '/services/vision-studio', toolAccess, 'Realtime AI Vision Studio')}</PageTransition>} />
+                    <Route path="/services/100" element={<PageTransition>{withAuthGuard(<AiVisionStudio />, '/services/100', toolAccess, 'Realtime AI Vision Studio')}</PageTransition>} />
 
                     {/* Document Tools */}
                     <Route path="/services/pdf-to-doc" element={<PageTransition>{withAuthGuard(<PdfToDoc />, '/services/pdf-to-doc', toolAccess, 'PDF to Doc')}</PageTransition>} />
@@ -286,17 +286,17 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/keypair-generator" element={<PageTransition>{withAuthGuard(<KeypairGenerator />, '/services/keypair-generator', toolAccess, 'Keypair Generator')}</PageTransition>} />
                     <Route path="/services/redirect-inspector" element={<PageTransition>{withAuthGuard(<RedirectInspector />, '/services/redirect-inspector', toolAccess, 'Redirect Inspector')}</PageTransition>} />
                     <Route path="/services/dns-lookup" element={<PageTransition>{withAuthGuard(<DnsLookup />, '/services/dns-lookup', toolAccess, 'DNS Lookup')}</PageTransition>} />
-                    <Route path="/services/unit-converter" element={<PageTransition><UnitConverter /></PageTransition>} />
-                    <Route path="/services/color-contrast-checker" element={<PageTransition><ColorContrastChecker /></PageTransition>} />
-                    <Route path="/services/random-data-generator" element={<PageTransition><RandomDataGenerator /></PageTransition>} />
-                    <Route path="/services/text-encryptor" element={<PageTransition><TextEncryptor /></PageTransition>} />
-                    <Route path="/services/markdown-table-generator" element={<PageTransition><MarkdownTableGenerator /></PageTransition>} />
-                    <Route path="/services/barcode-generator" element={<PageTransition><BarcodeGenerator /></PageTransition>} />
-                    <Route path="/services/css-grid-generator" element={<PageTransition><CssGridGenerator /></PageTransition>} />
-                    <Route path="/services/meta-tag-generator" element={<PageTransition><MetaTagGenerator /></PageTransition>} />
-                    <Route path="/services/json-diff-checker" element={<PageTransition><JsonDiffChecker /></PageTransition>} />
-                    <Route path="/services/age-calculator" element={<PageTransition><AgeDateCalculator /></PageTransition>} />
-                    <Route path="/services/color-name-finder" element={<PageTransition><ColorNameFinder /></PageTransition>} />
+                    <Route path="/services/unit-converter" element={<PageTransition>{withAuthGuard(<UnitConverter />, '/services/unit-converter', toolAccess, 'Unit Converter')}</PageTransition>} />
+                    <Route path="/services/color-contrast-checker" element={<PageTransition>{withAuthGuard(<ColorContrastChecker />, '/services/color-contrast-checker', toolAccess, 'Color Contrast Checker')}</PageTransition>} />
+                    <Route path="/services/random-data-generator" element={<PageTransition>{withAuthGuard(<RandomDataGenerator />, '/services/random-data-generator', toolAccess, 'Random Data Generator')}</PageTransition>} />
+                    <Route path="/services/text-encryptor" element={<PageTransition>{withAuthGuard(<TextEncryptor />, '/services/text-encryptor', toolAccess, 'Text Encryptor')}</PageTransition>} />
+                    <Route path="/services/markdown-table-generator" element={<PageTransition>{withAuthGuard(<MarkdownTableGenerator />, '/services/markdown-table-generator', toolAccess, 'Markdown Table Generator')}</PageTransition>} />
+                    <Route path="/services/barcode-generator" element={<PageTransition>{withAuthGuard(<BarcodeGenerator />, '/services/barcode-generator', toolAccess, 'Barcode Generator')}</PageTransition>} />
+                    <Route path="/services/css-grid-generator" element={<PageTransition>{withAuthGuard(<CssGridGenerator />, '/services/css-grid-generator', toolAccess, 'CSS Grid Generator')}</PageTransition>} />
+                    <Route path="/services/meta-tag-generator" element={<PageTransition>{withAuthGuard(<MetaTagGenerator />, '/services/meta-tag-generator', toolAccess, 'Meta Tag Generator')}</PageTransition>} />
+                    <Route path="/services/json-diff-checker" element={<PageTransition>{withAuthGuard(<JsonDiffChecker />, '/services/json-diff-checker', toolAccess, 'JSON Diff Checker')}</PageTransition>} />
+                    <Route path="/services/age-calculator" element={<PageTransition>{withAuthGuard(<AgeDateCalculator />, '/services/age-calculator', toolAccess, 'Age & Date Difference Calculator')}</PageTransition>} />
+                    <Route path="/services/color-name-finder" element={<PageTransition>{withAuthGuard(<ColorNameFinder />, '/services/color-name-finder', toolAccess, 'Color Name Finder')}</PageTransition>} />
                     <Route path="/services/website-diagnostics" element={<PageTransition>{withAuthGuard(<WebsiteDiagnostics />, '/services/website-diagnostics', toolAccess, 'Website Diagnostics')}</PageTransition>} />
                     <Route path="/services/speed-test" element={<PageTransition>{withAuthGuard(<SpeedTest />, '/services/speed-test', toolAccess, 'Speed Test')}</PageTransition>} />
                     <Route path="/services/audio-separator" element={<PageTransition>{withAuthGuard(<AudioSeparator />, '/services/audio-separator', toolAccess, 'Audio Separator')}</PageTransition>} />
@@ -304,66 +304,66 @@ const AnimatedRoutes: React.FC = () => {
                         richer logged-out landing/marketing view instead of the generic
                         bare "Sign In Required" wall, then gates the real command center
                         internally via useAuth(). */}
-                    <Route path="/services/uptime-robot" element={<PageTransition><UptimeRobot /></PageTransition>} />
+                    <Route path="/services/uptime-robot" element={<PageTransition>{withAuthGuard(<UptimeRobot />, '/services/uptime-robot', toolAccess, 'Uptime Robot Monitor')}</PageTransition>} />
 
                     {/* Frontend-only tools - no backend, no auth gate */}
-                    <Route path="/services/word-counter" element={<PageTransition><WordCounter /></PageTransition>} />
-                    <Route path="/services/lorem-ipsum" element={<PageTransition><LoremIpsumGenerator /></PageTransition>} />
-                    <Route path="/services/css-gradient-generator" element={<PageTransition><CssGradientGenerator /></PageTransition>} />
-                    <Route path="/services/timestamp-converter" element={<PageTransition><TimestampConverter /></PageTransition>} />
-                    <Route path="/services/password-generator" element={<PageTransition><PasswordGenerator /></PageTransition>} />
-                    <Route path="/services/text-diff" element={<PageTransition><TextDiffChecker /></PageTransition>} />
-                    <Route path="/services/case-converter" element={<PageTransition><CaseConverter /></PageTransition>} />
-                    <Route path="/services/html-entity-codec" element={<PageTransition><HtmlEntityCodec /></PageTransition>} />
-                    <Route path="/services/number-base-converter" element={<PageTransition><NumberBaseConverter /></PageTransition>} />
+                    <Route path="/services/word-counter" element={<PageTransition>{withAuthGuard(<WordCounter />, '/services/word-counter', toolAccess, 'Word & Character Counter')}</PageTransition>} />
+                    <Route path="/services/lorem-ipsum" element={<PageTransition>{withAuthGuard(<LoremIpsumGenerator />, '/services/lorem-ipsum', toolAccess, 'Lorem Ipsum Generator')}</PageTransition>} />
+                    <Route path="/services/css-gradient-generator" element={<PageTransition>{withAuthGuard(<CssGradientGenerator />, '/services/css-gradient-generator', toolAccess, 'CSS Gradient Generator')}</PageTransition>} />
+                    <Route path="/services/timestamp-converter" element={<PageTransition>{withAuthGuard(<TimestampConverter />, '/services/timestamp-converter', toolAccess, 'Timestamp Converter')}</PageTransition>} />
+                    <Route path="/services/password-generator" element={<PageTransition>{withAuthGuard(<PasswordGenerator />, '/services/password-generator', toolAccess, 'Password Generator')}</PageTransition>} />
+                    <Route path="/services/text-diff" element={<PageTransition>{withAuthGuard(<TextDiffChecker />, '/services/text-diff', toolAccess, 'Text Diff Checker')}</PageTransition>} />
+                    <Route path="/services/case-converter" element={<PageTransition>{withAuthGuard(<CaseConverter />, '/services/case-converter', toolAccess, 'Case Converter')}</PageTransition>} />
+                    <Route path="/services/html-entity-codec" element={<PageTransition>{withAuthGuard(<HtmlEntityCodec />, '/services/html-entity-codec', toolAccess, 'HTML Entity Encoder/Decoder')}</PageTransition>} />
+                    <Route path="/services/number-base-converter" element={<PageTransition>{withAuthGuard(<NumberBaseConverter />, '/services/number-base-converter', toolAccess, 'Number Base Converter')}</PageTransition>} />
 
                     {/* Client-only tools: all processing happens in the browser,
                         so these need no auth guard and no backend round-trip. */}
-                    <Route path="/services/exif-viewer" element={<PageTransition><ExifViewer /></PageTransition>} />
-                    <Route path="/services/sql-formatter" element={<PageTransition><SqlFormatter /></PageTransition>} />
-                    <Route path="/services/color-blindness-simulator" element={<PageTransition><ColorBlindnessSimulator /></PageTransition>} />
-                    <Route path="/services/readability-analyzer" element={<PageTransition><ReadabilityAnalyzer /></PageTransition>} />
-                    <Route path="/services/loan-calculator" element={<PageTransition><LoanCalculator /></PageTransition>} />
-                    <Route path="/services/json-csv" element={<PageTransition><JsonToCsv /></PageTransition>} />
-                    <Route path="/services/url-encode-decode" element={<PageTransition><UrlEncoderDecoder /></PageTransition>} />
-                    <Route path="/services/jwt-decoder" element={<PageTransition><JwtDecoder /></PageTransition>} />
-                    <Route path="/services/cron-explainer" element={<PageTransition><CronExplainer /></PageTransition>} />
-                    <Route path="/services/color-palette" element={<PageTransition><ColorPaletteGenerator /></PageTransition>} />
-                    <Route path="/services/css-box-shadow" element={<PageTransition><CssBoxShadowGenerator /></PageTransition>} />
-                    <Route path="/services/http-status-codes" element={<PageTransition><HttpStatusCodes /></PageTransition>} />
-                    <Route path="/services/json-to-typescript" element={<PageTransition><JsonToTypescript /></PageTransition>} />
-                    <Route path="/services/favicon-generator" element={<PageTransition><FaviconGenerator /></PageTransition>} />
-                    <Route path="/services/cpu-load-test" element={<PageTransition><CpuLoadTest /></PageTransition>} />
-                    <Route path="/services/image-color-extractor" element={<PageTransition><ImageColorExtractor /></PageTransition>} />
-                    <Route path="/services/percentage-calculator" element={<PageTransition><PercentageCalculator /></PageTransition>} />
-                    <Route path="/services/qr-code-reader" element={<PageTransition><QrCodeReader /></PageTransition>} />
-                    <Route path="/services/password-strength-checker" element={<PageTransition><PasswordStrengthChecker /></PageTransition>} />
-                    <Route path="/services/jwt-generator" element={<PageTransition><JwtGenerator /></PageTransition>} />
-                    <Route path="/services/api-request-tester" element={<PageTransition><ApiRequestTester /></PageTransition>} />
-                    <Route path="/services/svg-optimizer" element={<PageTransition><SvgOptimizer /></PageTransition>} />
-                    <Route path="/services/world-clock" element={<PageTransition><WorldClock /></PageTransition>} />
-                    <Route path="/services/placeholder-image-generator" element={<PageTransition><PlaceholderImageGenerator /></PageTransition>} />
-                    <Route path="/services/word-cloud-generator" element={<PageTransition><WordCloudGenerator /></PageTransition>} />
-                    <Route path="/services/whitespace-visualizer" element={<PageTransition><WhitespaceVisualizer /></PageTransition>} />
-                    <Route path="/services/css-clamp-calculator" element={<PageTransition><CssClampCalculator /></PageTransition>} />
-                    <Route path="/services/passphrase-generator" element={<PageTransition><PassphraseGenerator /></PageTransition>} />
-                    <Route path="/services/subnet-calculator" element={<PageTransition><SubnetCalculator /></PageTransition>} />
-                    <Route path="/services/curl-command-generator" element={<PageTransition><CurlCommandGenerator /></PageTransition>} />
-                    <Route path="/services/slug-generator" element={<PageTransition><SlugGenerator /></PageTransition>} />
-                    <Route path="/services/ulid-generator" element={<PageTransition><UlidGenerator /></PageTransition>} />
-                    <Route path="/services/robots-txt-generator" element={<PageTransition><RobotsTxtGenerator /></PageTransition>} />
-                    <Route path="/services/list-sorter-deduplicator" element={<PageTransition><ListSorterDeduplicator /></PageTransition>} />
-                    <Route path="/services/refresh-rate-tester" element={<PageTransition><DisplayRefreshRateTester /></PageTransition>} />
-                    <Route path="/services/network-latency-tester" element={<PageTransition><NetworkLatencyTester /></PageTransition>} />
-                    <Route path="/services/wasm-vs-js-benchmark" element={<PageTransition><WasmVsJsBenchmark /></PageTransition>} />
-                    <Route path="/services/storage-speed-test" element={<PageTransition><StorageSpeedTest /></PageTransition>} />
-                    <Route path="/services/audio-latency-analyzer" element={<PageTransition><AudioLatencyAnalyzer /></PageTransition>} />
-                    <Route path="/services/browser-feature-detector" element={<PageTransition><BrowserFeatureDetector /></PageTransition>} />
-                    <Route path="/services/font-detector" element={<PageTransition><FontDetector /></PageTransition>} />
-                    <Route path="/services/webrtc-ip-leak-test" element={<PageTransition><WebrtcIpLeakTest /></PageTransition>} />
-                    <Route path="/services/audio-trimmer" element={<PageTransition><AudioTrimmer /></PageTransition>} />
-                    <Route path="/services/image-watermark-adder" element={<PageTransition><ImageWatermarkAdder /></PageTransition>} />
-                    <Route path="/services/url-query-string-tool" element={<PageTransition><UrlQueryStringTool /></PageTransition>} />
+                    <Route path="/services/exif-viewer" element={<PageTransition>{withAuthGuard(<ExifViewer />, '/services/exif-viewer', toolAccess, 'EXIF Metadata Viewer & Stripper')}</PageTransition>} />
+                    <Route path="/services/sql-formatter" element={<PageTransition>{withAuthGuard(<SqlFormatter />, '/services/sql-formatter', toolAccess, 'SQL Formatter')}</PageTransition>} />
+                    <Route path="/services/color-blindness-simulator" element={<PageTransition>{withAuthGuard(<ColorBlindnessSimulator />, '/services/color-blindness-simulator', toolAccess, 'Colour Blindness Simulator')}</PageTransition>} />
+                    <Route path="/services/readability-analyzer" element={<PageTransition>{withAuthGuard(<ReadabilityAnalyzer />, '/services/readability-analyzer', toolAccess, 'Readability & Text Analyzer')}</PageTransition>} />
+                    <Route path="/services/loan-calculator" element={<PageTransition>{withAuthGuard(<LoanCalculator />, '/services/loan-calculator', toolAccess, 'Loan & EMI Calculator')}</PageTransition>} />
+                    <Route path="/services/json-csv" element={<PageTransition>{withAuthGuard(<JsonToCsv />, '/services/json-csv', toolAccess, 'JSON ↔ CSV Converter')}</PageTransition>} />
+                    <Route path="/services/url-encode-decode" element={<PageTransition>{withAuthGuard(<UrlEncoderDecoder />, '/services/url-encode-decode', toolAccess, 'URL Encoder / Decoder')}</PageTransition>} />
+                    <Route path="/services/jwt-decoder" element={<PageTransition>{withAuthGuard(<JwtDecoder />, '/services/jwt-decoder', toolAccess, 'JWT Decoder')}</PageTransition>} />
+                    <Route path="/services/cron-explainer" element={<PageTransition>{withAuthGuard(<CronExplainer />, '/services/cron-explainer', toolAccess, 'Cron Expression Explainer')}</PageTransition>} />
+                    <Route path="/services/color-palette" element={<PageTransition>{withAuthGuard(<ColorPaletteGenerator />, '/services/color-palette', toolAccess, 'Color Palette Generator')}</PageTransition>} />
+                    <Route path="/services/css-box-shadow" element={<PageTransition>{withAuthGuard(<CssBoxShadowGenerator />, '/services/css-box-shadow', toolAccess, 'CSS Box Shadow Generator')}</PageTransition>} />
+                    <Route path="/services/http-status-codes" element={<PageTransition>{withAuthGuard(<HttpStatusCodes />, '/services/http-status-codes', toolAccess, 'HTTP Status Code Reference')}</PageTransition>} />
+                    <Route path="/services/json-to-typescript" element={<PageTransition>{withAuthGuard(<JsonToTypescript />, '/services/json-to-typescript', toolAccess, 'JSON to TypeScript')}</PageTransition>} />
+                    <Route path="/services/favicon-generator" element={<PageTransition>{withAuthGuard(<FaviconGenerator />, '/services/favicon-generator', toolAccess, 'Favicon Generator')}</PageTransition>} />
+                    <Route path="/services/cpu-load-test" element={<PageTransition>{withAuthGuard(<CpuLoadTest />, '/services/cpu-load-test', toolAccess, 'CPU, GPU & RAM Benchmark')}</PageTransition>} />
+                    <Route path="/services/image-color-extractor" element={<PageTransition>{withAuthGuard(<ImageColorExtractor />, '/services/image-color-extractor', toolAccess, 'Image Color Palette Extractor')}</PageTransition>} />
+                    <Route path="/services/percentage-calculator" element={<PageTransition>{withAuthGuard(<PercentageCalculator />, '/services/percentage-calculator', toolAccess, 'Percentage Calculator')}</PageTransition>} />
+                    <Route path="/services/qr-code-reader" element={<PageTransition>{withAuthGuard(<QrCodeReader />, '/services/qr-code-reader', toolAccess, 'QR Code Reader')}</PageTransition>} />
+                    <Route path="/services/password-strength-checker" element={<PageTransition>{withAuthGuard(<PasswordStrengthChecker />, '/services/password-strength-checker', toolAccess, 'Password Strength Checker')}</PageTransition>} />
+                    <Route path="/services/jwt-generator" element={<PageTransition>{withAuthGuard(<JwtGenerator />, '/services/jwt-generator', toolAccess, 'JWT Generator')}</PageTransition>} />
+                    <Route path="/services/api-request-tester" element={<PageTransition>{withAuthGuard(<ApiRequestTester />, '/services/api-request-tester', toolAccess, 'API Request Tester')}</PageTransition>} />
+                    <Route path="/services/svg-optimizer" element={<PageTransition>{withAuthGuard(<SvgOptimizer />, '/services/svg-optimizer', toolAccess, 'SVG Optimizer')}</PageTransition>} />
+                    <Route path="/services/world-clock" element={<PageTransition>{withAuthGuard(<WorldClock />, '/services/world-clock', toolAccess, 'World Clock & Timezone Converter')}</PageTransition>} />
+                    <Route path="/services/placeholder-image-generator" element={<PageTransition>{withAuthGuard(<PlaceholderImageGenerator />, '/services/placeholder-image-generator', toolAccess, 'Placeholder Image Generator')}</PageTransition>} />
+                    <Route path="/services/word-cloud-generator" element={<PageTransition>{withAuthGuard(<WordCloudGenerator />, '/services/word-cloud-generator', toolAccess, 'Word Cloud Generator')}</PageTransition>} />
+                    <Route path="/services/whitespace-visualizer" element={<PageTransition>{withAuthGuard(<WhitespaceVisualizer />, '/services/whitespace-visualizer', toolAccess, 'Whitespace & Invisible Character Visualizer')}</PageTransition>} />
+                    <Route path="/services/css-clamp-calculator" element={<PageTransition>{withAuthGuard(<CssClampCalculator />, '/services/css-clamp-calculator', toolAccess, 'CSS Clamp / Fluid Typography Calculator')}</PageTransition>} />
+                    <Route path="/services/passphrase-generator" element={<PageTransition>{withAuthGuard(<PassphraseGenerator />, '/services/passphrase-generator', toolAccess, 'Passphrase Generator')}</PageTransition>} />
+                    <Route path="/services/subnet-calculator" element={<PageTransition>{withAuthGuard(<SubnetCalculator />, '/services/subnet-calculator', toolAccess, 'IPv4 Subnet / CIDR Calculator')}</PageTransition>} />
+                    <Route path="/services/curl-command-generator" element={<PageTransition>{withAuthGuard(<CurlCommandGenerator />, '/services/curl-command-generator', toolAccess, 'cURL Command Generator')}</PageTransition>} />
+                    <Route path="/services/slug-generator" element={<PageTransition>{withAuthGuard(<SlugGenerator />, '/services/slug-generator', toolAccess, 'Slug Generator')}</PageTransition>} />
+                    <Route path="/services/ulid-generator" element={<PageTransition>{withAuthGuard(<UlidGenerator />, '/services/ulid-generator', toolAccess, 'ULID Generator')}</PageTransition>} />
+                    <Route path="/services/robots-txt-generator" element={<PageTransition>{withAuthGuard(<RobotsTxtGenerator />, '/services/robots-txt-generator', toolAccess, 'Robots.txt Generator')}</PageTransition>} />
+                    <Route path="/services/list-sorter-deduplicator" element={<PageTransition>{withAuthGuard(<ListSorterDeduplicator />, '/services/list-sorter-deduplicator', toolAccess, 'List Sorter & Deduplicator')}</PageTransition>} />
+                    <Route path="/services/refresh-rate-tester" element={<PageTransition>{withAuthGuard(<DisplayRefreshRateTester />, '/services/refresh-rate-tester', toolAccess, 'Display Refresh Rate & Frame Time Tester')}</PageTransition>} />
+                    <Route path="/services/network-latency-tester" element={<PageTransition>{withAuthGuard(<NetworkLatencyTester />, '/services/network-latency-tester', toolAccess, 'Network Latency & Jitter Tester')}</PageTransition>} />
+                    <Route path="/services/wasm-vs-js-benchmark" element={<PageTransition>{withAuthGuard(<WasmVsJsBenchmark />, '/services/wasm-vs-js-benchmark', toolAccess, 'WebAssembly vs JavaScript Benchmark')}</PageTransition>} />
+                    <Route path="/services/storage-speed-test" element={<PageTransition>{withAuthGuard(<StorageSpeedTest />, '/services/storage-speed-test', toolAccess, 'Storage (IndexedDB) Speed Test')}</PageTransition>} />
+                    <Route path="/services/audio-latency-analyzer" element={<PageTransition>{withAuthGuard(<AudioLatencyAnalyzer />, '/services/audio-latency-analyzer', toolAccess, 'Audio Latency Analyzer')}</PageTransition>} />
+                    <Route path="/services/browser-feature-detector" element={<PageTransition>{withAuthGuard(<BrowserFeatureDetector />, '/services/browser-feature-detector', toolAccess, 'Browser Feature & API Support Matrix')}</PageTransition>} />
+                    <Route path="/services/font-detector" element={<PageTransition>{withAuthGuard(<FontDetector />, '/services/font-detector', toolAccess, 'Installed Font Detector')}</PageTransition>} />
+                    <Route path="/services/webrtc-ip-leak-test" element={<PageTransition>{withAuthGuard(<WebrtcIpLeakTest />, '/services/webrtc-ip-leak-test', toolAccess, 'WebRTC IP Leak Test')}</PageTransition>} />
+                    <Route path="/services/audio-trimmer" element={<PageTransition>{withAuthGuard(<AudioTrimmer />, '/services/audio-trimmer', toolAccess, 'Audio Trimmer & Cutter')}</PageTransition>} />
+                    <Route path="/services/image-watermark-adder" element={<PageTransition>{withAuthGuard(<ImageWatermarkAdder />, '/services/image-watermark-adder', toolAccess, 'Image Watermark Adder')}</PageTransition>} />
+                    <Route path="/services/url-query-string-tool" element={<PageTransition>{withAuthGuard(<UrlQueryStringTool />, '/services/url-query-string-tool', toolAccess, 'URL Query String Parser & Builder')}</PageTransition>} />
 
                     {/* Sandbox - public, frontend-only mini games */}
                     <Route path="/sandbox" element={<PageTransition><SandboxPage /></PageTransition>} />
