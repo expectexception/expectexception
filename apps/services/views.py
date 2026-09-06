@@ -874,27 +874,55 @@ class SeoOverridesView(APIView):
 class ToolAccessToggleView(APIView):
     """Admin-only endpoint to toggle requires_login on a tool.
 
+    The Service table only ever held a handful of manually-created override
+    rows, not one per entry in the frontend's static tools.json catalog (see
+    the comment on the frontend's fetchServicesAndStats for that history).
+    That meant only those few tools could ever be gated here, since a toggle
+    for anything else 404'd. Accepting `path` (with enough metadata to create
+    a row if none exists yet) instead of requiring a pre-existing service_id
+    lets the admin dashboard gate ANY tool in the catalog, while service_id
+    keeps working for the original rows so nothing already depending on it
+    breaks.
+
     POST /api/services/tool-access/toggle/
-    Body: { "service_id": 5, "requires_login": true }
+    Body (existing row): { "service_id": 5, "requires_login": true }
+    Body (any tool, creating a row on first toggle if needed):
+        { "path": "/services/subnet-calculator", "requires_login": true,
+          "title": "...", "description": "...", "icon": "...",
+          "category": "...", "popularity": 0, "tags": [...], "color": "primary" }
     """
 
     permission_classes = [IsAdminUser]
 
     def post(self, request):
-
         service_id = request.data.get("service_id")
+        path = request.data.get("path")
         requires_login = request.data.get("requires_login")
 
-        if service_id is None or requires_login is None:
+        if requires_login is None or (service_id is None and not path):
             return Response(
-                {"error": "service_id and requires_login are required"},
+                {"error": "requires_login and either service_id or path are required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            service = Service.objects.get(pk=service_id)
-        except Service.DoesNotExist:
-            return Response({"error": "Service not found"}, status=status.HTTP_404_NOT_FOUND)
+        if service_id is not None:
+            try:
+                service = Service.objects.get(pk=service_id)
+            except Service.DoesNotExist:
+                return Response({"error": "Service not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            service, _created = Service.objects.get_or_create(
+                path=path,
+                defaults={
+                    "title": request.data.get("title") or path,
+                    "description": request.data.get("description") or "",
+                    "icon": request.data.get("icon") or "Extension",
+                    "category": request.data.get("category") or "developer",
+                    "popularity": request.data.get("popularity") or 0,
+                    "tags": request.data.get("tags") or [],
+                    "color": request.data.get("color") or "primary",
+                },
+            )
 
         service.requires_login = bool(requires_login)
         service.save(update_fields=["requires_login"])
@@ -902,6 +930,7 @@ class ToolAccessToggleView(APIView):
         return Response(
             {
                 "id": service.id,
+                "path": service.path,
                 "title": service.title,
                 "requires_login": service.requires_login,
             }
