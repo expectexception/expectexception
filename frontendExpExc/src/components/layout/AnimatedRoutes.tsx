@@ -151,6 +151,9 @@ const AudioLatencyAnalyzer = lazy(() => import('../services/AudioLatencyAnalyzer
 const BrowserFeatureDetector = lazy(() => import('../services/BrowserFeatureDetector'));
 const FontDetector = lazy(() => import('../services/FontDetector'));
 const WebrtcIpLeakTest = lazy(() => import('../services/WebrtcIpLeakTest'));
+const AudioTrimmer = lazy(() => import('../services/AudioTrimmer'));
+const ImageWatermarkAdder = lazy(() => import('../services/ImageWatermarkAdder'));
+const UrlQueryStringTool = lazy(() => import('../services/UrlQueryStringTool'));
 
 // Sandbox games - lazy loaded (all frontend-only, no backend, no auth gate)
 const SnakeGame = lazy(() => import('../sandbox/SnakeGame'));
@@ -194,6 +197,8 @@ const Battleship = lazy(() => import('../sandbox/Battleship'));
 const Mastermind = lazy(() => import('../sandbox/Mastermind'));
 const DotsAndBoxes = lazy(() => import('../sandbox/DotsAndBoxes'));
 const WordSearch = lazy(() => import('../sandbox/WordSearch'));
+const AirHockey = lazy(() => import('../sandbox/AirHockey'));
+const Nonogram = lazy(() => import('../sandbox/Nonogram'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -356,6 +361,9 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/browser-feature-detector" element={<PageTransition><BrowserFeatureDetector /></PageTransition>} />
                     <Route path="/services/font-detector" element={<PageTransition><FontDetector /></PageTransition>} />
                     <Route path="/services/webrtc-ip-leak-test" element={<PageTransition><WebrtcIpLeakTest /></PageTransition>} />
+                    <Route path="/services/audio-trimmer" element={<PageTransition><AudioTrimmer /></PageTransition>} />
+                    <Route path="/services/image-watermark-adder" element={<PageTransition><ImageWatermarkAdder /></PageTransition>} />
+                    <Route path="/services/url-query-string-tool" element={<PageTransition><UrlQueryStringTool /></PageTransition>} />
 
                     {/* Sandbox - public, frontend-only mini games */}
                     <Route path="/sandbox" element={<PageTransition><SandboxPage /></PageTransition>} />
@@ -400,6 +408,8 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/sandbox/mastermind" element={<PageTransition><Mastermind /></PageTransition>} />
                     <Route path="/sandbox/dots-and-boxes" element={<PageTransition><DotsAndBoxes /></PageTransition>} />
                     <Route path="/sandbox/word-search" element={<PageTransition><WordSearch /></PageTransition>} />
+                    <Route path="/sandbox/air-hockey" element={<PageTransition><AirHockey /></PageTransition>} />
+                    <Route path="/sandbox/nonogram" element={<PageTransition><Nonogram /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />
