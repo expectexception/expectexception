@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { Box, CircularProgress, Typography, Divider } from '@mui/material';
 
 // Google's GSI types
@@ -25,15 +25,29 @@ interface GoogleSignInButtonProps {
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
+// Google's button is a fixed-pixel-width iframe decided at the moment
+// renderButton() runs - it is not something CSS can meaningfully rescale
+// afterwards. Stretching the iframe element to 100% via CSS just crops or
+// pads whatever Google drew at its original width, which is exactly what
+// clipped the label text on narrow screens. The only correct fix is to
+// track the container's real width with a ResizeObserver and re-render the
+// button at that width whenever it changes, capped at a sane maximum so it
+// doesn't look oversized on a wide desktop layout.
+const MAX_BUTTON_WIDTH = 400;
+const MIN_BUTTON_WIDTH = 200; // Google silently ignores anything smaller than this
+
 const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
     onSuccess,
     onError,
     text = 'signin_with',
     context = 'signin',
 }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLDivElement>(null);
+    const scriptLoadedRef = useRef(false);
     const [loading, setLoading] = React.useState(true);
     const [scriptError, setScriptError] = React.useState(false);
+    const [containerWidth, setContainerWidth] = useState(0);
 
     const handleCredentialResponse = useCallback((response: any) => {
         if (response?.credential) {
@@ -43,6 +57,23 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
         }
     }, [onSuccess, onError]);
 
+    const renderButtonAtWidth = useCallback((width: number) => {
+        if (!window.google?.accounts?.id || !buttonRef.current) return;
+        const clampedWidth = Math.max(MIN_BUTTON_WIDTH, Math.min(MAX_BUTTON_WIDTH, Math.round(width)));
+        // renderButton() appends into the element rather than replacing its
+        // content, so a re-render at a new width would otherwise stack a
+        // second button underneath the first.
+        buttonRef.current.innerHTML = '';
+        window.google.accounts.id.renderButton(buttonRef.current, {
+            theme: 'filled_black',
+            size: 'large',
+            width: clampedWidth,
+            text,
+            shape: 'rectangular',
+            logo_alignment: 'left',
+        });
+    }, [text]);
+
     useEffect(() => {
         if (!GOOGLE_CLIENT_ID) {
             setScriptError(true);
@@ -50,68 +81,67 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
             return;
         }
 
-        // Check if script already loaded
+        const initializeGoogle = () => {
+            if (!window.google?.accounts?.id) {
+                setScriptError(true);
+                setLoading(false);
+                return;
+            }
+            try {
+                window.google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleCredentialResponse,
+                    auto_select: false,
+                    cancel_on_tap_outside: true,
+                });
+                scriptLoadedRef.current = true;
+                setLoading(false);
+            } catch (err) {
+                console.error('Failed to initialize Google Sign-In:', err);
+                setScriptError(true);
+                setLoading(false);
+            }
+        };
+
         if (window.google?.accounts?.id) {
             initializeGoogle();
-            return;
+        } else {
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.async = true;
+            script.defer = true;
+            script.onload = initializeGoogle;
+            script.onerror = () => {
+                setScriptError(true);
+                setLoading(false);
+            };
+            document.head.appendChild(script);
         }
-
-        // Load the GSI script
-        const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.defer = true;
-        script.onload = () => {
-            initializeGoogle();
-        };
-        script.onerror = () => {
-            setScriptError(true);
-            setLoading(false);
-        };
-        document.head.appendChild(script);
-
-        return () => {
-            // Cleanup: don't remove script since other components might use it
-        };
-        // Mount-only: initializeGoogle is a plain (unmemoized) function, so
-        // including it here would re-run this effect - and re-append the GSI
-        // script tag - on every render.
+        // Mount-only: handleCredentialResponse is recreated whenever onSuccess/
+        // onError change identity, and re-running this effect would re-append
+        // the GSI script tag on every render.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const initializeGoogle = () => {
-        if (!window.google?.accounts?.id) {
-            setScriptError(true);
-            setLoading(false);
-            return;
+    // Track the container's real rendered width and re-render the button
+    // whenever it changes meaningfully (viewport resize, layout shift, or
+    // the initial mount measurement, which is 0 before the first layout pass).
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const observer = new ResizeObserver((entries) => {
+            const width = Math.floor(entries[0].contentRect.width);
+            setContainerWidth((prev) => (Math.abs(prev - width) > 2 ? width : prev));
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (!loading && !scriptError && containerWidth > 0) {
+            renderButtonAtWidth(containerWidth);
         }
-
-        try {
-            window.google.accounts.id.initialize({
-                client_id: GOOGLE_CLIENT_ID,
-                callback: handleCredentialResponse,
-                auto_select: false,
-                cancel_on_tap_outside: true,
-            });
-
-            if (buttonRef.current) {
-                window.google.accounts.id.renderButton(buttonRef.current, {
-                    theme: 'filled_black',
-                    size: 'large',
-                    width: buttonRef.current.offsetWidth || 400,
-                    text: text,
-                    shape: 'rectangular',
-                    logo_alignment: 'left',
-                });
-            }
-
-            setLoading(false);
-        } catch (err) {
-            console.error('Failed to initialize Google Sign-In:', err);
-            setScriptError(true);
-            setLoading(false);
-        }
-    };
+    }, [loading, scriptError, containerWidth, renderButtonAtWidth]);
 
     if (scriptError && !GOOGLE_CLIENT_ID) {
         // Don't render anything if no client ID is configured
@@ -136,7 +166,7 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
                 </Typography>
             </Divider>
 
-            <Box sx={{ position: 'relative', width: '100%', minHeight: 44 }}>
+            <Box ref={containerRef} sx={{ position: 'relative', width: '100%', minHeight: 44 }}>
                 {loading && (
                     <Box sx={{
                         display: 'flex',
@@ -153,12 +183,6 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
                         width: '100%',
                         display: loading ? 'none' : 'flex',
                         justifyContent: 'center',
-                        '& > div': {
-                            width: '100% !important',
-                        },
-                        '& iframe': {
-                            width: '100% !important',
-                        },
                     }}
                 />
             </Box>
