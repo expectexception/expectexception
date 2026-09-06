@@ -49,6 +49,7 @@ const TextToHandwritingPage = lazy(() => import('../../pages/TextToHandwritingPa
 const SecretSharerPage = lazy(() => import('../../pages/SecretSharerPage'));
 const HirePage = lazy(() => import('../../pages/HirePage'));
 const EstimatorPage = lazy(() => import('../../pages/EstimatorPage'));
+const AutonomousAIAgentsPage = lazy(() => import('../../pages/AutonomousAIAgentsPage'));
 const ChatbotPage = lazy(() => import('../../pages/ChatbotPage'));
 const CommunityPage = lazy(() => import('../../pages/CommunityPage'));
 const NewThreadPage = lazy(() => import('../../pages/NewThreadPage'));
@@ -444,6 +445,7 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
                     <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
                     <Route path="/hire" element={<PageTransition><HirePage /></PageTransition>} />
+                    <Route path="/solutions/autonomous-ai-agents" element={<PageTransition><AutonomousAIAgentsPage /></PageTransition>} />
                     {/* Catch-all: redirect any unlisted URL to home */}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

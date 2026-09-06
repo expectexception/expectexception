@@ -750,7 +750,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                     <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                         Workflow Automation
                                     </Link>
-                                    <Link to="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
+                                    <Link to="/solutions/autonomous-ai-agents" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = theme.palette.primary.main} onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}>
                                         Autonomous AI Agents
                                     </Link>
                                 </Stack>
