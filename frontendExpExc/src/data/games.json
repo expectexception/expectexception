@@ -877,5 +877,50 @@
       "word find puzzle",
       "hidden word puzzle online"
     ]
+  },
+  {
+    "id": 42,
+    "title": "Air Hockey",
+    "description": "Fast-paced air hockey against the CPU. Angle your shots off the paddle and beat it to 7 goals.",
+    "icon": "SportsHockey",
+    "path": "/sandbox/air-hockey",
+    "category": "reaction",
+    "tags": [
+      "reaction",
+      "physics",
+      "vs cpu",
+      "classic"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "air hockey game online",
+      "play air hockey free",
+      "air hockey browser game",
+      "air hockey vs computer"
+    ]
+  },
+  {
+    "id": 43,
+    "title": "Nonogram",
+    "description": "Fill in the grid using only the row and column number clues, the classic picross logic puzzle.",
+    "icon": "ViewComfy",
+    "path": "/sandbox/nonogram",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "logic",
+      "picross",
+      "grid"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "nonogram online",
+      "picross game online",
+      "play nonogram free",
+      "logic grid puzzle",
+      "picross puzzle browser"
+    ]
   }
 ]
