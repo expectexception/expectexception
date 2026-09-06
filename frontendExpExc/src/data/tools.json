@@ -2252,5 +2252,77 @@
       "check ip leak webrtc",
       "stun ip test"
     ]
+  },
+  {
+    "id": 96,
+    "title": "Audio Trimmer & Cutter",
+    "description": "Drag a waveform to pick the exact range you want, then download it as a WAV file.",
+    "icon": "ContentCut",
+    "path": "/services/audio-trimmer",
+    "category": "media",
+    "popularity": 72,
+    "tags": [
+      "audio",
+      "trim",
+      "cut",
+      "waveform"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "audio trimmer online",
+      "cut audio file online",
+      "trim audio free",
+      "audio cutter browser",
+      "wav trimmer online"
+    ]
+  },
+  {
+    "id": 97,
+    "title": "Image Watermark Adder",
+    "description": "Overlay a text watermark on any image and download the result as a PNG.",
+    "icon": "BrandingWatermark",
+    "path": "/services/image-watermark-adder",
+    "category": "media",
+    "popularity": 73,
+    "tags": [
+      "image",
+      "watermark",
+      "photo",
+      "branding"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "add watermark to image",
+      "image watermark online",
+      "photo watermark tool",
+      "text watermark generator",
+      "watermark maker free"
+    ]
+  },
+  {
+    "id": 98,
+    "title": "URL Query String Parser & Builder",
+    "description": "Break a URL's query string down into a table, or build one up from key/value rows.",
+    "icon": "ManageSearch",
+    "path": "/services/url-query-string-tool",
+    "category": "developer",
+    "popularity": 71,
+    "tags": [
+      "url",
+      "query string",
+      "parser",
+      "developer"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "url query string parser",
+      "query string builder",
+      "parse url parameters online",
+      "build url with parameters",
+      "url encode query string"
+    ]
   }
 ]
