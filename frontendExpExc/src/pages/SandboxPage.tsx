@@ -42,6 +42,11 @@ import {
   Grid4x4,
   DirectionsRun,
   RocketLaunch,
+  ViewComfy,
+  Lightbulb,
+  Warehouse,
+  ViewQuilt,
+  Traffic,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -75,6 +80,11 @@ const ICONS: Record<string, React.ReactElement> = {
   Grid4x4: <Grid4x4 fontSize="large" />,
   DirectionsRun: <DirectionsRun fontSize="large" />,
   RocketLaunch: <RocketLaunch fontSize="large" />,
+  ViewComfy: <ViewComfy fontSize="large" />,
+  Lightbulb: <Lightbulb fontSize="large" />,
+  Warehouse: <Warehouse fontSize="large" />,
+  ViewQuilt: <ViewQuilt fontSize="large" />,
+  Traffic: <Traffic fontSize="large" />,
 };
 
 const CATEGORY_LABELS: Record<string, string> = {

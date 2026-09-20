@@ -154,6 +154,18 @@ const WebrtcIpLeakTest = lazy(() => import('../services/WebrtcIpLeakTest'));
 const AudioTrimmer = lazy(() => import('../services/AudioTrimmer'));
 const ImageWatermarkAdder = lazy(() => import('../services/ImageWatermarkAdder'));
 const UrlQueryStringTool = lazy(() => import('../services/UrlQueryStringTool'));
+const ChmodCalculator = lazy(() => import('../services/ChmodCalculator'));
+const JsonSchemaGenerator = lazy(() => import('../services/JsonSchemaGenerator'));
+const SemverRangeTester = lazy(() => import('../services/SemverRangeTester'));
+const EnvFileConverter = lazy(() => import('../services/EnvFileConverter'));
+const MergeConflictResolver = lazy(() => import('../services/MergeConflictResolver'));
+const MarkdownTocGenerator = lazy(() => import('../services/MarkdownTocGenerator'));
+const XmlFormatter = lazy(() => import('../services/XmlFormatter'));
+const YamlJsonConverter = lazy(() => import('../services/YamlJsonConverter'));
+const GitignoreGenerator = lazy(() => import('../services/GitignoreGenerator'));
+const WifiQrCodeGenerator = lazy(() => import('../services/WifiQrCodeGenerator'));
+const HttpHeaderAnalyzer = lazy(() => import('../services/HttpHeaderAnalyzer'));
+const CardIbanValidator = lazy(() => import('../services/CardIbanValidator'));
 
 // Sandbox games - lazy loaded (all frontend-only, no backend, no auth gate)
 const SnakeGame = lazy(() => import('../sandbox/SnakeGame'));
@@ -199,6 +211,11 @@ const DotsAndBoxes = lazy(() => import('../sandbox/DotsAndBoxes'));
 const WordSearch = lazy(() => import('../sandbox/WordSearch'));
 const AirHockey = lazy(() => import('../sandbox/AirHockey'));
 const Nonogram = lazy(() => import('../sandbox/Nonogram'));
+const LightsOut = lazy(() => import('../sandbox/LightsOut'));
+const Sokoban = lazy(() => import('../sandbox/Sokoban'));
+const Klotski = lazy(() => import('../sandbox/Klotski'));
+const PegSolitaire = lazy(() => import('../sandbox/PegSolitaire'));
+const RoadHop = lazy(() => import('../sandbox/RoadHop'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -364,6 +381,18 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/audio-trimmer" element={<PageTransition>{withAuthGuard(<AudioTrimmer />, '/services/audio-trimmer', toolAccess, 'Audio Trimmer & Cutter')}</PageTransition>} />
                     <Route path="/services/image-watermark-adder" element={<PageTransition>{withAuthGuard(<ImageWatermarkAdder />, '/services/image-watermark-adder', toolAccess, 'Image Watermark Adder')}</PageTransition>} />
                     <Route path="/services/url-query-string-tool" element={<PageTransition>{withAuthGuard(<UrlQueryStringTool />, '/services/url-query-string-tool', toolAccess, 'URL Query String Parser & Builder')}</PageTransition>} />
+                    <Route path="/services/chmod-calculator" element={<PageTransition>{withAuthGuard(<ChmodCalculator />, '/services/chmod-calculator', toolAccess, 'Chmod Permission Calculator')}</PageTransition>} />
+                    <Route path="/services/json-schema-generator" element={<PageTransition>{withAuthGuard(<JsonSchemaGenerator />, '/services/json-schema-generator', toolAccess, 'JSON Schema Generator')}</PageTransition>} />
+                    <Route path="/services/semver-range-tester" element={<PageTransition>{withAuthGuard(<SemverRangeTester />, '/services/semver-range-tester', toolAccess, 'SemVer Range Tester')}</PageTransition>} />
+                    <Route path="/services/env-file-converter" element={<PageTransition>{withAuthGuard(<EnvFileConverter />, '/services/env-file-converter', toolAccess, '.env File Converter')}</PageTransition>} />
+                    <Route path="/services/merge-conflict-resolver" element={<PageTransition>{withAuthGuard(<MergeConflictResolver />, '/services/merge-conflict-resolver', toolAccess, 'Git Merge Conflict Resolver')}</PageTransition>} />
+                    <Route path="/services/markdown-toc-generator" element={<PageTransition>{withAuthGuard(<MarkdownTocGenerator />, '/services/markdown-toc-generator', toolAccess, 'Markdown Table of Contents Generator')}</PageTransition>} />
+                    <Route path="/services/xml-formatter-validator" element={<PageTransition>{withAuthGuard(<XmlFormatter />, '/services/xml-formatter-validator', toolAccess, 'XML Formatter & Validator')}</PageTransition>} />
+                    <Route path="/services/yaml-json-converter" element={<PageTransition>{withAuthGuard(<YamlJsonConverter />, '/services/yaml-json-converter', toolAccess, 'YAML ↔ JSON Converter')}</PageTransition>} />
+                    <Route path="/services/gitignore-generator" element={<PageTransition>{withAuthGuard(<GitignoreGenerator />, '/services/gitignore-generator', toolAccess, '.gitignore Generator')}</PageTransition>} />
+                    <Route path="/services/wifi-qr-code-generator" element={<PageTransition>{withAuthGuard(<WifiQrCodeGenerator />, '/services/wifi-qr-code-generator', toolAccess, 'WiFi QR Code Generator')}</PageTransition>} />
+                    <Route path="/services/http-header-analyzer" element={<PageTransition>{withAuthGuard(<HttpHeaderAnalyzer />, '/services/http-header-analyzer', toolAccess, 'HTTP Header Analyzer')}</PageTransition>} />
+                    <Route path="/services/card-iban-validator" element={<PageTransition>{withAuthGuard(<CardIbanValidator />, '/services/card-iban-validator', toolAccess, 'Credit Card / IBAN Validator')}</PageTransition>} />
 
                     {/* Sandbox - public, frontend-only mini games */}
                     <Route path="/sandbox" element={<PageTransition><SandboxPage /></PageTransition>} />
@@ -410,6 +439,11 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/sandbox/word-search" element={<PageTransition><WordSearch /></PageTransition>} />
                     <Route path="/sandbox/air-hockey" element={<PageTransition><AirHockey /></PageTransition>} />
                     <Route path="/sandbox/nonogram" element={<PageTransition><Nonogram /></PageTransition>} />
+                    <Route path="/sandbox/lights-out" element={<PageTransition><LightsOut /></PageTransition>} />
+                    <Route path="/sandbox/sokoban" element={<PageTransition><Sokoban /></PageTransition>} />
+                    <Route path="/sandbox/klotski" element={<PageTransition><Klotski /></PageTransition>} />
+                    <Route path="/sandbox/peg-solitaire" element={<PageTransition><PegSolitaire /></PageTransition>} />
+                    <Route path="/sandbox/road-hop" element={<PageTransition><RoadHop /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />
