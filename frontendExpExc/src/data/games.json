@@ -1036,5 +1036,68 @@
       "river crossing arcade game",
       "free browser arcade game"
     ]
+  },
+  {
+    "id": 49,
+    "title": "Gem Swap",
+    "description": "Swap adjacent gems to line up 3 or more, chain combos for bonus score, and clear the board before your moves run out.",
+    "icon": "Diamond",
+    "path": "/sandbox/gem-swap",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "match-3",
+      "classic"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "match 3 puzzle game",
+      "gem swap game online",
+      "free match three game",
+      "tile matching puzzle browser"
+    ]
+  },
+  {
+    "id": 50,
+    "title": "Word Grid",
+    "description": "Trace connected letters to find as many words as you can before the timer runs out.",
+    "icon": "Abc",
+    "path": "/sandbox/word-grid",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "word",
+      "logic"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "word finding grid game",
+      "word search puzzle online",
+      "letter grid word game",
+      "free word game browser"
+    ]
+  },
+  {
+    "id": 51,
+    "title": "Crystal Miner",
+    "description": "Click to mine crystals, buy upgrades for more shards per click and per second, and watch the numbers climb - even while you're away.",
+    "icon": "Paid",
+    "path": "/sandbox/crystal-miner",
+    "category": "creative",
+    "tags": [
+      "idle",
+      "clicker",
+      "incremental"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "idle clicker game",
+      "incremental game online",
+      "crystal mining clicker",
+      "free idle game browser"
+    ]
   }
 ]
