@@ -2324,5 +2324,303 @@
       "build url with parameters",
       "url encode query string"
     ]
+  },
+  {
+    "id": 101,
+    "title": "Chmod Permission Calculator",
+    "description": "Convert between the checkbox grid, the octal number and the rwx symbolic string, including the setuid, setgid and sticky bits.",
+    "icon": "FolderShared",
+    "path": "/services/chmod-calculator",
+    "category": "developer",
+    "popularity": 65,
+    "tags": [
+      "chmod",
+      "permissions",
+      "unix",
+      "linux"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "chmod calculator",
+      "file permission calculator",
+      "unix permissions calculator",
+      "octal permission converter",
+      "chmod 755",
+      "rwx to octal",
+      "setuid setgid sticky bit calculator",
+      "linux file permissions"
+    ]
+  },
+  {
+    "id": 102,
+    "title": "JSON Schema Generator",
+    "description": "Paste a sample JSON document and get a draft 2020-12 schema inferred from it, with real array merging and optional format detection.",
+    "icon": "Schema",
+    "path": "/services/json-schema-generator",
+    "category": "developer",
+    "popularity": 66,
+    "tags": [
+      "json",
+      "schema",
+      "validation",
+      "developer"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "json schema generator",
+      "json to json schema",
+      "infer json schema",
+      "draft 2020-12 schema generator",
+      "json schema from sample",
+      "generate json schema online",
+      "json schema inference"
+    ]
+  },
+  {
+    "id": 103,
+    "title": "SemVer Range Tester",
+    "description": "Check which versions an npm-style range accepts, with the expanded comparators and a reason for every pass and fail.",
+    "icon": "Rule",
+    "path": "/services/semver-range-tester",
+    "category": "developer",
+    "popularity": 64,
+    "tags": [
+      "semver",
+      "versioning",
+      "npm",
+      "developer"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "semver range tester",
+      "semver calculator",
+      "npm version range checker",
+      "caret range meaning",
+      "tilde version range",
+      "semver satisfies",
+      "prerelease version matching",
+      "package.json version range"
+    ]
+  },
+  {
+    "id": 104,
+    "title": ".env File Converter",
+    "description": "Convert between .env, JSON and YAML with real dotenv quoting and comment rules.",
+    "icon": "SettingsEthernet",
+    "path": "/services/env-file-converter",
+    "category": "converter",
+    "popularity": 67,
+    "tags": [
+      "env",
+      "json",
+      "yaml",
+      "converter"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "env to json converter",
+      "env to yaml converter",
+      "json to env file",
+      "yaml to env converter",
+      "dotenv parser online",
+      "environment variables converter"
+    ]
+  },
+  {
+    "id": 105,
+    "title": "Git Merge Conflict Resolver",
+    "description": "Paste a conflicted file and resolve each block, including diff3 style, side by side.",
+    "icon": "CallMerge",
+    "path": "/services/merge-conflict-resolver",
+    "category": "developer",
+    "popularity": 63,
+    "tags": [
+      "git",
+      "merge",
+      "conflict",
+      "developer"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "git merge conflict resolver",
+      "resolve merge conflicts online",
+      "diff3 conflict style",
+      "git conflict markers explained",
+      "merge conflict tool",
+      "ours vs theirs git"
+    ]
+  },
+  {
+    "id": 106,
+    "title": "Markdown Table of Contents Generator",
+    "description": "Turn Markdown headings into a nested list of GitHub-style anchor links.",
+    "icon": "Toc",
+    "path": "/services/markdown-toc-generator",
+    "category": "developer",
+    "popularity": 62,
+    "tags": [
+      "markdown",
+      "toc",
+      "github",
+      "developer"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "markdown table of contents generator",
+      "markdown toc generator",
+      "github anchor links",
+      "markdown heading slug",
+      "readme table of contents",
+      "generate toc from markdown"
+    ]
+  },
+  {
+    "id": 107,
+    "title": "XML Formatter & Validator",
+    "description": "Format, minify and validate XML with clear parser error locations and a collapsible tree view.",
+    "icon": "Code",
+    "path": "/services/xml-formatter-validator",
+    "category": "developer",
+    "popularity": 61,
+    "tags": [
+      "xml",
+      "formatter",
+      "validator",
+      "developer"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "xml formatter",
+      "xml validator online",
+      "xml beautifier",
+      "minify xml",
+      "xml syntax checker",
+      "pretty print xml"
+    ]
+  },
+  {
+    "id": 108,
+    "title": "YAML ↔ JSON Converter",
+    "description": "Convert between YAML and JSON in both directions with real YAML parsing, not a hand-rolled subset.",
+    "icon": "Transform",
+    "path": "/services/yaml-json-converter",
+    "category": "developer",
+    "popularity": 63,
+    "tags": [
+      "yaml",
+      "json",
+      "converter",
+      "developer"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "yaml to json converter",
+      "json to yaml converter",
+      "yaml validator online",
+      "yaml parser online",
+      "convert yaml online",
+      "json yaml converter"
+    ]
+  },
+  {
+    "id": 109,
+    "title": ".gitignore Generator",
+    "description": "Pick your languages, frameworks and editors and generate a merged .gitignore from real ecosystem patterns.",
+    "icon": "GitHub",
+    "path": "/services/gitignore-generator",
+    "category": "developer",
+    "popularity": 60,
+    "tags": [
+      "git",
+      "gitignore",
+      "developer"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      ".gitignore generator",
+      "generate gitignore online",
+      "gitignore template",
+      "gitignore for node python java",
+      "create gitignore file"
+    ]
+  },
+  {
+    "id": 110,
+    "title": "WiFi QR Code Generator",
+    "description": "Turn a WiFi network name and password into a QR code that joins the network on scan.",
+    "icon": "Wifi",
+    "path": "/services/wifi-qr-code-generator",
+    "category": "converter",
+    "popularity": 64,
+    "tags": [
+      "wifi",
+      "qr code",
+      "converter"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "wifi qr code generator",
+      "generate wifi qr code",
+      "wifi password qr code",
+      "wpa2 qr code generator"
+    ]
+  },
+  {
+    "id": 111,
+    "title": "HTTP Header Analyzer",
+    "description": "Paste raw HTTP response headers and get each one explained, with a security header checklist.",
+    "icon": "Http",
+    "path": "/services/http-header-analyzer",
+    "category": "developer",
+    "popularity": 62,
+    "tags": [
+      "http",
+      "headers",
+      "security",
+      "developer"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "http header analyzer",
+      "http headers checker",
+      "security headers checker online",
+      "cors header checker",
+      "cache control checker"
+    ]
+  },
+  {
+    "id": 112,
+    "title": "Credit Card / IBAN Validator",
+    "description": "Check a card number against the Luhn checksum and detect its network, or validate an IBAN's mod-97 checksum.",
+    "icon": "CreditCard",
+    "path": "/services/card-iban-validator",
+    "category": "security",
+    "popularity": 59,
+    "tags": [
+      "credit card",
+      "iban",
+      "validator",
+      "security"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "credit card validator",
+      "luhn algorithm checker",
+      "iban validator online",
+      "validate iban number",
+      "card number checksum"
+    ]
   }
 ]
