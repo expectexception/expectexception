@@ -386,6 +386,34 @@ def _dominant_font_size(page) -> float:
     return sizes.most_common(1)[0][0] if sizes else 11.0
 
 
+def _heading_sizes(page, body_size: float) -> list[float]:
+    """Distinct span sizes on this page that stand out from body text, largest
+    first. Index 0 is Heading 1, index 1 is Heading 2, and so on.
+
+    This replaces fixed ratio cutoffs (>=1.6x body for H1, >=1.2x for H2),
+    which sound reasonable but don't hold against Word's own defaults: a
+    real Heading 1 at 14pt over 11pt body is only 1.27x, and Heading 2 at
+    13pt is 1.18x — both used to fall through the cutoffs and either get
+    misclassified a level too low or dumped as a plain paragraph, silently
+    destroying the document's structure. Ranking the sizes actually present
+    on the page tracks the document's own intent instead of guessing at it.
+    """
+    sizes: set[float] = set()
+    for block in page.get_text("dict")["blocks"]:
+        if block.get("type") != 0:
+            continue
+        for line in block["lines"]:
+            for span in line["spans"]:
+                if not span["text"].strip():
+                    continue
+                size = round(span["size"], 1)
+                # Small margin above body size so rounding noise around the
+                # body size itself is never mistaken for a heading.
+                if size > body_size * 1.05:
+                    sizes.add(size)
+    return sorted(sizes, reverse=True)
+
+
 def convert_pdf_to_docx_native(input_pdf: str, output_docx: str) -> str:
     """Rebuild a PDF as a real DOCX using PyMuPDF for extraction.
 
@@ -415,6 +443,10 @@ def convert_pdf_to_docx_native(input_pdf: str, output_docx: str) -> str:
                 out.add_page_break()
 
             body_size = _dominant_font_size(page)
+            # Only the top 3 distinct larger sizes get mapped to heading
+            # levels; anything past that renders as a normal (bold) paragraph
+            # rather than a barely-distinguishable Heading 4-9.
+            heading_sizes = _heading_sizes(page, body_size)[:3]
 
             # Tables are emitted separately, so remember their regions and skip
             # any text inside them — otherwise every cell is duplicated as a
@@ -447,11 +479,9 @@ def convert_pdf_to_docx_native(input_pdf: str, output_docx: str) -> str:
                     if not spans:
                         continue
 
-                    largest = max(s["size"] for s in spans)
-                    if largest >= body_size * 1.6:
-                        paragraph = out.add_heading("", level=1)
-                    elif largest >= body_size * 1.2:
-                        paragraph = out.add_heading("", level=2)
+                    largest = round(max(s["size"] for s in spans), 1)
+                    if largest in heading_sizes:
+                        paragraph = out.add_heading("", level=heading_sizes.index(largest) + 1)
                     else:
                         paragraph = out.add_paragraph()
 

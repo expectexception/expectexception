@@ -922,5 +922,119 @@
       "logic grid puzzle",
       "picross puzzle browser"
     ]
+  },
+  {
+    "id": 44,
+    "title": "Lights Out",
+    "description": "Flip a cell and its four neighbours to try to switch every light off. Three board sizes, a move counter, and a best-time record for each.",
+    "icon": "Lightbulb",
+    "path": "/sandbox/lights-out",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "logic",
+      "grid"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "lights out game",
+      "lights out puzzle online",
+      "play lights out free",
+      "light switching puzzle",
+      "grid logic puzzle",
+      "turn off all the lights game"
+    ]
+  },
+  {
+    "id": 45,
+    "title": "Sokoban",
+    "description": "Push every crate onto a goal square across six hand-built levels, from a two move opener to a chokepoint puzzle that needs planning.",
+    "icon": "Warehouse",
+    "path": "/sandbox/sokoban",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "logic",
+      "classic"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "sokoban online",
+      "play sokoban free",
+      "crate pushing puzzle",
+      "warehouse puzzle game",
+      "box pushing game",
+      "sokoban levels browser"
+    ]
+  },
+  {
+    "id": 46,
+    "title": "Klotski",
+    "description": "Slide the blocks to free the big piece and guide it out through the gap. The classic Huarong Dao layout, plus an easier warm-up board.",
+    "icon": "ViewQuilt",
+    "path": "/sandbox/klotski",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "logic",
+      "classic"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "klotski game",
+      "huarong dao puzzle",
+      "sliding block puzzle online",
+      "play klotski free",
+      "block sliding puzzle",
+      "chinese sliding puzzle"
+    ]
+  },
+  {
+    "id": 47,
+    "title": "Peg Solitaire",
+    "description": "Jump pegs over each other on the classic cross-shaped board until only one remains.",
+    "icon": "Circle",
+    "path": "/sandbox/peg-solitaire",
+    "category": "puzzle",
+    "tags": [
+      "puzzle",
+      "logic",
+      "classic"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "peg solitaire online",
+      "peg solitaire game",
+      "cross board peg game",
+      "solitaire board puzzle",
+      "jump peg puzzle",
+      "brainvita game"
+    ]
+  },
+  {
+    "id": 48,
+    "title": "Road Hop",
+    "description": "Cross a river of moving traffic and drifting logs to reach the landing pads, with three lives and rising difficulty.",
+    "icon": "Traffic",
+    "path": "/sandbox/road-hop",
+    "category": "classic",
+    "tags": [
+      "arcade",
+      "reaction",
+      "classic"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "lane crossing arcade game",
+      "road crossing game online",
+      "traffic dodging game",
+      "river crossing arcade game",
+      "free browser arcade game"
+    ]
   }
 ]
