@@ -166,6 +166,12 @@ const GitignoreGenerator = lazy(() => import('../services/GitignoreGenerator'));
 const WifiQrCodeGenerator = lazy(() => import('../services/WifiQrCodeGenerator'));
 const HttpHeaderAnalyzer = lazy(() => import('../services/HttpHeaderAnalyzer'));
 const CardIbanValidator = lazy(() => import('../services/CardIbanValidator'));
+const AsciiArtGenerator = lazy(() => import('../services/AsciiArtGenerator'));
+const MorseCodeTranslator = lazy(() => import('../services/MorseCodeTranslator'));
+const VcardQrCodeGenerator = lazy(() => import('../services/VcardQrCodeGenerator'));
+const ImageBase64Converter = lazy(() => import('../services/ImageBase64Converter'));
+const CssSpecificityCalculator = lazy(() => import('../services/CssSpecificityCalculator'));
+const MeetingTimezonePlanner = lazy(() => import('../services/MeetingTimezonePlanner'));
 
 // Sandbox games - lazy loaded (all frontend-only, no backend, no auth gate)
 const SnakeGame = lazy(() => import('../sandbox/SnakeGame'));
@@ -216,6 +222,9 @@ const Sokoban = lazy(() => import('../sandbox/Sokoban'));
 const Klotski = lazy(() => import('../sandbox/Klotski'));
 const PegSolitaire = lazy(() => import('../sandbox/PegSolitaire'));
 const RoadHop = lazy(() => import('../sandbox/RoadHop'));
+const GemSwap = lazy(() => import('../sandbox/GemSwap'));
+const WordGrid = lazy(() => import('../sandbox/WordGrid'));
+const CrystalMiner = lazy(() => import('../sandbox/CrystalMiner'));
 
 /**
  * Helper: wraps a component with AuthGuard if the path requires login.
@@ -393,6 +402,12 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/services/wifi-qr-code-generator" element={<PageTransition>{withAuthGuard(<WifiQrCodeGenerator />, '/services/wifi-qr-code-generator', toolAccess, 'WiFi QR Code Generator')}</PageTransition>} />
                     <Route path="/services/http-header-analyzer" element={<PageTransition>{withAuthGuard(<HttpHeaderAnalyzer />, '/services/http-header-analyzer', toolAccess, 'HTTP Header Analyzer')}</PageTransition>} />
                     <Route path="/services/card-iban-validator" element={<PageTransition>{withAuthGuard(<CardIbanValidator />, '/services/card-iban-validator', toolAccess, 'Credit Card / IBAN Validator')}</PageTransition>} />
+                    <Route path="/services/ascii-art-generator" element={<PageTransition>{withAuthGuard(<AsciiArtGenerator />, '/services/ascii-art-generator', toolAccess, 'ASCII Art Text Generator')}</PageTransition>} />
+                    <Route path="/services/morse-code-translator" element={<PageTransition>{withAuthGuard(<MorseCodeTranslator />, '/services/morse-code-translator', toolAccess, 'Morse Code Translator')}</PageTransition>} />
+                    <Route path="/services/vcard-qr-code-generator" element={<PageTransition>{withAuthGuard(<VcardQrCodeGenerator />, '/services/vcard-qr-code-generator', toolAccess, 'vCard QR Code Generator')}</PageTransition>} />
+                    <Route path="/services/image-base64-converter" element={<PageTransition>{withAuthGuard(<ImageBase64Converter />, '/services/image-base64-converter', toolAccess, 'Image to Base64 Converter')}</PageTransition>} />
+                    <Route path="/services/css-specificity-calculator" element={<PageTransition>{withAuthGuard(<CssSpecificityCalculator />, '/services/css-specificity-calculator', toolAccess, 'CSS Specificity Calculator')}</PageTransition>} />
+                    <Route path="/services/meeting-timezone-planner" element={<PageTransition>{withAuthGuard(<MeetingTimezonePlanner />, '/services/meeting-timezone-planner', toolAccess, 'Meeting Time Zone Planner')}</PageTransition>} />
 
                     {/* Sandbox - public, frontend-only mini games */}
                     <Route path="/sandbox" element={<PageTransition><SandboxPage /></PageTransition>} />
@@ -444,6 +459,9 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/sandbox/klotski" element={<PageTransition><Klotski /></PageTransition>} />
                     <Route path="/sandbox/peg-solitaire" element={<PageTransition><PegSolitaire /></PageTransition>} />
                     <Route path="/sandbox/road-hop" element={<PageTransition><RoadHop /></PageTransition>} />
+                    <Route path="/sandbox/gem-swap" element={<PageTransition><GemSwap /></PageTransition>} />
+                    <Route path="/sandbox/word-grid" element={<PageTransition><WordGrid /></PageTransition>} />
+                    <Route path="/sandbox/crystal-miner" element={<PageTransition><CrystalMiner /></PageTransition>} />
 
                     <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
                     <Route path="/services/text-to-handwriting" element={<PageTransition>{withAuthGuard(<TextToHandwritingPage />, '/services/text-to-handwriting', toolAccess, 'Text to Handwriting')}</PageTransition>} />

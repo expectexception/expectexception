@@ -2622,5 +2622,138 @@
       "validate iban number",
       "card number checksum"
     ]
+  },
+  {
+    "id": 113,
+    "title": "ASCII Art Text Generator",
+    "description": "Turn text into large ASCII-art banner text with a choice of block fonts and fill characters.",
+    "icon": "TextFormat",
+    "path": "/services/ascii-art-generator",
+    "category": "design",
+    "popularity": 58,
+    "tags": [
+      "ascii art",
+      "text",
+      "design"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "ascii art generator",
+      "text to ascii art",
+      "ascii banner text generator",
+      "figlet online"
+    ]
+  },
+  {
+    "id": 114,
+    "title": "Morse Code Translator",
+    "description": "Convert text to Morse code and back, with real audio playback of the dots and dashes.",
+    "icon": "SettingsInputAntenna",
+    "path": "/services/morse-code-translator",
+    "category": "utility",
+    "popularity": 57,
+    "tags": [
+      "morse code",
+      "translator",
+      "utility"
+    ],
+    "color": "info",
+    "is_active": true,
+    "keywords": [
+      "morse code translator",
+      "text to morse code",
+      "morse code audio player",
+      "morse code decoder online"
+    ]
+  },
+  {
+    "id": 115,
+    "title": "vCard QR Code Generator",
+    "description": "Turn a contact's details into a QR code that a phone can scan straight into a new contact.",
+    "icon": "ContactPage",
+    "path": "/services/vcard-qr-code-generator",
+    "category": "converter",
+    "popularity": 60,
+    "tags": [
+      "vcard",
+      "qr code",
+      "converter"
+    ],
+    "color": "success",
+    "is_active": true,
+    "keywords": [
+      "vcard qr code generator",
+      "contact card qr code",
+      "business card qr code generator",
+      "vcf qr code maker"
+    ]
+  },
+  {
+    "id": 116,
+    "title": "Image to Base64 Converter",
+    "description": "Convert an image to a base64 data URI, or decode a data URI back into a downloadable image.",
+    "icon": "Image",
+    "path": "/services/image-base64-converter",
+    "category": "developer",
+    "popularity": 59,
+    "tags": [
+      "base64",
+      "image",
+      "data uri",
+      "developer"
+    ],
+    "color": "primary",
+    "is_active": true,
+    "keywords": [
+      "image to base64 converter",
+      "base64 to image converter",
+      "data uri generator",
+      "convert image to data url"
+    ]
+  },
+  {
+    "id": 117,
+    "title": "CSS Specificity Calculator",
+    "description": "Paste CSS selectors and get each one's specificity, with the winner highlighted when they conflict.",
+    "icon": "Calculate",
+    "path": "/services/css-specificity-calculator",
+    "category": "developer",
+    "popularity": 61,
+    "tags": [
+      "css",
+      "specificity",
+      "developer"
+    ],
+    "color": "warning",
+    "is_active": true,
+    "keywords": [
+      "css specificity calculator",
+      "css specificity checker online",
+      "calculate css selector specificity",
+      "css specificity explained"
+    ]
+  },
+  {
+    "id": 118,
+    "title": "Meeting Time Zone Planner",
+    "description": "Add cities and see a shared hour-by-hour grid to find overlapping working hours across time zones.",
+    "icon": "EventAvailable",
+    "path": "/services/meeting-timezone-planner",
+    "category": "utility",
+    "popularity": 62,
+    "tags": [
+      "timezone",
+      "meeting",
+      "utility"
+    ],
+    "color": "secondary",
+    "is_active": true,
+    "keywords": [
+      "meeting time zone planner",
+      "time zone overlap finder",
+      "schedule across time zones",
+      "world clock meeting planner"
+    ]
   }
 ]
