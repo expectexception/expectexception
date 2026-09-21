@@ -47,6 +47,9 @@ import {
   Warehouse,
   ViewQuilt,
   Traffic,
+  Diamond,
+  Abc,
+  Paid,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -85,6 +88,9 @@ const ICONS: Record<string, React.ReactElement> = {
   Warehouse: <Warehouse fontSize="large" />,
   ViewQuilt: <ViewQuilt fontSize="large" />,
   Traffic: <Traffic fontSize="large" />,
+  Diamond: <Diamond fontSize="large" />,
+  Abc: <Abc fontSize="large" />,
+  Paid: <Paid fontSize="large" />,
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
